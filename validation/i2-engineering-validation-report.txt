@@ -3,9 +3,9 @@
 状态：已写入 / 已验证 / 待确认
 日期：2026-07-16
 分支：codex/i2-hamsters-enclosures-csv
-验证对象提交：a035106 feat: complete I2 hamsters enclosures csv import
+验证对象提交：05f2a17 feat: persist import uploads in local object store（基于 a035106）
 复核时工作树：clean
-远端状态：尚未推送，尚未创建 PR
+远端状态：仓库当前未配置 remote，尚未推送，尚未创建 PR
 
 ## 范围
 
@@ -25,9 +25,11 @@ I2「仓鼠、笼舍、历史窝次/谱系、体重与 CSV 导入」工程收口
 - `api/internal/i2core/*`：仓鼠/笼盒/入住移笼/清洁/体重/窝次父母与谱系事务服务，含幂等、乐观锁、Event/Outbox。
 - `api/internal/importcsv/*`：模板识别、映射、全量预检、原子提交、PostgreSQL 适配与冒烟夹具。
 - `api/internal/httpapi/i2_core_handlers.go`：I2 核心 REST 路由、认证、分页、ETag、幂等头与错误映射。
-- `api/internal/httpapi/i2_import_handlers.go`：本地上传会话 + import job 映射/预检/提交/行结果 API。
+- `api/internal/httpapi/i2_import_handlers.go`：对象存储上传 + import job 映射/预检/提交/行结果 API。
+- `api/internal/objectstore/objectstore.go`：ObjectStore 契约与本地文件适配器，包含路径、大小、SHA-256 和原子写入校验。
+- `db/migrations/0011_i2_import_uploads.sql`：上传元数据、状态、过期索引与 owner 隔离约束。
 - `api/internal/httpapi/server.go`：注册 `registerI2CoreRoutes` 与 `registerI2ImportRoutes`。
-- `db/migrations/0010_i2_database_constraints.sql` 与 `db/scripts/i2-verify-constraints.sh`。
+- `db/migrations/0010_i2_database_constraints.sql`、`0011_i2_import_uploads.sql` 与 `db/scripts/i2-verify-constraints.sh`。
 
 ### 前端
 
@@ -46,8 +48,9 @@ I2「仓鼠、笼舍、历史窝次/谱系、体重与 CSV 导入」工程收口
 - `cd api && go test ./...`：auth、httpapi、i2core、importcsv、store、worker 通过。
 - `make openapi-lint`：Redocly CLI 1.34.5 通过。
 - `DART_PUB_OFFLINE=1 make client-drift`：生成客户端漂移检查通过，753 files。
-- `make migration-drift`：冻结 schema 源迁移 9 个无漂移（0010 为 I2 增量，不纳入冻结源）。
-- `make db-verify`：全新 PostgreSQL 15.17 通过；tables=38 enums=60 replay=stable seed_replay=idempotent。
+- `make migration-drift`：冻结 schema 源迁移 9 个无漂移（0010/0011 为增量，不纳入冻结源）。
+- `make db-verify`：全新 PostgreSQL 15.17 通过；tables=39 enums=60 replay=stable seed_replay=idempotent。
+- `cd api && go test ./...`：包含 `objectstore` 单元测试，覆盖路径穿越、大小/SHA-256 不一致、原子临时文件、Get/Delete。
 - `db/scripts/i2-verify-constraints.sh`：checks=40 constraints=90 通过。
 - `I1_API_PORT=18591 I1_DB_PORT=56591 scripts/i1-smoke.sh`：I1 演示链通过（owner 隔离、幂等、ETag、events=4、published_outbox=2）。
 - `apps/mobile`：`flutter analyze` 无问题；`flutter test` 11 tests passed（含 I2 widget/controller/import/models 与壳层导航）。
@@ -57,9 +60,9 @@ I2「仓鼠、笼舍、历史窝次/谱系、体重与 CSV 导入」工程收口
 
 ## 待确认
 
-- CSV 上传为本地进程内会话（`PUT /v1/data-center/import-uploads/{id}/content`），非正式对象存储/CDN。
-- import HTTP 层的映射/预检/提交会话状态为进程内存 + DB 混合；API 进程重启后需重新上传。
-- Android/iOS 设备构建尚未完成；Android debug APK 的工程基线已单独记录，设备安装/启动与 iOS Simulator/真机构建仍待独立任务验证（iOS 需要 26.5 runtime）。
+- CSV 上传已接入本地 `ObjectStore` 文件适配器并持久化 `import_upload` 元数据；正式 S3/MinIO/CDN 适配器仍待实现。
+- import HTTP 层的映射/预检/提交会话状态仍为进程内存 + DB 混合；API 进程重启后任务会话恢复和多实例续传测试仍待补齐。
+- Android debug 构建本轮失败于 `apps/mobile/android/app/build.gradle.kts:7` 的 `java.util.Properties()` Kotlin DSL 解析错误；iOS Simulator/真机构建仍待执行。
 - 正式 Bundle ID、签名、密钥托管和生产部署仍待确认，不属于本轮 I2 验证闭环。
 - Flutter 与真实 API 的交互式 CSV 演示尚未纳入本轮验证；API 层 CSV 全链路已按上节结果通过。
 - 当前分支尚未推送远端，尚未创建 PR。
@@ -72,3 +75,4 @@ I2「仓鼠、笼舍、历史窝次/谱系、体重与 CSV 导入」工程收口
 4. OpenAPI default 清理后重生成客户端，Flutter analyze/test 变绿。
 5. CSV 单住预检提示与合法夹具（一鼠一笼）保持一致。
 6. 修复 CSV 提交阶段 `batch_key` 查询不一致，确保预检结果可进入提交并产生逐行导入报告。
+7. 新增本地对象存储切片：上传内容持久化、SHA-256/大小校验、过期回收入口和 `import_upload` 元数据迁移。
