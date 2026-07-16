@@ -78,7 +78,7 @@ curl -fsS -X POST "$API_URL/v1/species-rule-versions" \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
   -H 'Idempotency-Key: i1-outbox-rule-0001' -d "$RULE_PAYLOAD" >/dev/null
 
-MESSAGE_ID="$(psql -XAt "$DB_URL" -c "select id from outbox_message order by created_at desc limit 1;")"
+MESSAGE_ID="$(psql -XAt "$DB_URL" -c "select id from outbox_message where status='pending' order by created_at desc limit 1;")"
 [[ -n "$MESSAGE_ID" ]] || { printf 'outbox message missing\n' >&2; exit 1; }
 
 if [[ -n "$BASE" ]]; then
