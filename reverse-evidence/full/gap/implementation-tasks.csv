@@ -1,0 +1,22 @@
+id,module,name,path,route,evidence_level,evidence_ref,status,notes
+T-P0-01,P0,nav_home_shell,"apps/mobile/lib/features/shell,home",,I,docs/13,MISSING,no migration; aggregate APIs
+T-P0-02,P0,breeding_wizard,apps/mobile/lib/features/breeding,/breeding-plans*,S,docs/13,PARTIAL,uses existing API
+T-P0-03,P0,litter_board,apps/mobile/lib/features/litter,/litters*,S,docs/13,PARTIAL,wean sex individualize
+T-P0-04,P0,weight_alerts,features/weight + optional i5core,/weight-records,S,docs/13,PARTIAL,grams batch
+T-P0-05,P0,tasks_local_notifications,features/tasks,"/tasks,/reminders",S,docs/13,MISSING,plugin wire-up
+T-P0-06,P0,calendar_month,features/calendar,aggregate,I,docs/13,MISSING,
+T-P0-07,P0,pedigree_viz,features/pedigree,/hamsters/{id}/pedigree,S,docs/13,PARTIAL,
+T-P0-08,P0,enclosure_board,features/i2 enclosures,/enclosures*,S,docs/13,PARTIAL,
+T-P1-01,P1,rbac_members,api+db+flutter,,S,docs/13,DEFER,
+T-P1-02,P1,crm_handover,api+db+flutter,,S,docs/13,DEFER,
+T-P1-03,P1,contracts_receipts,api+flutter,,S,docs/13,DEFER,
+T-P1-04,P1,accounting,api+flutter,,S,docs/13,DEFER,
+T-P1-05,P1,widgets,mobile native,,S,docs/13,DEFER,
+T-P1-06,P1,genetics,api+flutter,,S,docs/13,DEFER,
+T-P1-07,P1,push_server,infra,,I,docs/13,DEFER,
+T-P1-08,P1,paywall,entitlement+store,,S,docs/13,DEFER,
+T-P2-01,P2,public_site,web light,,W,docs/13,DEFER,
+T-P2-02,P2,miniprogram,platform,,W,docs/13,DEFER,
+T-P2-03,P2,ai_readonly,agent,,S,docs/13,DEFER,
+T-P2-04,P2,ble_scale,mobile,,S,docs/13,DEFER,
+T-P2-05,P2,cross_cattery_stud,api,,S,docs/13,DEFER,

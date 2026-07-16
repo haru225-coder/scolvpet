@@ -326,5 +326,40 @@
     "coverage": "runtime/r11-coverage.json",
     "er_nodes": "runtime/r11-er-nodes.csv",
     "architecture_nodes": "runtime/r11-architecture-nodes.csv"
+  },
+  "r12": {
+    "collected_at": "2026-07-17T02:25:56+08:00",
+    "wave": "R12",
+    "docs": "docs/13-熊舍管家全量对标差距与实现清单.md",
+    "counts": {
+      "capabilities": 59,
+      "entity_maps": 26,
+      "tasks": 21,
+      "tasks_p0": 8
+    },
+    "xiong_baseline": {
+      "openapi_paths": 86,
+      "migrations": "0000-0017",
+      "flutter_features": [
+        "i2",
+        "i6"
+      ],
+      "go_packages": [
+        "i2core",
+        "i3core",
+        "i4core",
+        "i5core",
+        "i6data",
+        "i6media"
+      ]
+    },
+    "mvp_exclusions": [
+      "rbac",
+      "crm",
+      "finance",
+      "ai",
+      "miniprogram",
+      "paywall"
+    ]
   }
 }

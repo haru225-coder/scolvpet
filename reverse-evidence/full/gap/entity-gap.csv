@@ -1,0 +1,27 @@
+id,module,name,path,route,evidence_level,evidence_ref,status,notes
+ENTG-0001,entity,cat,hamster,,S,docs/13,HAMSTER,table hamster + /hamsters
+ENTG-0002,entity,breeding_plan,breeding_plan,,S,docs/13,DONE,actions finer-grained
+ENTG-0003,entity,confirm_production_request,confirm-birth,,S,docs/13,DONE,i4
+ENTG-0004,entity,cat_weight,weight_record,,S,docs/13,DONE,
+ENTG-0005,entity,health_records,health_record,,S,docs/13,DONE,
+ENTG-0006,entity,estrus_cycle,species_rule_version,,S,docs/13,PARTIAL,rules not UI cycle
+ENTG-0007,entity,mating_log,pairing_attempt,,S,docs/13,DONE,
+ENTG-0008,entity,pedigree_tree,pedigree_parentage,,S,docs/13,DONE,
+ENTG-0009,entity,event_reminder,reminder_delivery,,S,docs/13,PARTIAL,
+ENTG-0010,entity,organization,organization,,S,docs/13,PARTIAL,
+ENTG-0011,entity,user,account,,S,docs/13,DONE,auth
+ENTG-0012,entity,door_info,enclosure,,S,docs/13,HAMSTER,
+ENTG-0013,entity,queue_info,—,,S,docs/13,DROP,
+ENTG-0014,entity,member_info,—,,S,docs/13,DEFER,RBAC P1
+ENTG-0015,entity,membership,entitlement,,S,docs/13,PARTIAL,usage meters
+ENTG-0016,entity,article,—,,S,docs/13,DEFER,P2
+ENTG-0017,entity,shop_page,—,,S,docs/13,DEFER,P2
+ENTG-0018,entity,mini_program_info,—,,S,docs/13,DEFER,P2
+ENTG-0019,entity,agent_message,—,,S,docs/13,DEFER,P2
+ENTG-0020,entity,wish_request,—,,S,docs/13,DEFER,P1
+ENTG-0021,entity,contract_template,—,,S,docs/13,DEFER,P1
+ENTG-0022,entity,receipt_template,—,,S,docs/13,DEFER,P1
+ENTG-0023,entity,breeding_transaction,—,,S,docs/13,DEFER,P2
+ENTG-0024,entity,backup_task,backup_job,,S,docs/13,DONE,
+ENTG-0025,entity,genetic,—,,S,docs/13,DEFER,P1
+ENTG-0026,entity,offspring_wall,litter/pup_identity,,S,docs/13,HAMSTER,DONE server

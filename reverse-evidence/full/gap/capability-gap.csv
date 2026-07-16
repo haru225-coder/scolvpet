@@ -1,0 +1,60 @@
+id,module,name,path,route,evidence_level,evidence_ref,status,notes
+C-AUTH-01,auth,sms_login,/auth/verification-codes,,S,docs/13,DONE,熊舍已实现
+C-AUTH-02,auth,apple_login,sign_in_with_apple,,S,docs/13,DEFER,按发布端
+C-AUTH-03,auth,session_refresh,/auth/sessions/refresh,,S,docs/13,DONE,
+C-ORG-01,org,organization,/organizations/current,,S,docs/13,PARTIAL,多组织DEFER
+C-ORG-02,org,rbac_members,member_management,,S,docs/13,DEFER,MVP排除
+C-MEM-01,commerce,iap_membership,storekit,,S,docs/13,DEFER,usage预留
+C-MEM-02,commerce,entitlements,/usage/*,,S,docs/13,PARTIAL,计量有门禁无
+C-NAV-01,shell,main_tabs,apps/mobile,,I,docs/13,MISSING,P0导航
+C-HOME-01,shell,home_overview,apps/mobile,,I,docs/13,MISSING,P0首页
+C-HOME-02,shell,home_customize,overview_module,,S,docs/13,DROP,不做装修
+C-PET-01,pet,hamster_vs_cat,/hamsters,,S,docs/13,HAMSTER,DONE服务端
+C-PET-02,pet,species_rules,/species-rule-*,,S,docs/13,PARTIAL,字典UI
+C-PET-03,pet,tags_levels,hamster status,,S,docs/13,PARTIAL,
+C-PET-04,pet,timeline,health/weight/media,,S,docs/13,PARTIAL,
+C-PET-05,pet,face_feature,cat_face_feature,,S,docs/13,DROP,
+C-PET-06,pet,transfer,pet_transfer,,S,docs/13,DEFER,P1
+C-PED-01,pedigree,pedigree_tree,/hamsters/{id}/pedigree,,S,docs/13,PARTIAL,可视化P0
+C-PED-02,pedigree,inbreeding_hint,pedigree,,I,docs/13,PARTIAL,
+C-GEN-01,genetic,simulator,breeding_simulator,,S,docs/13,DEFER,P1/P2
+C-SPACE-01,enclosure,enclosure,/enclosures,,S,docs/13,HAMSTER,DONE
+C-SPACE-02,enclosure,boarding_as_stay,enclosure_stay,,S,docs/13,PARTIAL,
+C-SPACE-03,ops,queue,queue,,S,docs/13,DROP,
+C-SPACE-04,ops,grooming,grooming,,S,docs/13,DROP,
+C-SPACE-05,hardware,ble_scale,flutter_blue_plus,,S,docs/13,DEFER,P2
+C-SPACE-06,enclosure,cleaning,/enclosures/.../cleanings,,S,docs/13,PARTIAL,
+C-BR-01,breeding,estrus,species rules,,S,docs/13,PARTIAL,
+C-BR-02,breeding,plan_sm,/breeding-plans*,,S,docs/13,HAMSTER,DONE API
+C-BR-03,breeding,pairing,/pairing-attempts*,,S,docs/13,HAMSTER,DONE
+C-BR-04,breeding,confirm_birth,/confirm-birth,,S,docs/13,HAMSTER,DONE
+C-BR-05,breeding,litter,/litters*,,S,docs/13,HAMSTER,DONE API UI P0
+C-BR-06,breeding,stud_tx,breeding/transaction,,S,docs/13,DEFER,P2
+C-BR-07,breeding,due_date,adjust-baseline,,S,docs/13,PARTIAL,
+C-WT-01,health,weight_g,/weight-records,,S,docs/13,HAMSTER,DONE
+C-WT-02,health,weight_alert,weight alert,,P,docs/13,PARTIAL,P0高亮
+C-HL-01,health,health_records,/health-records,,S,docs/13,DONE,
+C-HL-02,health,med_tasks,tasks,,I,docs/13,PARTIAL,
+C-TK-01,tasks,care_tasks,/tasks,,S,docs/13,PARTIAL,
+C-TK-02,tasks,reminders,/reminders,,S,docs/13,PARTIAL,
+C-CAL-01,tasks,calendar,apps/mobile,,S,docs/13,MISSING,P0
+C-NT-01,tasks,local_push,notifications,,S,docs/13,MISSING,P0
+C-WD-01,tasks,widget,WidgetKit,,S,docs/13,DEFER,P1
+C-CRM-01,commerce,crm_orders,cattery crm,,S,docs/13,DEFER,P1
+C-CRM-02,commerce,wish,wish,,S,docs/13,DEFER,P1
+C-FIN-01,commerce,accounting,accounting,,S,docs/13,DEFER,P1
+C-FIN-02,commerce,wallet,balance_approval,,S,docs/13,DROP,
+C-OPS-01,commerce,door_service,door,,S,docs/13,DEFER,
+C-MED-01,media,upload,/media/*,,S,docs/13,DONE,I6
+C-MED-02,media,edit_cover,edit-recipes,,S,docs/13,PARTIAL,
+C-SHR-01,media,share,/shares*,,S,docs/13,DONE,
+C-BKP-01,data,backup_export,/data-center/*,,S,docs/13,DONE,
+C-IMP-01,data,csv_import,/data-center/import*,,S,docs/13,DONE,
+C-DC-01,data,usage,/usage/*,,S,docs/13,DONE,
+C-WEB-01,platform,miniprogram_site,R9 web,,W,docs/13,DEFER,P2
+C-WEB-02,platform,editor,cattery-editor,,W,docs/13,DEFER,P2
+C-WEB-03,platform,bridge,FMBridge,,W,docs/13,DEFER,
+C-AI-01,platform,agent,agent,,S,docs/13,DEFER,P2
+C-ADS-01,platform,ads,KSAdSDK,,S,docs/13,DROP,
+C-GROW-01,platform,points_brand,point/brand,,S,docs/13,DROP,
+C-ART-01,platform,art_gallery,art webview,,S,docs/13,DROP,

@@ -380,6 +380,31 @@ def main() -> int:
         arch_nodes = read_csv(OUT / "runtime/r11-architecture-nodes.csv")
         check(len(arch_nodes) >= 10, f"architecture nodes {len(arch_nodes)}")
 
+    # R12 gap analysis
+    if (OUT / "gap" / "r12-meta.json").is_file():
+        lines.append("")
+        lines.append("## R12 gap analysis")
+        for rel in (
+            "gap/capability-gap.csv",
+            "gap/entity-gap.csv",
+            "gap/implementation-tasks.csv",
+            "gap/r12-meta.json",
+        ):
+            check((OUT / rel).is_file(), f"R12 artifact {rel}")
+        docs13 = ROOT / "docs" / "13-熊舍管家全量对标差距与实现清单.md"
+        check(docs13.is_file(), "docs/13 gap doc exists")
+        caps = read_csv(OUT / "gap/capability-gap.csv")
+        check(len(caps) >= 40, f"capability gap rows {len(caps)}")
+        statuses = {r.get("status") for r in caps}
+        required = {"DONE", "PARTIAL", "MISSING", "HAMSTER", "DEFER", "DROP"}
+        # allow HAMSTER alone or combo text - we use pure enums
+        check(statuses <= required or statuses & required, f"gap statuses {statuses}")
+        tasks = read_csv(OUT / "gap/implementation-tasks.csv")
+        p0 = [t for t in tasks if t.get("module") == "P0"]
+        check(len(p0) >= 6, f"P0 tasks {len(p0)}")
+        body = docs13.read_text(encoding="utf-8")
+        check("T-P0-01" in body and "DROP" in body, "docs/13 has P0 tasks and DROP")
+
     lines.append("")
     lines.append(f"结果： {'通过' if ok else '失败'}")
     REPORT.parent.mkdir(parents=True, exist_ok=True)

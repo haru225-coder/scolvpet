@@ -1,5 +1,5 @@
 宠舍管家全量逆向 R0/R1/R2 验证报告
-生成时间：2026-07-17T02:22:37+08:00
+生成时间：2026-07-17T02:26:04+08:00
 
 [OK] manifest exists: /Users/snowchan27/Documents/scolvpet/reverse-evidence/full/manifest.json
 [OK] frozen version: 2.15.0 (73)
@@ -162,5 +162,16 @@
 [OK] R11 er nodes 63
 [OK] ER nodes traceable (0 bad)
 [OK] architecture nodes 12
+
+## R12 gap analysis
+[OK] R12 artifact gap/capability-gap.csv
+[OK] R12 artifact gap/entity-gap.csv
+[OK] R12 artifact gap/implementation-tasks.csv
+[OK] R12 artifact gap/r12-meta.json
+[OK] docs/13 gap doc exists
+[OK] capability gap rows 59
+[OK] gap statuses {'DROP', 'DEFER', 'DONE', 'HAMSTER', 'PARTIAL', 'MISSING'}
+[OK] P0 tasks 8
+[OK] docs/13 has P0 tasks and DROP
 
 结果： 通过
