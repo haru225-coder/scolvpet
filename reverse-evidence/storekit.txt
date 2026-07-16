@@ -1,0 +1,123 @@
+{
+  "identifier" => "C5E8F7D2"
+  "nonRenewingSubscriptions" => [
+  ]
+  "products" => [
+    0 => {
+      "displayPrice" => "18"
+      "familyShareable" => false
+      "internalID" => "6736907182"
+      "localizations" => [
+        0 => {
+          "description" => "1个月工具会员"
+          "displayName" => "1个月工具会员"
+          "locale" => "zh_CN"
+        }
+      ]
+      "productID" => "com.cattery.tool_member.1month"
+      "referenceName" => "Tool Member 1 Month"
+      "type" => "Consumable"
+    }
+    1 => {
+      "displayPrice" => "128"
+      "familyShareable" => false
+      "internalID" => "6736907183"
+      "localizations" => [
+        0 => {
+          "description" => "1年工具会员"
+          "displayName" => "1年工具会员"
+          "locale" => "zh_CN"
+        }
+      ]
+      "productID" => "com.cattery.tool_member.1year"
+      "referenceName" => "Tool Member 1 Year"
+      "type" => "Consumable"
+    }
+    2 => {
+      "displayPrice" => "348"
+      "familyShareable" => false
+      "internalID" => "6736907184"
+      "localizations" => [
+        0 => {
+          "description" => "3年工具会员"
+          "displayName" => "3年工具会员"
+          "locale" => "zh_CN"
+        }
+      ]
+      "productID" => "com.cattery.tool_member.3year"
+      "referenceName" => "Tool Member 3 Years"
+      "type" => "Consumable"
+    }
+    3 => {
+      "displayPrice" => "498"
+      "familyShareable" => false
+      "internalID" => "6736907185"
+      "localizations" => [
+        0 => {
+          "description" => "5年工具会员"
+          "displayName" => "5年工具会员"
+          "locale" => "zh_CN"
+        }
+      ]
+      "productID" => "com.cattery.tool_member.5year"
+      "referenceName" => "Tool Member 5 Years"
+      "type" => "Consumable"
+    }
+    4 => {
+      "displayPrice" => "50"
+      "familyShareable" => false
+      "internalID" => "6736907186"
+      "localizations" => [
+        0 => {
+          "description" => "1个月大会员"
+          "displayName" => "1个月大会员"
+          "locale" => "zh_CN"
+        }
+      ]
+      "productID" => "com.cattery.premium_member.1month"
+      "referenceName" => "Premium Member 1 Month"
+      "type" => "Consumable"
+    }
+    5 => {
+      "displayPrice" => "218"
+      "familyShareable" => false
+      "internalID" => "6736907187"
+      "localizations" => [
+        0 => {
+          "description" => "1年大会员"
+          "displayName" => "1年大会员"
+          "locale" => "zh_CN"
+        }
+      ]
+      "productID" => "com.cattery.premium_member.1year"
+      "referenceName" => "Premium Member 1 Year"
+      "type" => "Consumable"
+    }
+    6 => {
+      "displayPrice" => "428"
+      "familyShareable" => false
+      "internalID" => "6736907188"
+      "localizations" => [
+        0 => {
+          "description" => "3年大会员"
+          "displayName" => "3年大会员"
+          "locale" => "zh_CN"
+        }
+      ]
+      "productID" => "com.cattery.premium_member.3year"
+      "referenceName" => "Premium Member 3 Years"
+      "type" => "Consumable"
+    }
+  ]
+  "settings" => {
+    "_applicationInternalID" => "6736907181"
+    "_developerTeamID" => "YOUR_TEAM_ID"
+    "_lastSynchronizedDate" => 761186710
+  }
+  "subscriptionGroups" => [
+  ]
+  "version" => {
+    "major" => 3
+    "minor" => 0
+  }
+}

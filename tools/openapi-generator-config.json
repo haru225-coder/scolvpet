@@ -1,0 +1,17 @@
+{
+  "generatorName": "dart-dio",
+  "inputSpec": "specs/api/openapi.yaml",
+  "output": "generated/dart/scolvpet_api",
+  "additionalProperties": {
+    "pubName": "scolvpet_api",
+    "pubVersion": "1.0.0",
+    "useEnumExtension": true,
+    "serializationLibrary": "json_serializable"
+  },
+  "globalProperty": {
+    "models": "",
+    "apis": "",
+    "supportingFiles": ""
+  }
+}
+

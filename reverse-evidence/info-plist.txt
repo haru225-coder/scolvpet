@@ -1,0 +1,303 @@
+{
+  "BuildMachineOSBuild" => "25A362"
+  "CADisableMinimumFrameDurationOnPhone" => true
+  "CFBundleDevelopmentRegion" => "zh_CN"
+  "CFBundleDisplayName" => "宠舍管家"
+  "CFBundleExecutable" => "Runner"
+  "CFBundleIcons" => {
+    "CFBundlePrimaryIcon" => {
+      "CFBundleIconFiles" => [
+        0 => "AppIcon60x60"
+      ]
+      "CFBundleIconName" => "AppIcon"
+    }
+  }
+  "CFBundleIcons~ipad" => {
+    "CFBundlePrimaryIcon" => {
+      "CFBundleIconFiles" => [
+        0 => "AppIcon60x60"
+        1 => "AppIcon76x76"
+      ]
+      "CFBundleIconName" => "AppIcon"
+    }
+  }
+  "CFBundleIdentifier" => "com.fanmeowy.catterytool"
+  "CFBundleInfoDictionaryVersion" => "6.0"
+  "CFBundleLocalizations" => [
+    0 => "en"
+  ]
+  "CFBundleName" => "cattery_flutter"
+  "CFBundlePackageType" => "APPL"
+  "CFBundleShortVersionString" => "2.15.0"
+  "CFBundleSignature" => "????"
+  "CFBundleSupportedPlatforms" => [
+    0 => "iPhoneOS"
+  ]
+  "CFBundleURLTypes" => [
+    0 => {
+      "CFBundleTypeRole" => "Editor"
+      "CFBundleURLName" => "alipay"
+      "CFBundleURLSchemes" => [
+        0 => "catterytool"
+      ]
+    }
+    1 => {
+      "CFBundleTypeRole" => "Editor"
+      "CFBundleURLName" => "com.fanmeowy.catterytool"
+      "CFBundleURLSchemes" => [
+        0 => "fanmeowy"
+      ]
+    }
+  ]
+  "CFBundleVersion" => "73"
+  "DTAppStoreToolsBuild" => "17F106"
+  "DTCompiler" => "com.apple.compilers.llvm.clang.1_0"
+  "DTPlatformBuild" => "23A339"
+  "DTPlatformName" => "iphoneos"
+  "DTPlatformVersion" => "26.0"
+  "DTSDKBuild" => "23A339"
+  "DTSDKName" => "iphoneos26.0"
+  "DTXcode" => "2601"
+  "DTXcodeBuild" => "17A400"
+  "io.flutter.embedded_views_preview" => true
+  "ITSDRMScheme" => "v2"
+  "KSAdSDKAppID" => "5785583"
+  "LSApplicationQueriesSchemes" => [
+    0 => "weixinULAPI"
+    1 => "weixin"
+    2 => "wechat"
+    3 => "alipay"
+    4 => "alipays"
+    5 => "weixinURLParamsAPI"
+  ]
+  "LSRequiresIPhoneOS" => true
+  "MinimumOSVersion" => "18.0"
+  "NSAppTransportSecurity" => {
+    "NSAllowsArbitraryLoads" => true
+    "NSAllowsArbitraryLoadsInMedia" => true
+    "NSAllowsArbitraryLoadsInWebContent" => true
+    "NSAllowsLocalNetworking" => true
+  }
+  "NSBluetoothAlwaysUsageDescription" => "需要蓝牙连接厨房秤以记录数据"
+  "NSBluetoothPeripheralUsageDescription" => "需要蓝牙连接厨房秤以记录数据"
+  "NSBonjourServices" => [
+    0 => "_dartobservatory._tcp"
+  ]
+  "NSCameraUsageDescription" => "需要访问相机来拍摄宠物照片"
+  "NSLocalNetworkUsageDescription" => "用于在开发调试模式下连接 Flutter 工具进行热重载，正式版不会出现此提示"
+  "NSLocationWhenInUseUsageDescription" => "需要获取位置信息来记录宠物活动地点"
+  "NSMicrophoneUsageDescription" => "需要访问麦克风来录制音频"
+  "NSPhotoLibraryAddUsageDescription" => "需要相册权限来保存图片"
+  "NSPhotoLibraryUsageDescription" => "需要访问相册来选择宠物照片"
+  "NSUserTrackingUsageDescription" => "为了给您提供更好的广告体验和个性化内容"
+  "SKAdNetworkItems" => [
+    0 => {
+      "SKAdNetworkIdentifier" => "238da6jt44.skadnetwork"
+    }
+    1 => {
+      "SKAdNetworkIdentifier" => "22mmun2rn5.skadnetwork"
+    }
+    2 => {
+      "SKAdNetworkIdentifier" => "bbfm4q6b7s.skadnetwork"
+    }
+    3 => {
+      "SKAdNetworkIdentifier" => "w9q455wk68.skadnetwork"
+    }
+    4 => {
+      "SKAdNetworkIdentifier" => "hs6bdukanm.skadnetwork"
+    }
+    5 => {
+      "SKAdNetworkIdentifier" => "c6k4g5qg8m.skadnetwork"
+    }
+    6 => {
+      "SKAdNetworkIdentifier" => "4fzdc2evr5.skadnetwork"
+    }
+    7 => {
+      "SKAdNetworkIdentifier" => "4pfyvq9l8r.skadnetwork"
+    }
+    8 => {
+      "SKAdNetworkIdentifier" => "v72qych5uu.skadnetwork"
+    }
+    9 => {
+      "SKAdNetworkIdentifier" => "ludvb6z3bs.skadnetwork"
+    }
+    10 => {
+      "SKAdNetworkIdentifier" => "wg4vff78zm.skadnetwork"
+    }
+    11 => {
+      "SKAdNetworkIdentifier" => "cp8zw746q7.skadnetwork"
+    }
+    12 => {
+      "SKAdNetworkIdentifier" => "3sh42y64q3.skadnetwork"
+    }
+    13 => {
+      "SKAdNetworkIdentifier" => "3rd42ekr43.skadnetwork"
+    }
+    14 => {
+      "SKAdNetworkIdentifier" => "f38h382jlk.skadnetwork"
+    }
+    15 => {
+      "SKAdNetworkIdentifier" => "424m5254lk.skadnetwork"
+    }
+    16 => {
+      "SKAdNetworkIdentifier" => "yclnxrl5pm.skadnetwork"
+    }
+    17 => {
+      "SKAdNetworkIdentifier" => "t38b2kh725.skadnetwork"
+    }
+    18 => {
+      "SKAdNetworkIdentifier" => "7ug5zh24hu.skadnetwork"
+    }
+    19 => {
+      "SKAdNetworkIdentifier" => "9rd848q2bz.skadnetwork"
+    }
+    20 => {
+      "SKAdNetworkIdentifier" => "n6fk4nfna4.skadnetwork"
+    }
+    21 => {
+      "SKAdNetworkIdentifier" => "kbd757ywx3.skadnetwork"
+    }
+    22 => {
+      "SKAdNetworkIdentifier" => "9t245vhmpl.skadnetwork"
+    }
+    23 => {
+      "SKAdNetworkIdentifier" => "2u9pt9hc89.skadnetwork"
+    }
+    24 => {
+      "SKAdNetworkIdentifier" => "8s468mfl3y.skadnetwork"
+    }
+    25 => {
+      "SKAdNetworkIdentifier" => "av6w8kgt66.skadnetwork"
+    }
+    26 => {
+      "SKAdNetworkIdentifier" => "klf5c3l5u5.skadnetwork"
+    }
+    27 => {
+      "SKAdNetworkIdentifier" => "ppxm28t8ap.skadnetwork"
+    }
+    28 => {
+      "SKAdNetworkIdentifier" => "424m5254lk.skadnetwork"
+    }
+    29 => {
+      "SKAdNetworkIdentifier" => "578prtvx9j.skadnetwork"
+    }
+    30 => {
+      "SKAdNetworkIdentifier" => "4468km3ulz.skadnetwork"
+    }
+    31 => {
+      "SKAdNetworkIdentifier" => "e5fvkxwrpn.skadnetwork"
+    }
+    32 => {
+      "SKAdNetworkIdentifier" => "8c4e2ghe7u.skadnetwork"
+    }
+    33 => {
+      "SKAdNetworkIdentifier" => "zq492l623r.skadnetwork"
+    }
+    34 => {
+      "SKAdNetworkIdentifier" => "3qcr597p9d.skadnetwork"
+    }
+  ]
+  "UIApplicationSupportsIndirectInputEvents" => true
+  "UIDeviceFamily" => [
+    0 => 1
+    1 => 2
+  ]
+  "UILaunchStoryboardName" => "LaunchScreen"
+  "UIMainStoryboardFile" => "Main"
+  "UIRequiredDeviceCapabilities" => [
+    0 => "arm64"
+  ]
+  "UISupportedDevices" => [
+    0 => "MacFamily20,1"
+    1 => "RealityFamily22,1"
+    2 => "iPad11,1"
+    3 => "iPad11,2"
+    4 => "iPad11,3"
+    5 => "iPad11,4"
+    6 => "iPad11,6"
+    7 => "iPad11,7"
+    8 => "iPad12,1"
+    9 => "iPad12,2"
+    10 => "iPad13,1"
+    11 => "iPad13,10"
+    12 => "iPad13,11"
+    13 => "iPad13,16"
+    14 => "iPad13,17"
+    15 => "iPad13,18"
+    16 => "iPad13,19"
+    17 => "iPad13,2"
+    18 => "iPad13,4"
+    19 => "iPad13,5"
+    20 => "iPad13,6"
+    21 => "iPad13,7"
+    22 => "iPad13,8"
+    23 => "iPad13,9"
+    24 => "iPad14,1"
+    25 => "iPad14,10"
+    26 => "iPad14,11"
+    27 => "iPad14,2"
+    28 => "iPad14,3-A"
+    29 => "iPad14,3-B"
+    30 => "iPad14,4-A"
+    31 => "iPad14,4-B"
+    32 => "iPad14,5-A"
+    33 => "iPad14,5-B"
+    34 => "iPad14,6-A"
+    35 => "iPad14,6-B"
+    36 => "iPad14,8"
+    37 => "iPad14,9"
+    38 => "iPad15,3"
+    39 => "iPad15,4"
+    40 => "iPad15,5"
+    41 => "iPad15,6"
+    42 => "iPad15,7"
+    43 => "iPad15,8"
+    44 => "iPad16,1"
+    45 => "iPad16,10"
+    46 => "iPad16,11"
+    47 => "iPad16,2"
+    48 => "iPad16,3-A"
+    49 => "iPad16,3-B"
+    50 => "iPad16,4-A"
+    51 => "iPad16,4-B"
+    52 => "iPad16,5-A"
+    53 => "iPad16,5-B"
+    54 => "iPad16,6-A"
+    55 => "iPad16,6-B"
+    56 => "iPad16,8"
+    57 => "iPad16,9"
+    58 => "iPad17,1-A"
+    59 => "iPad17,1-B"
+    60 => "iPad17,2-A"
+    61 => "iPad17,2-B"
+    62 => "iPad17,3-A"
+    63 => "iPad17,3-B"
+    64 => "iPad17,4-A"
+    65 => "iPad17,4-B"
+    66 => "iPad7,11"
+    67 => "iPad7,12"
+    68 => "iPad8,1"
+    69 => "iPad8,10"
+    70 => "iPad8,11"
+    71 => "iPad8,12"
+    72 => "iPad8,2"
+    73 => "iPad8,3"
+    74 => "iPad8,4"
+    75 => "iPad8,5"
+    76 => "iPad8,6"
+    77 => "iPad8,7"
+    78 => "iPad8,8"
+    79 => "iPad8,9"
+  ]
+  "UISupportedInterfaceOrientations" => [
+    0 => "UIInterfaceOrientationPortrait"
+  ]
+  "UISupportedInterfaceOrientations~ipad" => [
+    0 => "UIInterfaceOrientationPortrait"
+    1 => "UIInterfaceOrientationPortraitUpsideDown"
+    2 => "UIInterfaceOrientationLandscapeLeft"
+    3 => "UIInterfaceOrientationLandscapeRight"
+  ]
+  "UmengAppkey" => "697123319a7f3764883b31a2"
+  "UmengChannel" => "App Store"
+}

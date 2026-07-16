@@ -1,0 +1,96 @@
+name: scolvpet-i1
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-api-web:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: scolvpet
+          POSTGRES_PASSWORD: scolvpet
+          POSTGRES_DB: scolvpet
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd="pg_isready -U scolvpet -d scolvpet"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: OpenAPI lint
+        run: make openapi-lint
+      - name: Migration source drift
+        run: make migration-drift
+      - name: Fresh schema and seed
+        env:
+          DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
+        run: make db-verify
+      - name: Service schema and seed
+        env:
+          DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
+        run: make db-seed
+      - name: API unit tests
+        run: make api-test
+      - name: API I1 smoke and integration checks
+        env:
+          DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
+        run: make smoke
+      - name: Outbox claim and retry checks
+        env:
+          DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
+        run: make outbox-test
+      - name: Web lint test build
+        run: make web-lint web-test web-build
+
+  generated-client:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.12.0'
+      - name: Generated dart-dio client drift
+        run: make client-drift
+      - name: Generated client analysis
+        run: dart analyze generated/dart/scolvpet_api
+
+  flutter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.0'
+          channel: stable
+      - name: Flutter dependencies
+        timeout-minutes: 20
+        run: make flutter-pub-get
+      - name: Flutter analyze
+        timeout-minutes: 20
+        run: make flutter-analyze
+      - name: Flutter tests
+        timeout-minutes: 20
+        run: make flutter-test
+      - name: Android debug build
+        timeout-minutes: 35
+        run: make flutter-build-android

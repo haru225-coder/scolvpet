@@ -1,0 +1,1858 @@
+Enum "dictionary_scope" {
+  "system"
+  "owner"
+}
+
+Enum "account_status" {
+  "active"
+  "suspended"
+  "closed"
+}
+
+Enum "organization_mode" {
+  "personal"
+  "professional"
+}
+
+Enum "species_rule_status" {
+  "draft"
+  "published"
+  "retired"
+}
+
+Enum "sex_code" {
+  "male"
+  "female"
+  "unknown"
+}
+
+Enum "hamster_source_type" {
+  "born_here"
+  "introduced"
+  "customer"
+  "imported"
+}
+
+Enum "hamster_lifecycle_status" {
+  "active"
+  "transferred"
+  "retired"
+  "deceased"
+}
+
+Enum "hamster_breeding_status" {
+  "candidate"
+  "active"
+  "resting"
+  "retired"
+}
+
+Enum "enclosure_state" {
+  "vacant"
+  "occupied_single"
+  "pairing_temp"
+  "gestation"
+  "dam_with_litter"
+  "isolation"
+  "cleaning_due"
+  "disabled"
+}
+
+Enum "cleanliness_state" {
+  "clean"
+  "partial_due"
+  "full_due"
+}
+
+Enum "enclosure_stay_purpose" {
+  "single"
+  "pairing_temp"
+  "gestation"
+  "isolation"
+  "dam_with_litter"
+}
+
+Enum "enclosure_cleaning_type" {
+  "partial"
+  "full"
+  "disinfection"
+}
+
+Enum "breeding_plan_state" {
+  "draft"
+  "pair_ready"
+  "pairing"
+  "post_pair"
+  "gestation"
+  "litter_nursing"
+  "weaning_due"
+  "sex_separation_due"
+  "individualizing"
+  "completed"
+  "no_litter_outcome"
+  "hold"
+  "unsuccessful"
+  "cancelled"
+}
+
+Enum "pairing_attempt_status" {
+  "active"
+  "separated"
+  "safety_hold"
+  "cancelled"
+}
+
+Enum "pairing_result" {
+  "effective"
+  "uncertain"
+  "ineffective"
+  "safety_stop"
+}
+
+Enum "mating_observation_type" {
+  "contact"
+  "chase"
+  "conflict"
+  "mating"
+  "separated"
+  "other"
+}
+
+Enum "severity_level" {
+  "info"
+  "low"
+  "medium"
+  "high"
+  "critical"
+}
+
+Enum "litter_state" {
+  "newborn"
+  "nursing"
+  "weaning_due"
+  "sexing_due"
+  "individualizing"
+  "closed"
+  "voided"
+}
+
+Enum "litter_origin" {
+  "breeding"
+  "import"
+}
+
+Enum "litter_count_event_type" {
+  "initial_alive"
+  "discovered"
+  "death"
+  "transferred_out"
+  "correction"
+}
+
+Enum "pup_profile_status" {
+  "unindividualized"
+  "individualized"
+  "voided"
+}
+
+Enum "pup_outcome_status" {
+  "alive"
+  "deceased"
+  "transferred_out"
+}
+
+Enum "relationship_evidence_type" {
+  "system"
+  "litter_inferred"
+  "manual"
+  "imported"
+  "document"
+  "dna"
+}
+
+Enum "relationship_status" {
+  "pending"
+  "accepted"
+  "rejected"
+  "superseded"
+}
+
+Enum "parent_role" {
+  "sire"
+  "dam"
+}
+
+Enum "relationship_assertion_kind" {
+  "parentage"
+  "litter_parent"
+  "litter_member"
+  "sibling"
+}
+
+Enum "relationship_subject_type" {
+  "hamster"
+  "litter"
+  "pup_identity"
+  "external_reference"
+}
+
+Enum "litter_member_type" {
+  "pup_identity"
+  "hamster"
+}
+
+Enum "measurement_source" {
+  "manual"
+  "bluetooth_scale"
+  "import"
+}
+
+Enum "weight_subject_type" {
+  "hamster"
+  "pup_identity"
+  "litter"
+}
+
+Enum "weight_measurement_kind" {
+  "individual"
+  "litter_total"
+  "litter_average"
+}
+
+Enum "health_subject_type" {
+  "hamster"
+  "pup_identity"
+  "litter"
+  "enclosure"
+}
+
+Enum "health_record_type" {
+  "daily_check"
+  "anomaly"
+  "medication"
+  "follow_up"
+  "isolation"
+  "death"
+}
+
+Enum "care_task_type" {
+  "pair_prep"
+  "pairing_timeout"
+  "separate_now"
+  "gestation_window_open"
+  "gestation_window_close"
+  "no_birth_review"
+  "litter_observation"
+  "pup_weight_check"
+  "pup_weight_drop"
+  "weaning_due"
+  "sex_separation_due"
+  "sex_recheck"
+  "profile_creation_due"
+  "cleaning"
+  "medication"
+  "follow_up"
+  "custom"
+}
+
+Enum "care_task_target_type" {
+  "organization"
+  "hamster"
+  "litter"
+  "enclosure"
+  "breeding_plan"
+  "pairing_attempt"
+  "pup_identity"
+}
+
+Enum "care_task_subject_type" {
+  "hamster"
+  "pup_identity"
+}
+
+Enum "task_priority" {
+  "low"
+  "normal"
+  "high"
+  "urgent"
+  "critical"
+}
+
+Enum "task_status" {
+  "pending"
+  "in_progress"
+  "completed"
+  "snoozed"
+  "cancelled"
+  "superseded"
+}
+
+Enum "delivery_channel" {
+  "in_app"
+  "local_notification"
+  "app_push"
+  "service_account"
+}
+
+Enum "delivery_status" {
+  "queued"
+  "sending"
+  "succeeded"
+  "failed"
+  "read"
+  "cancelled"
+}
+
+Enum "outbox_status" {
+  "pending"
+  "processing"
+  "published"
+  "failed"
+  "dead_letter"
+}
+
+Enum "async_job_type" {
+  "import"
+  "export"
+  "backup"
+  "media_transform"
+  "usage_snapshot"
+  "share_render"
+}
+
+Enum "async_job_status" {
+  "queued"
+  "running"
+  "succeeded"
+  "failed"
+  "cancelled"
+}
+
+Enum "media_kind" {
+  "image"
+  "video"
+  "document"
+}
+
+Enum "media_upload_status" {
+  "pending_upload"
+  "uploaded"
+  "processing"
+  "ready"
+  "failed"
+  "quarantined"
+}
+
+Enum "media_variant_kind" {
+  "thumbnail"
+  "preview"
+  "image_edit"
+  "video_transcode"
+  "video_cover"
+  "share_render"
+}
+
+Enum "media_variant_status" {
+  "queued"
+  "processing"
+  "ready"
+  "failed"
+}
+
+Enum "media_target_type" {
+  "hamster"
+  "litter"
+  "health_record"
+  "mating_observation"
+  "pairing_attempt"
+  "breeding_plan"
+  "enclosure"
+  "domain_event"
+  "share_page"
+}
+
+Enum "media_link_role" {
+  "cover"
+  "gallery"
+  "attachment"
+  "timeline"
+  "share"
+}
+
+Enum "share_target_type" {
+  "hamster"
+  "litter"
+}
+
+Enum "import_template_type" {
+  "hamster"
+  "enclosure"
+  "weight"
+}
+
+Enum "import_job_status" {
+  "uploaded"
+  "mapping"
+  "prechecking"
+  "ready"
+  "applying"
+  "succeeded"
+  "partially_succeeded"
+  "failed"
+  "cancelled"
+}
+
+Enum "import_row_status" {
+  "pending"
+  "valid"
+  "invalid"
+  "imported"
+  "skipped"
+  "failed"
+}
+
+Enum "import_issue_severity" {
+  "warning"
+  "error"
+}
+
+Enum "export_format" {
+  "csv"
+  "json"
+  "pdf"
+  "zip"
+}
+
+Enum "export_scope" {
+  "hamsters"
+  "enclosures"
+  "breeding"
+  "litters"
+  "weights"
+  "health"
+  "pedigree"
+  "full"
+}
+
+Enum "backup_kind" {
+  "full"
+  "incremental"
+}
+
+Enum "entitlement_value_type" {
+  "boolean"
+  "integer"
+  "decimal"
+  "json"
+}
+
+Enum "usage_metric" {
+  "active_hamsters"
+  "active_litters"
+  "enclosures"
+  "media_bytes"
+  "video_minutes"
+  "backup_bytes"
+}
+
+Enum "idempotency_status" {
+  "processing"
+  "completed"
+  "failed"
+}
+
+Table "account" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "phone_country_code" varchar(8) [not null, default: '+86']
+  "phone_number" varchar(32) [not null]
+  "status" account_status [not null, default: 'active']
+  "display_name" varchar(120)
+  "locale" varchar(16) [not null, default: 'zh-CN']
+  "timezone" varchar(64) [not null, default: 'Asia/Shanghai']
+  "version" integer [not null, default: 1]
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (phone_country_code, phone_number) [unique, name: "ux_account_phone_active"]
+  }
+}
+
+Table "organization" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "code" varchar(64) [not null]
+  "name" varchar(160) [not null]
+  "mode" organization_mode [not null, default: 'personal']
+  "timezone" varchar(64) [not null, default: 'Asia/Shanghai']
+  "weight_unit" varchar(8) [not null, default: 'g']
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_organization_owner_id_id"]
+    (owner_id, code) [unique, name: "ux_organization_owner_code_active"]
+  }
+}
+
+Table "species_rule_version" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid
+  "scope" dictionary_scope [not null]
+  "copied_from_id" uuid
+  "species_code" varchar(64) [not null]
+  "variety_scope" jsonb [not null, default: `'[]'::jsonb`]
+  "display_name" varchar(160) [not null]
+  "version_no" integer [not null]
+  "status" species_rule_status [not null, default: 'draft']
+  "gestation_min_days" integer [not null]
+  "gestation_max_days" integer [not null]
+  "pairing_max_minutes" integer
+  "weaning_target_days" integer [not null]
+  "sexing_target_days" integer [not null]
+  "separation_target_days" integer [not null]
+  "post_breeding_rest_days" integer
+  "profile_creation_deadline_days" integer
+  "weight_reference" jsonb [not null, default: `'{}'::jsonb`]
+  "reminder_rules" jsonb [not null, default: `'{}'::jsonb`]
+  "source_note" text [not null]
+  "checksum" varchar(128) [not null]
+  "effective_at" timestamptz [not null]
+  "retired_at" timestamptz
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (species_code, version_no) [unique, name: "ux_species_rule_system_version"]
+    (owner_id, species_code, version_no) [unique, name: "ux_species_rule_owner_version"]
+  }
+}
+
+Table "domain_event" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "aggregate_type" varchar(80) [not null]
+  "aggregate_id" uuid [not null]
+  "event_type" varchar(120) [not null]
+  "event_version" integer [not null]
+  "actor_id" uuid
+  "occurred_at" timestamptz [not null]
+  "recorded_at" timestamptz [not null, default: `now()`]
+  "payload" jsonb [not null, default: `'{}'::jsonb`]
+  "metadata" jsonb [not null, default: `'{}'::jsonb`]
+  "idempotency_key" varchar(160)
+  "correlation_id" uuid
+  "causation_id" uuid
+  "corrects_event_id" uuid
+  "reverted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_domain_event_owner_id_id"]
+    (owner_id, aggregate_type, aggregate_id, event_version) [unique, name: "uq_domain_event_aggregate_version"]
+    (owner_id, idempotency_key) [unique, name: "ux_domain_event_idempotency"]
+    (owner_id, aggregate_id, event_type) [unique, name: "ux_domain_event_confirm_birth"]
+    (owner_id, aggregate_type, aggregate_id, occurred_at) [name: "ix_domain_event_aggregate_time"]
+  }
+}
+
+Table "outbox_message" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "domain_event_id" uuid [not null]
+  "topic" varchar(160) [not null]
+  "partition_key" varchar(160) [not null]
+  "payload" jsonb [not null]
+  "status" outbox_status [not null, default: 'pending']
+  "priority" smallint [not null, default: 100]
+  "available_at" timestamptz [not null, default: `now()`]
+  "attempt_count" integer [not null, default: 0]
+  "max_attempts" integer [not null, default: 12]
+  "locked_at" timestamptz
+  "locked_by" varchar(160)
+  "published_at" timestamptz
+  "last_error" text
+  "version" integer [not null, default: 1]
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_outbox_message_owner_id_id"]
+    (owner_id, domain_event_id) [unique, name: "uq_outbox_domain_event"]
+    (status, available_at, priority, created_at) [name: "ix_outbox_claim"]
+  }
+}
+
+Table "async_job" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid
+  "job_type" async_job_type [not null]
+  "status" async_job_status [not null, default: 'queued']
+  "priority" smallint [not null, default: 100]
+  "progress_percent" numeric(5,2) [not null, default: 0]
+  "request_payload" jsonb [not null, default: `'{}'::jsonb`]
+  "result_payload" jsonb [not null, default: `'{}'::jsonb`]
+  "idempotency_key" varchar(160) [not null]
+  "attempt_count" integer [not null, default: 0]
+  "max_attempts" integer [not null, default: 5]
+  "available_at" timestamptz [not null, default: `now()`]
+  "started_at" timestamptz
+  "finished_at" timestamptz
+  "locked_at" timestamptz
+  "locked_by" varchar(160)
+  "error_code" varchar(120)
+  "error_detail" text
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_async_job_owner_id_id"]
+    (owner_id, idempotency_key) [unique, name: "uq_async_job_idempotency"]
+    (status, available_at, priority, created_at) [name: "ix_async_job_claim"]
+  }
+}
+
+Table "media_asset" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "kind" media_kind [not null]
+  "status" media_upload_status [not null, default: 'pending_upload']
+  "original_object_key" text [not null]
+  "original_filename" varchar(512)
+  "mime_type" varchar(160) [not null]
+  "byte_size" bigint [not null]
+  "width_px" integer
+  "height_px" integer
+  "duration_ms" bigint
+  "sha256" varchar(64) [not null]
+  "captured_at" timestamptz
+  "metadata" jsonb [not null, default: `'{}'::jsonb`]
+  "failure_code" varchar(120)
+  "failure_detail" text
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_media_asset_owner_id_id"]
+    (owner_id, original_object_key) [unique, name: "ux_media_asset_object_key_active"]
+    (owner_id, kind, created_at) [name: "ix_media_asset_owner_kind_time"]
+  }
+}
+
+Table "media_variant" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "media_asset_id" uuid [not null]
+  "async_job_id" uuid
+  "variant_kind" media_variant_kind [not null]
+  "variant_key" varchar(120) [not null]
+  "status" media_variant_status [not null, default: 'queued']
+  "object_key" text
+  "mime_type" varchar(160)
+  "byte_size" bigint
+  "width_px" integer
+  "height_px" integer
+  "duration_ms" bigint
+  "codec" varchar(80)
+  "bitrate_kbps" integer
+  "sha256" varchar(64)
+  "edit_recipe" jsonb [not null, default: `'{}'::jsonb`]
+  "failure_code" varchar(120)
+  "failure_detail" text
+  "version" integer [not null, default: 1]
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_media_variant_owner_id_id"]
+    (owner_id, media_asset_id, variant_kind, variant_key) [unique, name: "ux_media_variant_key_active"]
+    (owner_id, object_key) [unique, name: "ux_media_variant_object_key_active"]
+  }
+}
+
+Table "enclosure" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "code" varchar(80) [not null]
+  "rack_code" varchar(80)
+  "level_code" varchar(80)
+  "capacity" integer [not null, default: 1]
+  "state" enclosure_state [not null, default: 'vacant']
+  "cleanliness" cleanliness_state [not null, default: 'clean']
+  "size_mm" jsonb [not null, default: `'{}'::jsonb`]
+  "equipment" jsonb [not null, default: `'{}'::jsonb`]
+  "last_cleaned_at" timestamptz
+  "disabled_reason" text
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_enclosure_owner_id_id"]
+    (owner_id, code) [unique, name: "ux_enclosure_owner_code_active"]
+    (owner_id, rack_code, level_code, code) [name: "ix_enclosure_rack_level"]
+  }
+}
+
+Table "hamster" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "internal_code" varchar(80) [not null]
+  "name" varchar(160)
+  "species_rule_version_id" uuid [not null]
+  "variety_code" varchar(80)
+  "sex" sex_code [not null, default: 'unknown']
+  "sex_confidence" numeric(5,4)
+  "birth_date" date
+  "source_type" hamster_source_type [not null]
+  "lifecycle_status" hamster_lifecycle_status [not null, default: 'active']
+  "breeding_status" hamster_breeding_status [not null, default: 'candidate']
+  "current_enclosure_id" uuid
+  "phenotype" jsonb [not null, default: `'{}'::jsonb`]
+  "tags" jsonb [not null, default: `'[]'::jsonb`]
+  "notes" text
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_hamster_owner_id_id"]
+    (owner_id, internal_code) [unique, name: "ux_hamster_internal_code_active"]
+    (owner_id, lifecycle_status, breeding_status, sex, variety_code) [name: "ix_hamster_filters"]
+    (owner_id, current_enclosure_id) [name: "ix_hamster_current_enclosure"]
+  }
+}
+
+Table "breeding_plan" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "name" varchar(160)
+  "sire_id" uuid [not null]
+  "dam_id" uuid [not null]
+  "species_rule_version_id" uuid [not null]
+  "state" breeding_plan_state [not null, default: 'draft']
+  "planned_pairing_at" timestamptz
+  "mating_baseline_at" timestamptz
+  "expected_birth_start" date
+  "expected_birth_end" date
+  "actual_birth_at" timestamptz
+  "birth_result_alive_count" integer
+  "birth_result_other_count" integer
+  "birth_result_reason" text
+  "birth_dam_condition" jsonb [not null, default: `'{}'::jsonb`]
+  "objective_traits" jsonb [not null, default: `'{}'::jsonb`]
+  "kinship_check" jsonb [not null, default: `'{}'::jsonb`]
+  "eligibility_override_reason" text
+  "date_correction_note" text
+  "notes" text
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_breeding_plan_owner_id_id"]
+    (owner_id, state, planned_pairing_at) [name: "ix_breeding_plan_state_time"]
+  }
+}
+
+Table "pairing_attempt" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "breeding_plan_id" uuid [not null]
+  "attempt_no" integer [not null]
+  "sire_id" uuid [not null]
+  "dam_id" uuid [not null]
+  "pairing_enclosure_id" uuid [not null]
+  "status" pairing_attempt_status [not null, default: 'active']
+  "started_at" timestamptz [not null]
+  "separation_deadline" timestamptz [not null]
+  "ended_at" timestamptz
+  "separated_at" timestamptz
+  "result" pairing_result
+  "conflict_level" severity_level
+  "sire_destination_enclosure_id" uuid
+  "dam_destination_enclosure_id" uuid
+  "evidence_note" text
+  "notes" text
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_pairing_attempt_owner_id_id"]
+    (owner_id, breeding_plan_id, attempt_no) [unique, name: "uq_pairing_attempt_sequence"]
+    (owner_id, breeding_plan_id) [unique, name: "ux_pairing_attempt_active_plan"]
+    (owner_id, sire_id, dam_id, status) [name: "ix_pairing_attempt_participants"]
+  }
+}
+
+Table "enclosure_stay" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "enclosure_id" uuid [not null]
+  "hamster_id" uuid [not null]
+  "pairing_attempt_id" uuid
+  "purpose" enclosure_stay_purpose [not null]
+  "started_at" timestamptz [not null]
+  "ended_at" timestamptz
+  "operator_id" uuid [not null]
+  "reason" text
+  "correction_note" text
+  "version" integer [not null, default: 1]
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_enclosure_stay_owner_id_id"]
+    (owner_id, enclosure_id, `tstzrange(started_at,ended_at,'[)')`) [type: gist, name: "ix_enclosure_stay_enclosure_period"]
+    (owner_id, hamster_id, `tstzrange(started_at,ended_at,'[)')`) [type: gist, name: "ix_enclosure_stay_hamster_period"]
+  }
+}
+
+Table "enclosure_cleaning_record" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "enclosure_id" uuid [not null]
+  "cleaning_type" enclosure_cleaning_type [not null]
+  "performed_at" timestamptz [not null]
+  "operator_id" uuid [not null]
+  "source_event_id" uuid
+  "supplies" jsonb [not null, default: `'{}'::jsonb`]
+  "notes" text
+  "corrects_cleaning_record_id" uuid
+  "correction_reason" text
+  "created_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_enclosure_cleaning_record_owner_id_id"]
+    (owner_id, enclosure_id, performed_at) [name: "ix_enclosure_cleaning_time"]
+  }
+}
+
+Table "mating_observation" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "pairing_attempt_id" uuid [not null]
+  "observed_at" timestamptz [not null]
+  "observation_type" mating_observation_type [not null]
+  "duration_seconds" integer
+  "severity" severity_level
+  "confidence" numeric(5,4)
+  "note" text
+  "operator_id" uuid [not null]
+  "version" integer [not null, default: 1]
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_mating_observation_owner_id_id"]
+    (owner_id, pairing_attempt_id, observed_at) [name: "ix_mating_observation_attempt_time"]
+  }
+}
+
+Table "litter" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "breeding_plan_id" uuid
+  "origin" litter_origin [not null, default: 'breeding']
+  "code" varchar(80) [not null]
+  "state" litter_state [not null, default: 'newborn']
+  "born_at" timestamptz
+  "enclosure_id" uuid
+  "dam_condition" jsonb [not null, default: `'{}'::jsonb`]
+  "initial_alive_count" integer [not null, default: 0]
+  "initial_other_count" integer [not null, default: 0]
+  "discovered_count" integer [not null, default: 0]
+  "deceased_count" integer [not null, default: 0]
+  "transferred_out_count" integer [not null, default: 0]
+  "correction_delta" integer [not null, default: 0]
+  "current_managed_count" integer [not null, default: 0]
+  "unindividualized_alive_count" integer [not null, default: 0]
+  "individualized_alive_count" integer [not null, default: 0]
+  "weaning_completed_at" timestamptz
+  "sex_separation_completed_at" timestamptz
+  "reconciled_at" timestamptz
+  "notes" text
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_litter_owner_id_id"]
+    (owner_id, code) [unique, name: "ux_litter_owner_code_active"]
+    (owner_id, breeding_plan_id) [unique, name: "ux_litter_one_effective_per_plan"]
+    (owner_id, state, born_at) [name: "ix_litter_state_born_at"]
+  }
+}
+
+Table "pup_identity" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "litter_id" uuid [not null]
+  "temporary_code" varchar(80) [not null]
+  "sex" sex_code [not null, default: 'unknown']
+  "sex_confidence" numeric(5,4)
+  "profile_status" pup_profile_status [not null, default: 'unindividualized']
+  "outcome_status" pup_outcome_status [not null, default: 'alive']
+  "weaned_at" timestamptz
+  "current_enclosure_id" uuid
+  "individualized_hamster_id" uuid
+  "phenotype_summary" jsonb [not null, default: `'{}'::jsonb`]
+  "destination_code" varchar(80)
+  "status_reason" text
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_pup_identity_owner_id_id"]
+    (owner_id, litter_id, temporary_code) [unique, name: "ux_pup_identity_temp_code_active"]
+    (owner_id, individualized_hamster_id) [unique, name: "ux_pup_identity_hamster_one_to_one"]
+    (owner_id, litter_id, profile_status, outcome_status) [name: "ix_pup_identity_litter_status"]
+  }
+}
+
+Table "relationship_assertion" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "assertion_kind" relationship_assertion_kind [not null]
+  "subject_type" relationship_subject_type [not null]
+  "subject_id" uuid
+  "related_type" relationship_subject_type [not null]
+  "related_id" uuid
+  "relationship_role" varchar(80)
+  "raw_reference" jsonb [not null, default: `'{}'::jsonb`]
+  "evidence_type" relationship_evidence_type [not null]
+  "evidence_payload" jsonb [not null, default: `'{}'::jsonb`]
+  "confidence" numeric(5,4)
+  "status" relationship_status [not null, default: 'pending']
+  "valid_from" timestamptz [not null, default: `now()`]
+  "valid_to" timestamptz
+  "corrects_assertion_id" uuid
+  "review_note" text
+  "reviewed_by" uuid
+  "reviewed_at" timestamptz
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_relationship_assertion_owner_id_id"]
+    (owner_id, status, assertion_kind, created_at) [name: "ix_relationship_assertion_review"]
+  }
+}
+
+Table "pedigree_parentage" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "parent_id" uuid [not null]
+  "child_id" uuid [not null]
+  "role" parent_role [not null]
+  "evidence_type" relationship_evidence_type [not null]
+  "evidence_payload" jsonb [not null, default: `'{}'::jsonb`]
+  "confidence" numeric(5,4) [not null, default: 1]
+  "status" relationship_status [not null, default: 'accepted']
+  "valid_from" timestamptz [not null, default: `now()`]
+  "valid_to" timestamptz
+  "relationship_assertion_id" uuid
+  "corrects_parentage_id" uuid
+  "correction_note" text
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_pedigree_parentage_owner_id_id"]
+    (owner_id, child_id, role) [unique, name: "ux_pedigree_parentage_active_role"]
+    (owner_id, parent_id, child_id) [name: "ix_pedigree_parentage_parent_active"]
+  }
+}
+
+Table "litter_parent" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "litter_id" uuid [not null]
+  "parent_id" uuid [not null]
+  "role" parent_role [not null]
+  "evidence_type" relationship_evidence_type [not null, default: 'litter_inferred']
+  "evidence_payload" jsonb [not null, default: `'{}'::jsonb`]
+  "confidence" numeric(5,4) [not null, default: 1]
+  "status" relationship_status [not null, default: 'accepted']
+  "valid_from" timestamptz [not null, default: `now()`]
+  "valid_to" timestamptz
+  "relationship_assertion_id" uuid
+  "corrects_litter_parent_id" uuid
+  "correction_note" text
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_litter_parent_owner_id_id"]
+    (owner_id, litter_id, role) [unique, name: "ux_litter_parent_active_role"]
+  }
+}
+
+Table "litter_member" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "litter_id" uuid [not null]
+  "member_type" litter_member_type [not null]
+  "pup_identity_id" uuid
+  "hamster_id" uuid
+  "origin_pup_identity_id" uuid
+  "evidence_type" relationship_evidence_type [not null, default: 'litter_inferred']
+  "evidence_payload" jsonb [not null, default: `'{}'::jsonb`]
+  "confidence" numeric(5,4) [not null, default: 1]
+  "status" relationship_status [not null, default: 'accepted']
+  "valid_from" timestamptz [not null, default: `now()`]
+  "valid_to" timestamptz
+  "relationship_assertion_id" uuid
+  "corrects_litter_member_id" uuid
+  "correction_note" text
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_litter_member_owner_id_id"]
+    (owner_id, pup_identity_id) [unique, name: "ux_litter_member_active_pup"]
+    (owner_id, hamster_id) [unique, name: "ux_litter_member_active_hamster"]
+    (owner_id, origin_pup_identity_id) [unique, name: "ux_litter_member_origin_pup"]
+  }
+}
+
+Table "litter_count_event" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "litter_id" uuid [not null]
+  "pup_identity_id" uuid
+  "event_type" litter_count_event_type [not null]
+  "delta" integer [not null]
+  "occurred_at" timestamptz [not null]
+  "reason" text
+  "operator_id" uuid [not null]
+  "source_event_id" uuid
+  "corrects_count_event_id" uuid
+  "idempotency_key" varchar(160) [not null]
+  "created_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_litter_count_event_owner_id_id"]
+    (owner_id, idempotency_key) [unique, name: "uq_litter_count_event_idempotency"]
+    (owner_id, litter_id) [unique, name: "ux_litter_count_initial"]
+    (owner_id, litter_id, occurred_at, created_at) [name: "ix_litter_count_event_time"]
+  }
+}
+
+Table "weight_record" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "subject_type" weight_subject_type [not null]
+  "hamster_id" uuid
+  "pup_identity_id" uuid
+  "litter_id" uuid
+  "measurement_kind" weight_measurement_kind [not null]
+  "subject_count" integer
+  "weight_g" numeric(10,2) [not null]
+  "recorded_at" timestamptz [not null]
+  "source" measurement_source [not null]
+  "acquisition_key" varchar(160)
+  "species_rule_version_id" uuid
+  "birth_weight_g" numeric(10,2)
+  "previous_weight_g" numeric(10,2)
+  "change_from_birth_g" numeric(10,2)
+  "change_from_previous_g" numeric(10,2)
+  "alert_flags" jsonb [not null, default: `'[]'::jsonb`]
+  "operator_id" uuid [not null]
+  "corrects_weight_record_id" uuid
+  "correction_reason" text
+  "created_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_weight_record_owner_id_id"]
+    (owner_id, acquisition_key) [unique, name: "ux_weight_record_acquisition"]
+    (owner_id, hamster_id, recorded_at) [name: "ix_weight_record_hamster_time"]
+    (owner_id, pup_identity_id, recorded_at) [name: "ix_weight_record_pup_time"]
+    (owner_id, litter_id, recorded_at) [name: "ix_weight_record_litter_time"]
+  }
+}
+
+Table "health_record" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "subject_type" health_subject_type [not null]
+  "hamster_id" uuid
+  "pup_identity_id" uuid
+  "litter_id" uuid
+  "enclosure_id" uuid
+  "record_type" health_record_type [not null]
+  "observed_at" timestamptz [not null]
+  "structured_checks" jsonb [not null, default: `'{}'::jsonb`]
+  "severity" severity_level
+  "medication" jsonb [not null, default: `'{}'::jsonb`]
+  "follow_up_at" timestamptz
+  "notes" text
+  "operator_id" uuid [not null]
+  "corrects_health_record_id" uuid
+  "correction_reason" text
+  "created_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_health_record_owner_id_id"]
+    (owner_id, hamster_id, observed_at) [name: "ix_health_record_hamster_time"]
+    (owner_id, pup_identity_id, observed_at) [name: "ix_health_record_pup_time"]
+    (owner_id, litter_id, observed_at) [name: "ix_health_record_litter_time"]
+  }
+}
+
+Table "care_task" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "task_type" care_task_type [not null]
+  "target_type" care_task_target_type [not null]
+  "target_id" uuid [not null]
+  "title" varchar(240) [not null]
+  "description" text
+  "scheduled_at" timestamptz [not null]
+  "calculation_timezone" varchar(64) [not null, default: 'Asia/Shanghai']
+  "priority" task_priority [not null, default: 'normal']
+  "status" task_status [not null, default: 'pending']
+  "assignee_id" uuid
+  "stage_total" integer
+  "stage_done" integer
+  "recurrence_rule" jsonb [not null, default: `'{}'::jsonb`]
+  "rule_code" varchar(120)
+  "rule_version" varchar(80)
+  "source_event_id" uuid
+  "dedupe_key" varchar(200) [not null]
+  "snoozed_until" timestamptz
+  "completed_at" timestamptz
+  "cancelled_at" timestamptz
+  "cancellation_reason" text
+  "superseded_by_id" uuid
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "updated_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_care_task_owner_id_id"]
+    (owner_id, dedupe_key) [unique, name: "uq_care_task_dedupe"]
+    (owner_id, status, scheduled_at, priority) [name: "ix_care_task_calendar"]
+    (owner_id, target_type, target_id, scheduled_at) [name: "ix_care_task_target"]
+  }
+}
+
+Table "care_task_subject" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "care_task_id" uuid [not null]
+  "subject_type" care_task_subject_type [not null]
+  "subject_id" uuid [not null]
+  "completed_at" timestamptz
+  "completed_by" uuid
+  "completion_record_refs" jsonb [not null, default: `'[]'::jsonb`]
+  "exception_reason" text
+  "version" integer [not null, default: 1]
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_care_task_subject_owner_id_id"]
+    (owner_id, care_task_id, subject_type, subject_id) [unique, name: "uq_care_task_subject"]
+    (owner_id, care_task_id, subject_type, subject_id) [name: "ix_care_task_subject_incomplete"]
+  }
+}
+
+Table "reminder_delivery" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "care_task_id" uuid [not null]
+  "async_job_id" uuid
+  "channel" delivery_channel [not null]
+  "status" delivery_status [not null, default: 'queued']
+  "dedupe_key" varchar(220) [not null]
+  "scheduled_at" timestamptz [not null]
+  "attempt_count" integer [not null, default: 0]
+  "next_attempt_at" timestamptz
+  "delivered_at" timestamptz
+  "read_at" timestamptz
+  "error_code" varchar(120)
+  "error_detail" text
+  "provider_message_id" varchar(200)
+  "version" integer [not null, default: 1]
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_reminder_delivery_owner_id_id"]
+    (owner_id, channel, dedupe_key) [unique, name: "uq_reminder_delivery_dedupe"]
+    (status, scheduled_at, next_attempt_at) [name: "ix_reminder_delivery_claim"]
+  }
+}
+
+Table "media_link" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "media_asset_id" uuid [not null]
+  "media_variant_id" uuid
+  "target_type" media_target_type [not null]
+  "target_id" uuid [not null]
+  "role" media_link_role [not null]
+  "sort_order" integer [not null, default: 0]
+  "caption" text
+  "is_public" boolean [not null, default: false]
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+  "deleted_at" timestamptz
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_media_link_owner_id_id"]
+    (owner_id, media_asset_id, `COALESCE(media_variant_id,'00000000-0000-0000-0000-000000000000'::uuid)`, target_type, target_id, role) [unique, name: "ux_media_link_active"]
+    (owner_id, target_type, target_id, role, sort_order) [name: "ix_media_link_target"]
+  }
+}
+
+Table "share_page" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "target_type" share_target_type [not null]
+  "target_id" uuid [not null]
+  "token_hash" bytea [not null]
+  "token_prefix" varchar(16) [not null]
+  "selected_fields" jsonb [not null, default: `'[]'::jsonb`]
+  "presentation" jsonb [not null, default: `'{}'::jsonb`]
+  "public_cache_ttl_seconds" smallint [not null, default: 60]
+  "expires_at" timestamptz
+  "revoked_at" timestamptz
+  "revoked_by" uuid
+  "revoke_reason" text
+  "cache_purge_requested_at" timestamptz
+  "cache_purged_at" timestamptz
+  "last_accessed_at" timestamptz
+  "access_count" bigint [not null, default: 0]
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_share_page_owner_id_id"]
+    token_hash [unique, name: "uq_share_page_token_hash"]
+    (owner_id, target_type, target_id, created_at) [name: "ix_share_page_target"]
+  }
+}
+
+Table "import_job" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "async_job_id" uuid [not null]
+  "template_type" import_template_type [not null]
+  "status" import_job_status [not null, default: 'uploaded']
+  "source_object_key" text [not null]
+  "original_filename" varchar(512) [not null]
+  "file_sha256" varchar(64) [not null]
+  "file_encoding" varchar(40)
+  "delimiter" varchar(8)
+  "column_mapping" jsonb [not null, default: `'{}'::jsonb`]
+  "conflict_policy" jsonb [not null, default: `'{}'::jsonb`]
+  "idempotency_batch_key" varchar(160) [not null]
+  "total_rows" integer [not null, default: 0]
+  "valid_rows" integer [not null, default: 0]
+  "invalid_rows" integer [not null, default: 0]
+  "imported_rows" integer [not null, default: 0]
+  "skipped_rows" integer [not null, default: 0]
+  "prechecked_at" timestamptz
+  "applied_at" timestamptz
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_import_job_owner_id_id"]
+    (owner_id, async_job_id) [unique, name: "uq_import_job_async_job"]
+    (owner_id, idempotency_batch_key) [unique, name: "uq_import_job_batch"]
+    (owner_id, created_at, status) [name: "ix_import_job_owner_time"]
+  }
+}
+
+Table "import_row" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "import_job_id" uuid [not null]
+  "row_number" integer [not null]
+  "raw_data" jsonb [not null]
+  "normalized_data" jsonb [not null, default: `'{}'::jsonb`]
+  "row_sha256" varchar(64) [not null]
+  "idempotency_key" varchar(200) [not null]
+  "status" import_row_status [not null, default: 'pending']
+  "target_table" varchar(80)
+  "target_id" uuid
+  "result_payload" jsonb [not null, default: `'{}'::jsonb`]
+  "version" integer [not null, default: 1]
+  "processed_at" timestamptz
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_import_row_owner_id_id"]
+    (owner_id, import_job_id, row_number) [unique, name: "uq_import_row_number"]
+    (owner_id, idempotency_key) [unique, name: "uq_import_row_idempotency"]
+    (owner_id, import_job_id, status, row_number) [name: "ix_import_row_status"]
+  }
+}
+
+Table "import_issue" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "import_job_id" uuid [not null]
+  "import_row_id" uuid
+  "severity" import_issue_severity [not null]
+  "issue_code" varchar(120) [not null]
+  "field_name" varchar(160)
+  "raw_value" text
+  "message" text [not null]
+  "recovery_action" text
+  "details" jsonb [not null, default: `'{}'::jsonb`]
+  "created_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_import_issue_owner_id_id"]
+    (owner_id, import_job_id, import_row_id, severity, issue_code) [name: "ix_import_issue_job_row"]
+  }
+}
+
+Table "export_job" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "async_job_id" uuid [not null]
+  "scope" export_scope [not null]
+  "format" export_format [not null]
+  "filters" jsonb [not null, default: `'{}'::jsonb`]
+  "object_key" text
+  "sha256" varchar(64)
+  "byte_size" bigint
+  "expires_at" timestamptz
+  "completed_at" timestamptz
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_export_job_owner_id_id"]
+    (owner_id, async_job_id) [unique, name: "uq_export_job_async_job"]
+    (owner_id, created_at) [name: "ix_export_job_owner_time"]
+  }
+}
+
+Table "backup_job" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "organization_id" uuid [not null]
+  "async_job_id" uuid [not null]
+  "backup_kind" backup_kind [not null, default: 'full']
+  "base_backup_job_id" uuid
+  "manifest_version" varchar(40) [not null]
+  "manifest" jsonb [not null, default: `'{}'::jsonb`]
+  "object_key" text
+  "sha256" varchar(64)
+  "byte_size" bigint
+  "media_item_count" integer [not null, default: 0]
+  "verified_at" timestamptz
+  "is_restorable" boolean [not null, default: false]
+  "expires_at" timestamptz
+  "completed_at" timestamptz
+  "version" integer [not null, default: 1]
+  "created_by" uuid
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_backup_job_owner_id_id"]
+    (owner_id, async_job_id) [unique, name: "uq_backup_job_async_job"]
+    (owner_id, created_at) [name: "ix_backup_job_owner_time"]
+  }
+}
+
+Table "entitlement" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "entitlement_code" varchar(120) [not null]
+  "value_type" entitlement_value_type [not null]
+  "boolean_value" boolean
+  "integer_value" bigint
+  "decimal_value" numeric(20,4)
+  "json_value" jsonb
+  "source" varchar(80) [not null, default: 'system']
+  "effective_at" timestamptz [not null, default: `now()`]
+  "expires_at" timestamptz
+  "revoked_at" timestamptz
+  "version" integer [not null, default: 1]
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_entitlement_owner_id_id"]
+    (owner_id, entitlement_code) [unique, name: "ux_entitlement_active_code"]
+  }
+}
+
+Table "usage_meter" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "metric" usage_metric [not null]
+  "current_value" numeric(24,4) [not null, default: 0]
+  "measured_at" timestamptz [not null, default: `now()`]
+  "source_event_id" uuid
+  "calculation_detail" jsonb [not null, default: `'{}'::jsonb`]
+  "version" integer [not null, default: 1]
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_usage_meter_owner_id_id"]
+    (owner_id, metric) [unique, name: "uq_usage_meter_metric"]
+  }
+}
+
+Table "usage_snapshot" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "metric" usage_metric [not null]
+  "value" numeric(24,4) [not null]
+  "snapshot_at" timestamptz [not null]
+  "period_start" timestamptz
+  "period_end" timestamptz
+  "calculation_detail" jsonb [not null, default: `'{}'::jsonb`]
+  "created_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_usage_snapshot_owner_id_id"]
+    (owner_id, metric, snapshot_at) [unique, name: "uq_usage_snapshot_metric_time"]
+  }
+}
+
+Table "idempotency_record" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "owner_id" uuid [not null]
+  "idempotency_key" varchar(200) [not null]
+  "request_method" varchar(12) [not null]
+  "request_path" varchar(500) [not null]
+  "request_hash" varchar(64) [not null]
+  "status" idempotency_status [not null, default: 'processing']
+  "resource_type" varchar(80)
+  "resource_id" uuid
+  "response_status" integer
+  "response_body" jsonb
+  "locked_at" timestamptz [not null, default: `now()`]
+  "completed_at" timestamptz
+  "expires_at" timestamptz [not null]
+  "version" integer [not null, default: 1]
+  "created_at" timestamptz [not null, default: `now()`]
+  "updated_at" timestamptz [not null, default: `now()`]
+
+  Indexes {
+    (owner_id, id) [unique, name: "uq_idempotency_record_owner_id_id"]
+    (owner_id, idempotency_key) [unique, name: "uq_idempotency_record_key"]
+    expires_at [name: "ix_idempotency_record_expiry"]
+  }
+}
+
+Ref:"account"."id" < "organization"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "organization"."created_by" [delete: set null]
+
+Ref:"account"."id" < "organization"."updated_by" [delete: set null]
+
+Ref:"account"."id" < "species_rule_version"."owner_id" [delete: restrict]
+
+Ref:"species_rule_version"."id" < "species_rule_version"."copied_from_id" [delete: restrict]
+
+Ref:"account"."id" < "species_rule_version"."created_by" [delete: set null]
+
+Ref:"account"."id" < "species_rule_version"."updated_by" [delete: set null]
+
+Ref:"account"."id" < "domain_event"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "domain_event"."actor_id" [delete: set null]
+
+Ref "fk_domain_event_organization":"organization".("owner_id", "id") < "domain_event".("owner_id", "organization_id") [delete: restrict]
+
+Ref "fk_domain_event_causation":"domain_event".("owner_id", "id") < "domain_event".("owner_id", "causation_id") [delete: restrict]
+
+Ref "fk_domain_event_correction":"domain_event".("owner_id", "id") < "domain_event".("owner_id", "corrects_event_id") [delete: restrict]
+
+Ref:"account"."id" < "outbox_message"."owner_id" [delete: restrict]
+
+Ref "fk_outbox_domain_event":"domain_event".("owner_id", "id") < "outbox_message".("owner_id", "domain_event_id") [delete: restrict]
+
+Ref:"account"."id" < "async_job"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "async_job"."created_by" [delete: set null]
+
+Ref "fk_async_job_organization":"organization".("owner_id", "id") < "async_job".("owner_id", "organization_id") [delete: restrict]
+
+Ref:"account"."id" < "media_asset"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "media_asset"."created_by" [delete: set null]
+
+Ref:"account"."id" < "media_asset"."updated_by" [delete: set null]
+
+Ref "fk_media_asset_organization":"organization".("owner_id", "id") < "media_asset".("owner_id", "organization_id") [delete: restrict]
+
+Ref:"account"."id" < "media_variant"."owner_id" [delete: restrict]
+
+Ref "fk_media_variant_asset":"media_asset".("owner_id", "id") < "media_variant".("owner_id", "media_asset_id") [delete: restrict]
+
+Ref "fk_media_variant_async_job":"async_job".("owner_id", "id") < "media_variant".("owner_id", "async_job_id") [delete: restrict]
+
+Ref:"account"."id" < "enclosure"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "enclosure"."created_by" [delete: set null]
+
+Ref:"account"."id" < "enclosure"."updated_by" [delete: set null]
+
+Ref "fk_enclosure_organization":"organization".("owner_id", "id") < "enclosure".("owner_id", "organization_id") [delete: restrict]
+
+Ref:"account"."id" < "hamster"."owner_id" [delete: restrict]
+
+Ref:"species_rule_version"."id" < "hamster"."species_rule_version_id" [delete: restrict]
+
+Ref:"account"."id" < "hamster"."created_by" [delete: set null]
+
+Ref:"account"."id" < "hamster"."updated_by" [delete: set null]
+
+Ref "fk_hamster_organization":"organization".("owner_id", "id") < "hamster".("owner_id", "organization_id") [delete: restrict]
+
+Ref "fk_hamster_current_enclosure":"enclosure".("owner_id", "id") < "hamster".("owner_id", "current_enclosure_id") [delete: restrict]
+
+Ref:"account"."id" < "breeding_plan"."owner_id" [delete: restrict]
+
+Ref:"species_rule_version"."id" < "breeding_plan"."species_rule_version_id" [delete: restrict]
+
+Ref:"account"."id" < "breeding_plan"."created_by" [delete: set null]
+
+Ref:"account"."id" < "breeding_plan"."updated_by" [delete: set null]
+
+Ref "fk_breeding_plan_organization":"organization".("owner_id", "id") < "breeding_plan".("owner_id", "organization_id") [delete: restrict]
+
+Ref "fk_breeding_plan_sire":"hamster".("owner_id", "id") < "breeding_plan".("owner_id", "sire_id") [delete: restrict]
+
+Ref "fk_breeding_plan_dam":"hamster".("owner_id", "id") < "breeding_plan".("owner_id", "dam_id") [delete: restrict]
+
+Ref:"account"."id" < "pairing_attempt"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "pairing_attempt"."created_by" [delete: set null]
+
+Ref:"account"."id" < "pairing_attempt"."updated_by" [delete: set null]
+
+Ref "fk_pairing_attempt_plan":"breeding_plan".("owner_id", "id") < "pairing_attempt".("owner_id", "breeding_plan_id") [delete: restrict]
+
+Ref "fk_pairing_attempt_sire":"hamster".("owner_id", "id") < "pairing_attempt".("owner_id", "sire_id") [delete: restrict]
+
+Ref "fk_pairing_attempt_dam":"hamster".("owner_id", "id") < "pairing_attempt".("owner_id", "dam_id") [delete: restrict]
+
+Ref "fk_pairing_attempt_enclosure":"enclosure".("owner_id", "id") < "pairing_attempt".("owner_id", "pairing_enclosure_id") [delete: restrict]
+
+Ref "fk_pairing_attempt_sire_destination":"enclosure".("owner_id", "id") < "pairing_attempt".("owner_id", "sire_destination_enclosure_id") [delete: restrict]
+
+Ref "fk_pairing_attempt_dam_destination":"enclosure".("owner_id", "id") < "pairing_attempt".("owner_id", "dam_destination_enclosure_id") [delete: restrict]
+
+Ref:"account"."id" < "enclosure_stay"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "enclosure_stay"."operator_id" [delete: restrict]
+
+Ref "fk_enclosure_stay_enclosure":"enclosure".("owner_id", "id") < "enclosure_stay".("owner_id", "enclosure_id") [delete: restrict]
+
+Ref "fk_enclosure_stay_hamster":"hamster".("owner_id", "id") < "enclosure_stay".("owner_id", "hamster_id") [delete: restrict]
+
+Ref "fk_enclosure_stay_pairing":"pairing_attempt".("owner_id", "id") < "enclosure_stay".("owner_id", "pairing_attempt_id") [delete: restrict]
+
+Ref:"account"."id" < "enclosure_cleaning_record"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "enclosure_cleaning_record"."operator_id" [delete: restrict]
+
+Ref "fk_enclosure_cleaning_record_enclosure":"enclosure".("owner_id", "id") < "enclosure_cleaning_record".("owner_id", "enclosure_id") [delete: restrict]
+
+Ref "fk_enclosure_cleaning_record_event":"domain_event".("owner_id", "id") < "enclosure_cleaning_record".("owner_id", "source_event_id") [delete: restrict]
+
+Ref "fk_enclosure_cleaning_record_correction":"enclosure_cleaning_record".("owner_id", "id") < "enclosure_cleaning_record".("owner_id", "corrects_cleaning_record_id") [delete: restrict]
+
+Ref:"account"."id" < "mating_observation"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "mating_observation"."operator_id" [delete: restrict]
+
+Ref "fk_mating_observation_pairing":"pairing_attempt".("owner_id", "id") < "mating_observation".("owner_id", "pairing_attempt_id") [delete: restrict]
+
+Ref:"account"."id" < "litter"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "litter"."created_by" [delete: set null]
+
+Ref:"account"."id" < "litter"."updated_by" [delete: set null]
+
+Ref "fk_litter_organization":"organization".("owner_id", "id") < "litter".("owner_id", "organization_id") [delete: restrict]
+
+Ref "fk_litter_plan":"breeding_plan".("owner_id", "id") < "litter".("owner_id", "breeding_plan_id") [delete: restrict]
+
+Ref "fk_litter_enclosure":"enclosure".("owner_id", "id") < "litter".("owner_id", "enclosure_id") [delete: restrict]
+
+Ref:"account"."id" < "pup_identity"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "pup_identity"."created_by" [delete: set null]
+
+Ref:"account"."id" < "pup_identity"."updated_by" [delete: set null]
+
+Ref "fk_pup_identity_litter":"litter".("owner_id", "id") < "pup_identity".("owner_id", "litter_id") [delete: restrict]
+
+Ref "fk_pup_identity_enclosure":"enclosure".("owner_id", "id") < "pup_identity".("owner_id", "current_enclosure_id") [delete: restrict]
+
+Ref "fk_pup_identity_hamster":"hamster".("owner_id", "id") < "pup_identity".("owner_id", "individualized_hamster_id") [delete: restrict]
+
+Ref:"account"."id" < "relationship_assertion"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "relationship_assertion"."reviewed_by" [delete: set null]
+
+Ref:"account"."id" < "relationship_assertion"."created_by" [delete: set null]
+
+Ref "fk_relationship_assertion_organization":"organization".("owner_id", "id") < "relationship_assertion".("owner_id", "organization_id") [delete: restrict]
+
+Ref "fk_relationship_assertion_correction":"relationship_assertion".("owner_id", "id") < "relationship_assertion".("owner_id", "corrects_assertion_id") [delete: restrict]
+
+Ref:"account"."id" < "pedigree_parentage"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "pedigree_parentage"."created_by" [delete: set null]
+
+Ref:"account"."id" < "pedigree_parentage"."updated_by" [delete: set null]
+
+Ref "fk_pedigree_parentage_parent":"hamster".("owner_id", "id") < "pedigree_parentage".("owner_id", "parent_id") [delete: restrict]
+
+Ref "fk_pedigree_parentage_child":"hamster".("owner_id", "id") < "pedigree_parentage".("owner_id", "child_id") [delete: restrict]
+
+Ref "fk_pedigree_parentage_assertion":"relationship_assertion".("owner_id", "id") < "pedigree_parentage".("owner_id", "relationship_assertion_id") [delete: restrict]
+
+Ref "fk_pedigree_parentage_correction":"pedigree_parentage".("owner_id", "id") < "pedigree_parentage".("owner_id", "corrects_parentage_id") [delete: restrict]
+
+Ref:"account"."id" < "litter_parent"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "litter_parent"."created_by" [delete: set null]
+
+Ref:"account"."id" < "litter_parent"."updated_by" [delete: set null]
+
+Ref "fk_litter_parent_litter":"litter".("owner_id", "id") < "litter_parent".("owner_id", "litter_id") [delete: restrict]
+
+Ref "fk_litter_parent_hamster":"hamster".("owner_id", "id") < "litter_parent".("owner_id", "parent_id") [delete: restrict]
+
+Ref "fk_litter_parent_assertion":"relationship_assertion".("owner_id", "id") < "litter_parent".("owner_id", "relationship_assertion_id") [delete: restrict]
+
+Ref "fk_litter_parent_correction":"litter_parent".("owner_id", "id") < "litter_parent".("owner_id", "corrects_litter_parent_id") [delete: restrict]
+
+Ref:"account"."id" < "litter_member"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "litter_member"."created_by" [delete: set null]
+
+Ref:"account"."id" < "litter_member"."updated_by" [delete: set null]
+
+Ref "fk_litter_member_litter":"litter".("owner_id", "id") < "litter_member".("owner_id", "litter_id") [delete: restrict]
+
+Ref "fk_litter_member_pup":"pup_identity".("owner_id", "id") < "litter_member".("owner_id", "pup_identity_id") [delete: restrict]
+
+Ref "fk_litter_member_hamster":"hamster".("owner_id", "id") < "litter_member".("owner_id", "hamster_id") [delete: restrict]
+
+Ref "fk_litter_member_origin_pup":"pup_identity".("owner_id", "id") < "litter_member".("owner_id", "origin_pup_identity_id") [delete: restrict]
+
+Ref "fk_litter_member_assertion":"relationship_assertion".("owner_id", "id") < "litter_member".("owner_id", "relationship_assertion_id") [delete: restrict]
+
+Ref "fk_litter_member_correction":"litter_member".("owner_id", "id") < "litter_member".("owner_id", "corrects_litter_member_id") [delete: restrict]
+
+Ref:"account"."id" < "litter_count_event"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "litter_count_event"."operator_id" [delete: restrict]
+
+Ref "fk_litter_count_event_litter":"litter".("owner_id", "id") < "litter_count_event".("owner_id", "litter_id") [delete: restrict]
+
+Ref "fk_litter_count_event_pup":"pup_identity".("owner_id", "id") < "litter_count_event".("owner_id", "pup_identity_id") [delete: restrict]
+
+Ref "fk_litter_count_event_domain_event":"domain_event".("owner_id", "id") < "litter_count_event".("owner_id", "source_event_id") [delete: restrict]
+
+Ref "fk_litter_count_event_correction":"litter_count_event".("owner_id", "id") < "litter_count_event".("owner_id", "corrects_count_event_id") [delete: restrict]
+
+Ref:"account"."id" < "weight_record"."owner_id" [delete: restrict]
+
+Ref:"species_rule_version"."id" < "weight_record"."species_rule_version_id" [delete: restrict]
+
+Ref:"account"."id" < "weight_record"."operator_id" [delete: restrict]
+
+Ref "fk_weight_record_organization":"organization".("owner_id", "id") < "weight_record".("owner_id", "organization_id") [delete: restrict]
+
+Ref "fk_weight_record_hamster":"hamster".("owner_id", "id") < "weight_record".("owner_id", "hamster_id") [delete: restrict]
+
+Ref "fk_weight_record_pup":"pup_identity".("owner_id", "id") < "weight_record".("owner_id", "pup_identity_id") [delete: restrict]
+
+Ref "fk_weight_record_litter":"litter".("owner_id", "id") < "weight_record".("owner_id", "litter_id") [delete: restrict]
+
+Ref "fk_weight_record_correction":"weight_record".("owner_id", "id") < "weight_record".("owner_id", "corrects_weight_record_id") [delete: restrict]
+
+Ref:"account"."id" < "health_record"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "health_record"."operator_id" [delete: restrict]
+
+Ref "fk_health_record_organization":"organization".("owner_id", "id") < "health_record".("owner_id", "organization_id") [delete: restrict]
+
+Ref "fk_health_record_hamster":"hamster".("owner_id", "id") < "health_record".("owner_id", "hamster_id") [delete: restrict]
+
+Ref "fk_health_record_pup":"pup_identity".("owner_id", "id") < "health_record".("owner_id", "pup_identity_id") [delete: restrict]
+
+Ref "fk_health_record_litter":"litter".("owner_id", "id") < "health_record".("owner_id", "litter_id") [delete: restrict]
+
+Ref "fk_health_record_enclosure":"enclosure".("owner_id", "id") < "health_record".("owner_id", "enclosure_id") [delete: restrict]
+
+Ref "fk_health_record_correction":"health_record".("owner_id", "id") < "health_record".("owner_id", "corrects_health_record_id") [delete: restrict]
+
+Ref:"account"."id" < "care_task"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "care_task"."assignee_id" [delete: set null]
+
+Ref:"account"."id" < "care_task"."created_by" [delete: set null]
+
+Ref:"account"."id" < "care_task"."updated_by" [delete: set null]
+
+Ref "fk_care_task_organization":"organization".("owner_id", "id") < "care_task".("owner_id", "organization_id") [delete: restrict]
+
+Ref "fk_care_task_source_event":"domain_event".("owner_id", "id") < "care_task".("owner_id", "source_event_id") [delete: restrict]
+
+Ref "fk_care_task_superseded_by":"care_task".("owner_id", "id") < "care_task".("owner_id", "superseded_by_id") [delete: restrict]
+
+Ref:"account"."id" < "care_task_subject"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "care_task_subject"."completed_by" [delete: set null]
+
+Ref "fk_care_task_subject_task":"care_task".("owner_id", "id") < "care_task_subject".("owner_id", "care_task_id") [delete: cascade]
+
+Ref:"account"."id" < "reminder_delivery"."owner_id" [delete: restrict]
+
+Ref "fk_reminder_delivery_task":"care_task".("owner_id", "id") < "reminder_delivery".("owner_id", "care_task_id") [delete: cascade]
+
+Ref "fk_reminder_delivery_async_job":"async_job".("owner_id", "id") < "reminder_delivery".("owner_id", "async_job_id") [delete: restrict]
+
+Ref:"account"."id" < "media_link"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "media_link"."created_by" [delete: set null]
+
+Ref "fk_media_link_asset":"media_asset".("owner_id", "id") < "media_link".("owner_id", "media_asset_id") [delete: restrict]
+
+Ref "fk_media_link_variant":"media_variant".("owner_id", "id") < "media_link".("owner_id", "media_variant_id") [delete: restrict]
+
+Ref:"account"."id" < "share_page"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "share_page"."revoked_by" [delete: set null]
+
+Ref:"account"."id" < "share_page"."created_by" [delete: set null]
+
+Ref "fk_share_page_organization":"organization".("owner_id", "id") < "share_page".("owner_id", "organization_id") [delete: restrict]
+
+Ref:"account"."id" < "import_job"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "import_job"."created_by" [delete: set null]
+
+Ref "fk_import_job_organization":"organization".("owner_id", "id") < "import_job".("owner_id", "organization_id") [delete: restrict]
+
+Ref "fk_import_job_async_job":"async_job".("owner_id", "id") < "import_job".("owner_id", "async_job_id") [delete: restrict]
+
+Ref:"account"."id" < "import_row"."owner_id" [delete: restrict]
+
+Ref "fk_import_row_job":"import_job".("owner_id", "id") < "import_row".("owner_id", "import_job_id") [delete: cascade]
+
+Ref:"account"."id" < "import_issue"."owner_id" [delete: restrict]
+
+Ref "fk_import_issue_job":"import_job".("owner_id", "id") < "import_issue".("owner_id", "import_job_id") [delete: cascade]
+
+Ref "fk_import_issue_row":"import_row".("owner_id", "id") < "import_issue".("owner_id", "import_row_id") [delete: cascade]
+
+Ref:"account"."id" < "export_job"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "export_job"."created_by" [delete: set null]
+
+Ref "fk_export_job_organization":"organization".("owner_id", "id") < "export_job".("owner_id", "organization_id") [delete: restrict]
+
+Ref "fk_export_job_async_job":"async_job".("owner_id", "id") < "export_job".("owner_id", "async_job_id") [delete: restrict]
+
+Ref:"account"."id" < "backup_job"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "backup_job"."created_by" [delete: set null]
+
+Ref "fk_backup_job_organization":"organization".("owner_id", "id") < "backup_job".("owner_id", "organization_id") [delete: restrict]
+
+Ref "fk_backup_job_async_job":"async_job".("owner_id", "id") < "backup_job".("owner_id", "async_job_id") [delete: restrict]
+
+Ref "fk_backup_job_base":"backup_job".("owner_id", "id") < "backup_job".("owner_id", "base_backup_job_id") [delete: restrict]
+
+Ref:"account"."id" < "entitlement"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "usage_meter"."owner_id" [delete: restrict]
+
+Ref "fk_usage_meter_source_event":"domain_event".("owner_id", "id") < "usage_meter".("owner_id", "source_event_id") [delete: restrict]
+
+Ref:"account"."id" < "usage_snapshot"."owner_id" [delete: restrict]
+
+Ref:"account"."id" < "idempotency_record"."owner_id" [delete: restrict]

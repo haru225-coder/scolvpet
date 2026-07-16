@@ -1,0 +1,48 @@
+# 熊舍管家 I1 工程验证报告
+
+状态：已写入 / 已验证 / 待确认
+日期：2026-07-16
+
+## 契约统计
+
+- OpenAPI 版本：3.1.0，文档版本：1.0.1。
+- 全量 paths：83。
+- 全量 operations：104。
+- 全量写 operations（POST/PUT/PATCH/DELETE）：55。
+- components.schemas：198。
+- I1 运行时覆盖 8 个资源路径、11 个 operations、6 个写 operations；新增 `POST /auth/sessions/refresh` 为本轮唯一契约演进。
+- `RefreshSessionRequest`、`SessionResponse`、统一错误响应和 `Idempotency-Key` 已进入契约；Flutter 仅调用生成的 `DefaultApi.refreshSession`。
+
+## 已写入
+
+- Flutter 3.44.0 stable 双端平台脚手架，临时 Android applicationId/iOS Bundle ID 均为 `cn.scolvpet.dev`。
+- 生成 `dart-dio` 客户端固定 OpenAPI Generator 7.23.0；生成目录不手写业务 DTO，漂移检查固定校正 nullable enum 默认值。
+- 离线快照使用生成模型恢复 account、organization、system rules、owner rules；离线写入口不排队，文案为“离线只读，联网后重新提交/再操作”。
+- SpeciesRuleVersion 移除契约外 `display_name` JSON 字段；规则创建按 required/minimum 校验，合法 0 与缺失可选字段区分。
+- 迁移增加非 public `scolvpet_meta.schema_migrations` checksum 跟踪；运行迁移不重写历史文件，source split 只由显式 drift/generate 命令执行。
+- 幂等 hash 纳入规范化 method/path/payload；持久化恢复 ETag、Location 和 replay 标头。
+- Outbox 增加 `FOR UPDATE SKIP LOCKED` claim lease、stale 回收、publisher 注入、指数退避和 dead-letter。
+- Flutter/Gradle 下载与构建入口增加显式超时：Flutter 命令 900 秒、Android 构建 1800 秒，Gradle HTTP/HTTPS 连接和读取 60000 毫秒；根 Makefile 自动读取本地 `.env`，CI 设有 45 分钟 job 上限及步骤上限。
+- OpenAPI 客户端生成链的 Generator、Dart 依赖解析和 `build_runner` 各有 300 秒超时，并支持 `DART_PUB_OFFLINE=1` 使用本机缓存。
+
+## 已验证
+
+- `make db-verify`：全新 PostgreSQL 15.17 通过；public 38 表、60 枚举、系统规则 1 条；迁移第二次执行稳定；种子第二次幂等；checksum 漂移被检测；元数据表 1 张。
+- `make migration-drift`：从冻结 `specs/database/schema.sql` 临时生成 9 个源迁移并通过内容漂移检查。
+- `make openapi-lint`：Redocly CLI 1.34.5 通过。
+- `DART_PUB_OFFLINE=1 scripts/with-timeout.sh 600 make client-drift`：OpenAPI Generator 7.23.0 生成漂移检查通过，736 个生成文件一致。
+- `cd api && go test ./...`：API、认证、幂等 canonical hash、响应头恢复、Worker 单元测试通过。
+- `I1_API_PORT=18580 I1_DB_PORT=56580 scripts/with-timeout.sh 300 scripts/i1-smoke.sh`：验证码、登录、refresh 同键 replay、完整规则请求、required/minimum 422、合法 0、ETag/Location replay、owner 隔离、乐观锁、domain_event/outbox 通过；events=4、published_outbox=2。固定端口 `18080` 的一次重跑因旧临时进程占用中止，清理后改用显式随机端口通过。
+- `scripts/i1-outbox-test.sh`：两 Worker claim=published:1、失败 retry=failed:1、最大次数 dead_letter:1、stale recovery=published:1。
+- `apps/mobile` 使用 Flutter 3.44.0：`flutter pub get`、`flutter analyze`、`flutter test` 通过；Widget 测试覆盖真实 `ScolvPetApp`/`HomeShell`、初始化、缓存内容和离线写入口禁用；生成客户端契约模型反序列化测试通过。
+- `cd apps/web && npm run lint && npm test && npm run build`：通过。
+- `make timeout-test`：短命令通过，超时命令按预期以退出码 124 终止。
+
+## 待确认
+
+- `flutter build apk --debug` 已完成 Android SDK 35/36、Build Tools、NDK、CMake 下载和 Gradle 配置尝试；本机磁盘空间不足，最终失败原因为 `No space left on device`，未产生可交付 APK。
+- `flutter build ios --simulator --no-codesign` 已安装 CocoaPods 1.17.0 并进入 Xcode build；最终因 Xcode 26.6 仅安装 iOS 26.4.1 Simulator runtime 而失败。
+- 本轮未重新下载 Flutter SDK 或重跑受磁盘/Simulator runtime 阻断的设备构建；命令入口已补齐超时，避免再次无限等待。
+- 当前复核：Flutter 不在 PATH（临时 SDK 已清理），独立 Dart 3.12.2 可用，数据卷剩余约 4.2 GiB；没有残留 Flutter/Gradle/Dart/OpenAPI 构建进程。
+- `cn.scolvpet.dev` 仅为开发临时标识；正式 Bundle ID/applicationId、签名团队、短信供应商和部署凭据待确认。
+- API 当前刷新令牌与验证码挑战为进程内开发适配器；生产持久化、密钥托管和短信供应商接入不属于 I1 演示链。

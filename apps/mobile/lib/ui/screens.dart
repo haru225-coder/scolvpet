@@ -1,0 +1,662 @@
+import 'package:flutter/material.dart';
+import 'package:scolvpet_api/scolvpet_api.dart';
+
+import '../core/app_state.dart';
+
+const _accent = Color(0xffc77852);
+const _ink = Color(0xff1f2928);
+const _muted = Color(0xff6c7774);
+const _depth = Color(0xffdce5e3);
+
+class LoadingScreen extends StatelessWidget {
+  const LoadingScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) =>
+      const Scaffold(body: Center(child: CircularProgressIndicator()));
+}
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key, required this.state});
+
+  final AppState state;
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final controller = TextEditingController(text: '+8613800138000');
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(24, 64, 24, 32),
+          children: [
+            const _BrandPanel(),
+            const SizedBox(height: 48),
+            const Text(
+              '中国大陆手机号',
+              style: TextStyle(color: _muted, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(hintText: '+8613800138000'),
+            ),
+            const SizedBox(height: 20),
+            _PrimaryButton(
+              label: '获取验证码',
+              icon: Icons.sms_outlined,
+              onPressed: () async {
+                await widget.state.requestCode(controller.text.trim());
+                if (!context.mounted) return;
+                if (widget.state.phase == AppPhase.code) setState(() {});
+              },
+            ),
+            if (widget.state.lastError != null)
+              _ErrorText(widget.state.lastError!),
+            const SizedBox(height: 16),
+            const Text(
+              '首次登录会创建个人熊舍',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _muted, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CodeScreen extends StatefulWidget {
+  const CodeScreen({super.key, required this.state});
+
+  final AppState state;
+
+  @override
+  State<CodeScreen> createState() => _CodeScreenState();
+}
+
+class _CodeScreenState extends State<CodeScreen> {
+  final controller = TextEditingController();
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('输入验证码'), leading: const BackButton()),
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          Text(
+            '已发送至 ${widget.state.phone ?? ''}',
+            style: const TextStyle(color: _muted),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: controller,
+            maxLength: 6,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: '验证码',
+              counterText: '',
+            ),
+          ),
+          const SizedBox(height: 16),
+          _PrimaryButton(
+            label: '验证并登录',
+            icon: Icons.login,
+            onPressed: () async {
+              await widget.state.login(controller.text.trim());
+              if (!context.mounted) return;
+              setState(() {});
+            },
+          ),
+          if (widget.state.lastError != null)
+            _ErrorText(widget.state.lastError!),
+        ],
+      ),
+    );
+  }
+}
+
+class SetupScreen extends StatefulWidget {
+  const SetupScreen({super.key, required this.state});
+
+  final AppState state;
+
+  @override
+  State<SetupScreen> createState() => _SetupScreenState();
+}
+
+class _SetupScreenState extends State<SetupScreen> {
+  late final TextEditingController nameController;
+  bool importLater = true;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(
+      text: widget.state.organization?.name == '我的熊舍'
+          ? ''
+          : widget.state.organization?.name,
+    );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final disabled = widget.state.offline;
+    return Scaffold(
+      appBar: AppBar(title: const Text('创建个人熊舍')),
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          const Text('首版为单舍主账号', style: TextStyle(color: _muted)),
+          const SizedBox(height: 24),
+          TextField(
+            controller: nameController,
+            enabled: !disabled,
+            decoration: const InputDecoration(
+              labelText: '熊舍名称',
+              hintText: '例如：雪团熊舍',
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            '首次设置',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: _ink,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            color: _depth,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.rule_folder_outlined,
+                    color: Color(0xff43635f),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      widget.state.systemRules.isEmpty ? '系统规则加载中' : '金丝熊基础规则',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          SegmentedButton<bool>(
+            segments: const [
+              ButtonSegment(
+                value: true,
+                label: Text('稍后建档'),
+                icon: Icon(Icons.edit_note),
+              ),
+              ButtonSegment(
+                value: false,
+                label: Text('CSV 迁移'),
+                icon: Icon(Icons.upload_file),
+              ),
+            ],
+            selected: {importLater},
+            onSelectionChanged: disabled
+                ? null
+                : (value) => setState(() => importLater = value.first),
+          ),
+          const SizedBox(height: 28),
+          _PrimaryButton(
+            label: '继续进入熊舍',
+            icon: Icons.arrow_forward,
+            onPressed: disabled
+                ? null
+                : () async {
+                    await widget.state.completeSetup(
+                      nameController.text.trim().isEmpty
+                          ? '我的熊舍'
+                          : nameController.text.trim(),
+                    );
+                    if (!context.mounted) return;
+                    setState(() {});
+                  },
+          ),
+          if (widget.state.offline) const _OfflineBanner(),
+          if (widget.state.lastError != null)
+            _ErrorText(widget.state.lastError!),
+        ],
+      ),
+    );
+  }
+}
+
+class HomeShell extends StatefulWidget {
+  const HomeShell({super.key, required this.state});
+
+  final AppState state;
+
+  @override
+  State<HomeShell> createState() => _HomeShellState();
+}
+
+class _HomeShellState extends State<HomeShell> {
+  int index = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = [
+      const _TodayPage(),
+      const _EmptyDomainPage(
+        title: '仓鼠',
+        icon: Icons.pets_outlined,
+        detail: 'I2 将接入仓鼠档案与窝次入口',
+      ),
+      const _EmptyDomainPage(
+        title: '笼舍',
+        icon: Icons.grid_view_outlined,
+        detail: 'I2 将接入笼架网格与入住历史',
+      ),
+      const _EmptyDomainPage(
+        title: '繁育',
+        icon: Icons.sync_alt,
+        detail: 'I3 将接入繁育计划与动作状态',
+      ),
+      _MinePage(state: widget.state),
+    ];
+    return Scaffold(
+      body: SafeArea(
+        child: IndexedStack(index: index, children: pages),
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: index,
+        onDestinationSelected: (value) => setState(() => index = value),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.today_outlined),
+            selectedIcon: Icon(Icons.today),
+            label: '今日',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.pets_outlined),
+            selectedIcon: Icon(Icons.pets),
+            label: '仓鼠',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.grid_view_outlined),
+            selectedIcon: Icon(Icons.grid_view),
+            label: '笼舍',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.sync_alt),
+            selectedIcon: Icon(Icons.sync_alt),
+            label: '繁育',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: '我的',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class RulePage extends StatelessWidget {
+  const RulePage({super.key, required this.state});
+
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('物种规则')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const _SectionTitle(title: '当前熊舍规则'),
+          if (state.ownerRules.isEmpty)
+            const _EmptyState(label: '尚未复制规则模板')
+          else
+            ...state.ownerRules.map(
+              (rule) => _RuleCard(rule: rule, owner: true),
+            ),
+          const SizedBox(height: 24),
+          const _SectionTitle(title: '系统模板'),
+          ...state.systemRules.map(
+            (rule) => _RuleCard(
+              rule: rule,
+              owner: false,
+              onCopy: state.offline
+                  ? null
+                  : () async {
+                      await state.copyRule(rule);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('已复制为熊舍规则')),
+                        );
+                      }
+                    },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MinePage extends StatelessWidget {
+  const _MinePage({required this.state});
+
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final organization = state.organization;
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+      children: [
+        Text(
+          '我的',
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        Text(organization?.name ?? '熊舍', style: const TextStyle(color: _muted)),
+        const SizedBox(height: 20),
+        Card(
+          color: _depth,
+          child: const Padding(
+            padding: EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '数据中心',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                    color: Color(0xff43635f),
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '导入 · 导出 · 备份 · 用量',
+                  style: TextStyle(color: Color(0xff5f7773)),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.rule_outlined),
+            title: const Text('物种规则'),
+            subtitle: Text(
+              state.ownerRules.isEmpty
+                  ? '等待首次设置'
+                  : '当前 ${state.ownerRules.length} 个版本',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => RulePage(state: state))),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.cloud_done_outlined),
+            title: const Text('离线状态'),
+            subtitle: Text(
+              state.offline ? '离线只读 · 联网后重新提交/再操作' : '在线 · 最近数据已同步',
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        OutlinedButton.icon(
+          onPressed: () => state.logout(),
+          icon: const Icon(Icons.logout),
+          label: const Text('退出登录'),
+        ),
+      ],
+    );
+  }
+}
+
+class _TodayPage extends StatelessWidget {
+  const _TodayPage();
+
+  @override
+  Widget build(BuildContext context) => ListView(
+    padding: const EdgeInsets.all(16),
+    children: [
+      Text(
+        '今天',
+        style: Theme.of(
+          context,
+        ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
+      ),
+      const Text('I1 壳层', style: TextStyle(color: _muted)),
+      const SizedBox(height: 20),
+      const _EmptyState(label: '暂无今日任务'),
+    ],
+  );
+}
+
+class _EmptyDomainPage extends StatelessWidget {
+  const _EmptyDomainPage({
+    required this.title,
+    required this.icon,
+    required this.detail,
+  });
+
+  final String title;
+  final IconData icon;
+  final String detail;
+
+  @override
+  Widget build(BuildContext context) => ListView(
+    padding: const EdgeInsets.all(16),
+    children: [
+      Icon(icon, size: 48, color: _accent),
+      const SizedBox(height: 12),
+      Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
+      ),
+      const SizedBox(height: 8),
+      Text(detail, style: const TextStyle(color: _muted)),
+      const SizedBox(height: 28),
+      const _EmptyState(label: '暂无数据'),
+    ],
+  );
+}
+
+class _RuleCard extends StatelessWidget {
+  const _RuleCard({required this.rule, required this.owner, this.onCopy});
+
+  final SpeciesRuleVersion rule;
+  final bool owner;
+  final VoidCallback? onCopy;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    margin: const EdgeInsets.only(top: 10),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  rule.speciesCode,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
+              Chip(label: Text(owner ? '熊舍 v${rule.version}' : '系统模板')),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '孕期 ${rule.gestationMinDays}–${rule.gestationMaxDays} 天 · 配对 ${rule.pairingMaxMinutes ?? '-'} 分钟',
+            style: const TextStyle(color: _muted),
+          ),
+          if (!owner)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: onCopy,
+                icon: const Icon(Icons.copy_outlined),
+                label: const Text('复制'),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _BrandPanel extends StatelessWidget {
+  const _BrandPanel();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      color: _depth,
+      borderRadius: BorderRadius.circular(24),
+    ),
+    child: const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '熊舍运营中枢',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
+            color: Color(0xff43635f),
+          ),
+        ),
+        SizedBox(height: 8),
+        Text('记录 · 繁育 · 谱系 · 备份', style: TextStyle(color: Color(0xff5f7773))),
+      ],
+    ),
+  );
+}
+
+class _PrimaryButton extends StatelessWidget {
+  const _PrimaryButton({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) => FilledButton.icon(
+    onPressed: onPressed,
+    icon: Icon(icon),
+    label: Text(label),
+    style: FilledButton.styleFrom(
+      backgroundColor: _accent,
+      minimumSize: const Size.fromHeight(52),
+    ),
+  );
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    title,
+    style: const TextStyle(
+      fontWeight: FontWeight.w800,
+      fontSize: 18,
+      color: _ink,
+    ),
+  );
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(28),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      border: Border.all(color: const Color(0xffc8cecb)),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Text(
+      label,
+      textAlign: TextAlign.center,
+      style: const TextStyle(color: _muted),
+    ),
+  );
+}
+
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context) => const Padding(
+    padding: EdgeInsets.only(top: 16),
+    child: Text(
+      '离线只读，联网后重新提交/再操作',
+      style: TextStyle(color: Color(0xffb6534a), fontWeight: FontWeight.w600),
+    ),
+  );
+}
+
+class _ErrorText extends StatelessWidget {
+  const _ErrorText(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 16),
+    child: Text(text, style: const TextStyle(color: Color(0xffb6534a))),
+  );
+}

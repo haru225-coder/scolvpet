@@ -1,0 +1,142 @@
+熊舍管家 MVP 规格与原型综合验证报告
+====================================
+
+验证日期：2026-07-16（Asia/Shanghai）
+工作目录：/Users/snowchan27/Documents/scolvpet
+结论：PASS（规格基线可进入实现；外部环境与实现层事项见“待确认”）
+
+一、验证范围
+------------
+
+1. PRD：docs/05-熊舍管家-MVP-产品需求文档.md
+2. 开发排期：docs/08-熊舍管家-MVP-开发排期.md
+3. OpenAPI：specs/api/openapi.yaml、specs/api/README.md
+4. PostgreSQL/DBML：specs/database/schema.sql、schema.dbml、README.md
+5. 正式低保真原型：Figma File Key 6OGPqHOc92K3QMgaxa2ojo
+6. 本地可重复生成原型：prototype/figma-import/
+
+二、产品文档与排期
+------------------
+
+主 Agent 独立复验：
+
+- 28 个移动端主页面，编号 P01-P28，无重复。
+- 12 个动作面板，编号 A01-A12，无重复。
+- 26 个验收案例，编号 AC-01 至 AC-26。
+- 8 个双周迭代，共 16 周。
+- Markdown 二/三级标题无重复。
+- 动作路径已统一使用 start-pairing、start-gestation、confirm-birth、count-events、individualize 等最终命名；旧 pairing/start、gestation/start、adjust-count 等路径残留为 0。
+- confirm-birth N>0/N=0 双分支、no_litter_outcome、eligible_set_token、历史窝次 origin=import、owner_id、WEB-01、分享撤销 60 秒等关键概念均存在于对应基线文件。
+- 排期已按真实两人复合团队重算：每双周 20 人日毛容量、17 人日承诺、3 人日固定缓冲；16 周共 160 人日毛容量、136 人日承诺、24 人日缓冲。
+- I7 已给出两名成员的 8.5 + 8.5 承诺人日拆分，3 人日缓冲不预分配给功能；导出/备份 happy path、WEB-01、媒体分享和六项用量均在 I7 首次交付，I8 只做发布收敛。
+
+三、OpenAPI 3.1
+---------------
+
+主 Agent 独立复验：
+
+- Redocly CLI 1.34.5：0 error、0 warning。
+- 82 paths。
+- 103 operations。
+- 197 component schemas。
+- 54 个写操作，缺失 Idempotency-Key：0。
+- 51 个 Request schema，包含客户端 owner_id 字段：0。
+- BreedingPlanState 不含 birth_recorded，包含 no_litter_outcome。
+- confirm-birth 响应为 live_litter/no_litter_outcome 互斥 union；N=0 分支不含 litter、count event 或 pup identity。
+- PairingAttempt.status 与 nullable result 已分离；未结束尝试为 status=active,result=null。
+- SQL/OpenAPI 共享枚举逐值、逐顺序对齐 11/11：hamster source、breeding plan、pairing status/result、observation、litter、pup outcome/profile、health、task priority、import row。
+- PupOutcome 旧混装模型残留为 0；幼崽已拆为 outcome_status 与 profile_status。
+- 分享撤销口径：事务提交后 token 与公开 API 下一请求立即失效；HTML/JSON no-store；同事务写 CDN purge Outbox；share-scoped 边缘 TTL 不超过 60 秒。
+
+执行命令：
+
+  npx --yes @redocly/cli@1.34.5 lint specs/api/openapi.yaml
+
+四、PostgreSQL 15 与 DBML
+------------------------
+
+主 Agent 独立复验：
+
+- 使用全新临时 PostgreSQL 15 实例完整执行 schema.sql 成功。
+- public 基础表：38。
+- PostgreSQL enum：60。
+- DBML 经 @dbml/cli 编译为 PostgreSQL SQL 成功。
+- SQL/DBML 表名：38=38，无缺失。
+- SQL/DBML 全部字段逐表一致，差异 0。
+- SQL/DBML enum 名称和值逐项一致，差异 0。
+- account 以外的 37 张表均含 owner_id；缺失 0。
+- 31 张含 version 的表均在动态版本触发器目标清单中；缺失 0。
+
+数据库子 Agent 的实际事务验证：
+
+- N>0 confirm-birth 原子事务通过。
+- N=0 no_litter_outcome 原子事务通过，未创建 litter/count/pup。
+- 完整 eligible set individualize 事务通过。
+- CSV origin=import/state=closed 历史窝次事务通过。
+- 跨 owner 复合外键、跨 owner 规则复制、initial_alive=0 等负向守卫通过。
+
+执行命令摘要：
+
+  initdb ...
+  pg_ctl ... start
+  createdb ... scolvpet_root_verify
+  psql -X -q -v ON_ERROR_STOP=1 ... -f specs/database/schema.sql
+  npx --yes -p @dbml/cli dbml2sql specs/database/schema.dbml --postgres ...
+
+五、Figma 与本地原型素材
+------------------------
+
+正式交付介质为 Figma Design，不是 HTML：
+
+  https://www.figma.com/design/6OGPqHOc92K3QMgaxa2ojo
+
+正式文件结构：
+
+- 00 · 基础与组件
+- 01 · MVP 主页面
+- 02 · 动作面板与流程
+- 28 个 Pxx 移动端顶层 Frame。
+- 12 个 Axx 动作面板顶层 Frame。
+- 1 个 WEB-01 SSR 公开页。
+- 15 条真实 Figma 交互。
+- 4 个命名 Flow：F01、F04、F05、F06-F09。
+- Figma Preview 已实点验证 P01→P02→P03→P04→P05；繁育主链 P16→P24 已完成连接校验。
+- WEB-01、P28、A12 的撤销文案已统一为“公开 API 立即失效、边缘缓存最迟 60 秒失效”。
+
+本地素材验证：
+
+- 3 个 SVG 均通过 xmllint。
+- Pxx Frame 计数 28。
+- Axx Frame 计数 12。
+- WEB-01 Frame 计数 1。
+- 5 分钟旧缓存阈值残留 0。
+- 三张 preview PNG 已重新渲染并完成视觉检查。
+
+六、关键 SHA-256
+----------------
+
+e709bc95659c3c69bee76e6ae480ba88c22597b4b5f1d0094a8fcf95741ea989  docs/05-熊舍管家-MVP-产品需求文档.md
+01d9bcca73502f3d51d5713990568670ba26193fe7cdfa8280f71abf280a0865  docs/08-熊舍管家-MVP-开发排期.md
+cd6e21cab22fc763da1ad2c3ffb3172ded98e21f28b6a7dc30a31486d3b4787e  specs/api/openapi.yaml
+5395d264a63e51b0f59f165d1144b53f046536f94fff6a4d6a28c95943fd54ab  specs/api/README.md
+dd29777e1e9d6020dc1749ebdfdd692ae277ae649e57b654491c3c3daf77a978  specs/database/schema.sql
+13be9328f69e920c1242eb22e18fbeb26aaf56e76cc58aff642416897864d999  specs/database/schema.dbml
+dcf4ba13278e6975056273130f57341fd7d227ad19bad7befe4c71f41f16bcad  specs/database/README.md
+ad7f820c97ca04401bb62ab06f5640b64f7f633bdc2a6851b77d5f54b13a5de1  prototype/figma-import/generate-figma-boards.mjs
+fc6c3677bad90a79f34b637e0d16727039c45a0bab7a3654c59e0cf037dc1991  prototype/figma-import/00-foundations-components.svg
+1be2561249f1764c09bcb127abdeb5cf0d0995acc74e8952b0f23f4ebcc7da09  prototype/figma-import/01-mvp-main-pages.svg
+37d42c79c393270ac156a3205374d19d6feae8e0795931660a96e56d1b61f133  prototype/figma-import/02-action-panels-flows.svg
+
+七、待确认
+----------
+
+以下项目不阻塞当前规格基线，但需要在实现/部署阶段冻结：
+
+1. eligible_set_token 的签名密钥、TTL 与轮换策略。
+2. WEB-01 正式域名、对象存储、CDN purge、视频转码和短信通道到位日期。
+3. PostgreSQL RLS 是否作为 owner_id 组合外键之外的部署加固。
+4. 后续多成员 actor/member 归属模型；MVP 仍为单舍主。
+5. 实际模块化单体契约测试、Flutter dart-dio 客户端生成和 iOS/Android 集成测试。
+6. 16 周排期的具体自然周起止日期与发布账号准备日期。
+7. 用户所述 .agents/skills/ 四个项目 Skill 当前未发现 SKILL.md；美国主机 SSH 认证尚未就绪，未读取或记录任何凭据。
+

@@ -1,0 +1,27 @@
+熊舍管家本轮产出验证报告
+生成时间：2026-07-15
+
+[OK] reverse-evidence/page-paths.txt: 205（期望 205）
+[OK] reverse-evidence/controller-paths.txt: 32（期望 32）
+[OK] reverse-evidence/service-paths.txt: 66（期望 66）
+[OK] reverse-evidence/entity-paths.txt: 87（期望 87）
+[OK] reverse-evidence/api-routes.txt: 250（期望 250）
+[OK] reverse-evidence/web/api-routes.txt: 231（期望 231）
+
+[OK] 01-宠舍管家页面与业务流程逆向图.md: 683 行，围栏 40，Mermaid 12
+[OK] 02-繁育窝仔与分笼状态机.md: 604 行，围栏 24，Mermaid 2
+[OK] 03-核心实体关系与字段字典.md: 833 行，围栏 24，Mermaid 2
+[OK] 04-宠舍管家到熊舍管家功能转换表.md: 282 行，围栏 4，Mermaid 1
+
+[OK] App Store 版本历史：/Users/snowchan27/Documents/scolvpet/reverse-evidence/appstore/release-history.md
+[OK] App Store 手机截图：8 张
+
+[OK] 来源存在：/Users/snowchan27/ScolvAtom/开发日志/2026/07/2026-07-14 · Cattery Manager iOS Flutter 静态逆向分析.md
+[OK] 来源存在：/Users/snowchan27/ScolvAtom/开发日志/2026/07/2026-07-14 · Cattery Manager 动态启动阻断与 WebView 前端核验.md
+[OK] 来源存在：/Applications/Cattery Manager.app/Wrapper/Runner.app/Frameworks/App.framework/App
+
+[OK] SHA-256 App: 8bb590bb7a059f7d4078c3fafe4a366938f3ae9f359fa462f29c030bbadd69b8
+[OK] SHA-256 cattery-admin.js: 5572f7031d4132799c29e9218173c6874269cb620cd616fe04142e5d8be43830
+[OK] SHA-256 cattery-editor.js: 165b63693744cc94dd54c26b8b6eb9cf2f1cba19b2df72321a9cc7e26489d956
+
+结果： 通过

@@ -1,0 +1,205 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'weight_record_create_request.dart';
+
+// **************************************************************************
+// CopyWithGenerator
+// **************************************************************************
+
+abstract class _$WeightRecordCreateRequestCWProxy {
+  WeightRecordCreateRequest hamsterId(String? hamsterId);
+
+  WeightRecordCreateRequest pupIdentityId(String? pupIdentityId);
+
+  WeightRecordCreateRequest litterId(String? litterId);
+
+  WeightRecordCreateRequest weightG(num weightG);
+
+  WeightRecordCreateRequest recordedAt(DateTime recordedAt);
+
+  WeightRecordCreateRequest source_(
+    WeightRecordCreateRequestSource_Enum source_,
+  );
+
+  WeightRecordCreateRequest deviceReadingId(String? deviceReadingId);
+
+  WeightRecordCreateRequest notes(String? notes);
+
+  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `WeightRecordCreateRequest(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  ///
+  /// Usage
+  /// ```dart
+  /// WeightRecordCreateRequest(...).copyWith(id: 12, name: "My name")
+  /// ````
+  WeightRecordCreateRequest call({
+    String? hamsterId,
+    String? pupIdentityId,
+    String? litterId,
+    num weightG,
+    DateTime recordedAt,
+    WeightRecordCreateRequestSource_Enum source_,
+    String? deviceReadingId,
+    String? notes,
+  });
+}
+
+/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfWeightRecordCreateRequest.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfWeightRecordCreateRequest.copyWith.fieldName(...)`
+class _$WeightRecordCreateRequestCWProxyImpl
+    implements _$WeightRecordCreateRequestCWProxy {
+  const _$WeightRecordCreateRequestCWProxyImpl(this._value);
+
+  final WeightRecordCreateRequest _value;
+
+  @override
+  WeightRecordCreateRequest hamsterId(String? hamsterId) =>
+      this(hamsterId: hamsterId);
+
+  @override
+  WeightRecordCreateRequest pupIdentityId(String? pupIdentityId) =>
+      this(pupIdentityId: pupIdentityId);
+
+  @override
+  WeightRecordCreateRequest litterId(String? litterId) =>
+      this(litterId: litterId);
+
+  @override
+  WeightRecordCreateRequest weightG(num weightG) => this(weightG: weightG);
+
+  @override
+  WeightRecordCreateRequest recordedAt(DateTime recordedAt) =>
+      this(recordedAt: recordedAt);
+
+  @override
+  WeightRecordCreateRequest source_(
+    WeightRecordCreateRequestSource_Enum source_,
+  ) => this(source_: source_);
+
+  @override
+  WeightRecordCreateRequest deviceReadingId(String? deviceReadingId) =>
+      this(deviceReadingId: deviceReadingId);
+
+  @override
+  WeightRecordCreateRequest notes(String? notes) => this(notes: notes);
+
+  @override
+  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `WeightRecordCreateRequest(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  ///
+  /// Usage
+  /// ```dart
+  /// WeightRecordCreateRequest(...).copyWith(id: 12, name: "My name")
+  /// ````
+  WeightRecordCreateRequest call({
+    Object? hamsterId = const $CopyWithPlaceholder(),
+    Object? pupIdentityId = const $CopyWithPlaceholder(),
+    Object? litterId = const $CopyWithPlaceholder(),
+    Object? weightG = const $CopyWithPlaceholder(),
+    Object? recordedAt = const $CopyWithPlaceholder(),
+    Object? source_ = const $CopyWithPlaceholder(),
+    Object? deviceReadingId = const $CopyWithPlaceholder(),
+    Object? notes = const $CopyWithPlaceholder(),
+  }) {
+    return WeightRecordCreateRequest(
+      hamsterId: hamsterId == const $CopyWithPlaceholder()
+          ? _value.hamsterId
+          // ignore: cast_nullable_to_non_nullable
+          : hamsterId as String?,
+      pupIdentityId: pupIdentityId == const $CopyWithPlaceholder()
+          ? _value.pupIdentityId
+          // ignore: cast_nullable_to_non_nullable
+          : pupIdentityId as String?,
+      litterId: litterId == const $CopyWithPlaceholder()
+          ? _value.litterId
+          // ignore: cast_nullable_to_non_nullable
+          : litterId as String?,
+      weightG: weightG == const $CopyWithPlaceholder()
+          ? _value.weightG
+          // ignore: cast_nullable_to_non_nullable
+          : weightG as num,
+      recordedAt: recordedAt == const $CopyWithPlaceholder()
+          ? _value.recordedAt
+          // ignore: cast_nullable_to_non_nullable
+          : recordedAt as DateTime,
+      source_: source_ == const $CopyWithPlaceholder()
+          ? _value.source_
+          // ignore: cast_nullable_to_non_nullable
+          : source_ as WeightRecordCreateRequestSource_Enum,
+      deviceReadingId: deviceReadingId == const $CopyWithPlaceholder()
+          ? _value.deviceReadingId
+          // ignore: cast_nullable_to_non_nullable
+          : deviceReadingId as String?,
+      notes: notes == const $CopyWithPlaceholder()
+          ? _value.notes
+          // ignore: cast_nullable_to_non_nullable
+          : notes as String?,
+    );
+  }
+}
+
+extension $WeightRecordCreateRequestCopyWith on WeightRecordCreateRequest {
+  /// Returns a callable class that can be used as follows: `instanceOfWeightRecordCreateRequest.copyWith(...)` or like so:`instanceOfWeightRecordCreateRequest.copyWith.fieldName(...)`.
+  // ignore: library_private_types_in_public_api
+  _$WeightRecordCreateRequestCWProxy get copyWith =>
+      _$WeightRecordCreateRequestCWProxyImpl(this);
+}
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+WeightRecordCreateRequest _$WeightRecordCreateRequestFromJson(
+  Map<String, dynamic> json,
+) => $checkedCreate(
+  'WeightRecordCreateRequest',
+  json,
+  ($checkedConvert) {
+    $checkKeys(json, requiredKeys: const ['weight_g', 'recorded_at', 'source']);
+    final val = WeightRecordCreateRequest(
+      hamsterId: $checkedConvert('hamster_id', (v) => v as String?),
+      pupIdentityId: $checkedConvert('pup_identity_id', (v) => v as String?),
+      litterId: $checkedConvert('litter_id', (v) => v as String?),
+      weightG: $checkedConvert('weight_g', (v) => v as num),
+      recordedAt: $checkedConvert(
+        'recorded_at',
+        (v) => DateTime.parse(v as String),
+      ),
+      source_: $checkedConvert(
+        'source',
+        (v) => $enumDecode(_$WeightRecordCreateRequestSource_EnumEnumMap, v),
+      ),
+      deviceReadingId: $checkedConvert(
+        'device_reading_id',
+        (v) => v as String?,
+      ),
+      notes: $checkedConvert('notes', (v) => v as String?),
+    );
+    return val;
+  },
+  fieldKeyMap: const {
+    'hamsterId': 'hamster_id',
+    'pupIdentityId': 'pup_identity_id',
+    'litterId': 'litter_id',
+    'weightG': 'weight_g',
+    'recordedAt': 'recorded_at',
+    'source_': 'source',
+    'deviceReadingId': 'device_reading_id',
+  },
+);
+
+Map<String, dynamic> _$WeightRecordCreateRequestToJson(
+  WeightRecordCreateRequest instance,
+) => <String, dynamic>{
+  'hamster_id': ?instance.hamsterId,
+  'pup_identity_id': ?instance.pupIdentityId,
+  'litter_id': ?instance.litterId,
+  'weight_g': instance.weightG,
+  'recorded_at': instance.recordedAt.toIso8601String(),
+  'source': _$WeightRecordCreateRequestSource_EnumEnumMap[instance.source_]!,
+  'device_reading_id': ?instance.deviceReadingId,
+  'notes': ?instance.notes,
+};
+
+const _$WeightRecordCreateRequestSource_EnumEnumMap = {
+  WeightRecordCreateRequestSource_Enum.manual: 'manual',
+  WeightRecordCreateRequestSource_Enum.bluetoothScale: 'bluetooth_scale',
+  WeightRecordCreateRequestSource_Enum.import_: 'import',
+};

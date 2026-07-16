@@ -1,0 +1,17 @@
+一句话蔡你管理宠舍
+20:50 8                te €
+< =      RERG-  &
+你好，确认。
+好的，我来保存这份合同模版。
+宠物买卖合同
+宠物买卖合同
+合同编号: {{contract.no}}
+签订地点: 《tcontract.signPlacej}
+签订日期: {tcontract.date}}
+一、合同双方
+甲方 (卖方) :
+RHE: ((sellername}}
+联系电话: {({seller.phone}}
+《             合同中心
+a
+Al 生成       上传转换      手动创建
