@@ -1,22 +1,24 @@
 # 熊舍管家 I2–I6 发布候选版全量验收报告
 
-状态：有条件通过（代码与本地自动化全绿；本机 MinIO live smoke 已通过；生产云凭据/签名仍待确认）
+状态：有条件通过（代码与本地自动化全绿；本机 MinIO live smoke 已通过；Android API 21 基线与当前 Flutter/插件工具链不兼容；生产云凭据/签名仍待确认）
 日期：2026-07-16（live 补验 2026-07-17）
 验收角色：Release Engineer（Grok）
 基线提交：96edc10 feat: close I6 media pipeline with codecs and Dart client sync
 验收提交：d17f549 chore: complete I2-I6 release acceptance
-live 补验提交：见本轮补记提交
+live 补验提交：d45c8f9 docs: record MinIO live objectstore smoke in I6 acceptance
+本轮复核结论：当前 Flutter 3.44.0 + `shared_preferences_android 2.4.27` 组合仍要求最低 API 24，API 21 修正未落地
 分支：codex/i2-hamsters-enclosures-csv
 
 ## 1. 验收日期与 commit / 工作树
 
 - 验收开始 HEAD：96edc10cbcbd60ade202bc7f3c42163bec80be58
 - 验收前工作树：清洁，领先 origin 3 个提交（left-right count 0 3）
-- 验收中唯一代码变化：Flutter build 将
+- 验收中唯一代码变化：Flutter build 曾将
   `apps/mobile/android/app/build.gradle.kts` 的 `minSdk = 21`
   升级为 `minSdk = flutter.minSdkVersion`（工程基线仍要求最低 API 21）
 - 验收后新增：本报告 `validation/i6-release-acceptance-report.txt`
-- 未 push 远端
+- 当前状态：分支已与 `origin/codex/i2-hamsters-enclosures-csv` 同步
+- 本轮复核：尝试将 Android 有效 `minSdk` 恢复为 21；Flutter 3.44.0 的构建校验要求至少 API 23，`shared_preferences_android 2.4.27` 的 manifest 要求至少 API 24，故恢复现有可构建配置并重新执行 `make ci`
 
 ## 2. 环境版本
 
@@ -38,7 +40,7 @@ live 补验提交：见本轮补记提交
 ## 3. 已写入（本验收轮）
 
 - `validation/i6-release-acceptance-report.txt`：本验收报告
-- `apps/mobile/android/app/build.gradle.kts`：`minSdk = flutter.minSdkVersion`（Flutter 构建链自动对齐）
+- `apps/mobile/android/app/build.gradle.kts`：保持 `minSdk = flutter.minSdkVersion`（当前 Flutter 3.44.0 有效值为 24，确保现有插件依赖可构建）
 - 无业务逻辑回归修复（本轮未发现需改代码的断言失败）
 
 既有 I6 收口能力（已在 96edc10）：
@@ -54,7 +56,7 @@ live 补验提交：见本轮补记提交
 
 | 命令 | 结果 |
 |------|------|
-| git status / log / left-right / diff --check | 清洁；ahead 3；diff --check 空 |
+| git status / log / left-right / diff --check | 复核开始前清洁且与 origin 同步；diff --check 空 |
 | 环境版本采集 | 见上表 |
 
 ### 阶段二：数据库与服务端
@@ -118,20 +120,20 @@ live 环境（本机临时，非生产）：
 | apps/web npm run build | 通过：built apps/web/dist/server.mjs |
 | make flutter-analyze | No issues found |
 | make flutter-test | 16 passed |
-| make flutter-build-android | 通过：app-debug.apk |
+| make flutter-build-android | 原配置通过：app-debug.apk；API 21 尝试被 Flutter 最低 API 23 校验阻断 |
 
-Android debug APK（make ci 终态）：
+Android debug APK（本轮恢复原配置后的 make ci 终态）：
 - 路径：apps/mobile/build/app/outputs/flutter-apk/app-debug.apk
 - 大小：181057098 bytes
 - SHA-256：1843fb8454f73aef780b9ea772b1e9803b23e0a8e73aab4d07f3ddbe88ebaf6c
 
-（阶段六独立构建时 APK SHA 为 97f6eb94e460cce21a3a286a854056e3e56b874a7aa82d5226e324335df37b58；ci 末次重建后以终态为准。）
+API 21 复核：`minSdk = 21 + 0` 配合 `--android-skip-build-dependency-validation` 仍在 manifest merger 阶段失败；`shared_preferences_android 2.4.27` 要求最低 API 24。
 
 ### 阶段七：全量 make ci
 
 | 命令 | 结果 |
 |------|------|
-| make ci | **通过（exit 0）** |
+| make ci | **通过（exit 0）；恢复现有配置后本轮复跑通过** |
 | 内含 I1 smoke | events=4 published_outbox=2 |
 | 内含 I6 media smoke | events=9 published_outbox=8 |
 | 内含 objectstore-smoke | 本地通过；live skipped |
@@ -154,7 +156,7 @@ Android debug APK（make ci 终态）：
 |------|------|
 | 代码断言失败 | **无** |
 | 业务回归修复 | **无** |
-| 构建链微调 | Flutter 将 minSdk 硬编码 21 改为 flutter.minSdkVersion；已纳入验收提交 |
+| Android minSdk 复核 | API 21 尝试未通过：Flutter 3.44.0 构建校验最低 API 23，`shared_preferences_android 2.4.27` manifest 最低 API 24；当前保持 `flutter.minSdkVersion` |
 | 环境问题 | 见下节 |
 
 ## 7. 环境问题与待确认
@@ -164,17 +166,20 @@ Android debug APK（make ci 终态）：
 3. **正式 Bundle ID / 签名**：仍为 cn.scolvpet.dev + debug 签名（见工程平台基线）。
 4. **iOS 26.5 simulator runtime**：本机 make ci 不覆盖；GH Actions 另有检查。
 5. **PATH 中默认 java**：需 JAVA_HOME 指向 Homebrew OpenJDK 17。
+6. **Android 最低 API 基线待决**：README/工程基线要求 API 21；Flutter 3.44.0 构建校验最低 API 23，锁定的 `shared_preferences_android 2.4.27` manifest 最低 API 24。当前可验证构建的有效 minSdk 为 24；若必须支持 API 21，需要切换 Flutter/插件兼容组合并重新做完整验收。
 
 ## 8. 最终结论
 
 **有条件通过 — 可作为本地发布候选版（release candidate）**
 
 - 全部可自动化的代码、迁移、契约、媒体、Web、Flutter、Android debug、outbox、本机 MinIO live 路径已绿。
+- 本轮恢复现有 `flutter.minSdkVersion` 配置后 `make ci` 已重新通过；API 21 尝试因 Flutter/插件最低版本门禁未通过，当前不得宣称 API 21–23 兼容。
 - 条件：正式上线前必须完成生产对象存储 live、生产凭据门禁与签名配置；当前不得声称“生产已联调”。
 
 ## 9. 后续交付动作（本轮已执行）
 
 1. 本机临时 MinIO live smoke：已通过。
-2. `git push origin codex/i2-hamsters-enclosures-csv`：见最终 status。
-3. Draft PR #1 描述更新：见 PR URL。
-4. 生产部署前仍需走 APP_ENV=production fail-fast 配置检查清单。
+2. d45c8f9 时当前分支已与 `origin/codex/i2-hamsters-enclosures-csv` 同步；本轮复核尚未提交或 push。
+3. 本轮恢复现有 Android 配置后执行 `make ci`：已通过（exit 0）；API 21 复核失败原因已写入本报告。
+4. Draft PR #1 描述更新：见 PR URL。
+5. 生产部署前仍需走 APP_ENV=production fail-fast 配置检查清单。
