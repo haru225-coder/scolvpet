@@ -61,6 +61,11 @@ export 'package:scolvpet_api/src/model/device_info.dart';
 export 'package:scolvpet_api/src/model/download_link_response.dart';
 export 'package:scolvpet_api/src/model/download_link_response_data.dart';
 export 'package:scolvpet_api/src/model/enclosure.dart';
+export 'package:scolvpet_api/src/model/enclosure_cleaning.dart';
+export 'package:scolvpet_api/src/model/enclosure_cleaning_create_request.dart';
+export 'package:scolvpet_api/src/model/enclosure_cleaning_list_response.dart';
+export 'package:scolvpet_api/src/model/enclosure_cleaning_response.dart';
+export 'package:scolvpet_api/src/model/enclosure_cleaning_type.dart';
 export 'package:scolvpet_api/src/model/enclosure_create_request.dart';
 export 'package:scolvpet_api/src/model/enclosure_dimensions.dart';
 export 'package:scolvpet_api/src/model/enclosure_list_response.dart';
@@ -258,5 +263,6 @@ export 'package:scolvpet_api/src/model/weight_record_create_request.dart';
 export 'package:scolvpet_api/src/model/weight_record_list_response.dart';
 export 'package:scolvpet_api/src/model/weight_record_one_of.dart';
 export 'package:scolvpet_api/src/model/weight_record_one_of1.dart';
+export 'package:scolvpet_api/src/model/weight_record_one_of2.dart';
 export 'package:scolvpet_api/src/model/weight_record_response.dart';
 

@@ -1,0 +1,5 @@
+internal_code,name,sex,born_at,litter_code,sire_code,dam_code,enclosure_code
+DUP-001,重复一,male,2026-01-01,L-DIRTY,MISSING,DAM-001,CAGE-001
+DUP-001,重复二,female,2026-01-02,L-DIRTY,SIRE-001,DAM-001,CAGE-001
+EXIST-001,核心冲突,male,2026-02-01,L-OTHER,SIRE-001,DAM-001,CAGE-001
+AMB-CHILD,歧义父本,female,2026-03-01,L-AMB,AMB-SIRE,DAM-001,CAGE-001

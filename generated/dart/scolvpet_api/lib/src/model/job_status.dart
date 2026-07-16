@@ -13,6 +13,8 @@ enum JobStatus {
       running(r'running'),
       @JsonValue(r'succeeded')
       succeeded(r'succeeded'),
+      @JsonValue(r'partially_succeeded')
+      partiallySucceeded(r'partially_succeeded'),
       @JsonValue(r'failed')
       failed(r'failed'),
       @JsonValue(r'cancelled')

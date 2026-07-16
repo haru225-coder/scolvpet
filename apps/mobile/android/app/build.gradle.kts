@@ -1,13 +1,21 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val mobileIdentifierProperties = Properties().apply {
+    rootProject.file("mobile-identifiers.properties").inputStream().use { input -> load(input) }
+}
+val mobileAppId = mobileIdentifierProperties.getProperty("SCOLVPET_APP_ID")
+    ?: error("SCOLVPET_APP_ID is missing from mobile-identifiers.properties")
+
 android {
-    namespace = "cn.scolvpet.dev"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    namespace = mobileAppId
+    compileSdk = 36
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -15,12 +23,9 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "cn.scolvpet.dev"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        applicationId = mobileAppId
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

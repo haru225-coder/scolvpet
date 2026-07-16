@@ -53,6 +53,11 @@ doc/DeviceInfo.md
 doc/DownloadLinkResponse.md
 doc/DownloadLinkResponseData.md
 doc/Enclosure.md
+doc/EnclosureCleaning.md
+doc/EnclosureCleaningCreateRequest.md
+doc/EnclosureCleaningListResponse.md
+doc/EnclosureCleaningResponse.md
+doc/EnclosureCleaningType.md
 doc/EnclosureCreateRequest.md
 doc/EnclosureDimensions.md
 doc/EnclosureListResponse.md
@@ -250,6 +255,7 @@ doc/WeightRecordCreateRequest.md
 doc/WeightRecordListResponse.md
 doc/WeightRecordOneOf.md
 doc/WeightRecordOneOf1.md
+doc/WeightRecordOneOf2.md
 doc/WeightRecordResponse.md
 lib/scolvpet_api.dart
 lib/src/api.dart
@@ -310,6 +316,11 @@ lib/src/model/device_info.dart
 lib/src/model/download_link_response.dart
 lib/src/model/download_link_response_data.dart
 lib/src/model/enclosure.dart
+lib/src/model/enclosure_cleaning.dart
+lib/src/model/enclosure_cleaning_create_request.dart
+lib/src/model/enclosure_cleaning_list_response.dart
+lib/src/model/enclosure_cleaning_response.dart
+lib/src/model/enclosure_cleaning_type.dart
 lib/src/model/enclosure_create_request.dart
 lib/src/model/enclosure_dimensions.dart
 lib/src/model/enclosure_list_response.dart
@@ -507,6 +518,7 @@ lib/src/model/weight_record_create_request.dart
 lib/src/model/weight_record_list_response.dart
 lib/src/model/weight_record_one_of.dart
 lib/src/model/weight_record_one_of1.dart
+lib/src/model/weight_record_one_of2.dart
 lib/src/model/weight_record_response.dart
 pubspec.yaml
 test/account_test.dart
@@ -559,6 +571,11 @@ test/default_api_test.dart
 test/device_info_test.dart
 test/download_link_response_data_test.dart
 test/download_link_response_test.dart
+test/enclosure_cleaning_create_request_test.dart
+test/enclosure_cleaning_list_response_test.dart
+test/enclosure_cleaning_response_test.dart
+test/enclosure_cleaning_test.dart
+test/enclosure_cleaning_type_test.dart
 test/enclosure_create_request_test.dart
 test/enclosure_dimensions_test.dart
 test/enclosure_list_response_test.dart
@@ -755,6 +772,7 @@ test/weight_record_batch_create_response_test.dart
 test/weight_record_create_request_test.dart
 test/weight_record_list_response_test.dart
 test/weight_record_one_of1_test.dart
+test/weight_record_one_of2_test.dart
 test/weight_record_one_of_test.dart
 test/weight_record_response_test.dart
 test/weight_record_test.dart

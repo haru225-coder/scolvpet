@@ -15,13 +15,9 @@ abstract class _$EnclosureUpdateRequestCWProxy {
 
   EnclosureUpdateRequest dimensions(EnclosureDimensions? dimensions);
 
-  EnclosureUpdateRequest cleanlinessState(CleanlinessState? cleanlinessState);
-
   EnclosureUpdateRequest capacity(int? capacity);
 
   EnclosureUpdateRequest equipment(List<String>? equipment);
-
-  EnclosureUpdateRequest lastCleanedAt(DateTime? lastCleanedAt);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `EnclosureUpdateRequest(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -34,10 +30,8 @@ abstract class _$EnclosureUpdateRequestCWProxy {
     String? rackCode,
     String? levelCode,
     EnclosureDimensions? dimensions,
-    CleanlinessState? cleanlinessState,
     int? capacity,
     List<String>? equipment,
-    DateTime? lastCleanedAt,
   });
 }
 
@@ -63,19 +57,11 @@ class _$EnclosureUpdateRequestCWProxyImpl
       this(dimensions: dimensions);
 
   @override
-  EnclosureUpdateRequest cleanlinessState(CleanlinessState? cleanlinessState) =>
-      this(cleanlinessState: cleanlinessState);
-
-  @override
   EnclosureUpdateRequest capacity(int? capacity) => this(capacity: capacity);
 
   @override
   EnclosureUpdateRequest equipment(List<String>? equipment) =>
       this(equipment: equipment);
-
-  @override
-  EnclosureUpdateRequest lastCleanedAt(DateTime? lastCleanedAt) =>
-      this(lastCleanedAt: lastCleanedAt);
 
   @override
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `EnclosureUpdateRequest(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
@@ -89,10 +75,8 @@ class _$EnclosureUpdateRequestCWProxyImpl
     Object? rackCode = const $CopyWithPlaceholder(),
     Object? levelCode = const $CopyWithPlaceholder(),
     Object? dimensions = const $CopyWithPlaceholder(),
-    Object? cleanlinessState = const $CopyWithPlaceholder(),
     Object? capacity = const $CopyWithPlaceholder(),
     Object? equipment = const $CopyWithPlaceholder(),
-    Object? lastCleanedAt = const $CopyWithPlaceholder(),
   }) {
     return EnclosureUpdateRequest(
       code: code == const $CopyWithPlaceholder()
@@ -111,10 +95,6 @@ class _$EnclosureUpdateRequestCWProxyImpl
           ? _value.dimensions
           // ignore: cast_nullable_to_non_nullable
           : dimensions as EnclosureDimensions?,
-      cleanlinessState: cleanlinessState == const $CopyWithPlaceholder()
-          ? _value.cleanlinessState
-          // ignore: cast_nullable_to_non_nullable
-          : cleanlinessState as CleanlinessState?,
       capacity: capacity == const $CopyWithPlaceholder()
           ? _value.capacity
           // ignore: cast_nullable_to_non_nullable
@@ -123,10 +103,6 @@ class _$EnclosureUpdateRequestCWProxyImpl
           ? _value.equipment
           // ignore: cast_nullable_to_non_nullable
           : equipment as List<String>?,
-      lastCleanedAt: lastCleanedAt == const $CopyWithPlaceholder()
-          ? _value.lastCleanedAt
-          // ignore: cast_nullable_to_non_nullable
-          : lastCleanedAt as DateTime?,
     );
   }
 }
@@ -158,28 +134,15 @@ EnclosureUpdateRequest _$EnclosureUpdateRequestFromJson(
             ? null
             : EnclosureDimensions.fromJson(v as Map<String, dynamic>),
       ),
-      cleanlinessState: $checkedConvert(
-        'cleanliness_state',
-        (v) => $enumDecodeNullable(_$CleanlinessStateEnumMap, v),
-      ),
       capacity: $checkedConvert('capacity', (v) => (v as num?)?.toInt()),
       equipment: $checkedConvert(
         'equipment',
         (v) => (v as List<dynamic>?)?.map((e) => e as String).toList(),
       ),
-      lastCleanedAt: $checkedConvert(
-        'last_cleaned_at',
-        (v) => v == null ? null : DateTime.parse(v as String),
-      ),
     );
     return val;
   },
-  fieldKeyMap: const {
-    'rackCode': 'rack_code',
-    'levelCode': 'level_code',
-    'cleanlinessState': 'cleanliness_state',
-    'lastCleanedAt': 'last_cleaned_at',
-  },
+  fieldKeyMap: const {'rackCode': 'rack_code', 'levelCode': 'level_code'},
 );
 
 Map<String, dynamic> _$EnclosureUpdateRequestToJson(
@@ -189,14 +152,6 @@ Map<String, dynamic> _$EnclosureUpdateRequestToJson(
   'rack_code': ?instance.rackCode,
   'level_code': ?instance.levelCode,
   'dimensions': ?instance.dimensions?.toJson(),
-  'cleanliness_state': ?_$CleanlinessStateEnumMap[instance.cleanlinessState],
   'capacity': ?instance.capacity,
   'equipment': ?instance.equipment,
-  'last_cleaned_at': ?instance.lastCleanedAt?.toIso8601String(),
-};
-
-const _$CleanlinessStateEnumMap = {
-  CleanlinessState.clean: 'clean',
-  CleanlinessState.partialDue: 'partial_due',
-  CleanlinessState.fullDue: 'full_due',
 };

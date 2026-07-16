@@ -21,6 +21,7 @@ Method | HTTP request | Description
 [**createBackupJob**](DefaultApi.md#createbackupjob) | **POST** /data-center/backup-jobs | 创建基础备份
 [**createBreedingPlan**](DefaultApi.md#createbreedingplan) | **POST** /breeding-plans | 创建繁育计划草稿
 [**createEnclosure**](DefaultApi.md#createenclosure) | **POST** /enclosures | 创建笼盒
+[**createEnclosureCleaning**](DefaultApi.md#createenclosurecleaning) | **POST** /enclosures/{enclosure_id}/cleanings | 记录笼盒清洁或消毒
 [**createEnclosureStay**](DefaultApi.md#createenclosurestay) | **POST** /enclosures/{enclosure_id}/stays | 创建入住或移笼事实
 [**createExportJob**](DefaultApi.md#createexportjob) | **POST** /data-center/export-jobs | 创建数据导出
 [**createHamster**](DefaultApi.md#createhamster) | **POST** /hamsters | 创建仓鼠档案
@@ -46,6 +47,7 @@ Method | HTTP request | Description
 [**getCurrentUsage**](DefaultApi.md#getcurrentusage) | **GET** /usage/current | 获取当前用量
 [**getDataCenterSummary**](DefaultApi.md#getdatacentersummary) | **GET** /data-center/summary | 获取数据中心摘要
 [**getEnclosure**](DefaultApi.md#getenclosure) | **GET** /enclosures/{enclosure_id} | 获取笼盒详情
+[**getEnclosureCleaning**](DefaultApi.md#getenclosurecleaning) | **GET** /enclosure-cleanings/{cleaning_id} | 获取清洁记录
 [**getExportDownload**](DefaultApi.md#getexportdownload) | **GET** /data-center/export-jobs/{job_id}/download | 获取导出下载链接
 [**getExportJob**](DefaultApi.md#getexportjob) | **GET** /data-center/export-jobs/{job_id} | 获取导出任务
 [**getHamster**](DefaultApi.md#gethamster) | **GET** /hamsters/{hamster_id} | 获取仓鼠详情
@@ -62,6 +64,7 @@ Method | HTTP request | Description
 [**getMediaTranscodeStatus**](DefaultApi.md#getmediatranscodestatus) | **GET** /media/{media_id}/transcode-status | 获取转码状态
 [**getPairingAttempt**](DefaultApi.md#getpairingattempt) | **GET** /pairing-attempts/{attempt_id} | 获取配对尝试
 [**getPublicShare**](DefaultApi.md#getpublicshare) | **GET** /public/shares/{token} | 无需认证读取公开分享
+[**getPublicShareMedia**](DefaultApi.md#getpublicsharemedia) | **GET** /public/shares/{token}/media/{media_id} | 读取公开分享媒体
 [**getReminder**](DefaultApi.md#getreminder) | **GET** /reminders/{reminder_id} | 获取提醒
 [**getSpeciesRuleVersion**](DefaultApi.md#getspeciesruleversion) | **GET** /species-rule-versions/{rule_version_id} | 获取规则版本
 [**getTask**](DefaultApi.md#gettask) | **GET** /tasks/{task_id} | 获取任务
@@ -70,6 +73,7 @@ Method | HTTP request | Description
 [**individualizeLitter_1**](DefaultApi.md#individualizelitter_1) | **POST** /litters/{litter_id}/individualize | 将临时幼崽个体化
 [**listBackupJobs**](DefaultApi.md#listbackupjobs) | **GET** /data-center/backup-jobs | 列出备份任务
 [**listBreedingPlans**](DefaultApi.md#listbreedingplans) | **GET** /breeding-plans | 列出繁育计划
+[**listEnclosureCleanings**](DefaultApi.md#listenclosurecleanings) | **GET** /enclosures/{enclosure_id}/cleanings | 列出笼盒清洁历史
 [**listEnclosureStays**](DefaultApi.md#listenclosurestays) | **GET** /enclosures/{enclosure_id}/stays | 列出笼盒入住历史
 [**listEnclosures**](DefaultApi.md#listenclosures) | **GET** /enclosures | 列出笼盒
 [**listExportJobs**](DefaultApi.md#listexportjobs) | **GET** /data-center/export-jobs | 列出导出任务
@@ -126,17 +130,17 @@ Method | HTTP request | Description
 
 修正配对基准时间
 
-仅允许 gestation 或可恢复的 hold 状态。追加日期纠正事件，重算预产区间， 并将旧提醒标记为 superseded；客户端不得提交重算后的日期或提醒集合。 
+仅允许 gestation 或可恢复的 hold 状态。追加日期纠正事件，重算预产区间， 并将旧提醒标记为 superseded；客户端不得提交重算后的日期或提醒集合。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final AdjustBaselineRequest adjustBaselineRequest = {"new_baseline_at":"2026-07-18T12:12:00Z","reason":"以明确交配观察作为新基准","timezone":"Asia/Shanghai"}; // AdjustBaselineRequest | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final AdjustBaselineRequest adjustBaselineRequest = {"new_baseline_at":"2026-07-18T12:12:00Z","reason":"以明确交配观察作为新基准","timezone":"Asia/Shanghai"}; // AdjustBaselineRequest |
 
 try {
     final response = api.adjustBreedingBaseline(idempotencyKey, ifMatch, planId, adjustBaselineRequest);
@@ -150,10 +154,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **planId** | **String**|  | 
- **adjustBaselineRequest** | [**AdjustBaselineRequest**](AdjustBaselineRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **planId** | **String**|  |
+ **adjustBaselineRequest** | [**AdjustBaselineRequest**](AdjustBaselineRequest.md)|  |
 
 ### Return type
 
@@ -182,8 +186,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final HamsterBatchCreateRequest hamsterBatchCreateRequest = ; // HamsterBatchCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final HamsterBatchCreateRequest hamsterBatchCreateRequest = ; // HamsterBatchCreateRequest |
 
 try {
     final response = api.batchCreateHamsters(idempotencyKey, hamsterBatchCreateRequest);
@@ -197,8 +201,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **hamsterBatchCreateRequest** | [**HamsterBatchCreateRequest**](HamsterBatchCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **hamsterBatchCreateRequest** | [**HamsterBatchCreateRequest**](HamsterBatchCreateRequest.md)|  |
 
 ### Return type
 
@@ -227,8 +231,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final WeightRecordBatchCreateRequest weightRecordBatchCreateRequest = ; // WeightRecordBatchCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final WeightRecordBatchCreateRequest weightRecordBatchCreateRequest = ; // WeightRecordBatchCreateRequest |
 
 try {
     final response = api.batchCreateWeightRecords(idempotencyKey, weightRecordBatchCreateRequest);
@@ -242,8 +246,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **weightRecordBatchCreateRequest** | [**WeightRecordBatchCreateRequest**](WeightRecordBatchCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **weightRecordBatchCreateRequest** | [**WeightRecordBatchCreateRequest**](WeightRecordBatchCreateRequest.md)|  |
 
 ### Return type
 
@@ -265,17 +269,17 @@ Name | Type | Description  | Notes
 
 提交正式导入
 
-使用幂等批次号正式写入；提交前重新校验 preflight_version、全部阻塞问题和逐项 更新确认。历史窝次先按预检计划原子创建，再建立成员与父母关系；部分失败时保留 逐行结果，但不允许产生缺父母、错窝次或悬空谱系引用。 
+使用幂等批次号正式写入；提交前重新校验 preflight_version、全部阻塞问题和逐项 更新确认。历史窝次先按预检计划原子创建，再建立成员与父母关系；部分失败时保留 逐行结果，但不允许产生缺父母、错窝次或悬空谱系引用。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final ImportCommitRequest importCommitRequest = ; // ImportCommitRequest | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final ImportCommitRequest importCommitRequest = ; // ImportCommitRequest |
 
 try {
     final response = api.commitImportJob(idempotencyKey, ifMatch, jobId, importCommitRequest);
@@ -289,10 +293,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **jobId** | **String**|  | 
- **importCommitRequest** | [**ImportCommitRequest**](ImportCommitRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **jobId** | **String**|  |
+ **importCommitRequest** | [**ImportCommitRequest**](ImportCommitRequest.md)|  |
 
 ### Return type
 
@@ -314,17 +318,17 @@ Name | Type | Description  | Notes
 
 完成繁育计划
 
-仅允许 individualizing。 服务端确认数量、性别、笼位、家谱和阻塞任务全部闭合后推进到 completed， 客户端不得提交目标状态或自行计算的对账数。 
+仅允许 individualizing。 服务端确认数量、性别、笼位、家谱和阻塞任务全部闭合后推进到 completed， 客户端不得提交目标状态或自行计算的对账数。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final CompleteBreedingPlanRequest completeBreedingPlanRequest = {"completed_at":"2026-09-05T03:00:00Z","timezone":"Asia/Shanghai","notes":"数量、分笼和谱系均已复核"}; // CompleteBreedingPlanRequest | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final CompleteBreedingPlanRequest completeBreedingPlanRequest = {"completed_at":"2026-09-05T03:00:00Z","timezone":"Asia/Shanghai","notes":"数量、分笼和谱系均已复核"}; // CompleteBreedingPlanRequest |
 
 try {
     final response = api.completeBreedingPlan(idempotencyKey, ifMatch, planId, completeBreedingPlanRequest);
@@ -338,10 +342,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **planId** | **String**|  | 
- **completeBreedingPlanRequest** | [**CompleteBreedingPlanRequest**](CompleteBreedingPlanRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **planId** | **String**|  |
+ **completeBreedingPlanRequest** | [**CompleteBreedingPlanRequest**](CompleteBreedingPlanRequest.md)|  |
 
 ### Return type
 
@@ -370,10 +374,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String uploadId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final MediaUploadCompleteRequest mediaUploadCompleteRequest = ; // MediaUploadCompleteRequest | 
+final String uploadId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final MediaUploadCompleteRequest mediaUploadCompleteRequest = ; // MediaUploadCompleteRequest |
 
 try {
     final response = api.completeMediaUpload(idempotencyKey, ifMatch, uploadId, mediaUploadCompleteRequest);
@@ -387,10 +391,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **uploadId** | **String**|  | 
- **mediaUploadCompleteRequest** | [**MediaUploadCompleteRequest**](MediaUploadCompleteRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **uploadId** | **String**|  |
+ **mediaUploadCompleteRequest** | [**MediaUploadCompleteRequest**](MediaUploadCompleteRequest.md)|  |
 
 ### Return type
 
@@ -419,10 +423,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String taskId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final CompleteTaskRequest completeTaskRequest = {"completed_at":"2026-08-10T02:00:00Z","subject_results":[{"subject_id":"018f47a2-73b3-762e-8498-07b13dc3b599","status":"completed","completion_record_id":"018f47a2-951e-7123-a5b3-1ade38a2b49e"},{"subject_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","status":"excepted","exception_reason":"当日医疗观察，延后称重"}],"notes":"本次完成 2 项"}; // CompleteTaskRequest | 
+final String taskId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final CompleteTaskRequest completeTaskRequest = {"completed_at":"2026-08-10T02:00:00Z","subject_results":[{"subject_id":"018f47a2-73b3-762e-8498-07b13dc3b599","status":"completed","completion_record_id":"018f47a2-951e-7123-a5b3-1ade38a2b49e"},{"subject_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","status":"excepted","exception_reason":"当日医疗观察，延后称重"}],"notes":"本次完成 2 项"}; // CompleteTaskRequest |
 
 try {
     final response = api.completeTask(idempotencyKey, ifMatch, taskId, completeTaskRequest);
@@ -436,10 +440,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **taskId** | **String**|  | 
- **completeTaskRequest** | [**CompleteTaskRequest**](CompleteTaskRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **taskId** | **String**|  |
+ **completeTaskRequest** | [**CompleteTaskRequest**](CompleteTaskRequest.md)|  |
 
 ### Return type
 
@@ -461,17 +465,17 @@ Name | Type | Description  | Notes
 
 确认产仔并建立窝次
 
-仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N>0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N=0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。 
+仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N>0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N=0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final ConfirmBirthRequest confirmBirthRequest = {"born_at":"2026-08-04T02:30:00Z","enclosure_id":"018f47a2-6450-7f54-8851-050a3d63846f","initial_alive_count":4,"initial_other_count":1,"dam_condition":{"status":"stable","notes":"精神与进食正常"},"temporary_code_prefix":"L240804","timezone":"Asia/Shanghai","outcome_reason":"live_pups_observed","notes":"发现 4 只活仔，另有 1 只死产"}; // ConfirmBirthRequest | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final ConfirmBirthRequest confirmBirthRequest = {"born_at":"2026-08-04T02:30:00Z","enclosure_id":"018f47a2-6450-7f54-8851-050a3d63846f","initial_alive_count":4,"initial_other_count":1,"dam_condition":{"status":"stable","notes":"精神与进食正常"},"temporary_code_prefix":"L240804","timezone":"Asia/Shanghai","outcome_reason":"live_pups_observed","notes":"发现 4 只活仔，另有 1 只死产"}; // ConfirmBirthRequest |
 
 try {
     final response = api.confirmBirth(idempotencyKey, ifMatch, planId, confirmBirthRequest);
@@ -485,10 +489,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **planId** | **String**|  | 
- **confirmBirthRequest** | [**ConfirmBirthRequest**](ConfirmBirthRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **planId** | **String**|  |
+ **confirmBirthRequest** | [**ConfirmBirthRequest**](ConfirmBirthRequest.md)|  |
 
 ### Return type
 
@@ -510,17 +514,17 @@ Name | Type | Description  | Notes
 
 确认产仔并建立窝次
 
-仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N>0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N=0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。 
+仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N>0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N=0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final ConfirmBirthRequest confirmBirthRequest = {"born_at":"2026-08-04T02:30:00Z","enclosure_id":"018f47a2-6450-7f54-8851-050a3d63846f","initial_alive_count":4,"initial_other_count":1,"dam_condition":{"status":"stable","notes":"精神与进食正常"},"temporary_code_prefix":"L240804","timezone":"Asia/Shanghai","outcome_reason":"live_pups_observed","notes":"发现 4 只活仔，另有 1 只死产"}; // ConfirmBirthRequest | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final ConfirmBirthRequest confirmBirthRequest = {"born_at":"2026-08-04T02:30:00Z","enclosure_id":"018f47a2-6450-7f54-8851-050a3d63846f","initial_alive_count":4,"initial_other_count":1,"dam_condition":{"status":"stable","notes":"精神与进食正常"},"temporary_code_prefix":"L240804","timezone":"Asia/Shanghai","outcome_reason":"live_pups_observed","notes":"发现 4 只活仔，另有 1 只死产"}; // ConfirmBirthRequest |
 
 try {
     final response = api.confirmBirth_0(idempotencyKey, ifMatch, planId, confirmBirthRequest);
@@ -534,10 +538,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **planId** | **String**|  | 
- **confirmBirthRequest** | [**ConfirmBirthRequest**](ConfirmBirthRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **planId** | **String**|  |
+ **confirmBirthRequest** | [**ConfirmBirthRequest**](ConfirmBirthRequest.md)|  |
 
 ### Return type
 
@@ -566,8 +570,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final BackupJobCreateRequest backupJobCreateRequest = ; // BackupJobCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final BackupJobCreateRequest backupJobCreateRequest = ; // BackupJobCreateRequest |
 
 try {
     final response = api.createBackupJob(idempotencyKey, backupJobCreateRequest);
@@ -581,8 +585,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **backupJobCreateRequest** | [**BackupJobCreateRequest**](BackupJobCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **backupJobCreateRequest** | [**BackupJobCreateRequest**](BackupJobCreateRequest.md)|  |
 
 ### Return type
 
@@ -611,8 +615,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final BreedingPlanCreateRequest breedingPlanCreateRequest = ; // BreedingPlanCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final BreedingPlanCreateRequest breedingPlanCreateRequest = ; // BreedingPlanCreateRequest |
 
 try {
     final response = api.createBreedingPlan(idempotencyKey, breedingPlanCreateRequest);
@@ -626,8 +630,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **breedingPlanCreateRequest** | [**BreedingPlanCreateRequest**](BreedingPlanCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **breedingPlanCreateRequest** | [**BreedingPlanCreateRequest**](BreedingPlanCreateRequest.md)|  |
 
 ### Return type
 
@@ -656,8 +660,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final EnclosureCreateRequest enclosureCreateRequest = ; // EnclosureCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final EnclosureCreateRequest enclosureCreateRequest = ; // EnclosureCreateRequest |
 
 try {
     final response = api.createEnclosure(idempotencyKey, enclosureCreateRequest);
@@ -671,12 +675,61 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **enclosureCreateRequest** | [**EnclosureCreateRequest**](EnclosureCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **enclosureCreateRequest** | [**EnclosureCreateRequest**](EnclosureCreateRequest.md)|  |
 
 ### Return type
 
 [**EnclosureResponse**](EnclosureResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createEnclosureCleaning**
+> EnclosureCleaningResponse createEnclosureCleaning(idempotencyKey, ifMatch, enclosureId, enclosureCleaningCreateRequest)
+
+记录笼盒清洁或消毒
+
+追加清洁事实并更新笼盒清洁投影；纠错通过新记录引用原记录完成。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final EnclosureCleaningCreateRequest enclosureCleaningCreateRequest = ; // EnclosureCleaningCreateRequest |
+
+try {
+    final response = api.createEnclosureCleaning(idempotencyKey, ifMatch, enclosureId, enclosureCleaningCreateRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->createEnclosureCleaning: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **enclosureId** | **String**|  |
+ **enclosureCleaningCreateRequest** | [**EnclosureCleaningCreateRequest**](EnclosureCleaningCreateRequest.md)|  |
+
+### Return type
+
+[**EnclosureCleaningResponse**](EnclosureCleaningResponse.md)
 
 ### Authorization
 
@@ -701,10 +754,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final EnclosureStayCreateRequest enclosureStayCreateRequest = ; // EnclosureStayCreateRequest | 
+final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final EnclosureStayCreateRequest enclosureStayCreateRequest = ; // EnclosureStayCreateRequest |
 
 try {
     final response = api.createEnclosureStay(idempotencyKey, ifMatch, enclosureId, enclosureStayCreateRequest);
@@ -718,10 +771,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **enclosureId** | **String**|  | 
- **enclosureStayCreateRequest** | [**EnclosureStayCreateRequest**](EnclosureStayCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **enclosureId** | **String**|  |
+ **enclosureStayCreateRequest** | [**EnclosureStayCreateRequest**](EnclosureStayCreateRequest.md)|  |
 
 ### Return type
 
@@ -750,8 +803,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final ExportJobCreateRequest exportJobCreateRequest = ; // ExportJobCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final ExportJobCreateRequest exportJobCreateRequest = ; // ExportJobCreateRequest |
 
 try {
     final response = api.createExportJob(idempotencyKey, exportJobCreateRequest);
@@ -765,8 +818,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **exportJobCreateRequest** | [**ExportJobCreateRequest**](ExportJobCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **exportJobCreateRequest** | [**ExportJobCreateRequest**](ExportJobCreateRequest.md)|  |
 
 ### Return type
 
@@ -795,8 +848,8 @@ owner_id 从认证上下文解析；父母关系写入 pedigree_parentage。
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final HamsterCreateRequest hamsterCreateRequest = {"internal_code":"SY-2026-001","name":"小云","species_rule_version_id":"018f47a2-3e3b-7e40-9665-12cd57082cf0","variety_code":"syrian","sex":"female","birth_date":"2026-05-20","source_type":"introduced","notes":"引入种母"}; // HamsterCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final HamsterCreateRequest hamsterCreateRequest = {"internal_code":"SY-2026-001","name":"小云","species_rule_version_id":"018f47a2-3e3b-7e40-9665-12cd57082cf0","variety_code":"syrian","sex":"female","birth_date":"2026-05-20","source_type":"introduced","notes":"引入种母"}; // HamsterCreateRequest |
 
 try {
     final response = api.createHamster(idempotencyKey, hamsterCreateRequest);
@@ -810,8 +863,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **hamsterCreateRequest** | [**HamsterCreateRequest**](HamsterCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **hamsterCreateRequest** | [**HamsterCreateRequest**](HamsterCreateRequest.md)|  |
 
 ### Return type
 
@@ -840,8 +893,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final HealthRecordCreateRequest healthRecordCreateRequest = ; // HealthRecordCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final HealthRecordCreateRequest healthRecordCreateRequest = ; // HealthRecordCreateRequest |
 
 try {
     final response = api.createHealthRecord(idempotencyKey, healthRecordCreateRequest);
@@ -855,8 +908,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **healthRecordCreateRequest** | [**HealthRecordCreateRequest**](HealthRecordCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **healthRecordCreateRequest** | [**HealthRecordCreateRequest**](HealthRecordCreateRequest.md)|  |
 
 ### Return type
 
@@ -885,8 +938,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final ImportJobCreateRequest importJobCreateRequest = ; // ImportJobCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final ImportJobCreateRequest importJobCreateRequest = ; // ImportJobCreateRequest |
 
 try {
     final response = api.createImportJob(idempotencyKey, importJobCreateRequest);
@@ -900,8 +953,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **importJobCreateRequest** | [**ImportJobCreateRequest**](ImportJobCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **importJobCreateRequest** | [**ImportJobCreateRequest**](ImportJobCreateRequest.md)|  |
 
 ### Return type
 
@@ -930,8 +983,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final ImportUploadCreateRequest importUploadCreateRequest = ; // ImportUploadCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final ImportUploadCreateRequest importUploadCreateRequest = ; // ImportUploadCreateRequest |
 
 try {
     final response = api.createImportUpload(idempotencyKey, importUploadCreateRequest);
@@ -945,8 +998,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **importUploadCreateRequest** | [**ImportUploadCreateRequest**](ImportUploadCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **importUploadCreateRequest** | [**ImportUploadCreateRequest**](ImportUploadCreateRequest.md)|  |
 
 ### Return type
 
@@ -975,10 +1028,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final AdjustLitterCountRequest adjustLitterCountRequest = {"event_type":"discovered","delta":1,"occurred_at":"2026-08-05T01:00:00Z","reason":"清点时后补发现一只","new_temporary_codes":["L240804-05"]}; // AdjustLitterCountRequest | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final AdjustLitterCountRequest adjustLitterCountRequest = {"event_type":"discovered","delta":1,"occurred_at":"2026-08-05T01:00:00Z","reason":"清点时后补发现一只","new_temporary_codes":["L240804-05"]}; // AdjustLitterCountRequest |
 
 try {
     final response = api.createLitterCountEvent(idempotencyKey, ifMatch, litterId, adjustLitterCountRequest);
@@ -992,10 +1045,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **litterId** | **String**|  | 
- **adjustLitterCountRequest** | [**AdjustLitterCountRequest**](AdjustLitterCountRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **litterId** | **String**|  |
+ **adjustLitterCountRequest** | [**AdjustLitterCountRequest**](AdjustLitterCountRequest.md)|  |
 
 ### Return type
 
@@ -1024,10 +1077,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final LitterParentCreateRequest litterParentCreateRequest = ; // LitterParentCreateRequest | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final LitterParentCreateRequest litterParentCreateRequest = ; // LitterParentCreateRequest |
 
 try {
     final response = api.createLitterParent(idempotencyKey, ifMatch, litterId, litterParentCreateRequest);
@@ -1041,10 +1094,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **litterId** | **String**|  | 
- **litterParentCreateRequest** | [**LitterParentCreateRequest**](LitterParentCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **litterId** | **String**|  |
+ **litterParentCreateRequest** | [**LitterParentCreateRequest**](LitterParentCreateRequest.md)|  |
 
 ### Return type
 
@@ -1073,10 +1126,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String mediaId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final MediaEditRecipeRequest mediaEditRecipeRequest = ; // MediaEditRecipeRequest | 
+final String mediaId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final MediaEditRecipeRequest mediaEditRecipeRequest = ; // MediaEditRecipeRequest |
 
 try {
     final response = api.createMediaEditRecipe(idempotencyKey, ifMatch, mediaId, mediaEditRecipeRequest);
@@ -1090,10 +1143,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **mediaId** | **String**|  | 
- **mediaEditRecipeRequest** | [**MediaEditRecipeRequest**](MediaEditRecipeRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **mediaId** | **String**|  |
+ **mediaEditRecipeRequest** | [**MediaEditRecipeRequest**](MediaEditRecipeRequest.md)|  |
 
 ### Return type
 
@@ -1122,8 +1175,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final PedigreeParentageCreateRequest pedigreeParentageCreateRequest = ; // PedigreeParentageCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final PedigreeParentageCreateRequest pedigreeParentageCreateRequest = ; // PedigreeParentageCreateRequest |
 
 try {
     final response = api.createPedigreeParentage(idempotencyKey, pedigreeParentageCreateRequest);
@@ -1137,8 +1190,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **pedigreeParentageCreateRequest** | [**PedigreeParentageCreateRequest**](PedigreeParentageCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **pedigreeParentageCreateRequest** | [**PedigreeParentageCreateRequest**](PedigreeParentageCreateRequest.md)|  |
 
 ### Return type
 
@@ -1167,8 +1220,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final PhoneCodeLoginRequest phoneCodeLoginRequest = {"phone":"+8613800138000","verification_id":"018f47a2-2f7e-7f5d-a413-5bfe09a61f62","code":"482931","device":{"platform":"ios","device_name":"iPhone","app_version":"0.1.0"}}; // PhoneCodeLoginRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final PhoneCodeLoginRequest phoneCodeLoginRequest = {"phone":"+8613800138000","verification_id":"018f47a2-2f7e-7f5d-a413-5bfe09a61f62","code":"482931","device":{"platform":"ios","device_name":"iPhone","app_version":"0.1.0"}}; // PhoneCodeLoginRequest |
 final String xTimezone = Asia/Shanghai; // String | IANA 时区；缺省时使用当前熊舍 timezone。
 
 try {
@@ -1183,8 +1236,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **phoneCodeLoginRequest** | [**PhoneCodeLoginRequest**](PhoneCodeLoginRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **phoneCodeLoginRequest** | [**PhoneCodeLoginRequest**](PhoneCodeLoginRequest.md)|  |
  **xTimezone** | **String**| IANA 时区；缺省时使用当前熊舍 timezone。 | [optional] [default to 'Asia/Shanghai']
 
 ### Return type
@@ -1214,8 +1267,8 @@ No authorization required
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final ShareCreateRequest shareCreateRequest = ; // ShareCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final ShareCreateRequest shareCreateRequest = ; // ShareCreateRequest |
 
 try {
     final response = api.createShare(idempotencyKey, shareCreateRequest);
@@ -1229,8 +1282,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **shareCreateRequest** | [**ShareCreateRequest**](ShareCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **shareCreateRequest** | [**ShareCreateRequest**](ShareCreateRequest.md)|  |
 
 ### Return type
 
@@ -1259,8 +1312,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final SpeciesRuleVersionCreateRequest speciesRuleVersionCreateRequest = ; // SpeciesRuleVersionCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final SpeciesRuleVersionCreateRequest speciesRuleVersionCreateRequest = ; // SpeciesRuleVersionCreateRequest |
 
 try {
     final response = api.createSpeciesRuleVersion(idempotencyKey, speciesRuleVersionCreateRequest);
@@ -1274,8 +1327,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **speciesRuleVersionCreateRequest** | [**SpeciesRuleVersionCreateRequest**](SpeciesRuleVersionCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **speciesRuleVersionCreateRequest** | [**SpeciesRuleVersionCreateRequest**](SpeciesRuleVersionCreateRequest.md)|  |
 
 ### Return type
 
@@ -1304,8 +1357,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final CareTaskCreateRequest careTaskCreateRequest = ; // CareTaskCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final CareTaskCreateRequest careTaskCreateRequest = ; // CareTaskCreateRequest |
 
 try {
     final response = api.createTask(idempotencyKey, careTaskCreateRequest);
@@ -1319,8 +1372,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **careTaskCreateRequest** | [**CareTaskCreateRequest**](CareTaskCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **careTaskCreateRequest** | [**CareTaskCreateRequest**](CareTaskCreateRequest.md)|  |
 
 ### Return type
 
@@ -1349,8 +1402,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final WeightRecordCreateRequest weightRecordCreateRequest = ; // WeightRecordCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final WeightRecordCreateRequest weightRecordCreateRequest = ; // WeightRecordCreateRequest |
 
 try {
     final response = api.createWeightRecord(idempotencyKey, weightRecordCreateRequest);
@@ -1364,8 +1417,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **weightRecordCreateRequest** | [**WeightRecordCreateRequest**](WeightRecordCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **weightRecordCreateRequest** | [**WeightRecordCreateRequest**](WeightRecordCreateRequest.md)|  |
 
 ### Return type
 
@@ -1394,7 +1447,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 
 try {
     api.deleteCurrentSession(idempotencyKey);
@@ -1407,7 +1460,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
 
 ### Return type
 
@@ -1436,7 +1489,7 @@ void (empty response body)
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getAsyncJob(jobId);
@@ -1450,7 +1503,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobId** | **String**|  | 
+ **jobId** | **String**|  |
 
 ### Return type
 
@@ -1479,7 +1532,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getBackupDownload(jobId);
@@ -1493,7 +1546,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobId** | **String**|  | 
+ **jobId** | **String**|  |
 
 ### Return type
 
@@ -1522,7 +1575,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getBackupJob(jobId);
@@ -1536,7 +1589,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobId** | **String**|  | 
+ **jobId** | **String**|  |
 
 ### Return type
 
@@ -1565,7 +1618,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getBreedingPlan(planId);
@@ -1579,7 +1632,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **planId** | **String**|  | 
+ **planId** | **String**|  |
 
 ### Return type
 
@@ -1764,7 +1817,7 @@ This endpoint does not need any parameter.
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getEnclosure(enclosureId);
@@ -1778,11 +1831,52 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **enclosureId** | **String**|  | 
+ **enclosureId** | **String**|  |
 
 ### Return type
 
 [**EnclosureResponse**](EnclosureResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getEnclosureCleaning**
+> EnclosureCleaningResponse getEnclosureCleaning(cleaningId)
+
+获取清洁记录
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String cleaningId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+
+try {
+    final response = api.getEnclosureCleaning(cleaningId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->getEnclosureCleaning: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **cleaningId** | **String**|  |
+
+### Return type
+
+[**EnclosureCleaningResponse**](EnclosureCleaningResponse.md)
 
 ### Authorization
 
@@ -1807,7 +1901,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getExportDownload(jobId);
@@ -1821,7 +1915,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobId** | **String**|  | 
+ **jobId** | **String**|  |
 
 ### Return type
 
@@ -1850,7 +1944,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getExportJob(jobId);
@@ -1864,7 +1958,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobId** | **String**|  | 
+ **jobId** | **String**|  |
 
 ### Return type
 
@@ -1893,7 +1987,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String hamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String hamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getHamster(hamsterId);
@@ -1907,7 +2001,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **hamsterId** | **String**|  | 
+ **hamsterId** | **String**|  |
 
 ### Return type
 
@@ -1936,8 +2030,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String hamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final int generations = 56; // int | 
+final String hamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final int generations = 56; // int |
 
 try {
     final response = api.getHamsterPedigree(hamsterId, generations);
@@ -1951,7 +2045,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **hamsterId** | **String**|  | 
+ **hamsterId** | **String**|  |
  **generations** | **int**|  | [optional] [default to 4]
 
 ### Return type
@@ -1981,7 +2075,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String healthRecordId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String healthRecordId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getHealthRecord(healthRecordId);
@@ -1995,7 +2089,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **healthRecordId** | **String**|  | 
+ **healthRecordId** | **String**|  |
 
 ### Return type
 
@@ -2017,14 +2111,14 @@ Name | Type | Description  | Notes
 
 下载 CSV 逐行错误报告
 
-为完成预检或正式导入的任务生成短期签名下载地址。报告包含行号、列名、 错误码、严重级别、原值和修复建议；下载前再次校验认证 owner_id。 
+为完成预检或正式导入的任务生成短期签名下载地址。报告包含行号、列名、 错误码、严重级别、原值和修复建议；下载前再次校验认证 owner_id。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getImportErrorReport(jobId);
@@ -2038,7 +2132,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobId** | **String**|  | 
+ **jobId** | **String**|  |
 
 ### Return type
 
@@ -2067,7 +2161,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getImportJob(jobId);
@@ -2081,7 +2175,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobId** | **String**|  | 
+ **jobId** | **String**|  |
 
 ### Return type
 
@@ -2110,7 +2204,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final ImportTemplateType templateType = ; // ImportTemplateType | 
+final ImportTemplateType templateType = ; // ImportTemplateType |
 
 try {
     final response = api.getImportTemplate(templateType);
@@ -2124,7 +2218,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **templateType** | [**ImportTemplateType**](.md)|  | 
+ **templateType** | [**ImportTemplateType**](.md)|  |
 
 ### Return type
 
@@ -2153,7 +2247,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getLitter(litterId);
@@ -2167,7 +2261,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **litterId** | **String**|  | 
+ **litterId** | **String**|  |
 
 ### Return type
 
@@ -2189,14 +2283,14 @@ Name | Type | Description  | Notes
 
 获取服务端个体化 eligible set
 
-服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。 
+服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getLitterIndividualizationEligibility(litterId);
@@ -2210,7 +2304,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **litterId** | **String**|  | 
+ **litterId** | **String**|  |
 
 ### Return type
 
@@ -2232,14 +2326,14 @@ Name | Type | Description  | Notes
 
 获取服务端个体化 eligible set
 
-服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。 
+服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getLitterIndividualizationEligibility_0(litterId);
@@ -2253,7 +2347,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **litterId** | **String**|  | 
+ **litterId** | **String**|  |
 
 ### Return type
 
@@ -2275,14 +2369,14 @@ Name | Type | Description  | Notes
 
 获取服务端个体化 eligible set
 
-服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。 
+服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getLitterIndividualizationEligibility_1(litterId);
@@ -2296,7 +2390,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **litterId** | **String**|  | 
+ **litterId** | **String**|  |
 
 ### Return type
 
@@ -2325,7 +2419,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String mediaId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String mediaId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getMediaAsset(mediaId);
@@ -2339,7 +2433,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **mediaId** | **String**|  | 
+ **mediaId** | **String**|  |
 
 ### Return type
 
@@ -2368,7 +2462,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String mediaId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String mediaId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getMediaTranscodeStatus(mediaId);
@@ -2382,7 +2476,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **mediaId** | **String**|  | 
+ **mediaId** | **String**|  |
 
 ### Return type
 
@@ -2411,7 +2505,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String attemptId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String attemptId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getPairingAttempt(attemptId);
@@ -2425,7 +2519,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **attemptId** | **String**|  | 
+ **attemptId** | **String**|  |
 
 ### Return type
 
@@ -2447,14 +2541,14 @@ Name | Type | Description  | Notes
 
 无需认证读取公开分享
 
-只返回舍主显式选择的字段和 share-scoped 媒体 URL；撤销或过期后返回 404。 MVP API 响应使用 no-store，确保撤销完成后不会由浏览器或 CDN 回放历史 JSON。 
+只返回舍主显式选择的字段和 share-scoped 媒体 URL；撤销或过期后返回 404。 MVP API 响应使用 no-store，确保撤销完成后不会由浏览器或 CDN 回放历史 JSON。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String token = token_example; // String | 
+final String token = token_example; // String |
 
 try {
     final response = api.getPublicShare(token);
@@ -2468,7 +2562,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **token** | **String**|  | 
+ **token** | **String**|  |
 
 ### Return type
 
@@ -2485,6 +2579,51 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **getPublicShareMedia**
+> Uint8List getPublicShareMedia(token, mediaId)
+
+读取公开分享媒体
+
+仅允许读取当前 token 显式选择的媒体；分享撤销或过期后返回 404。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String token = token_example; // String |
+final String mediaId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+
+try {
+    final response = api.getPublicShareMedia(token, mediaId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->getPublicShareMedia: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **token** | **String**|  |
+ **mediaId** | **String**|  |
+
+### Return type
+
+[**Uint8List**](Uint8List.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/octet-stream, application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **getReminder**
 > ReminderResponse getReminder(reminderId)
 
@@ -2497,7 +2636,7 @@ No authorization required
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String reminderId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String reminderId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getReminder(reminderId);
@@ -2511,7 +2650,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **reminderId** | **String**|  | 
+ **reminderId** | **String**|  |
 
 ### Return type
 
@@ -2540,7 +2679,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String ruleVersionId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String ruleVersionId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getSpeciesRuleVersion(ruleVersionId);
@@ -2554,7 +2693,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ruleVersionId** | **String**|  | 
+ **ruleVersionId** | **String**|  |
 
 ### Return type
 
@@ -2583,7 +2722,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String taskId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String taskId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.getTask(taskId);
@@ -2597,7 +2736,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **taskId** | **String**|  | 
+ **taskId** | **String**|  |
 
 ### Return type
 
@@ -2619,17 +2758,17 @@ Name | Type | Description  | Notes
 
 将临时幼崽个体化
 
-仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。 
+仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final IndividualizeLitterRequest individualizeLitterRequest = {"individualized_at":"2026-09-01T02:00:00Z","timezone":"Asia/Shanghai","eligible_set_token":"elig_v4_2c54b21e2fdb6ad3","items":[{"pup_identity_id":"018f47a2-73b3-762e-8498-07b13dc3b599","internal_code":"SY-2026-L01-01","name":"星一","variety_code":"syrian"},{"pup_identity_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","internal_code":"SY-2026-L01-02","name":"星二","variety_code":"syrian"}]}; // IndividualizeLitterRequest | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final IndividualizeLitterRequest individualizeLitterRequest = {"individualized_at":"2026-09-01T02:00:00Z","timezone":"Asia/Shanghai","eligible_set_token":"elig_v4_2c54b21e2fdb6ad3","items":[{"pup_identity_id":"018f47a2-73b3-762e-8498-07b13dc3b599","internal_code":"SY-2026-L01-01","name":"星一","variety_code":"syrian"},{"pup_identity_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","internal_code":"SY-2026-L01-02","name":"星二","variety_code":"syrian"}]}; // IndividualizeLitterRequest |
 
 try {
     final response = api.individualizeLitter(idempotencyKey, ifMatch, litterId, individualizeLitterRequest);
@@ -2643,10 +2782,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **litterId** | **String**|  | 
- **individualizeLitterRequest** | [**IndividualizeLitterRequest**](IndividualizeLitterRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **litterId** | **String**|  |
+ **individualizeLitterRequest** | [**IndividualizeLitterRequest**](IndividualizeLitterRequest.md)|  |
 
 ### Return type
 
@@ -2668,17 +2807,17 @@ Name | Type | Description  | Notes
 
 将临时幼崽个体化
 
-仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。 
+仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final IndividualizeLitterRequest individualizeLitterRequest = {"individualized_at":"2026-09-01T02:00:00Z","timezone":"Asia/Shanghai","eligible_set_token":"elig_v4_2c54b21e2fdb6ad3","items":[{"pup_identity_id":"018f47a2-73b3-762e-8498-07b13dc3b599","internal_code":"SY-2026-L01-01","name":"星一","variety_code":"syrian"},{"pup_identity_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","internal_code":"SY-2026-L01-02","name":"星二","variety_code":"syrian"}]}; // IndividualizeLitterRequest | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final IndividualizeLitterRequest individualizeLitterRequest = {"individualized_at":"2026-09-01T02:00:00Z","timezone":"Asia/Shanghai","eligible_set_token":"elig_v4_2c54b21e2fdb6ad3","items":[{"pup_identity_id":"018f47a2-73b3-762e-8498-07b13dc3b599","internal_code":"SY-2026-L01-01","name":"星一","variety_code":"syrian"},{"pup_identity_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","internal_code":"SY-2026-L01-02","name":"星二","variety_code":"syrian"}]}; // IndividualizeLitterRequest |
 
 try {
     final response = api.individualizeLitter_0(idempotencyKey, ifMatch, litterId, individualizeLitterRequest);
@@ -2692,10 +2831,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **litterId** | **String**|  | 
- **individualizeLitterRequest** | [**IndividualizeLitterRequest**](IndividualizeLitterRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **litterId** | **String**|  |
+ **individualizeLitterRequest** | [**IndividualizeLitterRequest**](IndividualizeLitterRequest.md)|  |
 
 ### Return type
 
@@ -2717,17 +2856,17 @@ Name | Type | Description  | Notes
 
 将临时幼崽个体化
 
-仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。 
+仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final IndividualizeLitterRequest individualizeLitterRequest = {"individualized_at":"2026-09-01T02:00:00Z","timezone":"Asia/Shanghai","eligible_set_token":"elig_v4_2c54b21e2fdb6ad3","items":[{"pup_identity_id":"018f47a2-73b3-762e-8498-07b13dc3b599","internal_code":"SY-2026-L01-01","name":"星一","variety_code":"syrian"},{"pup_identity_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","internal_code":"SY-2026-L01-02","name":"星二","variety_code":"syrian"}]}; // IndividualizeLitterRequest | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final IndividualizeLitterRequest individualizeLitterRequest = {"individualized_at":"2026-09-01T02:00:00Z","timezone":"Asia/Shanghai","eligible_set_token":"elig_v4_2c54b21e2fdb6ad3","items":[{"pup_identity_id":"018f47a2-73b3-762e-8498-07b13dc3b599","internal_code":"SY-2026-L01-01","name":"星一","variety_code":"syrian"},{"pup_identity_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","internal_code":"SY-2026-L01-02","name":"星二","variety_code":"syrian"}]}; // IndividualizeLitterRequest |
 
 try {
     final response = api.individualizeLitter_1(idempotencyKey, ifMatch, litterId, individualizeLitterRequest);
@@ -2741,10 +2880,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **litterId** | **String**|  | 
- **individualizeLitterRequest** | [**IndividualizeLitterRequest**](IndividualizeLitterRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **litterId** | **String**|  |
+ **individualizeLitterRequest** | [**IndividualizeLitterRequest**](IndividualizeLitterRequest.md)|  |
 
 ### Return type
 
@@ -2788,7 +2927,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
 
 ### Return type
@@ -2820,9 +2959,9 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final BreedingPlanState state = ; // BreedingPlanState | 
-final String sireId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final String damId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final BreedingPlanState state = ; // BreedingPlanState |
+final String sireId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final String damId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.listBreedingPlans(cursor, limit, state, sireId, damId);
@@ -2836,15 +2975,62 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **state** | [**BreedingPlanState**](.md)|  | [optional] 
- **sireId** | **String**|  | [optional] 
- **damId** | **String**|  | [optional] 
+ **state** | [**BreedingPlanState**](.md)|  | [optional]
+ **sireId** | **String**|  | [optional]
+ **damId** | **String**|  | [optional]
 
 ### Return type
 
 [**BreedingPlanListResponse**](BreedingPlanListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **listEnclosureCleanings**
+> EnclosureCleaningListResponse listEnclosureCleanings(enclosureId, cursor, limit)
+
+列出笼盒清洁历史
+
+返回清洁、消毒及纠错记录；历史记录只追加，不原地覆盖。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
+final int limit = 56; // int | 每页数量。
+
+try {
+    final response = api.listEnclosureCleanings(enclosureId, cursor, limit);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->listEnclosureCleanings: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **enclosureId** | **String**|  |
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
+ **limit** | **int**| 每页数量。 | [optional] [default to 50]
+
+### Return type
+
+[**EnclosureCleaningListResponse**](EnclosureCleaningListResponse.md)
 
 ### Authorization
 
@@ -2869,10 +3055,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final bool active = true; // bool | 
+final bool active = true; // bool |
 
 try {
     final response = api.listEnclosureStays(enclosureId, cursor, limit, active);
@@ -2886,10 +3072,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **enclosureId** | **String**|  | 
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **enclosureId** | **String**|  |
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **active** | **bool**|  | [optional] 
+ **active** | **bool**|  | [optional]
 
 ### Return type
 
@@ -2920,9 +3106,9 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final EnclosureState state = ; // EnclosureState | 
-final String rackCode = rackCode_example; // String | 
-final CleanlinessState cleanlinessState = ; // CleanlinessState | 
+final EnclosureState state = ; // EnclosureState |
+final String rackCode = rackCode_example; // String |
+final CleanlinessState cleanlinessState = ; // CleanlinessState |
 
 try {
     final response = api.listEnclosures(cursor, limit, state, rackCode, cleanlinessState);
@@ -2936,11 +3122,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **state** | [**EnclosureState**](.md)|  | [optional] 
- **rackCode** | **String**|  | [optional] 
- **cleanlinessState** | [**CleanlinessState**](.md)|  | [optional] 
+ **state** | [**EnclosureState**](.md)|  | [optional]
+ **rackCode** | **String**|  | [optional]
+ **cleanlinessState** | [**CleanlinessState**](.md)|  | [optional]
 
 ### Return type
 
@@ -2984,7 +3170,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
 
 ### Return type
@@ -3016,9 +3202,9 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final HamsterLifecycleStatus lifecycleStatus = ; // HamsterLifecycleStatus | 
-final Sex sex = ; // Sex | 
-final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final HamsterLifecycleStatus lifecycleStatus = ; // HamsterLifecycleStatus |
+final Sex sex = ; // Sex |
+final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final String q = q_example; // String | 编号或昵称关键词
 
 try {
@@ -3033,12 +3219,12 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **lifecycleStatus** | [**HamsterLifecycleStatus**](.md)|  | [optional] 
- **sex** | [**Sex**](.md)|  | [optional] 
- **enclosureId** | **String**|  | [optional] 
- **q** | **String**| 编号或昵称关键词 | [optional] 
+ **lifecycleStatus** | [**HamsterLifecycleStatus**](.md)|  | [optional]
+ **sex** | [**Sex**](.md)|  | [optional]
+ **enclosureId** | **String**|  | [optional]
+ **q** | **String**| 编号或昵称关键词 | [optional]
 
 ### Return type
 
@@ -3069,9 +3255,9 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final String hamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final HealthRecordType type = ; // HealthRecordType | 
+final String hamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final HealthRecordType type = ; // HealthRecordType |
 
 try {
     final response = api.listHealthRecords(cursor, limit, hamsterId, litterId, type);
@@ -3085,11 +3271,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **hamsterId** | **String**|  | [optional] 
- **litterId** | **String**|  | [optional] 
- **type** | [**HealthRecordType**](.md)|  | [optional] 
+ **hamsterId** | **String**|  | [optional]
+ **litterId** | **String**|  | [optional]
+ **type** | [**HealthRecordType**](.md)|  | [optional]
 
 ### Return type
 
@@ -3120,7 +3306,7 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final JobStatus status = ; // JobStatus | 
+final JobStatus status = ; // JobStatus |
 
 try {
     final response = api.listImportJobs(cursor, limit, status);
@@ -3134,9 +3320,9 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **status** | [**JobStatus**](.md)|  | [optional] 
+ **status** | [**JobStatus**](.md)|  | [optional]
 
 ### Return type
 
@@ -3165,10 +3351,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final ImportRowStatus status = ; // ImportRowStatus | 
+final ImportRowStatus status = ; // ImportRowStatus |
 
 try {
     final response = api.listImportRowResults(jobId, cursor, limit, status);
@@ -3182,10 +3368,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobId** | **String**|  | 
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **jobId** | **String**|  |
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **status** | [**ImportRowStatus**](.md)|  | [optional] 
+ **status** | [**ImportRowStatus**](.md)|  | [optional]
 
 ### Return type
 
@@ -3214,7 +3400,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
 
@@ -3230,8 +3416,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **litterId** | **String**|  | 
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **litterId** | **String**|  |
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
 
 ### Return type
@@ -3261,7 +3447,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
 
@@ -3277,8 +3463,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **litterId** | **String**|  | 
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **litterId** | **String**|  |
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
 
 ### Return type
@@ -3308,7 +3494,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.listLitterParents(litterId);
@@ -3322,7 +3508,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **litterId** | **String**|  | 
+ **litterId** | **String**|  |
 
 ### Return type
 
@@ -3353,9 +3539,9 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final LitterState state = ; // LitterState | 
-final DateTime bornFrom = 2013-10-20; // DateTime | 
-final DateTime bornTo = 2013-10-20; // DateTime | 
+final LitterState state = ; // LitterState |
+final DateTime bornFrom = 2013-10-20; // DateTime |
+final DateTime bornTo = 2013-10-20; // DateTime |
 
 try {
     final response = api.listLitters(cursor, limit, state, bornFrom, bornTo);
@@ -3369,11 +3555,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **state** | [**LitterState**](.md)|  | [optional] 
- **bornFrom** | **DateTime**|  | [optional] 
- **bornTo** | **DateTime**|  | [optional] 
+ **state** | [**LitterState**](.md)|  | [optional]
+ **bornFrom** | **DateTime**|  | [optional]
+ **bornTo** | **DateTime**|  | [optional]
 
 ### Return type
 
@@ -3402,7 +3588,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
 
@@ -3418,8 +3604,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **planId** | **String**|  | 
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **planId** | **String**|  |
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
 
 ### Return type
@@ -3451,8 +3637,8 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final String childHamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final String parentHamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String childHamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final String parentHamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.listPedigreeParentages(cursor, limit, childHamsterId, parentHamsterId);
@@ -3466,10 +3652,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **childHamsterId** | **String**|  | [optional] 
- **parentHamsterId** | **String**|  | [optional] 
+ **childHamsterId** | **String**|  | [optional]
+ **parentHamsterId** | **String**|  | [optional]
 
 ### Return type
 
@@ -3498,11 +3684,11 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final PupOutcomeStatus outcomeStatus = ; // PupOutcomeStatus | 
-final PupProfileStatus profileStatus = ; // PupProfileStatus | 
+final PupOutcomeStatus outcomeStatus = ; // PupOutcomeStatus |
+final PupProfileStatus profileStatus = ; // PupProfileStatus |
 
 try {
     final response = api.listPupIdentities(litterId, cursor, limit, outcomeStatus, profileStatus);
@@ -3516,11 +3702,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **litterId** | **String**|  | 
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **litterId** | **String**|  |
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **outcomeStatus** | [**PupOutcomeStatus**](.md)|  | [optional] 
- **profileStatus** | [**PupProfileStatus**](.md)|  | [optional] 
+ **outcomeStatus** | [**PupOutcomeStatus**](.md)|  | [optional]
+ **profileStatus** | [**PupProfileStatus**](.md)|  | [optional]
 
 ### Return type
 
@@ -3551,8 +3737,8 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final ReminderState state = ; // ReminderState | 
-final String ruleCode = ruleCode_example; // String | 
+final ReminderState state = ; // ReminderState |
+final String ruleCode = ruleCode_example; // String |
 
 try {
     final response = api.listReminders(cursor, limit, state, ruleCode);
@@ -3566,10 +3752,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **state** | [**ReminderState**](.md)|  | [optional] 
- **ruleCode** | **String**|  | [optional] 
+ **state** | [**ReminderState**](.md)|  | [optional]
+ **ruleCode** | **String**|  | [optional]
 
 ### Return type
 
@@ -3600,7 +3786,7 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final ShareStatus status = ; // ShareStatus | 
+final ShareStatus status = ; // ShareStatus |
 
 try {
     final response = api.listShares(cursor, limit, status);
@@ -3614,9 +3800,9 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **status** | [**ShareStatus**](.md)|  | [optional] 
+ **status** | [**ShareStatus**](.md)|  | [optional]
 
 ### Return type
 
@@ -3660,7 +3846,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
 
 ### Return type
@@ -3706,9 +3892,9 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **speciesCode** | **String**| 按物种编码筛选 | [optional] 
+ **speciesCode** | **String**| 按物种编码筛选 | [optional]
 
 ### Return type
 
@@ -3739,10 +3925,10 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final TaskState state = ; // TaskState | 
-final TaskPriority priority = ; // TaskPriority | 
-final String targetType = targetType_example; // String | 
-final DateTime dueBefore = 2013-10-20T19:20:30+01:00; // DateTime | 
+final TaskState state = ; // TaskState |
+final TaskPriority priority = ; // TaskPriority |
+final String targetType = targetType_example; // String |
+final DateTime dueBefore = 2013-10-20T19:20:30+01:00; // DateTime |
 
 try {
     final response = api.listTasks(cursor, limit, state, priority, targetType, dueBefore);
@@ -3756,12 +3942,12 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **state** | [**TaskState**](.md)|  | [optional] 
- **priority** | [**TaskPriority**](.md)|  | [optional] 
- **targetType** | **String**|  | [optional] 
- **dueBefore** | **DateTime**|  | [optional] 
+ **state** | [**TaskState**](.md)|  | [optional]
+ **priority** | [**TaskPriority**](.md)|  | [optional]
+ **targetType** | **String**|  | [optional]
+ **dueBefore** | **DateTime**|  | [optional]
 
 ### Return type
 
@@ -3792,8 +3978,8 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final DateTime from = 2013-10-20; // DateTime | 
-final DateTime to = 2013-10-20; // DateTime | 
+final DateTime from = 2013-10-20; // DateTime |
+final DateTime to = 2013-10-20; // DateTime |
 
 try {
     final response = api.listUsageSnapshots(cursor, limit, from, to);
@@ -3807,10 +3993,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **from** | **DateTime**|  | [optional] 
- **to** | **DateTime**|  | [optional] 
+ **from** | **DateTime**|  | [optional]
+ **to** | **DateTime**|  | [optional]
 
 ### Return type
 
@@ -3841,11 +4027,11 @@ import 'package:scolvpet_api/api.dart';
 final api = ScolvpetApi().getDefaultApi();
 final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
 final int limit = 56; // int | 每页数量。
-final String hamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final String pupIdentityId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final DateTime recordedFrom = 2013-10-20T19:20:30+01:00; // DateTime | 
-final DateTime recordedTo = 2013-10-20T19:20:30+01:00; // DateTime | 
+final String hamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final String pupIdentityId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final DateTime recordedFrom = 2013-10-20T19:20:30+01:00; // DateTime |
+final DateTime recordedTo = 2013-10-20T19:20:30+01:00; // DateTime |
 
 try {
     final response = api.listWeightRecords(cursor, limit, hamsterId, pupIdentityId, litterId, recordedFrom, recordedTo);
@@ -3859,13 +4045,13 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional]
  **limit** | **int**| 每页数量。 | [optional] [default to 50]
- **hamsterId** | **String**|  | [optional] 
- **pupIdentityId** | **String**|  | [optional] 
- **litterId** | **String**|  | [optional] 
- **recordedFrom** | **DateTime**|  | [optional] 
- **recordedTo** | **DateTime**|  | [optional] 
+ **hamsterId** | **String**|  | [optional]
+ **pupIdentityId** | **String**|  | [optional]
+ **litterId** | **String**|  | [optional]
+ **recordedFrom** | **DateTime**|  | [optional]
+ **recordedTo** | **DateTime**|  | [optional]
 
 ### Return type
 
@@ -3887,17 +4073,17 @@ Name | Type | Description  | Notes
 
 全量预检 CSV
 
-全量检查缺列、重复编号、父母缺失、父母与既有窝次不一致、谱系环、笼位冲突 和非法体重。仓鼠模板可按窝次编号自动规划历史窝次，但只有同一窝次的出生时间、 双亲和物种规则全部一致时才允许创建；任何冲突均作为阻塞问题返回，不静默合并。 
+全量检查缺列、重复编号、父母缺失、父母与既有窝次不一致、谱系环、笼位冲突 和非法体重。仓鼠模板可按窝次编号自动规划历史窝次，但只有同一窝次的出生时间、 双亲和物种规则全部一致时才允许创建；任何冲突均作为阻塞问题返回，不静默合并。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final ImportPreflightRequest importPreflightRequest = ; // ImportPreflightRequest | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final ImportPreflightRequest importPreflightRequest = ; // ImportPreflightRequest |
 
 try {
     final response = api.preflightImportJob(idempotencyKey, ifMatch, jobId, importPreflightRequest);
@@ -3911,10 +4097,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **jobId** | **String**|  | 
- **importPreflightRequest** | [**ImportPreflightRequest**](ImportPreflightRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **jobId** | **String**|  |
+ **importPreflightRequest** | [**ImportPreflightRequest**](ImportPreflightRequest.md)|  |
 
 ### Return type
 
@@ -3943,8 +4129,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final MediaUploadPresignRequest mediaUploadPresignRequest = ; // MediaUploadPresignRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final MediaUploadPresignRequest mediaUploadPresignRequest = ; // MediaUploadPresignRequest |
 
 try {
     final response = api.presignMediaUpload(idempotencyKey, mediaUploadPresignRequest);
@@ -3958,8 +4144,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **mediaUploadPresignRequest** | [**MediaUploadPresignRequest**](MediaUploadPresignRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **mediaUploadPresignRequest** | [**MediaUploadPresignRequest**](MediaUploadPresignRequest.md)|  |
 
 ### Return type
 
@@ -3988,7 +4174,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String shareId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String shareId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 
 try {
     final response = api.previewShare(shareId);
@@ -4002,7 +4188,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **shareId** | **String**|  | 
+ **shareId** | **String**|  |
 
 ### Return type
 
@@ -4024,15 +4210,15 @@ Name | Type | Description  | Notes
 
 创建前预览公开分享
 
-不持久化分享，不生成公开令牌；按当前 owner 校验主体、字段和媒体后返回 匿名访客将看到的精确投影。禁止输出健康备注、联系方式、任务和审计字段。 
+不持久化分享，不生成公开令牌；按当前 owner 校验主体、字段和媒体后返回 匿名访客将看到的精确投影。禁止输出健康备注、联系方式、任务和审计字段。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final ShareCreateRequest shareCreateRequest = ; // ShareCreateRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final ShareCreateRequest shareCreateRequest = ; // ShareCreateRequest |
 
 try {
     final response = api.previewShareDraft(idempotencyKey, shareCreateRequest);
@@ -4046,8 +4232,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **shareCreateRequest** | [**ShareCreateRequest**](ShareCreateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **shareCreateRequest** | [**ShareCreateRequest**](ShareCreateRequest.md)|  |
 
 ### Return type
 
@@ -4069,17 +4255,17 @@ Name | Type | Description  | Notes
 
 发布繁育计划
 
-校验父母资格、并行计划、规则版本与亲缘风险后，将 draft 推进到 pair_ready。 仅允许当前状态为 draft；客户端不提交目标 state。 
+校验父母资格、并行计划、规则版本与亲缘风险后，将 draft 推进到 pair_ready。 仅允许当前状态为 draft；客户端不提交目标 state。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final PublishBreedingPlanRequest publishBreedingPlanRequest = {"planned_pairing_at":"2026-07-18T12:00:00Z","pairing_enclosure_id":"018f47a2-4b10-77eb-a297-ad0e32886a35","timezone":"Asia/Shanghai","kinship_override_reason":null}; // PublishBreedingPlanRequest | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final PublishBreedingPlanRequest publishBreedingPlanRequest = {"planned_pairing_at":"2026-07-18T12:00:00Z","pairing_enclosure_id":"018f47a2-4b10-77eb-a297-ad0e32886a35","timezone":"Asia/Shanghai","kinship_override_reason":null}; // PublishBreedingPlanRequest |
 
 try {
     final response = api.publishBreedingPlan(idempotencyKey, ifMatch, planId, publishBreedingPlanRequest);
@@ -4093,10 +4279,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **planId** | **String**|  | 
- **publishBreedingPlanRequest** | [**PublishBreedingPlanRequest**](PublishBreedingPlanRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **planId** | **String**|  |
+ **publishBreedingPlanRequest** | [**PublishBreedingPlanRequest**](PublishBreedingPlanRequest.md)|  |
 
 ### Return type
 
@@ -4125,10 +4311,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String attemptId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final RecordObservationRequest recordObservationRequest = {"observed_at":"2026-07-18T12:12:00Z","type":"mating","duration_seconds":14,"severity":"info","confidence":0.9,"media_ids":["018f47a2-5e60-7fc7-b29c-1f2d435f49cd"],"notes":"观察到一次明确交配"}; // RecordObservationRequest | 
+final String attemptId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final RecordObservationRequest recordObservationRequest = {"observed_at":"2026-07-18T12:12:00Z","type":"mating","duration_seconds":14,"severity":"info","confidence":0.9,"media_ids":["018f47a2-5e60-7fc7-b29c-1f2d435f49cd"],"notes":"观察到一次明确交配"}; // RecordObservationRequest |
 
 try {
     final response = api.recordPairingObservation(idempotencyKey, ifMatch, attemptId, recordObservationRequest);
@@ -4142,10 +4328,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **attemptId** | **String**|  | 
- **recordObservationRequest** | [**RecordObservationRequest**](RecordObservationRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **attemptId** | **String**|  |
+ **recordObservationRequest** | [**RecordObservationRequest**](RecordObservationRequest.md)|  |
 
 ### Return type
 
@@ -4174,8 +4360,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final RefreshSessionRequest refreshSessionRequest = ; // RefreshSessionRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final RefreshSessionRequest refreshSessionRequest = ; // RefreshSessionRequest |
 final String xTimezone = Asia/Shanghai; // String | IANA 时区；缺省时使用当前熊舍 timezone。
 
 try {
@@ -4190,8 +4376,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **refreshSessionRequest** | [**RefreshSessionRequest**](RefreshSessionRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **refreshSessionRequest** | [**RefreshSessionRequest**](RefreshSessionRequest.md)|  |
  **xTimezone** | **String**| IANA 时区；缺省时使用当前熊舍 timezone。 | [optional] [default to 'Asia/Shanghai']
 
 ### Return type
@@ -4221,10 +4407,10 @@ No authorization required
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final RetryJobRequest retryJobRequest = ; // RetryJobRequest | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final RetryJobRequest retryJobRequest = ; // RetryJobRequest |
 
 try {
     final response = api.retryBackupJob(idempotencyKey, ifMatch, jobId, retryJobRequest);
@@ -4238,10 +4424,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **jobId** | **String**|  | 
- **retryJobRequest** | [**RetryJobRequest**](RetryJobRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **jobId** | **String**|  |
+ **retryJobRequest** | [**RetryJobRequest**](RetryJobRequest.md)|  |
 
 ### Return type
 
@@ -4270,10 +4456,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final RetryJobRequest retryJobRequest = ; // RetryJobRequest | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final RetryJobRequest retryJobRequest = ; // RetryJobRequest |
 
 try {
     final response = api.retryExportJob(idempotencyKey, ifMatch, jobId, retryJobRequest);
@@ -4287,10 +4473,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **jobId** | **String**|  | 
- **retryJobRequest** | [**RetryJobRequest**](RetryJobRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **jobId** | **String**|  |
+ **retryJobRequest** | [**RetryJobRequest**](RetryJobRequest.md)|  |
 
 ### Return type
 
@@ -4319,10 +4505,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final RetryImportRequest retryImportRequest = ; // RetryImportRequest | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final RetryImportRequest retryImportRequest = ; // RetryImportRequest |
 
 try {
     final response = api.retryImportJob(idempotencyKey, ifMatch, jobId, retryImportRequest);
@@ -4336,10 +4522,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **jobId** | **String**|  | 
- **retryImportRequest** | [**RetryImportRequest**](RetryImportRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **jobId** | **String**|  |
+ **retryImportRequest** | [**RetryImportRequest**](RetryImportRequest.md)|  |
 
 ### Return type
 
@@ -4361,17 +4547,17 @@ Name | Type | Description  | Notes
 
 重试失败的媒体处理
 
-仅允许原始媒体已完成校验且目标派生处于 failed。保留原失败作业， 幂等创建新的图片派生或短视频转码作业；业务记录和原始媒体事实不回滚。 
+仅允许原始媒体已完成校验且目标派生处于 failed。保留原失败作业， 幂等创建新的图片派生或短视频转码作业；业务记录和原始媒体事实不回滚。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String mediaId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final MediaProcessingRetryRequest mediaProcessingRetryRequest = ; // MediaProcessingRetryRequest | 
+final String mediaId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final MediaProcessingRetryRequest mediaProcessingRetryRequest = ; // MediaProcessingRetryRequest |
 
 try {
     final response = api.retryMediaProcessing(idempotencyKey, ifMatch, mediaId, mediaProcessingRetryRequest);
@@ -4385,10 +4571,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **mediaId** | **String**|  | 
- **mediaProcessingRetryRequest** | [**MediaProcessingRetryRequest**](MediaProcessingRetryRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **mediaId** | **String**|  |
+ **mediaProcessingRetryRequest** | [**MediaProcessingRetryRequest**](MediaProcessingRetryRequest.md)|  |
 
 ### Return type
 
@@ -4410,17 +4596,17 @@ Name | Type | Description  | Notes
 
 撤销公开分享
 
-同一事务内标记令牌已撤销并写入 CDN purge Outbox，事务提交后立即返回 200； 公开 API 的下一次请求立即失效，HTML/JSON 使用 no-store。share-scoped 公开媒体 的边缘 TTL 不超过 60 秒，最迟 60 秒不再返回；内部资源和原始私有媒体不受影响。 
+同一事务内标记令牌已撤销并写入 CDN purge Outbox，事务提交后立即返回 200； 公开 API 的下一次请求立即失效，HTML/JSON 使用 no-store。share-scoped 公开媒体 的边缘 TTL 不超过 60 秒，最迟 60 秒不再返回；内部资源和原始私有媒体不受影响。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String shareId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final RevokeShareRequest revokeShareRequest = ; // RevokeShareRequest | 
+final String shareId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final RevokeShareRequest revokeShareRequest = ; // RevokeShareRequest |
 
 try {
     final response = api.revokeShare(idempotencyKey, ifMatch, shareId, revokeShareRequest);
@@ -4434,10 +4620,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **shareId** | **String**|  | 
- **revokeShareRequest** | [**RevokeShareRequest**](RevokeShareRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **shareId** | **String**|  |
+ **revokeShareRequest** | [**RevokeShareRequest**](RevokeShareRequest.md)|  |
 
 ### Return type
 
@@ -4466,8 +4652,8 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-final SendVerificationCodeRequest sendVerificationCodeRequest = {"phone":"+8613800138000","purpose":"login"}; // SendVerificationCodeRequest | 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final SendVerificationCodeRequest sendVerificationCodeRequest = {"phone":"+8613800138000","purpose":"login"}; // SendVerificationCodeRequest |
 final String xTimezone = Asia/Shanghai; // String | IANA 时区；缺省时使用当前熊舍 timezone。
 
 try {
@@ -4482,8 +4668,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **sendVerificationCodeRequest** | [**SendVerificationCodeRequest**](SendVerificationCodeRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **sendVerificationCodeRequest** | [**SendVerificationCodeRequest**](SendVerificationCodeRequest.md)|  |
  **xTimezone** | **String**| IANA 时区；缺省时使用当前熊舍 timezone。 | [optional] [default to 'Asia/Shanghai']
 
 ### Return type
@@ -4506,17 +4692,17 @@ No authorization required
 
 结束配对并完成分笼
 
-仅允许 active 或 safety_hold 的配对尝试。 原子关闭临时配对占用、登记双方去向并创建新入住事实。 若笼盒冲突或只登记一方，整体失败且不释放配对笼。 
+仅允许 active 或 safety_hold 的配对尝试。 原子关闭临时配对占用、登记双方去向并创建新入住事实。 若笼盒冲突或只登记一方，整体失败且不释放配对笼。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String attemptId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final SeparatePairingRequest separatePairingRequest = {"ended_at":"2026-07-18T12:25:00Z","separated_at":"2026-07-18T12:26:00Z","result":"effective","sire_destination_enclosure_id":"018f47a2-6338-7952-9753-052621e1858e","dam_destination_enclosure_id":"018f47a2-6450-7f54-8851-050a3d63846f","safety_stop":false,"timezone":"Asia/Shanghai","notes":"双方状态正常"}; // SeparatePairingRequest | 
+final String attemptId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final SeparatePairingRequest separatePairingRequest = {"ended_at":"2026-07-18T12:25:00Z","separated_at":"2026-07-18T12:26:00Z","result":"effective","sire_destination_enclosure_id":"018f47a2-6338-7952-9753-052621e1858e","dam_destination_enclosure_id":"018f47a2-6450-7f54-8851-050a3d63846f","safety_stop":false,"timezone":"Asia/Shanghai","notes":"双方状态正常"}; // SeparatePairingRequest |
 
 try {
     final response = api.separatePairing(idempotencyKey, ifMatch, attemptId, separatePairingRequest);
@@ -4530,10 +4716,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **attemptId** | **String**|  | 
- **separatePairingRequest** | [**SeparatePairingRequest**](SeparatePairingRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **attemptId** | **String**|  |
+ **separatePairingRequest** | [**SeparatePairingRequest**](SeparatePairingRequest.md)|  |
 
 ### Return type
 
@@ -4562,10 +4748,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final ImportMappingRequest importMappingRequest = ; // ImportMappingRequest | 
+final String jobId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final ImportMappingRequest importMappingRequest = ; // ImportMappingRequest |
 
 try {
     final response = api.setImportMapping(idempotencyKey, ifMatch, jobId, importMappingRequest);
@@ -4579,10 +4765,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **jobId** | **String**|  | 
- **importMappingRequest** | [**ImportMappingRequest**](ImportMappingRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **jobId** | **String**|  |
+ **importMappingRequest** | [**ImportMappingRequest**](ImportMappingRequest.md)|  |
 
 ### Return type
 
@@ -4611,10 +4797,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String mediaId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final MediaCoverRequest mediaCoverRequest = ; // MediaCoverRequest | 
+final String mediaId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final MediaCoverRequest mediaCoverRequest = ; // MediaCoverRequest |
 
 try {
     final response = api.setMediaCover(idempotencyKey, ifMatch, mediaId, mediaCoverRequest);
@@ -4628,10 +4814,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **mediaId** | **String**|  | 
- **mediaCoverRequest** | [**MediaCoverRequest**](MediaCoverRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **mediaId** | **String**|  |
+ **mediaCoverRequest** | [**MediaCoverRequest**](MediaCoverRequest.md)|  |
 
 ### Return type
 
@@ -4653,17 +4839,17 @@ Name | Type | Description  | Notes
 
 分性并分笼
 
-仅允许 sexing_due；逐项提交性别、置信度和目标笼盒。服务端验证完整在管集合、 异性混笼、容量和待复核安排，客户端不得提交目标状态。 
+仅允许 sexing_due；逐项提交性别、置信度和目标笼盒。服务端验证完整在管集合、 异性混笼、容量和待复核安排，客户端不得提交目标状态。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final SexAndSeparateRequest sexAndSeparateRequest = {"separated_at":"2026-08-27T02:00:00Z","timezone":"Asia/Shanghai","items":[{"pup_identity_id":"018f47a2-73b3-762e-8498-07b13dc3b599","sex":"male","sex_confidence":0.98,"destination_enclosure_id":"018f47a2-8620-73ef-823e-03f187be47a2","requires_recheck":false},{"pup_identity_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","sex":"unknown","sex_confidence":0.45,"destination_enclosure_id":"018f47a2-8712-7863-ab76-9a6614ef3e2b","requires_recheck":true}]}; // SexAndSeparateRequest | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final SexAndSeparateRequest sexAndSeparateRequest = {"separated_at":"2026-08-27T02:00:00Z","timezone":"Asia/Shanghai","items":[{"pup_identity_id":"018f47a2-73b3-762e-8498-07b13dc3b599","sex":"male","sex_confidence":0.98,"destination_enclosure_id":"018f47a2-8620-73ef-823e-03f187be47a2","requires_recheck":false},{"pup_identity_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","sex":"unknown","sex_confidence":0.45,"destination_enclosure_id":"018f47a2-8712-7863-ab76-9a6614ef3e2b","requires_recheck":true}]}; // SexAndSeparateRequest |
 
 try {
     final response = api.sexAndSeparateLitter(idempotencyKey, ifMatch, litterId, sexAndSeparateRequest);
@@ -4677,10 +4863,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **litterId** | **String**|  | 
- **sexAndSeparateRequest** | [**SexAndSeparateRequest**](SexAndSeparateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **litterId** | **String**|  |
+ **sexAndSeparateRequest** | [**SexAndSeparateRequest**](SexAndSeparateRequest.md)|  |
 
 ### Return type
 
@@ -4702,17 +4888,17 @@ Name | Type | Description  | Notes
 
 从分笼后进入孕期观察
 
-仅允许 post_pair。服务端校验至少一次 pairing_attempt 已闭环、结果为有效或待定、 配对笼已释放，再计算预产区间、创建提醒并推进到 gestation。 
+仅允许 post_pair。服务端校验至少一次 pairing_attempt 已闭环、结果为有效或待定、 配对笼已释放，再计算预产区间、创建提醒并推进到 gestation。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final StartGestationRequest startGestationRequest = ; // StartGestationRequest | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final StartGestationRequest startGestationRequest = ; // StartGestationRequest |
 
 try {
     final response = api.startGestationMonitoring(idempotencyKey, ifMatch, planId, startGestationRequest);
@@ -4726,10 +4912,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **planId** | **String**|  | 
- **startGestationRequest** | [**StartGestationRequest**](StartGestationRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **planId** | **String**|  |
+ **startGestationRequest** | [**StartGestationRequest**](StartGestationRequest.md)|  |
 
 ### Return type
 
@@ -4751,17 +4937,17 @@ Name | Type | Description  | Notes
 
 开始配对
 
-仅允许当前状态为 pair_ready。原子创建 pairing_attempt、占用临时配对笼 并推进到 pairing；任一父母资格或笼位守卫失败时不产生部分事实。 
+仅允许当前状态为 pair_ready。原子创建 pairing_attempt、占用临时配对笼 并推进到 pairing；任一父母资格或笼位守卫失败时不产生部分事实。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final StartPairingRequest startPairingRequest = {"enclosure_id":"018f47a2-4b10-77eb-a297-ad0e32886a35","started_at":"2026-07-18T12:03:00Z","timezone":"Asia/Shanghai","notes":"现场扫码开始"}; // StartPairingRequest | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final StartPairingRequest startPairingRequest = {"enclosure_id":"018f47a2-4b10-77eb-a297-ad0e32886a35","started_at":"2026-07-18T12:03:00Z","timezone":"Asia/Shanghai","notes":"现场扫码开始"}; // StartPairingRequest |
 
 try {
     final response = api.startPairing(idempotencyKey, ifMatch, planId, startPairingRequest);
@@ -4775,10 +4961,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **planId** | **String**|  | 
- **startPairingRequest** | [**StartPairingRequest**](StartPairingRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **planId** | **String**|  |
+ **startPairingRequest** | [**StartPairingRequest**](StartPairingRequest.md)|  |
 
 ### Return type
 
@@ -4807,10 +4993,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final BreedingPlanUpdateRequest breedingPlanUpdateRequest = ; // BreedingPlanUpdateRequest | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final BreedingPlanUpdateRequest breedingPlanUpdateRequest = ; // BreedingPlanUpdateRequest |
 
 try {
     final response = api.updateBreedingPlan(idempotencyKey, ifMatch, planId, breedingPlanUpdateRequest);
@@ -4824,10 +5010,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **planId** | **String**|  | 
- **breedingPlanUpdateRequest** | [**BreedingPlanUpdateRequest**](BreedingPlanUpdateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **planId** | **String**|  |
+ **breedingPlanUpdateRequest** | [**BreedingPlanUpdateRequest**](BreedingPlanUpdateRequest.md)|  |
 
 ### Return type
 
@@ -4856,9 +5042,9 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final OrganizationUpdateRequest organizationUpdateRequest = {"name":"星河熊舍二号馆","timezone":"Asia/Shanghai"}; // OrganizationUpdateRequest | 
+final OrganizationUpdateRequest organizationUpdateRequest = {"name":"星河熊舍二号馆","timezone":"Asia/Shanghai"}; // OrganizationUpdateRequest |
 
 try {
     final response = api.updateCurrentOrganization(idempotencyKey, ifMatch, organizationUpdateRequest);
@@ -4872,9 +5058,9 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **organizationUpdateRequest** | [**OrganizationUpdateRequest**](OrganizationUpdateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **organizationUpdateRequest** | [**OrganizationUpdateRequest**](OrganizationUpdateRequest.md)|  |
 
 ### Return type
 
@@ -4903,10 +5089,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final EnclosureUpdateRequest enclosureUpdateRequest = ; // EnclosureUpdateRequest | 
+final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final EnclosureUpdateRequest enclosureUpdateRequest = ; // EnclosureUpdateRequest |
 
 try {
     final response = api.updateEnclosure(idempotencyKey, ifMatch, enclosureId, enclosureUpdateRequest);
@@ -4920,10 +5106,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **enclosureId** | **String**|  | 
- **enclosureUpdateRequest** | [**EnclosureUpdateRequest**](EnclosureUpdateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **enclosureId** | **String**|  |
+ **enclosureUpdateRequest** | [**EnclosureUpdateRequest**](EnclosureUpdateRequest.md)|  |
 
 ### Return type
 
@@ -4952,10 +5138,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String stayId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final EnclosureStayUpdateRequest enclosureStayUpdateRequest = ; // EnclosureStayUpdateRequest | 
+final String stayId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final EnclosureStayUpdateRequest enclosureStayUpdateRequest = ; // EnclosureStayUpdateRequest |
 
 try {
     final response = api.updateEnclosureStay(idempotencyKey, ifMatch, stayId, enclosureStayUpdateRequest);
@@ -4969,10 +5155,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **stayId** | **String**|  | 
- **enclosureStayUpdateRequest** | [**EnclosureStayUpdateRequest**](EnclosureStayUpdateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **stayId** | **String**|  |
+ **enclosureStayUpdateRequest** | [**EnclosureStayUpdateRequest**](EnclosureStayUpdateRequest.md)|  |
 
 ### Return type
 
@@ -5001,10 +5187,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String hamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final HamsterUpdateRequest hamsterUpdateRequest = ; // HamsterUpdateRequest | 
+final String hamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final HamsterUpdateRequest hamsterUpdateRequest = ; // HamsterUpdateRequest |
 
 try {
     final response = api.updateHamster(idempotencyKey, ifMatch, hamsterId, hamsterUpdateRequest);
@@ -5018,10 +5204,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **hamsterId** | **String**|  | 
- **hamsterUpdateRequest** | [**HamsterUpdateRequest**](HamsterUpdateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **hamsterId** | **String**|  |
+ **hamsterUpdateRequest** | [**HamsterUpdateRequest**](HamsterUpdateRequest.md)|  |
 
 ### Return type
 
@@ -5050,10 +5236,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String healthRecordId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final HealthRecordUpdateRequest healthRecordUpdateRequest = ; // HealthRecordUpdateRequest | 
+final String healthRecordId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final HealthRecordUpdateRequest healthRecordUpdateRequest = ; // HealthRecordUpdateRequest |
 
 try {
     final response = api.updateHealthRecord(idempotencyKey, ifMatch, healthRecordId, healthRecordUpdateRequest);
@@ -5067,10 +5253,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **healthRecordId** | **String**|  | 
- **healthRecordUpdateRequest** | [**HealthRecordUpdateRequest**](HealthRecordUpdateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **healthRecordId** | **String**|  |
+ **healthRecordUpdateRequest** | [**HealthRecordUpdateRequest**](HealthRecordUpdateRequest.md)|  |
 
 ### Return type
 
@@ -5099,10 +5285,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String ruleVersionId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final SpeciesRuleVersionUpdateRequest speciesRuleVersionUpdateRequest = ; // SpeciesRuleVersionUpdateRequest | 
+final String ruleVersionId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final SpeciesRuleVersionUpdateRequest speciesRuleVersionUpdateRequest = ; // SpeciesRuleVersionUpdateRequest |
 
 try {
     final response = api.updateSpeciesRuleVersion(idempotencyKey, ifMatch, ruleVersionId, speciesRuleVersionUpdateRequest);
@@ -5116,10 +5302,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **ruleVersionId** | **String**|  | 
- **speciesRuleVersionUpdateRequest** | [**SpeciesRuleVersionUpdateRequest**](SpeciesRuleVersionUpdateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **ruleVersionId** | **String**|  |
+ **speciesRuleVersionUpdateRequest** | [**SpeciesRuleVersionUpdateRequest**](SpeciesRuleVersionUpdateRequest.md)|  |
 
 ### Return type
 
@@ -5148,10 +5334,10 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String taskId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final CareTaskUpdateRequest careTaskUpdateRequest = ; // CareTaskUpdateRequest | 
+final String taskId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final CareTaskUpdateRequest careTaskUpdateRequest = ; // CareTaskUpdateRequest |
 
 try {
     final response = api.updateTask(idempotencyKey, ifMatch, taskId, careTaskUpdateRequest);
@@ -5165,10 +5351,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **taskId** | **String**|  | 
- **careTaskUpdateRequest** | [**CareTaskUpdateRequest**](CareTaskUpdateRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **taskId** | **String**|  |
+ **careTaskUpdateRequest** | [**CareTaskUpdateRequest**](CareTaskUpdateRequest.md)|  |
 
 ### Return type
 
@@ -5190,17 +5376,17 @@ Name | Type | Description  | Notes
 
 完成断奶
 
-仅允许 weaning_due；对服务端计算的当前在管幼崽逐项提交生存/离舍结果并校验去向。 断奶动作不接受或修改 profile_status，个体化进度仅由 individualize 动作推进。 缺少当前在管身份、包含已关闭身份或笼位冲突时整体不推进状态。 
+仅允许 weaning_due；对服务端计算的当前在管幼崽逐项提交生存/离舍结果并校验去向。 断奶动作不接受或修改 profile_status，个体化进度仅由 individualize 动作推进。 缺少当前在管身份、包含已关闭身份或笼位冲突时整体不推进状态。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final WeanLitterRequest weanLitterRequest = {"weaned_at":"2026-08-25T02:00:00Z","timezone":"Asia/Shanghai","items":[{"pup_identity_id":"018f47a2-73b3-762e-8498-07b13dc3b599","outcome_status":"alive","destination_enclosure_id":"018f47a2-81bf-72b2-8990-79310bde2638"},{"pup_identity_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","outcome_status":"alive","destination_enclosure_id":"018f47a2-81bf-72b2-8990-79310bde2638"}]}; // WeanLitterRequest | 
+final String litterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final WeanLitterRequest weanLitterRequest = {"weaned_at":"2026-08-25T02:00:00Z","timezone":"Asia/Shanghai","items":[{"pup_identity_id":"018f47a2-73b3-762e-8498-07b13dc3b599","outcome_status":"alive","destination_enclosure_id":"018f47a2-81bf-72b2-8990-79310bde2638"},{"pup_identity_id":"018f47a2-748c-7d2d-a19f-ab53e616d7d8","outcome_status":"alive","destination_enclosure_id":"018f47a2-81bf-72b2-8990-79310bde2638"}]}; // WeanLitterRequest |
 
 try {
     final response = api.weanLitter(idempotencyKey, ifMatch, litterId, weanLitterRequest);
@@ -5214,10 +5400,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
- **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
- **litterId** | **String**|  | 
- **weanLitterRequest** | [**WeanLitterRequest**](WeanLitterRequest.md)|  | 
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **litterId** | **String**|  |
+ **weanLitterRequest** | [**WeanLitterRequest**](WeanLitterRequest.md)|  |
 
 ### Return type
 

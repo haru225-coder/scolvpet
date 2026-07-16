@@ -103,5 +103,4 @@ psql -X -v ON_ERROR_STOP=1 -h /tmp/scolvpet-pg15 -p 55432 -d scolvpet \
   -f specs/database/schema.sql
 ```
 
-2026-07-16 使用 PostgreSQL 15.17 完整执行成功：38 张表、60 个枚举。已实际提交并核对 N>0 confirm-birth、N=0 no_litter_outcome、完整 individualize 和 CSV 历史窝次事务；SQL/DBML 的 38 张表、全部字段和 60 个枚举逐项一致。
-
+2026-07-16 使用 PostgreSQL 15.17 完整执行成功：冻结 `schema.sql` 基线为 38 张表、60 个枚举；叠加增量迁移 0010–0012 后，实际运行库为 41 张表、60 个枚举。已实际提交并核对 N>0 confirm-birth、N=0 no_litter_outcome、完整 individualize、CSV 历史窝次事务和认证持久化链路；SQL/DBML 的冻结基线仍按 38 张表逐项一致。

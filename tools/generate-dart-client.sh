@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/env bash
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -40,10 +40,10 @@ node tools/prepare-generated-dart.mjs
 rm -rf "$OUTPUT_DIR/test"
 (
   cd "$OUTPUT_DIR"
-  pub_args=()
   if [[ "${DART_PUB_OFFLINE:-0}" == "1" ]]; then
-    pub_args+=(--offline)
+    "$TIMEOUT_SCRIPT" "$COMMAND_TIMEOUT_SECONDS" dart pub get --offline
+  else
+    "$TIMEOUT_SCRIPT" "$COMMAND_TIMEOUT_SECONDS" dart pub get
   fi
-  "$TIMEOUT_SCRIPT" "$COMMAND_TIMEOUT_SECONDS" dart pub get "${pub_args[@]}"
   "$TIMEOUT_SCRIPT" "$COMMAND_TIMEOUT_SECONDS" dart run build_runner build --delete-conflicting-outputs
 )

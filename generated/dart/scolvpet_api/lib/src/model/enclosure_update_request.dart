@@ -4,7 +4,6 @@
 
 // ignore_for_file: unused_element
 import 'package:scolvpet_api/src/model/enclosure_dimensions.dart';
-import 'package:scolvpet_api/src/model/cleanliness_state.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -30,13 +29,9 @@ class EnclosureUpdateRequest {
 
      this.dimensions,
 
-     this.cleanlinessState,
-
      this.capacity,
 
      this.equipment,
-
-     this.lastCleanedAt,
   });
 
   @JsonKey(
@@ -87,18 +82,6 @@ class EnclosureUpdateRequest {
 
 
 
-  @JsonKey(
-    
-    name: r'cleanliness_state',
-    required: false,
-    includeIfNull: false,
-  )
-
-
-  final CleanlinessState? cleanlinessState;
-
-
-
           // minimum: 1
   @JsonKey(
     
@@ -124,18 +107,6 @@ class EnclosureUpdateRequest {
 
 
 
-  @JsonKey(
-    
-    name: r'last_cleaned_at',
-    required: false,
-    includeIfNull: false,
-  )
-
-
-  final DateTime? lastCleanedAt;
-
-
-
 
 
     @override
@@ -144,10 +115,8 @@ class EnclosureUpdateRequest {
       other.rackCode == rackCode &&
       other.levelCode == levelCode &&
       other.dimensions == dimensions &&
-      other.cleanlinessState == cleanlinessState &&
       other.capacity == capacity &&
-      other.equipment == equipment &&
-      other.lastCleanedAt == lastCleanedAt;
+      other.equipment == equipment;
 
     @override
     int get hashCode =>
@@ -155,10 +124,8 @@ class EnclosureUpdateRequest {
         (rackCode == null ? 0 : rackCode.hashCode) +
         (levelCode == null ? 0 : levelCode.hashCode) +
         (dimensions == null ? 0 : dimensions.hashCode) +
-        cleanlinessState.hashCode +
         capacity.hashCode +
-        equipment.hashCode +
-        (lastCleanedAt == null ? 0 : lastCleanedAt.hashCode);
+        equipment.hashCode;
 
   factory EnclosureUpdateRequest.fromJson(Map<String, dynamic> json) => _$EnclosureUpdateRequestFromJson(json);
 

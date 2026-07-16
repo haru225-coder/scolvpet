@@ -61,10 +61,10 @@ import 'package:scolvpet_api/scolvpet_api.dart';
 
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final AdjustBaselineRequest adjustBaselineRequest = {"new_baseline_at":"2026-07-18T12:12:00Z","reason":"以明确交配观察作为新基准","timezone":"Asia/Shanghai"}; // AdjustBaselineRequest | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final AdjustBaselineRequest adjustBaselineRequest = {"new_baseline_at":"2026-07-18T12:12:00Z","reason":"以明确交配观察作为新基准","timezone":"Asia/Shanghai"}; // AdjustBaselineRequest |
 
 try {
     final response = await api.adjustBreedingBaseline(idempotencyKey, ifMatch, planId, adjustBaselineRequest);
@@ -93,6 +93,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**createBackupJob**](doc/DefaultApi.md#createbackupjob) | **POST** /data-center/backup-jobs | 创建基础备份
 [*DefaultApi*](doc/DefaultApi.md) | [**createBreedingPlan**](doc/DefaultApi.md#createbreedingplan) | **POST** /breeding-plans | 创建繁育计划草稿
 [*DefaultApi*](doc/DefaultApi.md) | [**createEnclosure**](doc/DefaultApi.md#createenclosure) | **POST** /enclosures | 创建笼盒
+[*DefaultApi*](doc/DefaultApi.md) | [**createEnclosureCleaning**](doc/DefaultApi.md#createenclosurecleaning) | **POST** /enclosures/{enclosure_id}/cleanings | 记录笼盒清洁或消毒
 [*DefaultApi*](doc/DefaultApi.md) | [**createEnclosureStay**](doc/DefaultApi.md#createenclosurestay) | **POST** /enclosures/{enclosure_id}/stays | 创建入住或移笼事实
 [*DefaultApi*](doc/DefaultApi.md) | [**createExportJob**](doc/DefaultApi.md#createexportjob) | **POST** /data-center/export-jobs | 创建数据导出
 [*DefaultApi*](doc/DefaultApi.md) | [**createHamster**](doc/DefaultApi.md#createhamster) | **POST** /hamsters | 创建仓鼠档案
@@ -118,6 +119,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**getCurrentUsage**](doc/DefaultApi.md#getcurrentusage) | **GET** /usage/current | 获取当前用量
 [*DefaultApi*](doc/DefaultApi.md) | [**getDataCenterSummary**](doc/DefaultApi.md#getdatacentersummary) | **GET** /data-center/summary | 获取数据中心摘要
 [*DefaultApi*](doc/DefaultApi.md) | [**getEnclosure**](doc/DefaultApi.md#getenclosure) | **GET** /enclosures/{enclosure_id} | 获取笼盒详情
+[*DefaultApi*](doc/DefaultApi.md) | [**getEnclosureCleaning**](doc/DefaultApi.md#getenclosurecleaning) | **GET** /enclosure-cleanings/{cleaning_id} | 获取清洁记录
 [*DefaultApi*](doc/DefaultApi.md) | [**getExportDownload**](doc/DefaultApi.md#getexportdownload) | **GET** /data-center/export-jobs/{job_id}/download | 获取导出下载链接
 [*DefaultApi*](doc/DefaultApi.md) | [**getExportJob**](doc/DefaultApi.md#getexportjob) | **GET** /data-center/export-jobs/{job_id} | 获取导出任务
 [*DefaultApi*](doc/DefaultApi.md) | [**getHamster**](doc/DefaultApi.md#gethamster) | **GET** /hamsters/{hamster_id} | 获取仓鼠详情
@@ -134,6 +136,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**getMediaTranscodeStatus**](doc/DefaultApi.md#getmediatranscodestatus) | **GET** /media/{media_id}/transcode-status | 获取转码状态
 [*DefaultApi*](doc/DefaultApi.md) | [**getPairingAttempt**](doc/DefaultApi.md#getpairingattempt) | **GET** /pairing-attempts/{attempt_id} | 获取配对尝试
 [*DefaultApi*](doc/DefaultApi.md) | [**getPublicShare**](doc/DefaultApi.md#getpublicshare) | **GET** /public/shares/{token} | 无需认证读取公开分享
+[*DefaultApi*](doc/DefaultApi.md) | [**getPublicShareMedia**](doc/DefaultApi.md#getpublicsharemedia) | **GET** /public/shares/{token}/media/{media_id} | 读取公开分享媒体
 [*DefaultApi*](doc/DefaultApi.md) | [**getReminder**](doc/DefaultApi.md#getreminder) | **GET** /reminders/{reminder_id} | 获取提醒
 [*DefaultApi*](doc/DefaultApi.md) | [**getSpeciesRuleVersion**](doc/DefaultApi.md#getspeciesruleversion) | **GET** /species-rule-versions/{rule_version_id} | 获取规则版本
 [*DefaultApi*](doc/DefaultApi.md) | [**getTask**](doc/DefaultApi.md#gettask) | **GET** /tasks/{task_id} | 获取任务
@@ -142,6 +145,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**individualizeLitter_1**](doc/DefaultApi.md#individualizelitter_1) | **POST** /litters/{litter_id}/individualize | 将临时幼崽个体化
 [*DefaultApi*](doc/DefaultApi.md) | [**listBackupJobs**](doc/DefaultApi.md#listbackupjobs) | **GET** /data-center/backup-jobs | 列出备份任务
 [*DefaultApi*](doc/DefaultApi.md) | [**listBreedingPlans**](doc/DefaultApi.md#listbreedingplans) | **GET** /breeding-plans | 列出繁育计划
+[*DefaultApi*](doc/DefaultApi.md) | [**listEnclosureCleanings**](doc/DefaultApi.md#listenclosurecleanings) | **GET** /enclosures/{enclosure_id}/cleanings | 列出笼盒清洁历史
 [*DefaultApi*](doc/DefaultApi.md) | [**listEnclosureStays**](doc/DefaultApi.md#listenclosurestays) | **GET** /enclosures/{enclosure_id}/stays | 列出笼盒入住历史
 [*DefaultApi*](doc/DefaultApi.md) | [**listEnclosures**](doc/DefaultApi.md#listenclosures) | **GET** /enclosures | 列出笼盒
 [*DefaultApi*](doc/DefaultApi.md) | [**listExportJobs**](doc/DefaultApi.md#listexportjobs) | **GET** /data-center/export-jobs | 列出导出任务
@@ -245,6 +249,11 @@ Class | Method | HTTP request | Description
  - [DownloadLinkResponse](doc/DownloadLinkResponse.md)
  - [DownloadLinkResponseData](doc/DownloadLinkResponseData.md)
  - [Enclosure](doc/Enclosure.md)
+ - [EnclosureCleaning](doc/EnclosureCleaning.md)
+ - [EnclosureCleaningCreateRequest](doc/EnclosureCleaningCreateRequest.md)
+ - [EnclosureCleaningListResponse](doc/EnclosureCleaningListResponse.md)
+ - [EnclosureCleaningResponse](doc/EnclosureCleaningResponse.md)
+ - [EnclosureCleaningType](doc/EnclosureCleaningType.md)
  - [EnclosureCreateRequest](doc/EnclosureCreateRequest.md)
  - [EnclosureDimensions](doc/EnclosureDimensions.md)
  - [EnclosureListResponse](doc/EnclosureListResponse.md)
@@ -442,6 +451,7 @@ Class | Method | HTTP request | Description
  - [WeightRecordListResponse](doc/WeightRecordListResponse.md)
  - [WeightRecordOneOf](doc/WeightRecordOneOf.md)
  - [WeightRecordOneOf1](doc/WeightRecordOneOf1.md)
+ - [WeightRecordOneOf2](doc/WeightRecordOneOf2.md)
  - [WeightRecordResponse](doc/WeightRecordResponse.md)
 
 

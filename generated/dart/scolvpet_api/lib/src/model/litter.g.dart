@@ -11,13 +11,17 @@ abstract class _$LitterCWProxy {
 
   Litter ownerId(String ownerId);
 
-  Litter breedingPlanId(String breedingPlanId);
+  Litter origin(LitterOriginEnum origin);
 
-  Litter sireId(String sireId);
+  Litter code(String code);
 
-  Litter damId(String damId);
+  Litter breedingPlanId(String? breedingPlanId);
 
-  Litter bornAt(DateTime bornAt);
+  Litter sireId(String? sireId);
+
+  Litter damId(String? damId);
+
+  Litter bornAt(DateTime? bornAt);
 
   Litter initialAliveCount(int initialAliveCount);
 
@@ -27,7 +31,7 @@ abstract class _$LitterCWProxy {
 
   Litter state(LitterState state);
 
-  Litter enclosureId(String enclosureId);
+  Litter enclosureId(String? enclosureId);
 
   Litter damCondition(DamCondition damCondition);
 
@@ -54,15 +58,17 @@ abstract class _$LitterCWProxy {
   Litter call({
     String id,
     String ownerId,
-    String breedingPlanId,
-    String sireId,
-    String damId,
-    DateTime bornAt,
+    LitterOriginEnum origin,
+    String code,
+    String? breedingPlanId,
+    String? sireId,
+    String? damId,
+    DateTime? bornAt,
     int initialAliveCount,
     int initialOtherCount,
     int currentManagedCount,
     LitterState state,
-    String enclosureId,
+    String? enclosureId,
     DamCondition damCondition,
     DateTime? weanedAt,
     DateTime? sexSeparatedAt,
@@ -87,17 +93,23 @@ class _$LitterCWProxyImpl implements _$LitterCWProxy {
   Litter ownerId(String ownerId) => this(ownerId: ownerId);
 
   @override
-  Litter breedingPlanId(String breedingPlanId) =>
+  Litter origin(LitterOriginEnum origin) => this(origin: origin);
+
+  @override
+  Litter code(String code) => this(code: code);
+
+  @override
+  Litter breedingPlanId(String? breedingPlanId) =>
       this(breedingPlanId: breedingPlanId);
 
   @override
-  Litter sireId(String sireId) => this(sireId: sireId);
+  Litter sireId(String? sireId) => this(sireId: sireId);
 
   @override
-  Litter damId(String damId) => this(damId: damId);
+  Litter damId(String? damId) => this(damId: damId);
 
   @override
-  Litter bornAt(DateTime bornAt) => this(bornAt: bornAt);
+  Litter bornAt(DateTime? bornAt) => this(bornAt: bornAt);
 
   @override
   Litter initialAliveCount(int initialAliveCount) =>
@@ -115,7 +127,7 @@ class _$LitterCWProxyImpl implements _$LitterCWProxy {
   Litter state(LitterState state) => this(state: state);
 
   @override
-  Litter enclosureId(String enclosureId) => this(enclosureId: enclosureId);
+  Litter enclosureId(String? enclosureId) => this(enclosureId: enclosureId);
 
   @override
   Litter damCondition(DamCondition damCondition) =>
@@ -154,6 +166,8 @@ class _$LitterCWProxyImpl implements _$LitterCWProxy {
   Litter call({
     Object? id = const $CopyWithPlaceholder(),
     Object? ownerId = const $CopyWithPlaceholder(),
+    Object? origin = const $CopyWithPlaceholder(),
+    Object? code = const $CopyWithPlaceholder(),
     Object? breedingPlanId = const $CopyWithPlaceholder(),
     Object? sireId = const $CopyWithPlaceholder(),
     Object? damId = const $CopyWithPlaceholder(),
@@ -181,22 +195,30 @@ class _$LitterCWProxyImpl implements _$LitterCWProxy {
           ? _value.ownerId
           // ignore: cast_nullable_to_non_nullable
           : ownerId as String,
+      origin: origin == const $CopyWithPlaceholder()
+          ? _value.origin
+          // ignore: cast_nullable_to_non_nullable
+          : origin as LitterOriginEnum,
+      code: code == const $CopyWithPlaceholder()
+          ? _value.code
+          // ignore: cast_nullable_to_non_nullable
+          : code as String,
       breedingPlanId: breedingPlanId == const $CopyWithPlaceholder()
           ? _value.breedingPlanId
           // ignore: cast_nullable_to_non_nullable
-          : breedingPlanId as String,
+          : breedingPlanId as String?,
       sireId: sireId == const $CopyWithPlaceholder()
           ? _value.sireId
           // ignore: cast_nullable_to_non_nullable
-          : sireId as String,
+          : sireId as String?,
       damId: damId == const $CopyWithPlaceholder()
           ? _value.damId
           // ignore: cast_nullable_to_non_nullable
-          : damId as String,
+          : damId as String?,
       bornAt: bornAt == const $CopyWithPlaceholder()
           ? _value.bornAt
           // ignore: cast_nullable_to_non_nullable
-          : bornAt as DateTime,
+          : bornAt as DateTime?,
       initialAliveCount: initialAliveCount == const $CopyWithPlaceholder()
           ? _value.initialAliveCount
           // ignore: cast_nullable_to_non_nullable
@@ -216,7 +238,7 @@ class _$LitterCWProxyImpl implements _$LitterCWProxy {
       enclosureId: enclosureId == const $CopyWithPlaceholder()
           ? _value.enclosureId
           // ignore: cast_nullable_to_non_nullable
-          : enclosureId as String,
+          : enclosureId as String?,
       damCondition: damCondition == const $CopyWithPlaceholder()
           ? _value.damCondition
           // ignore: cast_nullable_to_non_nullable
@@ -272,15 +294,12 @@ Litter _$LitterFromJson(Map<String, dynamic> json) => $checkedCreate(
       requiredKeys: const [
         'id',
         'owner_id',
-        'breeding_plan_id',
-        'sire_id',
-        'dam_id',
-        'born_at',
+        'origin',
+        'code',
         'initial_alive_count',
         'initial_other_count',
         'current_managed_count',
         'state',
-        'enclosure_id',
         'dam_condition',
         'version',
         'created_at',
@@ -290,10 +309,18 @@ Litter _$LitterFromJson(Map<String, dynamic> json) => $checkedCreate(
     final val = Litter(
       id: $checkedConvert('id', (v) => v as String),
       ownerId: $checkedConvert('owner_id', (v) => v as String),
-      breedingPlanId: $checkedConvert('breeding_plan_id', (v) => v as String),
-      sireId: $checkedConvert('sire_id', (v) => v as String),
-      damId: $checkedConvert('dam_id', (v) => v as String),
-      bornAt: $checkedConvert('born_at', (v) => DateTime.parse(v as String)),
+      origin: $checkedConvert(
+        'origin',
+        (v) => $enumDecode(_$LitterOriginEnumEnumMap, v),
+      ),
+      code: $checkedConvert('code', (v) => v as String),
+      breedingPlanId: $checkedConvert('breeding_plan_id', (v) => v as String?),
+      sireId: $checkedConvert('sire_id', (v) => v as String?),
+      damId: $checkedConvert('dam_id', (v) => v as String?),
+      bornAt: $checkedConvert(
+        'born_at',
+        (v) => v == null ? null : DateTime.parse(v as String),
+      ),
       initialAliveCount: $checkedConvert(
         'initial_alive_count',
         (v) => (v as num).toInt(),
@@ -310,7 +337,7 @@ Litter _$LitterFromJson(Map<String, dynamic> json) => $checkedCreate(
         'state',
         (v) => $enumDecode(_$LitterStateEnumMap, v),
       ),
-      enclosureId: $checkedConvert('enclosure_id', (v) => v as String),
+      enclosureId: $checkedConvert('enclosure_id', (v) => v as String?),
       damCondition: $checkedConvert(
         'dam_condition',
         (v) => DamCondition.fromJson(v as Map<String, dynamic>),
@@ -362,15 +389,17 @@ Litter _$LitterFromJson(Map<String, dynamic> json) => $checkedCreate(
 Map<String, dynamic> _$LitterToJson(Litter instance) => <String, dynamic>{
   'id': instance.id,
   'owner_id': instance.ownerId,
-  'breeding_plan_id': instance.breedingPlanId,
-  'sire_id': instance.sireId,
-  'dam_id': instance.damId,
-  'born_at': instance.bornAt.toIso8601String(),
+  'origin': _$LitterOriginEnumEnumMap[instance.origin]!,
+  'code': instance.code,
+  'breeding_plan_id': ?instance.breedingPlanId,
+  'sire_id': ?instance.sireId,
+  'dam_id': ?instance.damId,
+  'born_at': ?instance.bornAt?.toIso8601String(),
   'initial_alive_count': instance.initialAliveCount,
   'initial_other_count': instance.initialOtherCount,
   'current_managed_count': instance.currentManagedCount,
   'state': _$LitterStateEnumMap[instance.state]!,
-  'enclosure_id': instance.enclosureId,
+  'enclosure_id': ?instance.enclosureId,
   'dam_condition': instance.damCondition.toJson(),
   'weaned_at': ?instance.weanedAt?.toIso8601String(),
   'sex_separated_at': ?instance.sexSeparatedAt?.toIso8601String(),
@@ -379,6 +408,11 @@ Map<String, dynamic> _$LitterToJson(Litter instance) => <String, dynamic>{
   'version': instance.version,
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
+};
+
+const _$LitterOriginEnumEnumMap = {
+  LitterOriginEnum.breeding: 'breeding',
+  LitterOriginEnum.import_: 'import',
 };
 
 const _$LitterStateEnumMap = {

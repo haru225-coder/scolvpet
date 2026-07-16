@@ -140,8 +140,8 @@ class EnclosureStayCreateRequest {
 enum EnclosureStayCreateRequestPurposeEnum {
 @JsonValue(r'single')
 single(r'single'),
-@JsonValue(r'pairing')
-pairing(r'pairing'),
+@JsonValue(r'pairing_temp')
+pairingTemp(r'pairing_temp'),
 @JsonValue(r'gestation')
 gestation(r'gestation'),
 @JsonValue(r'isolation')

@@ -19,10 +19,6 @@ abstract class _$HamsterUpdateRequestCWProxy {
 
   HamsterUpdateRequest birthDate(DateTime? birthDate);
 
-  HamsterUpdateRequest lifecycleStatus(HamsterLifecycleStatus? lifecycleStatus);
-
-  HamsterUpdateRequest breedingStatus(HamsterBreedingStatus? breedingStatus);
-
   HamsterUpdateRequest coverMediaId(String? coverMediaId);
 
   HamsterUpdateRequest notes(String? notes);
@@ -40,8 +36,6 @@ abstract class _$HamsterUpdateRequestCWProxy {
     Sex? sex,
     num? sexConfidence,
     DateTime? birthDate,
-    HamsterLifecycleStatus? lifecycleStatus,
-    HamsterBreedingStatus? breedingStatus,
     String? coverMediaId,
     String? notes,
   });
@@ -77,15 +71,6 @@ class _$HamsterUpdateRequestCWProxyImpl
       this(birthDate: birthDate);
 
   @override
-  HamsterUpdateRequest lifecycleStatus(
-    HamsterLifecycleStatus? lifecycleStatus,
-  ) => this(lifecycleStatus: lifecycleStatus);
-
-  @override
-  HamsterUpdateRequest breedingStatus(HamsterBreedingStatus? breedingStatus) =>
-      this(breedingStatus: breedingStatus);
-
-  @override
   HamsterUpdateRequest coverMediaId(String? coverMediaId) =>
       this(coverMediaId: coverMediaId);
 
@@ -106,8 +91,6 @@ class _$HamsterUpdateRequestCWProxyImpl
     Object? sex = const $CopyWithPlaceholder(),
     Object? sexConfidence = const $CopyWithPlaceholder(),
     Object? birthDate = const $CopyWithPlaceholder(),
-    Object? lifecycleStatus = const $CopyWithPlaceholder(),
-    Object? breedingStatus = const $CopyWithPlaceholder(),
     Object? coverMediaId = const $CopyWithPlaceholder(),
     Object? notes = const $CopyWithPlaceholder(),
   }) {
@@ -136,14 +119,6 @@ class _$HamsterUpdateRequestCWProxyImpl
           ? _value.birthDate
           // ignore: cast_nullable_to_non_nullable
           : birthDate as DateTime?,
-      lifecycleStatus: lifecycleStatus == const $CopyWithPlaceholder()
-          ? _value.lifecycleStatus
-          // ignore: cast_nullable_to_non_nullable
-          : lifecycleStatus as HamsterLifecycleStatus?,
-      breedingStatus: breedingStatus == const $CopyWithPlaceholder()
-          ? _value.breedingStatus
-          // ignore: cast_nullable_to_non_nullable
-          : breedingStatus as HamsterBreedingStatus?,
       coverMediaId: coverMediaId == const $CopyWithPlaceholder()
           ? _value.coverMediaId
           // ignore: cast_nullable_to_non_nullable
@@ -183,14 +158,6 @@ HamsterUpdateRequest _$HamsterUpdateRequestFromJson(
         'birth_date',
         (v) => v == null ? null : DateTime.parse(v as String),
       ),
-      lifecycleStatus: $checkedConvert(
-        'lifecycle_status',
-        (v) => $enumDecodeNullable(_$HamsterLifecycleStatusEnumMap, v),
-      ),
-      breedingStatus: $checkedConvert(
-        'breeding_status',
-        (v) => $enumDecodeNullable(_$HamsterBreedingStatusEnumMap, v),
-      ),
       coverMediaId: $checkedConvert('cover_media_id', (v) => v as String?),
       notes: $checkedConvert('notes', (v) => v as String?),
     );
@@ -201,8 +168,6 @@ HamsterUpdateRequest _$HamsterUpdateRequestFromJson(
     'varietyCode': 'variety_code',
     'sexConfidence': 'sex_confidence',
     'birthDate': 'birth_date',
-    'lifecycleStatus': 'lifecycle_status',
-    'breedingStatus': 'breeding_status',
     'coverMediaId': 'cover_media_id',
   },
 );
@@ -216,9 +181,6 @@ Map<String, dynamic> _$HamsterUpdateRequestToJson(
   'sex': ?_$SexEnumMap[instance.sex],
   'sex_confidence': ?instance.sexConfidence,
   'birth_date': ?instance.birthDate?.toIso8601String(),
-  'lifecycle_status':
-      ?_$HamsterLifecycleStatusEnumMap[instance.lifecycleStatus],
-  'breeding_status': ?_$HamsterBreedingStatusEnumMap[instance.breedingStatus],
   'cover_media_id': ?instance.coverMediaId,
   'notes': ?instance.notes,
 };
@@ -227,18 +189,4 @@ const _$SexEnumMap = {
   Sex.male: 'male',
   Sex.female: 'female',
   Sex.unknown: 'unknown',
-};
-
-const _$HamsterLifecycleStatusEnumMap = {
-  HamsterLifecycleStatus.active: 'active',
-  HamsterLifecycleStatus.transferred: 'transferred',
-  HamsterLifecycleStatus.retired: 'retired',
-  HamsterLifecycleStatus.deceased: 'deceased',
-};
-
-const _$HamsterBreedingStatusEnumMap = {
-  HamsterBreedingStatus.candidate: 'candidate',
-  HamsterBreedingStatus.active: 'active',
-  HamsterBreedingStatus.resting: 'resting',
-  HamsterBreedingStatus.retired: 'retired',
 };
