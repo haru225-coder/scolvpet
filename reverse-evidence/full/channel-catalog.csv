@@ -1,0 +1,77 @@
+id,module,name,path,route,evidence_level,evidence_ref,status,notes
+CH-0001,webview,plugins.flutter.io/webview,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0002,storage,plugins.flutter.io/shared_preferences,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0003,deeplink,plugins.flutter.io/url_launcher,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0004,"camera,gallery",plugins.flutter.io/image_picker,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0005,file,plugins.flutter.io/path_provider,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0006,storage,com.tekartik.sqflite,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0007,deeplink,com.llfbandit.app_links/messages,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0008,deeplink,com.llfbandit.app_links/events,,,S,App.framework/App strings,observed,EventChannel marker observed in AOT strings
+CH-0009,audio,com.llfbandit.record/messages,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0010,audio,com.llfbandit.record/events,,,S,App.framework/App strings,observed,EventChannel marker observed in AOT strings
+CH-0011,notification,flutter/local_notifications,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0012,auth,MethodChannelSignInWithApple,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0013,share,MethodChannelShare,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0014,permission,MethodChannelPermissionHandler,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0015,camera,MethodChannelMobileScanner,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0016,file,MethodChannelFilePicker,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0017,image,MethodChannelImageCropper,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0018,gallery,MethodChannelGal,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0019,device,MethodChannelDeviceInfo,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0020,device,MethodChannelPackageInfo,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0021,file,MethodChannelPathProvider,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0022,notification,MethodChannelFlutterLocalNotificationsPlugin,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0023,storage,MethodChannelSharedPreferencesStore,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0024,deeplink,MethodChannelUrlLauncher,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0025,"camera,gallery",MethodChannelImagePicker,,,S,App.framework/App strings,observed,MethodChannel marker observed in AOT strings
+CH-0026,webview,dev.flutter.pigeon.webview_flutter_wkwebview.,,,S,App.framework/App strings,observed,Pigeon marker observed in AOT strings
+CH-0027,storage,dev.flutter.pigeon.shared_preferences_foundation.,,,S,App.framework/App strings,observed,Pigeon marker observed in AOT strings
+CH-0028,deeplink,dev.flutter.pigeon.url_launcher_ios.,,,S,App.framework/App strings,observed,Pigeon marker observed in AOT strings
+CH-0029,video,dev.flutter.pigeon.video_player_avfoundation.,,,S,App.framework/App strings,observed,Pigeon marker observed in AOT strings
+CH-0030,"camera,gallery",dev.flutter.pigeon.image_picker_ios.,,,S,App.framework/App strings,observed,Pigeon marker observed in AOT strings
+CH-0031,webview-bridge,window.FMBridge,,,S,App.framework/App strings,observed,JSBridge marker observed in AOT strings
+CH-0032,webview-bridge,window.FlutterBridge,,,S,App.framework/App strings,observed,JSBridge marker observed in AOT strings
+CH-0033,webview-bridge,FMBridgeChannel,,,S,App.framework/App strings,observed,JSBridge marker observed in AOT strings
+CH-0034,webview-bridge,FlutterBridge,,,S,App.framework/App strings,observed,JSBridge marker observed in AOT strings
+CH-0035,image_picker_ios,dev.flutter.pigeon.image_picker_ios.ImagePickerApi,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0036,shared_preferences_foundation,dev.flutter.pigeon.shared_preferences_foundation.LegacyUserDefaultsApi,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0037,url_launcher_ios,dev.flutter.pigeon.url_launcher_ios.UrlLauncherApi,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0038,video_player_avfoundation,dev.flutter.pigeon.video_player_avfoundation.AVFoundationVideoPlayerApi,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0039,video_player_avfoundation,dev.flutter.pigeon.video_player_avfoundation.VideoPlayerInstanceApi,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0040,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.AuthenticationChallengeResponse,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0041,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.GetTrustResultResponse,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0042,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.HTTPCookie,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0043,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.HTTPURLResponse,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0044,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.NSError,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0045,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.NSObject,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0046,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.NSViewWKWebView,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0047,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.PigeonInternalInstanceManager,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0048,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.SecCertificate,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0049,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.SecTrust,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0050,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.UIColor,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0051,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.UIScrollView,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0052,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.UIScrollViewDelegate,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0053,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.UIView,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0054,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.UIViewWKWebView,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0055,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.URL,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0056,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.URLAuthenticationChallenge,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0057,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.URLCredential,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0058,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.URLProtectionSpace,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0059,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.URLRequest,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0060,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.URLResponse,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0061,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKFrameInfo,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0062,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKHTTPCookieStore,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0063,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKNavigationAction,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0064,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKNavigationDelegate,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0065,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKNavigationResponse,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0066,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKPreferences,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0067,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKScriptMessage,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0068,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKScriptMessageHandler,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0069,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKSecurityOrigin,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0070,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKUIDelegate,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0071,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKUserContentController,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0072,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKUserScript,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0073,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKWebView,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0074,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKWebViewConfiguration,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0075,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKWebpagePreferences,,,S,App.framework/App strings,observed,Pigeon API type/root string
+CH-0076,webview_flutter_wkwebview,dev.flutter.pigeon.webview_flutter_wkwebview.WKWebsiteDataStore,,,S,App.framework/App strings,observed,Pigeon API type/root string

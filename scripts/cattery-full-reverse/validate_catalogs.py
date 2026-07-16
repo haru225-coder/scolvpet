@@ -66,7 +66,7 @@ def main() -> int:
             ok = False
         lines.append(f"[{tag}] {msg}")
 
-    lines.append("宠舍管家全量逆向 R0/R1 验证报告")
+    lines.append("宠舍管家全量逆向 R0/R1/R2 验证报告")
     lines.append(f"生成时间：{datetime.now().astimezone().isoformat(timespec='seconds')}")
     lines.append("")
 
@@ -200,6 +200,71 @@ def main() -> int:
     # Subdirs present
     for sub in ("ui", "runtime", "network", "web"):
         check((OUT / sub).is_dir(), f"subdir {sub}/ present")
+
+    # R2 artifacts (optional until R2 run; required if plugin-catalog exists)
+    r2_files = [
+        "plugin-catalog.csv",
+        "channel-catalog.csv",
+        "external-entry-catalog.csv",
+        "config-markers.csv",
+        "association-graph.csv",
+        "runtime/static-architecture.json",
+    ]
+    r2_present = (OUT / "plugin-catalog.csv").is_file()
+    if r2_present:
+        lines.append("")
+        lines.append("## R2 static reverse")
+        for rel in r2_files:
+            path = OUT / rel
+            check(path.is_file(), f"R2 artifact {rel}")
+        # responsibility + association status on core catalogs
+        for name in (
+            "page-catalog.csv",
+            "controller-catalog.csv",
+            "service-catalog.csv",
+            "entity-catalog.csv",
+        ):
+            rows = read_csv(OUT / name)
+            missing_role = [
+                r["id"]
+                for r in rows
+                if "|" not in (r.get("status") or "") or "role=" not in (r.get("notes") or "")
+            ]
+            check(
+                not missing_role,
+                f"{name} responsibility+association status complete"
+                + (f" (missing {len(missing_role)})" if missing_role else ""),
+            )
+        plugins = read_csv(OUT / "plugin-catalog.csv")
+        channels = read_csv(OUT / "channel-catalog.csv")
+        exter = read_csv(OUT / "external-entry-catalog.csv")
+        check(len(plugins) >= 40, f"plugin-catalog count {len(plugins)} (>=40 frameworks+dart)")
+        check(len(channels) >= 20, f"channel-catalog count {len(channels)} (>=20)")
+        check(len(exter) >= 8, f"external-entry-catalog count {len(exter)} (>=8)")
+        edges = read_csv(OUT / "association-graph.csv")
+        check(len(edges) > 0, f"association-graph edges {len(edges)}")
+        # no sourceless association edges
+        sourceless = [
+            e["id"]
+            for e in edges
+            if not e.get("path") or not e.get("route") or not e.get("evidence_ref")
+        ]
+        check(not sourceless, f"association edges all have source nodes ({len(sourceless)} bad)")
+        arch = json.loads((OUT / "runtime/static-architecture.json").read_text(encoding="utf-8"))
+        app_sha = (
+            arch.get("macho", {}).get("app_framework_app", {}).get("sha256")
+            if isinstance(arch.get("macho"), dict)
+            else None
+        )
+        check(
+            app_sha
+            == "8bb590bb7a059f7d4078c3fafe4a366938f3ae9f359fa462f29c030bbadd69b8",
+            "R2 static-architecture App SHA-256",
+        )
+        check(
+            arch.get("macho", {}).get("framework_count", 0) >= 40,
+            f"framework_count {arch.get('macho', {}).get('framework_count')}",
+        )
 
     lines.append("")
     lines.append(f"结果： {'通过' if ok else '失败'}")

@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "wave": "R2",
+  "collected_at": "2026-07-17T02:30:00+08:00",
+  "target_version": "2.15.0 (73)",
+  "macho": {
+    "evidence_level": "S",
+    "app_framework_app": {
+      "path": "/Applications/Cattery Manager.app/Wrapper/Runner.app/Frameworks/App.framework/App",
+      "file": "/Applications/Cattery Manager.app/Wrapper/Runner.app/Frameworks/App.framework/App: Mach-O 64-bit dynamically linked shared library arm64",
+      "sha256": "8bb590bb7a059f7d4078c3fafe4a366938f3ae9f359fa462f29c030bbadd69b8",
+      "size_bytes": 25039536,
+      "load": {
+        "minos": "13.0",
+        "sdk": "26.0",
+        "cryptid": 0,
+        "cryptsize": 24313856,
+        "uuid": "4CCE4CE5-AAC8-3542-8F81-D34822599834"
+      },
+      "segments": [
+        "__DATA",
+        "__LINKEDIT",
+        "__TEXT"
+      ]
+    },
+    "runner": {
+      "path": "/Applications/Cattery Manager.app/Wrapper/Runner.app/Runner",
+      "file": "/Applications/Cattery Manager.app/Wrapper/Runner.app/Runner: Mach-O 64-bit executable arm64",
+      "sha256": "e751bacecdfd56afaddc9929a2b55f6addd4a55b06bfc660678e473741714479",
+      "size_bytes": 31758864,
+      "load": {
+        "minos": "13.0",
+        "sdk": "26.0",
+        "cryptid": 1,
+        "cryptsize": 4096,
+        "uuid": "DD2C9340-ED9C-325A-A02B-4D6BC9E32390"
+      }
+    },
+    "codesign": {
+      "identifier": "com.fanmeowy.catterytool",
+      "team": "W9DZU4H693",
+      "authority": "Apple iPhone OS Application Signing",
+      "raw_excerpt": "Executable=/Applications/Cattery Manager.app/Wrapper/Runner.app/Runner\nIdentifier=com.fanmeowy.catterytool\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20500 size=484004 flags=0x0(none) hashes=7557+7 location=embedded\nVersionPlatform=2\nVersionMin=851968\nVersionSDK=1703936\nHash type=sha256 size=32\nCandidateCDHash sha1=b0b99d2f93eba19f6704dac03b154a948beceec6\nCandidateCDHashFull sha1=b0b99d2f93eba19f6704dac03b154a948beceec6\nCandidateCDHash sha256=0dce2e2f800370f5beb4b339f7f6daa925c73f0b\nCandidateCDHashFull sha256=0dce2e2f800370f5beb4b339f7f6daa925c73f0bbef81910779fd51bbb41d8f7\nHash choices=sha1,sha256\nCMSDigest=1f52c835b95ea20bcacf85205d13bf425557a4c0e73e2cc5d0a7c240e59b1f2b\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=25755648\nExecutable Segment flags=0x1\nPage size=4096\nCDHash=0dce2e2f800370f5beb4b339f7f6daa925c73f0b\nSignature size=4384\nAuthority=Apple iPhone OS Application Signing\nAuthority=Apple iPhone Certification Authority\nAuthority=Apple Root CA\nInfo.plist entries=54"
+    },
+    "info_plist_ref": "reverse-evidence/info-plist.txt",
+    "minimum_os_plist": "18.0",
+    "widget_extension": {
+      "path": "/Applications/Cattery Manager.app/Wrapper/Runner.app/PlugIns/CatteryWidgetsExtension.appex",
+      "bundle_id": "com.fanmeowy.catterytool.CatteryWidgets",
+      "version": "2.15.0 (73)",
+      "exists": true,
+      "binary_size": 385184
+    },
+    "frameworks": [
+      {
+        "name": "App.framework",
+        "binary_size": 25039536,
+        "exists": true
+      },
+      {
+        "name": "DKImagePickerController.framework",
+        "binary_size": 1118848,
+        "exists": true
+      },
+      {
+        "name": "DKPhotoGallery.framework",
+        "binary_size": 838496,
+        "exists": true
+      },
+      {
+        "name": "FBLPromises.framework",
+        "binary_size": 176000,
+        "exists": true
+      },
+      {
+        "name": "Flutter.framework",
+        "binary_size": 9150272,
+        "exists": true
+      },
+      {
+        "name": "GTMSessionFetcher.framework",
+        "binary_size": 406800,
+        "exists": true
+      },
+      {
+        "name": "GoogleDataTransport.framework",
+        "binary_size": 401984,
+        "exists": true
+      },
+      {
+        "name": "GoogleToolboxForMac.framework",
+        "binary_size": 97808,
+        "exists": true
+      },
+      {
+        "name": "GoogleUtilities.framework",
+        "binary_size": 136896,
+        "exists": true
+      },
+      {
+        "name": "KSAdSDK.framework",
+        "binary_size": 16451632,
+        "exists": true
+      },
+      {
+        "name": "SDWebImage.framework",
+        "binary_size": 876368,
+        "exists": true
+      },
+      {
+        "name": "SwiftyGif.framework",
+        "binary_size": 246960,
+        "exists": true
+      },
+      {
+        "name": "TOCropViewController.framework",
+        "binary_size": 332496,
+        "exists": true
+      },
+      {
+        "name": "app_links.framework",
+        "binary_size": 152000,
+        "exists": true
+      },
+      {
+        "name": "app_tracking_transparency.framework",
+        "binary_size": 147136,
+        "exists": true
+      },
+      {
+        "name": "camera_avfoundation.framework",
+        "binary_size": 601648,
+        "exists": true
+      },
+      {
+        "name": "device_info_plus.framework",
+        "binary_size": 93632,
+        "exists": true
+      },
+      {
+        "name": "file_picker.framework",
+        "binary_size": 163600,
+        "exists": true
+      },
+      {
+        "name": "flutter_blue_plus_darwin.framework",
+        "binary_size": 187520,
+        "exists": true
+      },
+      {
+        "name": "flutter_downloader.framework",
+        "binary_size": 182688,
+        "exists": true
+      },
+      {
+        "name": "flutter_local_notifications.framework",
+        "binary_size": 159312,
+        "exists": true
+      },
+      {
+        "name": "gal.framework",
+        "binary_size": 183056,
+        "exists": true
+      },
+      {
+        "name": "image_cropper.framework",
+        "binary_size": 99744,
+        "exists": true
+      },
+      {
+        "name": "image_picker_ios.framework",
+        "binary_size": 210288,
+        "exists": true
+      },
+      {
+        "name": "libwebp.framework",
+        "binary_size": 651680,
+        "exists": true
+      },
+      {
+        "name": "nanopb.framework",
+        "binary_size": 80224,
+        "exists": true
+      },
+      {
+        "name": "objective_c.framework",
+        "binary_size": 186240,
+        "exists": true
+      },
+      {
+        "name": "open_file_ios.framework",
+        "binary_size": 99264,
+        "exists": true
+      },
+      {
+        "name": "package_info_plus.framework",
+        "binary_size": 94528,
+        "exists": true
+      },
+      {
+        "name": "photo_manager.framework",
+        "binary_size": 346528,
+        "exists": true
+      },
+      {
+        "name": "record_darwin.framework",
+        "binary_size": 324592,
+        "exists": true
+      },
+      {
+        "name": "share_plus.framework",
+        "binary_size": 123072,
+        "exists": true
+      },
+      {
+        "name": "shared_preferences_foundation.framework",
+        "binary_size": 225440,
+        "exists": true
+      },
+      {
+        "name": "sign_in_with_apple.framework",
+        "binary_size": 216784,
+        "exists": true
+      },
+      {
+        "name": "sqflite_darwin.framework",
+        "binary_size": 274176,
+        "exists": true
+      },
+      {
+        "name": "url_launcher_ios.framework",
+        "binary_size": 210784,
+        "exists": true
+      },
+      {
+        "name": "video_compress.framework",
+        "binary_size": 199696,
+        "exists": true
+      },
+      {
+        "name": "video_player_avfoundation.framework",
+        "binary_size": 432832,
+        "exists": true
+      },
+      {
+        "name": "video_thumbnail.framework",
+        "binary_size": 98320,
+        "exists": true
+      },
+      {
+        "name": "wakelock_plus.framework",
+        "binary_size": 105872,
+        "exists": true
+      },
+      {
+        "name": "webview_flutter_wkwebview.framework",
+        "binary_size": 1127648,
+        "exists": true
+      }
+    ],
+    "framework_count": 41
+  },
+  "plugin_count": 44,
+  "channel_count": 76,
+  "external_entry_count": 9,
+  "config_marker_count": 26,
+  "association_edge_count": 1069,
+  "coverage": {
+    "page": {
+      "total": 205,
+      "with_association": 177,
+      "orphan_static": 28
+    },
+    "controller": {
+      "total": 32,
+      "with_association": 31,
+      "orphan_static": 1
+    },
+    "service": {
+      "total": 66,
+      "with_association": 63,
+      "orphan_static": 3
+    },
+    "entity": {
+      "total": 87,
+      "with_association": 69,
+      "orphan_static": 18
+    }
+  },
+  "stack": {
+    "ui": "Flutter + GetX",
+    "state": "GetX (GetxController, bindings)",
+    "network": "Dart HTTP services (*_api_service) + GTMSessionFetcher deps",
+    "storage": "shared_preferences + sqflite + flutter_cache_manager",
+    "webview": "webview_flutter_wkwebview + FMBridge/FlutterBridge handlers",
+    "commerce": "StoreKit tool_member products + KSAdSDK",
+    "notifications": "flutter_local_notifications",
+    "widgets": "CatteryWidgetsExtension WidgetKit"
+  },
+  "layering": [
+    "presentation/pages + controllers + bindings",
+    "domain/entities + repositories + usecases + models",
+    "data/services + repositories_impl + models",
+    "core/webview handlers + native plugins"
+  ],
+  "notes": [
+    "Association edges use static token overlap (S-level heuristic), not runtime call graph.",
+    "Runner cryptid=1 (FairPlay 4KB); App.framework/App cryptid=0 fully readable.",
+    "Mach-O minos on binaries reports 13.0; Info.plist MinimumOSVersion=18.0 is product gate."
+  ]
+}

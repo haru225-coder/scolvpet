@@ -1,0 +1,10 @@
+id,module,name,path,route,evidence_level,evidence_ref,status,notes
+EXT-0001,deeplink,url_scheme:catterytool,reverse-evidence/info-plist.txt,catterytool://,S,Info.plist CFBundleURLTypes,observed,URL scheme role Editor / alipay name
+EXT-0002,deeplink,url_scheme:fanmeowy,reverse-evidence/info-plist.txt,fanmeowy://,S,Info.plist CFBundleURLTypes,observed,Custom scheme com.fanmeowy.catterytool
+EXT-0003,deeplink,applinks:fanmeowy.com,LA1 static report + entitlements,https://www.fanmeowy.com/*,S,associated domain applinks:fanmeowy.com,observed,Universal Links; AOT also has transfer/accept URLs
+EXT-0004,auth,Sign in with Apple,sign_in_with_apple.framework,,S,entitlements + framework + MethodChannelSignInWithApple,observed,Native auth capability
+EXT-0005,widgetkit,CatteryWidgetsExtension,/Applications/Cattery Manager.app/Wrapper/Runner.app/PlugIns/CatteryWidgetsExtension.appex,,S,PlugIns + App Group,observed,Home screen widgets; shared app group
+EXT-0006,webview-bridge,FMBridge / FlutterBridge,package:cattery_shared/core/webview/*,,S,AOT strings + reverse-evidence/web/bridge-and-business-markers.txt,observed,Handlers: bridge/cat/device/media/store_trade/template/ui/user
+EXT-0007,storekit,IAP tool_member products,reverse-evidence/storekit.txt,,S,storekit.txt,observed,1month/1year/3year consumable products
+EXT-0008,ads,KSAdSDK,KSAdSDK.framework,,S,Info.plist KSAdSDKAppID + framework,observed,Third-party ads SDK
+EXT-0009,query-schemes,LSApplicationQueriesSchemes,reverse-evidence/info-plist.txt,,S,Info.plist,observed,weixin/wechat/alipay query schemes

@@ -207,5 +207,15 @@
     "entity-catalog.csv": "7ee7b4128ca9137a64ebfdcd22de24f100ee075b4093cf46d3109d91977dcde2",
     "api-catalog.csv": "717aa25bf8c9f826e09ecbe8b7f826fd062184d509c2d7106ba1a63428eea93f",
     "state-transition-catalog.csv": "ebefecaa7b0dabad239d9fbc08272e644eba557bad429d12708a8f5d5134dc59"
+  },
+  "r2": {
+    "collected_at": "2026-07-17T02:30:00+08:00",
+    "plugin_catalog": "plugin-catalog.csv",
+    "channel_catalog": "channel-catalog.csv",
+    "external_entry_catalog": "external-entry-catalog.csv",
+    "config_markers": "config-markers.csv",
+    "association_graph": "association-graph.csv",
+    "static_architecture": "runtime/static-architecture.json",
+    "association_edges": 1069
   }
 }

@@ -5,10 +5,13 @@
 ## 命令
 
 ```bash
-# 从既有 path/route 列表生成 catalogs + manifest + SHA256SUMS
+# R0/R1：从既有 path/route 列表生成 catalogs + manifest + SHA256SUMS
 python3 scripts/cattery-full-reverse/collect_catalogs.py
 
-# 验收计数、版本冻结、样本哈希、脱敏与 SHA256
+# R2：Mach-O / 插件 / 通道 / 配置标记 / 静态关联图（需本机已安装样本 App）
+python3 scripts/cattery-full-reverse/collect_static_r2.py
+
+# 验收计数、版本冻结、样本哈希、脱敏、R2 产物与 SHA256
 python3 scripts/cattery-full-reverse/validate_catalogs.py
 ```
 

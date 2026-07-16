@@ -1,0 +1,27 @@
+id,module,name,path,route,evidence_level,evidence_ref,status,notes
+CFG-0001,cache_key,intro_splash_config_cache_v3,,,S,AOT strings / Info.plist / storekit / api-routes,observed,splash config cache
+CFG-0002,cache_key,app_tool_badges_cache_time,,,S,AOT strings / Info.plist / storekit / api-routes,observed,tool badge cache timestamp
+CFG-0003,cache_prefix,cache_,,,S,AOT strings / Info.plist / storekit / api-routes,observed,generic cache_ prefix observed in AOT
+CFG-0004,storage_api,SharedPreferences,,,S,AOT strings / Info.plist / storekit / api-routes,observed,Flutter SharedPreferences present
+CFG-0005,storage_api,com.tekartik.sqflite,,,S,AOT strings / Info.plist / storekit / api-routes,observed,sqflite channel present
+CFG-0006,cache_api,flutter_cache_manager,,,S,AOT strings / Info.plist / storekit / api-routes,observed,HTTP image/file cache manager
+CFG-0007,app_group,group.com.cattery.widgets,,,S,AOT strings / Info.plist / storekit / api-routes,observed,Widget app group (from prior static report / entitlements)
+CFG-0008,universal_link,applinks:fanmeowy.com,,,S,AOT strings / Info.plist / storekit / api-routes,observed,Associated domain (static report / entitlements)
+CFG-0009,url_scheme,catterytool,,,S,AOT strings / Info.plist / storekit / api-routes,observed,URL scheme for alipay/custom (Info.plist)
+CFG-0010,url_scheme,fanmeowy,,,S,AOT strings / Info.plist / storekit / api-routes,observed,URL scheme bundle (Info.plist)
+CFG-0011,storekit_product,com.cattery.tool_member.1month,,,S,AOT strings / Info.plist / storekit / api-routes,observed,IAP product
+CFG-0012,storekit_product,com.cattery.tool_member.1year,,,S,AOT strings / Info.plist / storekit / api-routes,observed,IAP product
+CFG-0013,storekit_product,com.cattery.tool_member.3year,,,S,AOT strings / Info.plist / storekit / api-routes,observed,IAP product
+CFG-0014,ads_config,KSAdSDKAppID,,,S,AOT strings / Info.plist / storekit / api-routes,observed,Info.plist KSAdSDKAppID=5785583
+CFG-0015,membership,entitlements,,,S,AOT strings / Info.plist / storekit / api-routes,observed,/api/admin/entitlements route present
+CFG-0016,membership,tool_member,,,S,AOT strings / Info.plist / storekit / api-routes,observed,tool member IAP family
+CFG-0017,bridge,FMBridge,,,S,AOT strings / Info.plist / storekit / api-routes,observed,WebView JS bridge name
+CFG-0018,bridge,FlutterBridge,,,S,AOT strings / Info.plist / storekit / api-routes,observed,WebView Flutter bridge name
+CFG-0019,cache_key,app_tool_badges_cache,,,S,App.framework/App strings,observed,cache-like identifier from AOT strings
+CFG-0020,cache_key,base_cache_manager,,,S,App.framework/App strings,observed,cache-like identifier from AOT strings
+CFG-0021,cache_key,calendar_cache_manager,,,S,App.framework/App strings,observed,cache-like identifier from AOT strings
+CFG-0022,cache_key,default_cache_manager,,,S,App.framework/App strings,observed,cache-like identifier from AOT strings
+CFG-0023,cache_key,flutter_cache,,,S,App.framework/App strings,observed,cache-like identifier from AOT strings
+CFG-0024,cache_key,image_cache,,,S,App.framework/App strings,observed,cache-like identifier from AOT strings
+CFG-0025,cache_key,image_cache_manager,,,S,App.framework/App strings,observed,cache-like identifier from AOT strings
+CFG-0026,cache_key,paint_cache,,,S,App.framework/App strings,observed,cache-like identifier from AOT strings

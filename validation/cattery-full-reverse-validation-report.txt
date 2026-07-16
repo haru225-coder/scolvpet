@@ -1,5 +1,5 @@
-宠舍管家全量逆向 R0/R1 验证报告
-生成时间：2026-07-17T01:48:33+08:00
+宠舍管家全量逆向 R0/R1/R2 验证报告
+生成时间：2026-07-17T01:52:53+08:00
 
 [OK] manifest exists: /Users/snowchan27/Documents/scolvpet/reverse-evidence/full/manifest.json
 [OK] frozen version: 2.15.0 (73)
@@ -83,5 +83,24 @@
 [OK] subdir runtime/ present
 [OK] subdir network/ present
 [OK] subdir web/ present
+
+## R2 static reverse
+[OK] R2 artifact plugin-catalog.csv
+[OK] R2 artifact channel-catalog.csv
+[OK] R2 artifact external-entry-catalog.csv
+[OK] R2 artifact config-markers.csv
+[OK] R2 artifact association-graph.csv
+[OK] R2 artifact runtime/static-architecture.json
+[OK] page-catalog.csv responsibility+association status complete
+[OK] controller-catalog.csv responsibility+association status complete
+[OK] service-catalog.csv responsibility+association status complete
+[OK] entity-catalog.csv responsibility+association status complete
+[OK] plugin-catalog count 44 (>=40 frameworks+dart)
+[OK] channel-catalog count 76 (>=20)
+[OK] external-entry-catalog count 9 (>=8)
+[OK] association-graph edges 1069
+[OK] association edges all have source nodes (0 bad)
+[OK] R2 static-architecture App SHA-256
+[OK] framework_count 41
 
 结果： 通过
