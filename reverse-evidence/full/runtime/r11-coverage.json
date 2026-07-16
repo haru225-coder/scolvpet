@@ -1,0 +1,52 @@
+{
+  "collected_at": "2026-07-17T02:22:10+08:00",
+  "wave": "R11",
+  "target_version": "2.15.0 (73)",
+  "counts": {
+    "pages": 205,
+    "controllers": 32,
+    "services": 66,
+    "entities_catalog": 87,
+    "entities_logical": 61,
+    "api_raw": 481,
+    "api_normalized": 408,
+    "frameworks": 41,
+    "association_edges": 1069,
+    "er_nodes": 63,
+    "er_unbucketed": 0
+  },
+  "status_dist": {
+    "page": {
+      "page": 91,
+      "binding": 41,
+      "controller-colocated": 39,
+      "component": 28,
+      "dart-asset": 2,
+      "webview-page": 4
+    },
+    "controller": {
+      "controller": 32
+    },
+    "service": {
+      "api-service": 59,
+      "service": 3,
+      "infra-service": 4
+    },
+    "entity": {
+      "entity": 61,
+      "entity-generated": 26
+    }
+  },
+  "runtime": {
+    "launch": "blocked_fairplay",
+    "evidence": "runtime/r3/launch-block-report.md"
+  },
+  "docs": {
+    "architecture": "docs/12-宠舍管家技术架构与运行时逆向.md"
+  },
+  "traceability_rules": [
+    "Architecture mermaid nodes map to catalogs or frameworks list",
+    "ER nodes map to entity-paths via r11-er-nodes.csv",
+    "No runtime field-level claims without D evidence"
+  ]
+}

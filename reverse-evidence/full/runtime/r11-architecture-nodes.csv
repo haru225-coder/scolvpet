@@ -1,0 +1,13 @@
+id,module,name,path,route,evidence_level,evidence_ref,status,notes
+N-0001,presentation,pages,reverse-evidence/full/page-catalog.csv,,S,reverse-evidence/full/page-catalog.csv,architecture-node,combo=S; 205 paths
+N-0002,presentation,controllers,reverse-evidence/full/controller-catalog.csv,,S,reverse-evidence/full/controller-catalog.csv,architecture-node,combo=S; 32 paths
+N-0003,data,api_services,reverse-evidence/full/service-catalog.csv,,S,reverse-evidence/full/service-catalog.csv,architecture-node,combo=S; 66 paths
+N-0004,domain,entities,reverse-evidence/full/entity-catalog.csv,,S,reverse-evidence/full/entity-catalog.csv,architecture-node,combo=S; 87 paths
+N-0005,native,App.framework/App,runtime/static-architecture.json,,S,runtime/static-architecture.json,architecture-node,combo=S; sha 8bb590bb
+N-0006,native,plugins,plugin-catalog.csv,,S,plugin-catalog.csv,architecture-node,combo=S; 44 rows
+N-0007,native,channels,channel-catalog.csv,,S,channel-catalog.csv,architecture-node,combo=S; 76 rows
+N-0008,web,admin_editor,web/r9-report.md,,W,web/r9-report.md,architecture-node,combo=W; public JS
+N-0009,web,bridge,web/bridge-catalog.csv,,W,web/bridge-catalog.csv,architecture-node,combo=W+S; FMBridge handlers
+N-0010,api,admin_routes,api-catalog.csv,,S,api-catalog.csv,architecture-node,combo=S+W; 481 routes
+N-0011,runtime,launch_block,runtime/r3/,,B,runtime/r3/,architecture-node,combo=D/B; FairPlay
+N-0012,commerce,storekit,storekit.txt,,S,storekit.txt,architecture-node,combo=S; IAP products

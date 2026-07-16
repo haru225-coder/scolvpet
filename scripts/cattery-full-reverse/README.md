@@ -17,6 +17,8 @@ python3 scripts/cattery-full-reverse/collect_web_r9.py
 # R10：API 合并/方法/认证/P0 契约与 docs/11
 python3 scripts/cattery-full-reverse/collect_api_r10.py
 
+# R11：架构/ER/安全边界文档见 docs/12（由会话汇总写入）
+
 # 验收计数、版本冻结、样本哈希、脱敏、R2/R3/R9 产物与 SHA256
 python3 scripts/cattery-full-reverse/validate_catalogs.py
 ```

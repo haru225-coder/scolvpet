@@ -319,5 +319,12 @@
         "/api/admin/cat/record/v2"
       ]
     }
+  },
+  "r11": {
+    "collected_at": "2026-07-17T02:22:10+08:00",
+    "docs": "docs/12-宠舍管家技术架构与运行时逆向.md",
+    "coverage": "runtime/r11-coverage.json",
+    "er_nodes": "runtime/r11-er-nodes.csv",
+    "architecture_nodes": "runtime/r11-architecture-nodes.csv"
   }
 }

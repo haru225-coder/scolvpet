@@ -1,5 +1,5 @@
 宠舍管家全量逆向 R0/R1/R2 验证报告
-生成时间：2026-07-17T02:20:05+08:00
+生成时间：2026-07-17T02:22:37+08:00
 
 [OK] manifest exists: /Users/snowchan27/Documents/scolvpet/reverse-evidence/full/manifest.json
 [OK] frozen version: 2.15.0 (73)
@@ -149,5 +149,18 @@
 [OK] normalized_unique > 0
 [OK] P0 contracts 94
 [OK] P0 req/err filled or B (0 bad)
+
+## R11 architecture
+[OK] R11 artifact runtime/r11-coverage.json
+[OK] R11 artifact runtime/r11-er-nodes.csv
+[OK] R11 artifact runtime/r11-architecture-nodes.csv
+[OK] docs/12 architecture doc exists
+[OK] docs/12 contains mermaid diagrams
+[OK] docs/12 contains ER content
+[OK] R11 coverage pages=205
+[OK] R11 coverage api=481
+[OK] R11 er nodes 63
+[OK] ER nodes traceable (0 bad)
+[OK] architecture nodes 12
 
 结果： 通过

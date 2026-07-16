@@ -354,6 +354,32 @@ def main() -> int:
         bad = [x["route"] for x in p0_only if not x.get("request_body") or not x.get("errors")]
         check(not bad, f"P0 req/err filled or B ({len(bad)} bad)")
 
+    # R11 architecture summary
+    if (OUT / "runtime" / "r11-coverage.json").is_file():
+        lines.append("")
+        lines.append("## R11 architecture")
+        for rel in (
+            "runtime/r11-coverage.json",
+            "runtime/r11-er-nodes.csv",
+            "runtime/r11-architecture-nodes.csv",
+        ):
+            check((OUT / rel).is_file(), f"R11 artifact {rel}")
+        docs12 = ROOT / "docs" / "12-宠舍管家技术架构与运行时逆向.md"
+        check(docs12.is_file(), "docs/12 architecture doc exists")
+        body = docs12.read_text(encoding="utf-8")
+        check("```mermaid" in body, "docs/12 contains mermaid diagrams")
+        check("erDiagram" in body or "ER" in body, "docs/12 contains ER content")
+        cov = json.loads((OUT / "runtime/r11-coverage.json").read_text(encoding="utf-8"))
+        check(cov.get("counts", {}).get("pages") == 205, "R11 coverage pages=205")
+        check(cov.get("counts", {}).get("api_raw") == 481, "R11 coverage api=481")
+        er = read_csv(OUT / "runtime/r11-er-nodes.csv")
+        check(len(er) >= 50, f"R11 er nodes {len(er)}")
+        # every er node path should reference entity or be explicit
+        bad_er = [r["id"] for r in er if not r.get("path") or not r.get("name")]
+        check(not bad_er, f"ER nodes traceable ({len(bad_er)} bad)")
+        arch_nodes = read_csv(OUT / "runtime/r11-architecture-nodes.csv")
+        check(len(arch_nodes) >= 10, f"architecture nodes {len(arch_nodes)}")
+
     lines.append("")
     lines.append(f"结果： {'通过' if ok else '失败'}")
     REPORT.parent.mkdir(parents=True, exist_ok=True)
