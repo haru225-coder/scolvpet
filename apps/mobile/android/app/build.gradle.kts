@@ -1,11 +1,13 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-val mobileIdentifierProperties = java.util.Properties().apply {
-    rootProject.file("mobile-identifiers.properties").inputStream().use { load(it) }
+val mobileIdentifierProperties = Properties().apply {
+    rootProject.file("mobile-identifiers.properties").inputStream().use { input -> load(input) }
 }
 val mobileAppId = mobileIdentifierProperties.getProperty("SCOLVPET_APP_ID")
     ?: error("SCOLVPET_APP_ID is missing from mobile-identifiers.properties")
