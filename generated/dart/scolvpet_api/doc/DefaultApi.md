@@ -21,6 +21,7 @@ Method | HTTP request | Description
 [**createBackupJob**](DefaultApi.md#createbackupjob) | **POST** /data-center/backup-jobs | 创建基础备份
 [**createBreedingPlan**](DefaultApi.md#createbreedingplan) | **POST** /breeding-plans | 创建繁育计划草稿
 [**createEnclosure**](DefaultApi.md#createenclosure) | **POST** /enclosures | 创建笼盒
+[**createEnclosureCleaning**](DefaultApi.md#createenclosurecleaning) | **POST** /enclosures/{enclosure_id}/cleanings | 记录笼盒清洁或消毒
 [**createEnclosureStay**](DefaultApi.md#createenclosurestay) | **POST** /enclosures/{enclosure_id}/stays | 创建入住或移笼事实
 [**createExportJob**](DefaultApi.md#createexportjob) | **POST** /data-center/export-jobs | 创建数据导出
 [**createHamster**](DefaultApi.md#createhamster) | **POST** /hamsters | 创建仓鼠档案
@@ -46,6 +47,7 @@ Method | HTTP request | Description
 [**getCurrentUsage**](DefaultApi.md#getcurrentusage) | **GET** /usage/current | 获取当前用量
 [**getDataCenterSummary**](DefaultApi.md#getdatacentersummary) | **GET** /data-center/summary | 获取数据中心摘要
 [**getEnclosure**](DefaultApi.md#getenclosure) | **GET** /enclosures/{enclosure_id} | 获取笼盒详情
+[**getEnclosureCleaning**](DefaultApi.md#getenclosurecleaning) | **GET** /enclosure-cleanings/{cleaning_id} | 获取清洁记录
 [**getExportDownload**](DefaultApi.md#getexportdownload) | **GET** /data-center/export-jobs/{job_id}/download | 获取导出下载链接
 [**getExportJob**](DefaultApi.md#getexportjob) | **GET** /data-center/export-jobs/{job_id} | 获取导出任务
 [**getHamster**](DefaultApi.md#gethamster) | **GET** /hamsters/{hamster_id} | 获取仓鼠详情
@@ -70,6 +72,7 @@ Method | HTTP request | Description
 [**individualizeLitter_1**](DefaultApi.md#individualizelitter_1) | **POST** /litters/{litter_id}/individualize | 将临时幼崽个体化
 [**listBackupJobs**](DefaultApi.md#listbackupjobs) | **GET** /data-center/backup-jobs | 列出备份任务
 [**listBreedingPlans**](DefaultApi.md#listbreedingplans) | **GET** /breeding-plans | 列出繁育计划
+[**listEnclosureCleanings**](DefaultApi.md#listenclosurecleanings) | **GET** /enclosures/{enclosure_id}/cleanings | 列出笼盒清洁历史
 [**listEnclosureStays**](DefaultApi.md#listenclosurestays) | **GET** /enclosures/{enclosure_id}/stays | 列出笼盒入住历史
 [**listEnclosures**](DefaultApi.md#listenclosures) | **GET** /enclosures | 列出笼盒
 [**listExportJobs**](DefaultApi.md#listexportjobs) | **GET** /data-center/export-jobs | 列出导出任务
@@ -677,6 +680,55 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**EnclosureResponse**](EnclosureResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createEnclosureCleaning**
+> EnclosureCleaningResponse createEnclosureCleaning(idempotencyKey, ifMatch, enclosureId, enclosureCleaningCreateRequest)
+
+记录笼盒清洁或消毒
+
+追加清洁事实并更新笼盒清洁投影；纠错通过新记录引用原记录完成。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final EnclosureCleaningCreateRequest enclosureCleaningCreateRequest = ; // EnclosureCleaningCreateRequest | 
+
+try {
+    final response = api.createEnclosureCleaning(idempotencyKey, ifMatch, enclosureId, enclosureCleaningCreateRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->createEnclosureCleaning: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | 
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | 
+ **enclosureId** | **String**|  | 
+ **enclosureCleaningCreateRequest** | [**EnclosureCleaningCreateRequest**](EnclosureCleaningCreateRequest.md)|  | 
+
+### Return type
+
+[**EnclosureCleaningResponse**](EnclosureCleaningResponse.md)
 
 ### Authorization
 
@@ -1795,6 +1847,47 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **getEnclosureCleaning**
+> EnclosureCleaningResponse getEnclosureCleaning(cleaningId)
+
+获取清洁记录
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String cleaningId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+
+try {
+    final response = api.getEnclosureCleaning(cleaningId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->getEnclosureCleaning: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **cleaningId** | **String**|  | 
+
+### Return type
+
+[**EnclosureCleaningResponse**](EnclosureCleaningResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **getExportDownload**
 > DownloadLinkResponse getExportDownload(jobId)
 
@@ -2845,6 +2938,53 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**BreedingPlanListResponse**](BreedingPlanListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **listEnclosureCleanings**
+> EnclosureCleaningListResponse listEnclosureCleanings(enclosureId, cursor, limit)
+
+列出笼盒清洁历史
+
+返回清洁、消毒及纠错记录；历史记录只追加，不原地覆盖。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String enclosureId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String cursor = cursor_example; // String | 上一页响应返回的不透明 next_cursor。
+final int limit = 56; // int | 每页数量。
+
+try {
+    final response = api.listEnclosureCleanings(enclosureId, cursor, limit);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->listEnclosureCleanings: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **enclosureId** | **String**|  | 
+ **cursor** | **String**| 上一页响应返回的不透明 next_cursor。 | [optional] 
+ **limit** | **int**| 每页数量。 | [optional] [default to 50]
+
+### Return type
+
+[**EnclosureCleaningListResponse**](EnclosureCleaningListResponse.md)
 
 ### Authorization
 

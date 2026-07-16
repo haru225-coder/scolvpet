@@ -44,6 +44,10 @@ import 'package:scolvpet_api/src/model/device_info.dart';
 import 'package:scolvpet_api/src/model/download_link_response.dart';
 import 'package:scolvpet_api/src/model/download_link_response_data.dart';
 import 'package:scolvpet_api/src/model/enclosure.dart';
+import 'package:scolvpet_api/src/model/enclosure_cleaning.dart';
+import 'package:scolvpet_api/src/model/enclosure_cleaning_create_request.dart';
+import 'package:scolvpet_api/src/model/enclosure_cleaning_list_response.dart';
+import 'package:scolvpet_api/src/model/enclosure_cleaning_response.dart';
 import 'package:scolvpet_api/src/model/enclosure_create_request.dart';
 import 'package:scolvpet_api/src/model/enclosure_dimensions.dart';
 import 'package:scolvpet_api/src/model/enclosure_list_response.dart';
@@ -220,6 +224,7 @@ import 'package:scolvpet_api/src/model/weight_record_create_request.dart';
 import 'package:scolvpet_api/src/model/weight_record_list_response.dart';
 import 'package:scolvpet_api/src/model/weight_record_one_of.dart';
 import 'package:scolvpet_api/src/model/weight_record_one_of1.dart';
+import 'package:scolvpet_api/src/model/weight_record_one_of2.dart';
 import 'package:scolvpet_api/src/model/weight_record_response.dart';
 
 final _regList = RegExp(r'^List<(.*)>$');
@@ -344,6 +349,17 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return DownloadLinkResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'Enclosure':
           return Enclosure.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EnclosureCleaning':
+          return EnclosureCleaning.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EnclosureCleaningCreateRequest':
+          return EnclosureCleaningCreateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EnclosureCleaningListResponse':
+          return EnclosureCleaningListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EnclosureCleaningResponse':
+          return EnclosureCleaningResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EnclosureCleaningType':
+          
+          
         case 'EnclosureCreateRequest':
           return EnclosureCreateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'EnclosureDimensions':
@@ -759,6 +775,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return WeightRecordOneOf.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'WeightRecordOneOf1':
           return WeightRecordOneOf1.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'WeightRecordOneOf2':
+          return WeightRecordOneOf2.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'WeightRecordResponse':
           return WeightRecordResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         default:

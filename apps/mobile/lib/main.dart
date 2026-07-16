@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/api_client.dart';
 import 'core/app_state.dart';
 import 'core/session_store.dart';
 import 'data/i1_repository.dart';
+import 'data/i2_repository.dart';
+import 'features/i2/i2.dart';
 import 'ui/screens.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   final sessionStore = SessionStore();
   final apiClient = ApiClient(
     baseUrl: const String.fromEnvironment(
@@ -19,13 +23,23 @@ void main() {
     repository: ApiI1Repository(client: apiClient, sessionStore: sessionStore),
     sessionStore: sessionStore,
   );
-  runApp(ScolvPetApp(state: state));
+  final preferences = await SharedPreferences.getInstance();
+  final i2Controller = I2Controller(
+    repository: DefaultApiI2Repository(client: apiClient),
+    localStore: SharedPreferencesI2LocalStore(preferences: preferences),
+  );
+  runApp(ScolvPetApp(state: state, i2Controller: i2Controller));
 }
 
 class ScolvPetApp extends StatefulWidget {
-  const ScolvPetApp({super.key, required this.state});
+  const ScolvPetApp({
+    super.key,
+    required this.state,
+    required this.i2Controller,
+  });
 
   final AppState state;
+  final I2Controller i2Controller;
 
   @override
   State<ScolvPetApp> createState() => _ScolvPetAppState();
@@ -40,6 +54,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
 
   @override
   void dispose() {
+    widget.i2Controller.dispose();
     widget.state.dispose();
     super.dispose();
   }
@@ -68,7 +83,10 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
             AppPhase.login => LoginScreen(state: widget.state),
             AppPhase.code => CodeScreen(state: widget.state),
             AppPhase.setup => SetupScreen(state: widget.state),
-            AppPhase.home => HomeShell(state: widget.state),
+            AppPhase.home => HomeShell(
+              state: widget.state,
+              i2Controller: widget.i2Controller,
+            ),
           },
         );
       },

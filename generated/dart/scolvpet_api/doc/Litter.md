@@ -10,15 +10,17 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** |  | 
 **ownerId** | **String** |  | 
-**breedingPlanId** | **String** |  | 
-**sireId** | **String** |  | 
-**damId** | **String** |  | 
-**bornAt** | [**DateTime**](DateTime.md) |  | 
+**origin** | **String** |  | 
+**code** | **String** |  | 
+**breedingPlanId** | **String** |  | [optional] 
+**sireId** | **String** |  | [optional] 
+**damId** | **String** |  | [optional] 
+**bornAt** | [**DateTime**](DateTime.md) |  | [optional] 
 **initialAliveCount** | **int** |  | 
 **initialOtherCount** | **int** |  | 
 **currentManagedCount** | **int** |  | 
 **state** | [**LitterState**](LitterState.md) |  | 
-**enclosureId** | **String** |  | 
+**enclosureId** | **String** |  | [optional] 
 **damCondition** | [**DamCondition**](DamCondition.md) |  | 
 **weanedAt** | [**DateTime**](DateTime.md) |  | [optional] 
 **sexSeparatedAt** | [**DateTime**](DateTime.md) |  | [optional] 

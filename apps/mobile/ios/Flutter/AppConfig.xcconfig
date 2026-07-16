@@ -1,0 +1,5 @@
+// The shared identifier source is maintained in the Android build directory.
+// Replace SCOLVPET_APP_ID there only after the formal app identifiers are confirmed.
+#include? "../../android/mobile-identifiers.properties"
+
+IPHONEOS_DEPLOYMENT_TARGET = 13.0

@@ -21,6 +21,12 @@ class WeightRecordOneOf1 {
   WeightRecordOneOf1({
 
      this.hamsterId,
+
+     this.litterId,
+
+     this.measurementKind,
+
+     this.subjectCount,
   });
 
   @JsonKey(
@@ -35,15 +41,57 @@ class WeightRecordOneOf1 {
 
 
 
+  @JsonKey(
+    
+    name: r'litter_id',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final Object? litterId;
+
+
+
+  @JsonKey(
+    
+    name: r'measurement_kind',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final WeightRecordOneOf1MeasurementKindEnum? measurementKind;
+
+
+
+  @JsonKey(
+    
+    name: r'subject_count',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final Object? subjectCount;
+
+
+
 
 
     @override
     bool operator ==(Object other) => identical(this, other) || other is WeightRecordOneOf1 &&
-      other.hamsterId == hamsterId;
+      other.hamsterId == hamsterId &&
+      other.litterId == litterId &&
+      other.measurementKind == measurementKind &&
+      other.subjectCount == subjectCount;
 
     @override
     int get hashCode =>
-        hamsterId.hashCode;
+        hamsterId.hashCode +
+        litterId.hashCode +
+        measurementKind.hashCode +
+        subjectCount.hashCode;
 
   factory WeightRecordOneOf1.fromJson(Map<String, dynamic> json) => _$WeightRecordOneOf1FromJson(json);
 
@@ -55,4 +103,18 @@ class WeightRecordOneOf1 {
   }
 
 }
+
+
+enum WeightRecordOneOf1MeasurementKindEnum {
+@JsonValue(r'individual')
+individual(r'individual');
+
+const WeightRecordOneOf1MeasurementKindEnum(this.value);
+
+final String value;
+
+@override
+String toString() => value;
+}
+
 

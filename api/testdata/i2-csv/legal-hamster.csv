@@ -1,0 +1,3 @@
+internal_code,name,sex,born_at,source_type,litter_code,sire_code,dam_code,enclosure_code,enclosure_started_at,tags,notes
+PUP-001,一号,male,2026-06-01,born_here,L-2026-01,SIRE-001,DAM-001,CAGE-001,2026-07-01 09:00:00,留种|银灰,首批导入
+PUP-002,二号,female,2026-06-01,born_here,L-2026-01,SIRE-001,DAM-001,CAGE-002,2026-07-01 09:00:00,观察,首批导入

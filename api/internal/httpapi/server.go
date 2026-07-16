@@ -73,6 +73,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/species-rule-versions", s.listOwnerRules)
 	mux.HandleFunc("POST /v1/species-rule-versions", s.createOwnerRule)
 	mux.HandleFunc("GET /v1/species-rule-versions/{rule_version_id}", s.getRule)
+	s.registerI2CoreRoutes(mux)
+	s.registerI2ImportRoutes(mux)
 	return requestIDMiddleware(s.Logger, mux)
 }
 

@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:scolvpet_api/src/model/weight_record_one_of2.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -27,6 +28,10 @@ class WeightRecord {
      this.pupIdentityId,
 
      this.litterId,
+
+     this.measurementKind,
+
+     this.subjectCount,
 
     required  this.weightG,
 
@@ -94,6 +99,31 @@ class WeightRecord {
 
 
   final String? litterId;
+
+
+
+  @JsonKey(
+    
+    name: r'measurement_kind',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final WeightRecordMeasurementKindEnum? measurementKind;
+
+
+
+          // minimum: 1
+  @JsonKey(
+    
+    name: r'subject_count',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final int? subjectCount;
 
 
 
@@ -227,6 +257,8 @@ class WeightRecord {
       other.hamsterId == hamsterId &&
       other.pupIdentityId == pupIdentityId &&
       other.litterId == litterId &&
+      other.measurementKind == measurementKind &&
+      other.subjectCount == subjectCount &&
       other.weightG == weightG &&
       other.recordedAt == recordedAt &&
       other.source_ == source_ &&
@@ -244,6 +276,8 @@ class WeightRecord {
         (hamsterId == null ? 0 : hamsterId.hashCode) +
         (pupIdentityId == null ? 0 : pupIdentityId.hashCode) +
         (litterId == null ? 0 : litterId.hashCode) +
+        measurementKind.hashCode +
+        (subjectCount == null ? 0 : subjectCount.hashCode) +
         weightG.hashCode +
         recordedAt.hashCode +
         source_.hashCode +
@@ -265,6 +299,24 @@ class WeightRecord {
   }
 
 }
+
+
+enum WeightRecordMeasurementKindEnum {
+@JsonValue(r'individual')
+individual(r'individual'),
+@JsonValue(r'litter_total')
+litterTotal(r'litter_total'),
+@JsonValue(r'litter_average')
+litterAverage(r'litter_average');
+
+const WeightRecordMeasurementKindEnum(this.value);
+
+final String value;
+
+@override
+String toString() => value;
+}
+
 
 
 enum WeightRecordSource_Enum {

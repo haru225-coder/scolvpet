@@ -3,9 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:scolvpet_api/src/model/hamster_breeding_status.dart';
 import 'package:scolvpet_api/src/model/sex.dart';
-import 'package:scolvpet_api/src/model/hamster_lifecycle_status.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -34,10 +32,6 @@ class HamsterUpdateRequest {
      this.sexConfidence,
 
      this.birthDate,
-
-     this.lifecycleStatus,
-
-     this.breedingStatus,
 
      this.coverMediaId,
 
@@ -120,30 +114,6 @@ class HamsterUpdateRequest {
 
   @JsonKey(
     
-    name: r'lifecycle_status',
-    required: false,
-    includeIfNull: false,
-  )
-
-
-  final HamsterLifecycleStatus? lifecycleStatus;
-
-
-
-  @JsonKey(
-    
-    name: r'breeding_status',
-    required: false,
-    includeIfNull: false,
-  )
-
-
-  final HamsterBreedingStatus? breedingStatus;
-
-
-
-  @JsonKey(
-    
     name: r'cover_media_id',
     required: false,
     includeIfNull: false,
@@ -176,8 +146,6 @@ class HamsterUpdateRequest {
       other.sex == sex &&
       other.sexConfidence == sexConfidence &&
       other.birthDate == birthDate &&
-      other.lifecycleStatus == lifecycleStatus &&
-      other.breedingStatus == breedingStatus &&
       other.coverMediaId == coverMediaId &&
       other.notes == notes;
 
@@ -189,8 +157,6 @@ class HamsterUpdateRequest {
         sex.hashCode +
         (sexConfidence == null ? 0 : sexConfidence.hashCode) +
         (birthDate == null ? 0 : birthDate.hashCode) +
-        lifecycleStatus.hashCode +
-        breedingStatus.hashCode +
         (coverMediaId == null ? 0 : coverMediaId.hashCode) +
         (notes == null ? 0 : notes.hashCode);
 

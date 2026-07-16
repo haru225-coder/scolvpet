@@ -26,13 +26,17 @@ class Litter {
 
     required  this.ownerId,
 
-    required  this.breedingPlanId,
+    required  this.origin,
 
-    required  this.sireId,
+    required  this.code,
 
-    required  this.damId,
+     this.breedingPlanId,
 
-    required  this.bornAt,
+     this.sireId,
+
+     this.damId,
+
+     this.bornAt,
 
     required  this.initialAliveCount,
 
@@ -42,7 +46,7 @@ class Litter {
 
     required  this.state,
 
-    required  this.enclosureId,
+     this.enclosureId,
 
     required  this.damCondition,
 
@@ -87,49 +91,73 @@ class Litter {
 
   @JsonKey(
     
-    name: r'breeding_plan_id',
+    name: r'origin',
     required: true,
     includeIfNull: false,
   )
 
 
-  final String breedingPlanId;
+  final LitterOriginEnum origin;
+
+
+
+  @JsonKey(
+    
+    name: r'code',
+    required: true,
+    includeIfNull: false,
+  )
+
+
+  final String code;
+
+
+
+  @JsonKey(
+    
+    name: r'breeding_plan_id',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? breedingPlanId;
 
 
 
   @JsonKey(
     
     name: r'sire_id',
-    required: true,
+    required: false,
     includeIfNull: false,
   )
 
 
-  final String sireId;
+  final String? sireId;
 
 
 
   @JsonKey(
     
     name: r'dam_id',
-    required: true,
+    required: false,
     includeIfNull: false,
   )
 
 
-  final String damId;
+  final String? damId;
 
 
 
   @JsonKey(
     
     name: r'born_at',
-    required: true,
+    required: false,
     includeIfNull: false,
   )
 
 
-  final DateTime bornAt;
+  final DateTime? bornAt;
 
 
 
@@ -187,12 +215,12 @@ class Litter {
   @JsonKey(
     
     name: r'enclosure_id',
-    required: true,
+    required: false,
     includeIfNull: false,
   )
 
 
-  final String enclosureId;
+  final String? enclosureId;
 
 
 
@@ -299,6 +327,8 @@ class Litter {
     bool operator ==(Object other) => identical(this, other) || other is Litter &&
       other.id == id &&
       other.ownerId == ownerId &&
+      other.origin == origin &&
+      other.code == code &&
       other.breedingPlanId == breedingPlanId &&
       other.sireId == sireId &&
       other.damId == damId &&
@@ -321,15 +351,17 @@ class Litter {
     int get hashCode =>
         id.hashCode +
         ownerId.hashCode +
-        breedingPlanId.hashCode +
-        sireId.hashCode +
-        damId.hashCode +
-        bornAt.hashCode +
+        origin.hashCode +
+        code.hashCode +
+        (breedingPlanId == null ? 0 : breedingPlanId.hashCode) +
+        (sireId == null ? 0 : sireId.hashCode) +
+        (damId == null ? 0 : damId.hashCode) +
+        (bornAt == null ? 0 : bornAt.hashCode) +
         initialAliveCount.hashCode +
         initialOtherCount.hashCode +
         currentManagedCount.hashCode +
         state.hashCode +
-        enclosureId.hashCode +
+        (enclosureId == null ? 0 : enclosureId.hashCode) +
         damCondition.hashCode +
         (weanedAt == null ? 0 : weanedAt.hashCode) +
         (sexSeparatedAt == null ? 0 : sexSeparatedAt.hashCode) +
@@ -349,4 +381,20 @@ class Litter {
   }
 
 }
+
+
+enum LitterOriginEnum {
+@JsonValue(r'breeding')
+breeding(r'breeding'),
+@JsonValue(r'import')
+import_(r'import');
+
+const LitterOriginEnum(this.value);
+
+final String value;
+
+@override
+String toString() => value;
+}
+
 

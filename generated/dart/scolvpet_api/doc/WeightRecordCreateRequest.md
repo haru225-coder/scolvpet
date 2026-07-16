@@ -11,6 +11,8 @@ Name | Type | Description | Notes
 **hamsterId** | **String** |  | [optional] 
 **pupIdentityId** | **String** |  | [optional] 
 **litterId** | **String** |  | [optional] 
+**measurementKind** | **String** |  | [optional] 
+**subjectCount** | **int** |  | [optional] 
 **weightG** | **num** |  | 
 **recordedAt** | [**DateTime**](DateTime.md) |  | 
 **source_** | **String** |  | 

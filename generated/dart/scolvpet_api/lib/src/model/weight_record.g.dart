@@ -15,6 +15,12 @@ abstract class _$WeightRecordCWProxy {
 
   WeightRecord litterId(String? litterId);
 
+  WeightRecord measurementKind(
+    WeightRecordMeasurementKindEnum? measurementKind,
+  );
+
+  WeightRecord subjectCount(int? subjectCount);
+
   WeightRecord weightG(num weightG);
 
   WeightRecord recordedAt(DateTime recordedAt);
@@ -46,6 +52,8 @@ abstract class _$WeightRecordCWProxy {
     String? hamsterId,
     String? pupIdentityId,
     String? litterId,
+    WeightRecordMeasurementKindEnum? measurementKind,
+    int? subjectCount,
     num weightG,
     DateTime recordedAt,
     WeightRecordSource_Enum source_,
@@ -77,6 +85,15 @@ class _$WeightRecordCWProxyImpl implements _$WeightRecordCWProxy {
 
   @override
   WeightRecord litterId(String? litterId) => this(litterId: litterId);
+
+  @override
+  WeightRecord measurementKind(
+    WeightRecordMeasurementKindEnum? measurementKind,
+  ) => this(measurementKind: measurementKind);
+
+  @override
+  WeightRecord subjectCount(int? subjectCount) =>
+      this(subjectCount: subjectCount);
 
   @override
   WeightRecord weightG(num weightG) => this(weightG: weightG);
@@ -126,6 +143,8 @@ class _$WeightRecordCWProxyImpl implements _$WeightRecordCWProxy {
     Object? hamsterId = const $CopyWithPlaceholder(),
     Object? pupIdentityId = const $CopyWithPlaceholder(),
     Object? litterId = const $CopyWithPlaceholder(),
+    Object? measurementKind = const $CopyWithPlaceholder(),
+    Object? subjectCount = const $CopyWithPlaceholder(),
     Object? weightG = const $CopyWithPlaceholder(),
     Object? recordedAt = const $CopyWithPlaceholder(),
     Object? source_ = const $CopyWithPlaceholder(),
@@ -154,6 +173,14 @@ class _$WeightRecordCWProxyImpl implements _$WeightRecordCWProxy {
           ? _value.litterId
           // ignore: cast_nullable_to_non_nullable
           : litterId as String?,
+      measurementKind: measurementKind == const $CopyWithPlaceholder()
+          ? _value.measurementKind
+          // ignore: cast_nullable_to_non_nullable
+          : measurementKind as WeightRecordMeasurementKindEnum?,
+      subjectCount: subjectCount == const $CopyWithPlaceholder()
+          ? _value.subjectCount
+          // ignore: cast_nullable_to_non_nullable
+          : subjectCount as int?,
       weightG: weightG == const $CopyWithPlaceholder()
           ? _value.weightG
           // ignore: cast_nullable_to_non_nullable
@@ -230,6 +257,14 @@ WeightRecord _$WeightRecordFromJson(
       hamsterId: $checkedConvert('hamster_id', (v) => v as String?),
       pupIdentityId: $checkedConvert('pup_identity_id', (v) => v as String?),
       litterId: $checkedConvert('litter_id', (v) => v as String?),
+      measurementKind: $checkedConvert(
+        'measurement_kind',
+        (v) => $enumDecodeNullable(_$WeightRecordMeasurementKindEnumEnumMap, v),
+      ),
+      subjectCount: $checkedConvert(
+        'subject_count',
+        (v) => (v as num?)?.toInt(),
+      ),
       weightG: $checkedConvert('weight_g', (v) => v as num),
       recordedAt: $checkedConvert(
         'recorded_at',
@@ -267,6 +302,8 @@ WeightRecord _$WeightRecordFromJson(
     'hamsterId': 'hamster_id',
     'pupIdentityId': 'pup_identity_id',
     'litterId': 'litter_id',
+    'measurementKind': 'measurement_kind',
+    'subjectCount': 'subject_count',
     'weightG': 'weight_g',
     'recordedAt': 'recorded_at',
     'source_': 'source',
@@ -285,6 +322,9 @@ Map<String, dynamic> _$WeightRecordToJson(WeightRecord instance) =>
       'hamster_id': ?instance.hamsterId,
       'pup_identity_id': ?instance.pupIdentityId,
       'litter_id': ?instance.litterId,
+      'measurement_kind':
+          ?_$WeightRecordMeasurementKindEnumEnumMap[instance.measurementKind],
+      'subject_count': ?instance.subjectCount,
       'weight_g': instance.weightG,
       'recorded_at': instance.recordedAt.toIso8601String(),
       'source': _$WeightRecordSource_EnumEnumMap[instance.source_]!,
@@ -298,6 +338,12 @@ Map<String, dynamic> _$WeightRecordToJson(WeightRecord instance) =>
       'notes': ?instance.notes,
       'created_at': instance.createdAt.toIso8601String(),
     };
+
+const _$WeightRecordMeasurementKindEnumEnumMap = {
+  WeightRecordMeasurementKindEnum.individual: 'individual',
+  WeightRecordMeasurementKindEnum.litterTotal: 'litter_total',
+  WeightRecordMeasurementKindEnum.litterAverage: 'litter_average',
+};
 
 const _$WeightRecordSource_EnumEnumMap = {
   WeightRecordSource_Enum.manual: 'manual',

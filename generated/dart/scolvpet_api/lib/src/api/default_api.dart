@@ -36,6 +36,9 @@ import 'package:scolvpet_api/src/model/confirm_birth_response.dart';
 import 'package:scolvpet_api/src/model/current_account_response.dart';
 import 'package:scolvpet_api/src/model/data_center_summary_response.dart';
 import 'package:scolvpet_api/src/model/download_link_response.dart';
+import 'package:scolvpet_api/src/model/enclosure_cleaning_create_request.dart';
+import 'package:scolvpet_api/src/model/enclosure_cleaning_list_response.dart';
+import 'package:scolvpet_api/src/model/enclosure_cleaning_response.dart';
 import 'package:scolvpet_api/src/model/enclosure_create_request.dart';
 import 'package:scolvpet_api/src/model/enclosure_list_response.dart';
 import 'package:scolvpet_api/src/model/enclosure_response.dart';
@@ -1380,6 +1383,111 @@ _responseData = rawData == null ? null : deserialize<EnclosureResponse, Enclosur
     }
 
     return Response<EnclosureResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 记录笼盒清洁或消毒
+  /// 追加清洁事实并更新笼盒清洁投影；纠错通过新记录引用原记录完成。
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+  /// * [enclosureId] 
+  /// * [enclosureCleaningCreateRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [EnclosureCleaningResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<EnclosureCleaningResponse>> createEnclosureCleaning({ 
+    required String idempotencyKey,
+    required String ifMatch,
+    required String enclosureId,
+    required EnclosureCleaningCreateRequest enclosureCleaningCreateRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/enclosures/{enclosure_id}/cleanings'.replaceAll('{' r'enclosure_id' '}', enclosureId.toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        r'If-Match': ifMatch,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = jsonEncode(enclosureCleaningCreateRequest);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    EnclosureCleaningResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<EnclosureCleaningResponse, EnclosureCleaningResponse>(rawData, 'EnclosureCleaningResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<EnclosureCleaningResponse>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -3656,6 +3764,84 @@ _responseData = rawData == null ? null : deserialize<EnclosureResponse, Enclosur
     );
   }
 
+  /// 获取清洁记录
+  /// 
+  ///
+  /// Parameters:
+  /// * [cleaningId] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [EnclosureCleaningResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<EnclosureCleaningResponse>> getEnclosureCleaning({ 
+    required String cleaningId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/enclosure-cleanings/{cleaning_id}'.replaceAll('{' r'cleaning_id' '}', cleaningId.toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    EnclosureCleaningResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<EnclosureCleaningResponse, EnclosureCleaningResponse>(rawData, 'EnclosureCleaningResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<EnclosureCleaningResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// 获取导出下载链接
   /// 仅成功且未过期的任务返回短时有效下载地址。
   ///
@@ -5624,6 +5810,94 @@ _responseData = rawData == null ? null : deserialize<BreedingPlanListResponse, B
     }
 
     return Response<BreedingPlanListResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 列出笼盒清洁历史
+  /// 返回清洁、消毒及纠错记录；历史记录只追加，不原地覆盖。
+  ///
+  /// Parameters:
+  /// * [enclosureId] 
+  /// * [cursor] - 上一页响应返回的不透明 next_cursor。
+  /// * [limit] - 每页数量。
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [EnclosureCleaningListResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<EnclosureCleaningListResponse>> listEnclosureCleanings({ 
+    required String enclosureId,
+    String? cursor,
+    int? limit = 50,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/enclosures/{enclosure_id}/cleanings'.replaceAll('{' r'enclosure_id' '}', enclosureId.toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (cursor != null) r'cursor': cursor,
+      if (limit != null) r'limit': limit,
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    EnclosureCleaningListResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<EnclosureCleaningListResponse, EnclosureCleaningListResponse>(rawData, 'EnclosureCleaningListResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<EnclosureCleaningListResponse>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

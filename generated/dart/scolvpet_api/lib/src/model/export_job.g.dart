@@ -391,6 +391,7 @@ const _$JobStatusEnumMap = {
   JobStatus.queued: 'queued',
   JobStatus.running: 'running',
   JobStatus.succeeded: 'succeeded',
+  JobStatus.partiallySucceeded: 'partially_succeeded',
   JobStatus.failed: 'failed',
   JobStatus.cancelled: 'cancelled',
 };

@@ -14,8 +14,6 @@ Name | Type | Description | Notes
 **sex** | [**Sex**](Sex.md) |  | [optional] 
 **sexConfidence** | **num** |  | [optional] 
 **birthDate** | [**DateTime**](DateTime.md) |  | [optional] 
-**lifecycleStatus** | [**HamsterLifecycleStatus**](HamsterLifecycleStatus.md) |  | [optional] 
-**breedingStatus** | [**HamsterBreedingStatus**](HamsterBreedingStatus.md) |  | [optional] 
 **coverMediaId** | **String** |  | [optional] 
 **notes** | **String** |  | [optional] 
 

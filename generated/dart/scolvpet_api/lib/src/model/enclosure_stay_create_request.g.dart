@@ -173,7 +173,7 @@ Map<String, dynamic> _$EnclosureStayCreateRequestToJson(
 
 const _$EnclosureStayCreateRequestPurposeEnumEnumMap = {
   EnclosureStayCreateRequestPurposeEnum.single: 'single',
-  EnclosureStayCreateRequestPurposeEnum.pairing: 'pairing',
+  EnclosureStayCreateRequestPurposeEnum.pairingTemp: 'pairing_temp',
   EnclosureStayCreateRequestPurposeEnum.gestation: 'gestation',
   EnclosureStayCreateRequestPurposeEnum.isolation: 'isolation',
   EnclosureStayCreateRequestPurposeEnum.damWithLitter: 'dam_with_litter',

@@ -214,7 +214,7 @@ Map<String, dynamic> _$EnclosureStayToJson(EnclosureStay instance) =>
 
 const _$EnclosureStayPurposeEnumEnumMap = {
   EnclosureStayPurposeEnum.single: 'single',
-  EnclosureStayPurposeEnum.pairing: 'pairing',
+  EnclosureStayPurposeEnum.pairingTemp: 'pairing_temp',
   EnclosureStayPurposeEnum.gestation: 'gestation',
   EnclosureStayPurposeEnum.isolation: 'isolation',
   EnclosureStayPurposeEnum.damWithLitter: 'dam_with_litter',

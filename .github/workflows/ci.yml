@@ -4,12 +4,54 @@ on:
   push:
   pull_request:
 
+env:
+  FLUTTER_VERSION: '3.44.0'
+  DART_VERSION: '3.12.0'
+  GO_VERSION: '1.26.x'
+  NODE_VERSION: '22.x'
+  IOS_SIMULATOR_RUNTIME: 'iOS 26.5'
+
 jobs:
-  contract-api-web:
+  lint:
+    name: lint
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_VERSION }}
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+      - name: OpenAPI lint
+        run: make openapi-lint
+      - name: Migration source drift
+        run: make migration-drift
+      - name: Generated dart-dio client drift
+        run: make client-drift
+      - name: Web lint
+        run: make web-lint
+      - name: Flutter dependencies
+        run: make flutter-pub-get
+      - name: Flutter analyze
+        run: make flutter-analyze
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
     services:
       postgres:
-        image: postgres:15
+        image: postgres:15.17
         env:
           POSTGRES_USER: scolvpet
           POSTGRES_PASSWORD: scolvpet
@@ -25,22 +67,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.26.x'
+          go-version: ${{ env.GO_VERSION }}
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
-      - name: OpenAPI lint
-        run: make openapi-lint
-      - name: Migration source drift
-        run: make migration-drift
-      - name: Fresh schema and seed
-        env:
-          DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
-        run: make db-verify
-      - name: Service schema and seed
-        env:
-          DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
-        run: make db-seed
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+      - name: Flutter dependencies
+        run: make flutter-pub-get
       - name: API unit tests
         run: make api-test
       - name: API I1 smoke and integration checks
@@ -51,46 +87,73 @@ jobs:
         env:
           DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
         run: make outbox-test
-      - name: Web lint test build
-        run: make web-lint web-test web-build
+      - name: Web tests
+        run: make web-test
+      - name: Flutter tests
+        run: make flutter-test
 
-  generated-client:
+  build-android:
+    name: build / Android debug
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+      - name: Flutter dependencies
+        run: make flutter-pub-get
+      - name: Android debug build
+        run: make flutter-build-android
+      - name: Upload reproducible debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: scolvpet-android-debug
+          path: apps/mobile/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+
+  build-web:
+    name: build / Web
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: '3.12.0'
-      - name: Generated dart-dio client drift
-        run: make client-drift
-      - name: Generated client analysis
-        run: dart analyze generated/dart/scolvpet_api
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Web build
+        run: make web-build
 
-  flutter:
-    runs-on: ubuntu-latest
+  build-ios-simulator:
+    name: build / iOS simulator (iOS 26.5)
+    runs-on: macos-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44.0'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
       - name: Flutter dependencies
-        timeout-minutes: 20
         run: make flutter-pub-get
-      - name: Flutter analyze
-        timeout-minutes: 20
-        run: make flutter-analyze
-      - name: Flutter tests
-        timeout-minutes: 20
-        run: make flutter-test
-      - name: Android debug build
-        timeout-minutes: 35
-        run: make flutter-build-android
+      - name: Diagnose required iOS simulator runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Required simulator runtime: ${IOS_SIMULATOR_RUNTIME}"
+          xcodebuild -version
+          echo '--- installed runtimes ---'
+          xcrun simctl list runtimes
+          if ! xcrun simctl list runtimes | grep -Fq "${IOS_SIMULATOR_RUNTIME}"; then
+            echo "::error title=Missing iOS simulator runtime::${IOS_SIMULATOR_RUNTIME} is required for the simulator build."
+            echo '--- available devices ---'
+            xcrun simctl list devices available || true
+            exit 1
+          fi
+      - name: iOS simulator build
+        run: flutter build ios --simulator --no-codesign --no-pub

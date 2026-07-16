@@ -1,0 +1,69 @@
+# 熊舍管家 I2 工程验证报告
+
+状态：已写入 / 已验证 / 待确认
+日期：2026-07-16
+分支：codex/i2-hamsters-enclosures-csv
+基线提交：a4d4d2c chore: establish I1 engineering baseline（I2 改动尚未提交）
+
+## 范围
+
+I2「仓鼠、笼舍、历史窝次/谱系、体重与 CSV 导入」工程收口：
+
+- 数据库增量约束 `0010_i2_database_constraints.sql`
+- Go 领域服务 `api/internal/i2core`
+- CSV 预检与提交引擎 `api/internal/importcsv`
+- HTTP 适配 `api/internal/httpapi/i2_core_handlers.go` + `i2_import_handlers.go`
+- Flutter 功能切片、壳层接线与生成客户端同步
+- OpenAPI 不安全 default 清理与 dart-dio 客户端再生
+
+## 已写入
+
+### 后端
+
+- `api/internal/i2core/*`：仓鼠/笼盒/入住移笼/清洁/体重/窝次父母与谱系事务服务，含幂等、乐观锁、Event/Outbox。
+- `api/internal/importcsv/*`：模板识别、映射、全量预检、原子提交、PostgreSQL 适配与冒烟夹具。
+- `api/internal/httpapi/i2_core_handlers.go`：I2 核心 REST 路由、认证、分页、ETag、幂等头与错误映射。
+- `api/internal/httpapi/i2_import_handlers.go`：本地上传会话 + import job 映射/预检/提交/行结果 API。
+- `api/internal/httpapi/server.go`：注册 `registerI2CoreRoutes` 与 `registerI2ImportRoutes`。
+- `db/migrations/0010_i2_database_constraints.sql` 与 `db/scripts/i2-verify-constraints.sh`。
+
+### 前端
+
+- `apps/mobile/lib/features/i2/*`：列表、详情、建档、体重、入住/移笼、清洁、CSV 数据中心。
+- `apps/mobile/lib/data/i2_repository.dart`：生成客户端 adapter + 本地快照/草稿。
+- `apps/mobile/lib/ui/screens.dart` / `main.dart`：固定五导航可达 I2 页面，进入首页恢复 I2 快照。
+
+### 契约
+
+- 移除 `EnclosureCleaningCreateRequest.supplies` 的 `default: {}`。
+- 移除体重 `measurement_kind` 的 `default: individual`（避免 dart-dio 生成无效 const）。
+- 使用 OpenAPI Generator 7.23.0 重生成 `generated/dart/scolvpet_api`（753 文件通过漂移检查）。
+
+## 已验证
+
+- `cd api && go test ./...`：auth、httpapi、i2core、importcsv、store、worker 通过。
+- `make openapi-lint`：Redocly CLI 1.34.5 通过。
+- `DART_PUB_OFFLINE=1 make client-drift`：生成客户端漂移检查通过，753 files。
+- `make migration-drift`：冻结 schema 源迁移 9 个无漂移（0010 为 I2 增量，不纳入冻结源）。
+- `make db-verify`：全新 PostgreSQL 15.17 通过；tables=38 enums=60 replay=stable seed_replay=idempotent。
+- `db/scripts/i2-verify-constraints.sh`：checks=40 constraints=90 通过。
+- `I1_API_PORT=18591 I1_DB_PORT=56591 scripts/i1-smoke.sh`：I1 演示链通过（owner 隔离、幂等、ETag、events=4、published_outbox=2）。
+- `apps/mobile`：`flutter analyze` 无问题；`flutter test` 11 tests passed（含 I2 widget/controller/import/models 与壳层导航）。
+- `apps/web`：`npm test` 与 `npm run lint` 通过。
+
+## 待确认
+
+- I2 工作树改动尚未 Git 提交；当前 `HEAD` 仍为 I1 基线 `a4d4d2c`。
+- CSV 上传为本地进程内会话（`PUT /v1/data-center/import-uploads/{id}/content`），非正式对象存储/CDN。
+- import HTTP 层的映射/预检/提交会话状态为进程内存 + DB 混合；API 进程重启后需重新上传。
+- 未在本轮重跑 Android APK / iOS Simulator 设备构建（iOS 仍缺 26.5 runtime）。
+- 正式 Bundle ID、短信、密钥托管、生产部署不在 I2 范围。
+- 全链路“真实 API + Flutter 联调 CSV 演示”建议在本地起库与 API 后手工走通一次。
+
+## 关键修复点（相对 Codex 中断点）
+
+1. HTTP handlers 与 i2core 字段对齐：`Dimensions`/`Equipment`，并补全 `UpdateEnclosure.Code` 赋值。
+2. `server.go` 挂载 I2 core + import 路由。
+3. 补齐 import HTTP 适配与认证路由测试。
+4. OpenAPI default 清理后重生成客户端，Flutter analyze/test 变绿。
+5. CSV 单住预检提示与合法夹具（一鼠一笼）保持一致。

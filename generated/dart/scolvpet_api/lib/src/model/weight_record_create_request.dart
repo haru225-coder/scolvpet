@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:scolvpet_api/src/model/weight_record_one_of2.dart';
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -25,6 +26,10 @@ class WeightRecordCreateRequest {
      this.pupIdentityId,
 
      this.litterId,
+
+     this.measurementKind,
+
+     this.subjectCount,
 
     required  this.weightG,
 
@@ -70,6 +75,31 @@ class WeightRecordCreateRequest {
 
 
   final String? litterId;
+
+
+
+  @JsonKey(
+    
+    name: r'measurement_kind',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final WeightRecordCreateRequestMeasurementKindEnum? measurementKind;
+
+
+
+          // minimum: 1
+  @JsonKey(
+    
+    name: r'subject_count',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final int? subjectCount;
 
 
 
@@ -142,6 +172,8 @@ class WeightRecordCreateRequest {
       other.hamsterId == hamsterId &&
       other.pupIdentityId == pupIdentityId &&
       other.litterId == litterId &&
+      other.measurementKind == measurementKind &&
+      other.subjectCount == subjectCount &&
       other.weightG == weightG &&
       other.recordedAt == recordedAt &&
       other.source_ == source_ &&
@@ -153,6 +185,8 @@ class WeightRecordCreateRequest {
         (hamsterId == null ? 0 : hamsterId.hashCode) +
         (pupIdentityId == null ? 0 : pupIdentityId.hashCode) +
         (litterId == null ? 0 : litterId.hashCode) +
+        measurementKind.hashCode +
+        (subjectCount == null ? 0 : subjectCount.hashCode) +
         weightG.hashCode +
         recordedAt.hashCode +
         source_.hashCode +
@@ -169,6 +203,24 @@ class WeightRecordCreateRequest {
   }
 
 }
+
+
+enum WeightRecordCreateRequestMeasurementKindEnum {
+@JsonValue(r'individual')
+individual(r'individual'),
+@JsonValue(r'litter_total')
+litterTotal(r'litter_total'),
+@JsonValue(r'litter_average')
+litterAverage(r'litter_average');
+
+const WeightRecordCreateRequestMeasurementKindEnum(this.value);
+
+final String value;
+
+@override
+String toString() => value;
+}
+
 
 
 enum WeightRecordCreateRequestSource_Enum {

@@ -93,6 +93,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**createBackupJob**](doc/DefaultApi.md#createbackupjob) | **POST** /data-center/backup-jobs | 创建基础备份
 [*DefaultApi*](doc/DefaultApi.md) | [**createBreedingPlan**](doc/DefaultApi.md#createbreedingplan) | **POST** /breeding-plans | 创建繁育计划草稿
 [*DefaultApi*](doc/DefaultApi.md) | [**createEnclosure**](doc/DefaultApi.md#createenclosure) | **POST** /enclosures | 创建笼盒
+[*DefaultApi*](doc/DefaultApi.md) | [**createEnclosureCleaning**](doc/DefaultApi.md#createenclosurecleaning) | **POST** /enclosures/{enclosure_id}/cleanings | 记录笼盒清洁或消毒
 [*DefaultApi*](doc/DefaultApi.md) | [**createEnclosureStay**](doc/DefaultApi.md#createenclosurestay) | **POST** /enclosures/{enclosure_id}/stays | 创建入住或移笼事实
 [*DefaultApi*](doc/DefaultApi.md) | [**createExportJob**](doc/DefaultApi.md#createexportjob) | **POST** /data-center/export-jobs | 创建数据导出
 [*DefaultApi*](doc/DefaultApi.md) | [**createHamster**](doc/DefaultApi.md#createhamster) | **POST** /hamsters | 创建仓鼠档案
@@ -118,6 +119,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**getCurrentUsage**](doc/DefaultApi.md#getcurrentusage) | **GET** /usage/current | 获取当前用量
 [*DefaultApi*](doc/DefaultApi.md) | [**getDataCenterSummary**](doc/DefaultApi.md#getdatacentersummary) | **GET** /data-center/summary | 获取数据中心摘要
 [*DefaultApi*](doc/DefaultApi.md) | [**getEnclosure**](doc/DefaultApi.md#getenclosure) | **GET** /enclosures/{enclosure_id} | 获取笼盒详情
+[*DefaultApi*](doc/DefaultApi.md) | [**getEnclosureCleaning**](doc/DefaultApi.md#getenclosurecleaning) | **GET** /enclosure-cleanings/{cleaning_id} | 获取清洁记录
 [*DefaultApi*](doc/DefaultApi.md) | [**getExportDownload**](doc/DefaultApi.md#getexportdownload) | **GET** /data-center/export-jobs/{job_id}/download | 获取导出下载链接
 [*DefaultApi*](doc/DefaultApi.md) | [**getExportJob**](doc/DefaultApi.md#getexportjob) | **GET** /data-center/export-jobs/{job_id} | 获取导出任务
 [*DefaultApi*](doc/DefaultApi.md) | [**getHamster**](doc/DefaultApi.md#gethamster) | **GET** /hamsters/{hamster_id} | 获取仓鼠详情
@@ -142,6 +144,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**individualizeLitter_1**](doc/DefaultApi.md#individualizelitter_1) | **POST** /litters/{litter_id}/individualize | 将临时幼崽个体化
 [*DefaultApi*](doc/DefaultApi.md) | [**listBackupJobs**](doc/DefaultApi.md#listbackupjobs) | **GET** /data-center/backup-jobs | 列出备份任务
 [*DefaultApi*](doc/DefaultApi.md) | [**listBreedingPlans**](doc/DefaultApi.md#listbreedingplans) | **GET** /breeding-plans | 列出繁育计划
+[*DefaultApi*](doc/DefaultApi.md) | [**listEnclosureCleanings**](doc/DefaultApi.md#listenclosurecleanings) | **GET** /enclosures/{enclosure_id}/cleanings | 列出笼盒清洁历史
 [*DefaultApi*](doc/DefaultApi.md) | [**listEnclosureStays**](doc/DefaultApi.md#listenclosurestays) | **GET** /enclosures/{enclosure_id}/stays | 列出笼盒入住历史
 [*DefaultApi*](doc/DefaultApi.md) | [**listEnclosures**](doc/DefaultApi.md#listenclosures) | **GET** /enclosures | 列出笼盒
 [*DefaultApi*](doc/DefaultApi.md) | [**listExportJobs**](doc/DefaultApi.md#listexportjobs) | **GET** /data-center/export-jobs | 列出导出任务
@@ -245,6 +248,11 @@ Class | Method | HTTP request | Description
  - [DownloadLinkResponse](doc/DownloadLinkResponse.md)
  - [DownloadLinkResponseData](doc/DownloadLinkResponseData.md)
  - [Enclosure](doc/Enclosure.md)
+ - [EnclosureCleaning](doc/EnclosureCleaning.md)
+ - [EnclosureCleaningCreateRequest](doc/EnclosureCleaningCreateRequest.md)
+ - [EnclosureCleaningListResponse](doc/EnclosureCleaningListResponse.md)
+ - [EnclosureCleaningResponse](doc/EnclosureCleaningResponse.md)
+ - [EnclosureCleaningType](doc/EnclosureCleaningType.md)
  - [EnclosureCreateRequest](doc/EnclosureCreateRequest.md)
  - [EnclosureDimensions](doc/EnclosureDimensions.md)
  - [EnclosureListResponse](doc/EnclosureListResponse.md)
@@ -442,6 +450,7 @@ Class | Method | HTTP request | Description
  - [WeightRecordListResponse](doc/WeightRecordListResponse.md)
  - [WeightRecordOneOf](doc/WeightRecordOneOf.md)
  - [WeightRecordOneOf1](doc/WeightRecordOneOf1.md)
+ - [WeightRecordOneOf2](doc/WeightRecordOneOf2.md)
  - [WeightRecordResponse](doc/WeightRecordResponse.md)
 
 

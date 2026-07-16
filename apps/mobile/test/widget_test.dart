@@ -6,6 +6,8 @@ import 'package:scolvpet_api/scolvpet_api.dart';
 import 'package:scolvpet_mobile/core/app_state.dart';
 import 'package:scolvpet_mobile/core/session_store.dart';
 import 'package:scolvpet_mobile/data/i1_repository.dart';
+import 'package:scolvpet_mobile/data/i2_repository.dart';
+import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/ui/screens.dart';
 import 'package:scolvpet_mobile/main.dart';
 
@@ -36,8 +38,11 @@ void main() {
         repository: FakeRepository(offline: true),
         sessionStore: MemorySessionStore(snapshot: demoSnapshot, delayed: true),
       );
+      final i2Controller = I2Controller(repository: MemoryI2Repository());
 
-      await tester.pumpWidget(ScolvPetApp(state: state));
+      await tester.pumpWidget(
+        ScolvPetApp(state: state, i2Controller: i2Controller),
+      );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
       await tester.pump(const Duration(milliseconds: 40));
@@ -45,19 +50,25 @@ void main() {
 
       expect(find.byType(HomeShell), findsOneWidget);
       for (final label in ['今日', '仓鼠', '笼舍', '繁育', '我的']) {
-        expect(find.text(label), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(NavigationBar),
+            matching: find.text(label),
+          ),
+          findsOneWidget,
+        );
       }
-    await tester.tap(find.text('我的'));
-    await tester.pumpAndSettle();
-    expect(find.text('雪团熊舍'), findsOneWidget);
-    expect(find.text('离线只读 · 联网后重新提交/再操作'), findsOneWidget);
-    await tester.tap(find.text('物种规则'));
+      await tester.tap(find.text('我的'));
+      await tester.pumpAndSettle();
+      expect(find.text('雪团熊舍'), findsOneWidget);
+      expect(find.text('离线只读 · 联网后重新提交/再操作'), findsOneWidget);
+      await tester.tap(find.text('物种规则'));
       await tester.pumpAndSettle();
       expect(find.text('mesocricetus_auratus'), findsWidgets);
-    final copyButton = tester.widget<TextButton>(
-      find.widgetWithText(TextButton, '复制'),
-    );
-    expect(copyButton.onPressed, isNull);
+      final copyButton = tester.widget<TextButton>(
+        find.widgetWithText(TextButton, '复制'),
+      );
+      expect(copyButton.onPressed, isNull);
     },
   );
 }

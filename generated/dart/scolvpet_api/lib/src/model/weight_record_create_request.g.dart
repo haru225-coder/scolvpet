@@ -13,6 +13,12 @@ abstract class _$WeightRecordCreateRequestCWProxy {
 
   WeightRecordCreateRequest litterId(String? litterId);
 
+  WeightRecordCreateRequest measurementKind(
+    WeightRecordCreateRequestMeasurementKindEnum? measurementKind,
+  );
+
+  WeightRecordCreateRequest subjectCount(int? subjectCount);
+
   WeightRecordCreateRequest weightG(num weightG);
 
   WeightRecordCreateRequest recordedAt(DateTime recordedAt);
@@ -35,6 +41,8 @@ abstract class _$WeightRecordCreateRequestCWProxy {
     String? hamsterId,
     String? pupIdentityId,
     String? litterId,
+    WeightRecordCreateRequestMeasurementKindEnum? measurementKind,
+    int? subjectCount,
     num weightG,
     DateTime recordedAt,
     WeightRecordCreateRequestSource_Enum source_,
@@ -61,6 +69,15 @@ class _$WeightRecordCreateRequestCWProxyImpl
   @override
   WeightRecordCreateRequest litterId(String? litterId) =>
       this(litterId: litterId);
+
+  @override
+  WeightRecordCreateRequest measurementKind(
+    WeightRecordCreateRequestMeasurementKindEnum? measurementKind,
+  ) => this(measurementKind: measurementKind);
+
+  @override
+  WeightRecordCreateRequest subjectCount(int? subjectCount) =>
+      this(subjectCount: subjectCount);
 
   @override
   WeightRecordCreateRequest weightG(num weightG) => this(weightG: weightG);
@@ -92,6 +109,8 @@ class _$WeightRecordCreateRequestCWProxyImpl
     Object? hamsterId = const $CopyWithPlaceholder(),
     Object? pupIdentityId = const $CopyWithPlaceholder(),
     Object? litterId = const $CopyWithPlaceholder(),
+    Object? measurementKind = const $CopyWithPlaceholder(),
+    Object? subjectCount = const $CopyWithPlaceholder(),
     Object? weightG = const $CopyWithPlaceholder(),
     Object? recordedAt = const $CopyWithPlaceholder(),
     Object? source_ = const $CopyWithPlaceholder(),
@@ -111,6 +130,14 @@ class _$WeightRecordCreateRequestCWProxyImpl
           ? _value.litterId
           // ignore: cast_nullable_to_non_nullable
           : litterId as String?,
+      measurementKind: measurementKind == const $CopyWithPlaceholder()
+          ? _value.measurementKind
+          // ignore: cast_nullable_to_non_nullable
+          : measurementKind as WeightRecordCreateRequestMeasurementKindEnum?,
+      subjectCount: subjectCount == const $CopyWithPlaceholder()
+          ? _value.subjectCount
+          // ignore: cast_nullable_to_non_nullable
+          : subjectCount as int?,
       weightG: weightG == const $CopyWithPlaceholder()
           ? _value.weightG
           // ignore: cast_nullable_to_non_nullable
@@ -157,6 +184,17 @@ WeightRecordCreateRequest _$WeightRecordCreateRequestFromJson(
       hamsterId: $checkedConvert('hamster_id', (v) => v as String?),
       pupIdentityId: $checkedConvert('pup_identity_id', (v) => v as String?),
       litterId: $checkedConvert('litter_id', (v) => v as String?),
+      measurementKind: $checkedConvert(
+        'measurement_kind',
+        (v) => $enumDecodeNullable(
+          _$WeightRecordCreateRequestMeasurementKindEnumEnumMap,
+          v,
+        ),
+      ),
+      subjectCount: $checkedConvert(
+        'subject_count',
+        (v) => (v as num?)?.toInt(),
+      ),
       weightG: $checkedConvert('weight_g', (v) => v as num),
       recordedAt: $checkedConvert(
         'recorded_at',
@@ -178,6 +216,8 @@ WeightRecordCreateRequest _$WeightRecordCreateRequestFromJson(
     'hamsterId': 'hamster_id',
     'pupIdentityId': 'pup_identity_id',
     'litterId': 'litter_id',
+    'measurementKind': 'measurement_kind',
+    'subjectCount': 'subject_count',
     'weightG': 'weight_g',
     'recordedAt': 'recorded_at',
     'source_': 'source',
@@ -191,11 +231,21 @@ Map<String, dynamic> _$WeightRecordCreateRequestToJson(
   'hamster_id': ?instance.hamsterId,
   'pup_identity_id': ?instance.pupIdentityId,
   'litter_id': ?instance.litterId,
+  'measurement_kind':
+      ?_$WeightRecordCreateRequestMeasurementKindEnumEnumMap[instance
+          .measurementKind],
+  'subject_count': ?instance.subjectCount,
   'weight_g': instance.weightG,
   'recorded_at': instance.recordedAt.toIso8601String(),
   'source': _$WeightRecordCreateRequestSource_EnumEnumMap[instance.source_]!,
   'device_reading_id': ?instance.deviceReadingId,
   'notes': ?instance.notes,
+};
+
+const _$WeightRecordCreateRequestMeasurementKindEnumEnumMap = {
+  WeightRecordCreateRequestMeasurementKindEnum.individual: 'individual',
+  WeightRecordCreateRequestMeasurementKindEnum.litterTotal: 'litter_total',
+  WeightRecordCreateRequestMeasurementKindEnum.litterAverage: 'litter_average',
 };
 
 const _$WeightRecordCreateRequestSource_EnumEnumMap = {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scolvpet_api/scolvpet_api.dart';
 
 import '../core/app_state.dart';
+import '../features/i2/i2.dart';
 
 const _accent = Color(0xffc77852);
 const _ink = Color(0xff1f2928);
@@ -257,9 +258,10 @@ class _SetupScreenState extends State<SetupScreen> {
 }
 
 class HomeShell extends StatefulWidget {
-  const HomeShell({super.key, required this.state});
+  const HomeShell({super.key, required this.state, required this.i2Controller});
 
   final AppState state;
+  final I2Controller i2Controller;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -269,25 +271,179 @@ class _HomeShellState extends State<HomeShell> {
   int index = 0;
 
   @override
+  void initState() {
+    super.initState();
+    widget.i2Controller.restore();
+  }
+
+  String? get _speciesRuleVersionId =>
+      widget.state.ownerRules.isEmpty ? null : widget.state.ownerRules.first.id;
+
+  void _showMissingRule() {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('请先在“我的 → 物种规则”复制熊舍规则')));
+  }
+
+  Future<void> _openHamsterEditor({I2Hamster? existing}) async {
+    final speciesRuleVersionId = _speciesRuleVersionId;
+    if (speciesRuleVersionId == null) {
+      _showMissingRule();
+      return;
+    }
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (pageContext) => HamsterEditorPage(
+          controller: widget.i2Controller,
+          speciesRuleVersionId: speciesRuleVersionId,
+          existing: existing,
+          onSaved: () => Navigator.of(pageContext).pop(),
+        ),
+      ),
+    );
+    await widget.i2Controller.retry();
+    if (existing != null) {
+      await widget.i2Controller.loadHamsterDetail(existing.id);
+    }
+  }
+
+  Future<void> _openBatchHamsterEditor() async {
+    final speciesRuleVersionId = _speciesRuleVersionId;
+    if (speciesRuleVersionId == null) {
+      _showMissingRule();
+      return;
+    }
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (pageContext) => BatchHamsterEditorPage(
+          controller: widget.i2Controller,
+          speciesRuleVersionId: speciesRuleVersionId,
+          onSaved: () => Navigator.of(pageContext).pop(),
+        ),
+      ),
+    );
+    await widget.i2Controller.retry();
+  }
+
+  Future<void> _openWeightEntry(String hamsterId) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (pageContext) => WeightEntryPage(
+          controller: widget.i2Controller,
+          hamsterId: hamsterId,
+          onSaved: () => Navigator.of(pageContext).pop(),
+        ),
+      ),
+    );
+    await widget.i2Controller.loadHamsterDetail(hamsterId);
+    await widget.i2Controller.retry();
+  }
+
+  Future<void> _openHamsterDetail(I2Hamster hamster) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => HamsterDetailPage(
+          controller: widget.i2Controller,
+          hamsterId: hamster.id,
+          onEdit: () {
+            final current =
+                widget.i2Controller.hamsterDetailState.data?.hamster ?? hamster;
+            _openHamsterEditor(existing: current);
+          },
+          onAddWeight: () => _openWeightEntry(hamster.id),
+        ),
+      ),
+    );
+    await widget.i2Controller.retry();
+  }
+
+  Future<void> _openEnclosureAction(
+    I2Enclosure enclosure, {
+    required bool cleaning,
+  }) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (pageContext) => cleaning
+            ? EnclosureCarePage(
+                controller: widget.i2Controller,
+                enclosureId: enclosure.id,
+                enclosureVersion: enclosure.version,
+                onSaved: () => Navigator.of(pageContext).pop(),
+              )
+            : MoveHamsterPage(
+                controller: widget.i2Controller,
+                enclosureId: enclosure.id,
+                enclosureVersion: enclosure.version,
+                onSaved: () => Navigator.of(pageContext).pop(),
+              ),
+      ),
+    );
+    await widget.i2Controller.loadEnclosureDetail(enclosure.id);
+    await widget.i2Controller.loadCleaningHistory(enclosure.id);
+    await widget.i2Controller.retry();
+  }
+
+  Future<void> _openEnclosureDetail(I2Enclosure enclosure) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => EnclosureDetailPage(
+          controller: widget.i2Controller,
+          enclosureId: enclosure.id,
+          onMove: () {
+            final current =
+                widget.i2Controller.enclosureDetailState.data?.enclosure ??
+                enclosure;
+            _openEnclosureAction(current, cleaning: false);
+          },
+          onCare: () {
+            final current =
+                widget.i2Controller.enclosureDetailState.data?.enclosure ??
+                enclosure;
+            _openEnclosureAction(current, cleaning: true);
+          },
+        ),
+      ),
+    );
+    await widget.i2Controller.retry();
+  }
+
+  void _openLitters() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => LitterListPage(controller: widget.i2Controller),
+      ),
+    );
+  }
+
+  void _openImport() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => I2ImportPage(controller: widget.i2Controller),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final pages = [
       const _TodayPage(),
-      const _EmptyDomainPage(
-        title: '仓鼠',
-        icon: Icons.pets_outlined,
-        detail: 'I2 将接入仓鼠档案与窝次入口',
+      HamsterListPage(
+        controller: widget.i2Controller,
+        onOpenDetail: _openHamsterDetail,
+        onCreate: () => _openHamsterEditor(),
+        onBatchCreate: _openBatchHamsterEditor,
+        onOpenLitters: _openLitters,
       ),
-      const _EmptyDomainPage(
-        title: '笼舍',
-        icon: Icons.grid_view_outlined,
-        detail: 'I2 将接入笼架网格与入住历史',
+      EnclosureGridPage(
+        controller: widget.i2Controller,
+        onOpenDetail: _openEnclosureDetail,
       ),
       const _EmptyDomainPage(
         title: '繁育',
         icon: Icons.sync_alt,
         detail: 'I3 将接入繁育计划与动作状态',
       ),
-      _MinePage(state: widget.state),
+      _MinePage(state: widget.state, onOpenImport: _openImport),
     ];
     return Scaffold(
       body: SafeArea(
@@ -372,9 +528,10 @@ class RulePage extends StatelessWidget {
 }
 
 class _MinePage extends StatelessWidget {
-  const _MinePage({required this.state});
+  const _MinePage({required this.state, this.onOpenImport});
 
   final AppState state;
+  final VoidCallback? onOpenImport;
 
   @override
   Widget build(BuildContext context) {
@@ -392,26 +549,23 @@ class _MinePage extends StatelessWidget {
         const SizedBox(height: 20),
         Card(
           color: _depth,
-          child: const Padding(
-            padding: EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '数据中心',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
-                    color: Color(0xff43635f),
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  '导入 · 导出 · 备份 · 用量',
-                  style: TextStyle(color: Color(0xff5f7773)),
-                ),
-              ],
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(18),
+            leading: const Icon(Icons.storage_outlined),
+            title: const Text(
+              '数据中心',
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+                color: Color(0xff43635f),
+              ),
             ),
+            subtitle: const Text(
+              'CSV 导入 · 导出 · 备份 · 用量',
+              style: TextStyle(color: Color(0xff5f7773)),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: onOpenImport,
           ),
         ),
         const SizedBox(height: 12),

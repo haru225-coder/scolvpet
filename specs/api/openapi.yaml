@@ -916,6 +916,85 @@ paths:
         '422':
           $ref: '#/components/responses/ValidationError'
 
+  /enclosures/{enclosure_id}/cleanings:
+    parameters:
+      - $ref: '#/components/parameters/EnclosureId'
+    get:
+      tags: [笼舍]
+      operationId: listEnclosureCleanings
+      summary: 列出笼盒清洁历史
+      description: 返回清洁、消毒及纠错记录；历史记录只追加，不原地覆盖。
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: 清洁历史
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnclosureCleaningListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [笼舍]
+      operationId: createEnclosureCleaning
+      summary: 记录笼盒清洁或消毒
+      description: 追加清洁事实并更新笼盒清洁投影；纠错通过新记录引用原记录完成。
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnclosureCleaningCreateRequest'
+      responses:
+        '201':
+          description: 清洁事实已记录
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Idempotency-Key:
+              $ref: '#/components/headers/IdempotencyKey'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnclosureCleaningResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /enclosure-cleanings/{cleaning_id}:
+    get:
+      tags: [笼舍]
+      operationId: getEnclosureCleaning
+      summary: 获取清洁记录
+      parameters:
+        - name: cleaning_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 清洁记录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnclosureCleaningResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /breeding-plans:
     get:
       tags: [繁育]
@@ -1575,6 +1654,8 @@ paths:
                   litter:
                     id: 018f47a2-72b3-76d8-b31f-5848c42bb577
                     owner_id: 018f47a2-31dc-7e1d-9f69-3b77e4c55d11
+                    origin: breeding
+                    code: SY-L-20260804-01
                     breeding_plan_id: 018f47a2-4e63-7cc4-80b4-94a589917a36
                     sire_id: 018f47a2-4fe7-7823-8e1b-672ee718b014
                     dam_id: 018f47a2-50bf-7489-ab99-8fcce45842a0
@@ -1924,6 +2005,8 @@ paths:
                   litter:
                     id: 018f47a2-72b3-76d8-b31f-5848c42bb577
                     owner_id: 018f47a2-31dc-7e1d-9f69-3b77e4c55d11
+                    origin: breeding
+                    code: SY-L-20260804-01
                     breeding_plan_id: 018f47a2-4e63-7cc4-80b4-94a589917a36
                     sire_id: 018f47a2-4fe7-7823-8e1b-672ee718b014
                     dam_id: 018f47a2-50bf-7489-ab99-8fcce45842a0
@@ -4329,6 +4412,10 @@ components:
       type: string
       enum: [clean, partial_due, full_due]
 
+    EnclosureCleaningType:
+      type: string
+      enum: [partial, full, disinfection]
+
     BreedingPlanState:
       type: string
       enum:
@@ -4392,7 +4479,7 @@ components:
 
     JobStatus:
       type: string
-      enum: [queued, running, succeeded, failed, cancelled]
+      enum: [queued, running, succeeded, partially_succeeded, failed, cancelled]
 
     ImportTemplateType:
       type: string
@@ -4980,10 +5067,6 @@ components:
         birth_date:
           type: [string, 'null']
           format: date
-        lifecycle_status:
-          $ref: '#/components/schemas/HamsterLifecycleStatus'
-        breeding_status:
-          $ref: '#/components/schemas/HamsterBreedingStatus'
         cover_media_id:
           type: [string, 'null']
           format: uuid
@@ -5496,8 +5579,6 @@ components:
           oneOf:
             - $ref: '#/components/schemas/EnclosureDimensions'
             - type: 'null'
-        cleanliness_state:
-          $ref: '#/components/schemas/CleanlinessState'
         capacity:
           type: integer
           minimum: 1
@@ -5505,9 +5586,6 @@ components:
           type: array
           items:
             type: string
-        last_cleaned_at:
-          type: [string, 'null']
-          format: date-time
       additionalProperties: false
 
     EnclosureResponse:
@@ -5549,7 +5627,7 @@ components:
           format: uuid
         purpose:
           type: string
-          enum: [single, pairing, gestation, isolation, dam_with_litter]
+          enum: [single, pairing_temp, gestation, isolation, dam_with_litter]
         pairing_attempt_id:
           type: [string, 'null']
           format: uuid
@@ -5576,7 +5654,7 @@ components:
           format: uuid
         purpose:
           type: string
-          enum: [single, pairing, gestation, isolation, dam_with_litter]
+          enum: [single, pairing_temp, gestation, isolation, dam_with_litter]
         pairing_attempt_id:
           type: [string, 'null']
           format: uuid
@@ -5624,6 +5702,93 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EnclosureStay'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      additionalProperties: false
+
+    EnclosureCleaning:
+      type: object
+      required:
+        - id
+        - enclosure_id
+        - cleaning_type
+        - performed_at
+        - supplies
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        enclosure_id:
+          type: string
+          format: uuid
+        cleaning_type:
+          $ref: '#/components/schemas/EnclosureCleaningType'
+        performed_at:
+          type: string
+          format: date-time
+        supplies:
+          type: object
+          additionalProperties: true
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+        corrects_cleaning_record_id:
+          type: [string, 'null']
+          format: uuid
+        correction_reason:
+          type: [string, 'null']
+          maxLength: 2000
+        created_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+
+    EnclosureCleaningCreateRequest:
+      type: object
+      required: [cleaning_type, performed_at]
+      properties:
+        cleaning_type:
+          $ref: '#/components/schemas/EnclosureCleaningType'
+        performed_at:
+          type: string
+          format: date-time
+        supplies:
+          type: object
+          additionalProperties: true
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+        corrects_cleaning_record_id:
+          type: [string, 'null']
+          format: uuid
+        correction_reason:
+          type: [string, 'null']
+          maxLength: 2000
+      dependentRequired:
+        corrects_cleaning_record_id: [correction_reason]
+      additionalProperties: false
+
+    EnclosureCleaningResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/EnclosureCleaning'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      additionalProperties: false
+
+    EnclosureCleaningListResponse:
+      type: object
+      required: [data, page, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnclosureCleaning'
         page:
           $ref: '#/components/schemas/PageInfo'
         meta:
@@ -6297,15 +6462,12 @@ components:
       required:
         - id
         - owner_id
-        - breeding_plan_id
-        - sire_id
-        - dam_id
-        - born_at
+        - origin
+        - code
         - initial_alive_count
         - initial_other_count
         - current_managed_count
         - state
-        - enclosure_id
         - dam_condition
         - version
         - created_at
@@ -6318,17 +6480,24 @@ components:
           type: string
           format: uuid
           readOnly: true
-        breeding_plan_id:
+        origin:
           type: string
+          enum: [breeding, import]
+        code:
+          type: string
+          minLength: 1
+          maxLength: 80
+        breeding_plan_id:
+          type: [string, 'null']
           format: uuid
         sire_id:
-          type: string
+          type: [string, 'null']
           format: uuid
         dam_id:
-          type: string
+          type: [string, 'null']
           format: uuid
         born_at:
-          type: string
+          type: [string, 'null']
           format: date-time
         initial_alive_count:
           type: integer
@@ -6343,7 +6512,7 @@ components:
           $ref: '#/components/schemas/LitterState'
           readOnly: true
         enclosure_id:
-          type: string
+          type: [string, 'null']
           format: uuid
         dam_condition:
           $ref: '#/components/schemas/DamCondition'
@@ -7172,6 +7341,12 @@ components:
         litter_id:
           type: [string, 'null']
           format: uuid
+        measurement_kind:
+          type: string
+          enum: [individual, litter_total, litter_average]
+        subject_count:
+          type: [integer, 'null']
+          minimum: 1
         weight_g:
           type: number
           exclusiveMinimum: 0
@@ -7207,10 +7382,33 @@ components:
           properties:
             pup_identity_id:
               type: 'null'
+            litter_id:
+              type: 'null'
+            measurement_kind:
+              type: string
+              const: individual
+            subject_count:
+              type: 'null'
         - required: [pup_identity_id]
           properties:
             hamster_id:
               type: 'null'
+            litter_id:
+              type: 'null'
+            measurement_kind:
+              type: string
+              const: individual
+            subject_count:
+              type: 'null'
+        - required: [litter_id, measurement_kind, subject_count]
+          properties:
+            hamster_id:
+              type: 'null'
+            pup_identity_id:
+              type: 'null'
+            measurement_kind:
+              type: string
+              enum: [litter_total, litter_average]
       additionalProperties: false
 
     WeightRecordCreateRequest:
@@ -7226,6 +7424,12 @@ components:
         litter_id:
           type: [string, 'null']
           format: uuid
+        measurement_kind:
+          type: string
+          enum: [individual, litter_total, litter_average]
+        subject_count:
+          type: [integer, 'null']
+          minimum: 1
         weight_g:
           type: number
           exclusiveMinimum: 0
@@ -7248,10 +7452,33 @@ components:
           properties:
             pup_identity_id:
               type: 'null'
+            litter_id:
+              type: 'null'
+            measurement_kind:
+              type: string
+              const: individual
+            subject_count:
+              type: 'null'
         - required: [pup_identity_id]
           properties:
             hamster_id:
               type: 'null'
+            litter_id:
+              type: 'null'
+            measurement_kind:
+              type: string
+              const: individual
+            subject_count:
+              type: 'null'
+        - required: [litter_id, measurement_kind, subject_count]
+          properties:
+            hamster_id:
+              type: 'null'
+            pup_identity_id:
+              type: 'null'
+            measurement_kind:
+              type: string
+              enum: [litter_total, litter_average]
       additionalProperties: false
 
     WeightRecordResponse:
