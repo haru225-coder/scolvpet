@@ -3,6 +3,7 @@ package i6media
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -188,6 +189,52 @@ func (s *Service) GetUpload(ctx context.Context, ownerID, uploadID uuid.UUID) (U
 		return UploadSession{}, err
 	}
 	return result, nil
+}
+
+func (s *Service) PutUpload(ctx context.Context, ownerID, uploadID uuid.UUID, key, path string, body io.Reader) (WriteResult[objectstore.ObjectInfo], error) {
+	if body == nil {
+		return WriteResult[objectstore.ObjectInfo]{}, fmt.Errorf("%w: upload body is required", ErrValidation)
+	}
+	if s.Objects == nil {
+		return WriteResult[objectstore.ObjectInfo]{}, errors.New("media object store unavailable")
+	}
+	upload, err := s.GetUpload(ctx, ownerID, uploadID)
+	if err != nil {
+		return WriteResult[objectstore.ObjectInfo]{}, err
+	}
+	temporary, err := os.CreateTemp("", "scolvpet-media-upload-*")
+	if err != nil {
+		return WriteResult[objectstore.ObjectInfo]{}, fmt.Errorf("create media upload spool: %w", err)
+	}
+	temporaryName := temporary.Name()
+	defer os.Remove(temporaryName)
+	defer temporary.Close()
+	hasher := sha256.New()
+	count, err := io.Copy(io.MultiWriter(temporary, hasher), io.LimitReader(body, upload.SizeBytes+1))
+	if err != nil {
+		return WriteResult[objectstore.ObjectInfo]{}, fmt.Errorf("spool media upload: %w", err)
+	}
+	digest := hex.EncodeToString(hasher.Sum(nil))
+	requestPayload, err := json.Marshal(map[string]any{"size_bytes": count, "sha256": digest})
+	if err != nil {
+		return WriteResult[objectstore.ObjectInfo]{}, err
+	}
+	return runWrite[objectstore.ObjectInfo](ctx, s.Store, ownerID, key, http.MethodPut, path, requestPayload, func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
+		if upload.Status != "pending_upload" || upload.ExpiresAt.Before(time.Now().UTC()) {
+			return 0, nil, nil, ErrConflict
+		}
+		if _, err := temporary.Seek(0, io.SeekStart); err != nil {
+			return 0, nil, nil, fmt.Errorf("rewind media upload spool: %w", err)
+		}
+		info, err := s.Objects.Put(ctx, objectstore.PutRequest{
+			Key: upload.ObjectKey, Body: temporary, SizeBytes: upload.SizeBytes,
+			SHA256: upload.SHA256, ContentType: upload.ContentType, ExpiresAt: upload.ExpiresAt,
+		})
+		if err != nil {
+			return 0, nil, nil, err
+		}
+		return http.StatusOK, info, map[string]string{"ETag": store.FormatETag(upload.Version)}, nil
+	})
 }
 
 func (s *Service) Complete(ctx context.Context, ownerID, uploadID uuid.UUID, key, path string, payload []byte, ifMatch string, input CompleteInput, info objectstore.ObjectInfo) (WriteResult[MediaAsset], error) {

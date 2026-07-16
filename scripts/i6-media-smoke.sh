@@ -138,9 +138,18 @@ PRESIGN_REPLAY="$(curl -fsS -D "$PRESIGN_REPLAY_HEADERS" -X POST "$API_URL/v1/me
 assert_replayed "$PRESIGN_REPLAY_HEADERS" presign
 [[ -n "$(header_value "$PRESIGN_REPLAY_HEADERS" ETag)" && -n "$(header_value "$PRESIGN_REPLAY_HEADERS" Location)" ]] || { printf 'presign replay headers missing\n' >&2; exit 1; }
 
-curl -fsS -X PUT "$API_URL$UPLOAD_URL" \
+PUT_HEADERS="$(mktemp /tmp/scolvpet-i6-media-put-headers.XXXXXX)"
+PUT_KEY="i6-media-$RUN_ID-put"
+PUT="$(curl -fsS -D "$PUT_HEADERS" -X PUT "$API_URL$UPLOAD_URL" \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: image/png' \
-  --data-binary "@$FIXTURE_FILE" >/dev/null
+  -H "Idempotency-Key: $PUT_KEY" --data-binary "@$FIXTURE_FILE")"
+[[ "$(header_value "$PUT_HEADERS" ETag)" == '"1"' ]] || { printf 'content PUT missing ETag\n' >&2; exit 1; }
+PUT_REPLAY_HEADERS="$(mktemp /tmp/scolvpet-i6-media-put-replay-headers.XXXXXX)"
+PUT_REPLAY="$(curl -fsS -D "$PUT_REPLAY_HEADERS" -X PUT "$API_URL$UPLOAD_URL" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: image/png' \
+  -H "Idempotency-Key: $PUT_KEY" --data-binary "@$FIXTURE_FILE")"
+[[ "$(printf '%s' "$PUT" | jq -S -c '.data')" == "$(printf '%s' "$PUT_REPLAY" | jq -S -c '.data')" ]] || { printf 'content PUT replay data mismatch\n' >&2; exit 1; }
+assert_replayed "$PUT_REPLAY_HEADERS" content-put
 
 COMPLETE_PAYLOAD="$(jq -cn --arg etag "local-$RUN_ID" --arg sha "$SHA256" --argjson size "$SIZE_BYTES" \
   '{object_etag:$etag,size_bytes:$size,sha256:$sha}')"
@@ -272,7 +281,7 @@ done
 [[ "$OUTBOX" -ge 8 ]] || { printf 'published outbox count too low: %s\n' "$OUTBOX" >&2; exit 1; }
 
 rm -f "$PRESIGN_HEADERS" "$PRESIGN_REPLAY_HEADERS" "$COMPLETE_HEADERS" "$COMPLETE_REPLAY_HEADERS" \
-  "$MEDIA_GET_HEADERS" "$EDIT_HEADERS" "$RETRY_HEADERS" "$COVER_HEADERS" "$SHARE_HEADERS" \
+  "$PUT_HEADERS" "$PUT_REPLAY_HEADERS" "$MEDIA_GET_HEADERS" "$EDIT_HEADERS" "$RETRY_HEADERS" "$COVER_HEADERS" "$SHARE_HEADERS" \
   "$REVOKE_HEADERS" "$REVOKE_REPLAY_HEADERS" "$FIXTURE_FILE" \
   /tmp/scolvpet-i6-media-public-revoked.json /tmp/scolvpet-i6-media-public-body \
   /tmp/scolvpet-i6-media-public-headers /tmp/scolvpet-i6-media-public-revoked-body

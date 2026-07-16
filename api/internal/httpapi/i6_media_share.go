@@ -67,21 +67,16 @@ func (s *Server) putI6MediaUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	service := s.i6MediaService()
-	upload, err := service.GetUpload(r.Context(), ownerID, uploadID)
+	if _, err := service.GetUpload(r.Context(), ownerID, uploadID); err != nil {
+		writeI6MediaError(w, r, err)
+		return
+	}
+	result, err := service.PutUpload(r.Context(), ownerID, uploadID, r.Header.Get("Idempotency-Key"), r.URL.Path, r.Body)
 	if err != nil {
 		writeI6MediaError(w, r, err)
 		return
 	}
-	if s.ImportObjects == nil {
-		writeI6MediaError(w, r, errors.New("media object store unavailable"))
-		return
-	}
-	info, err := s.ImportObjects.Put(r.Context(), objectstore.PutRequest{Key: upload.ObjectKey, Body: io.LimitReader(r.Body, upload.SizeBytes+1), SizeBytes: upload.SizeBytes, SHA256: upload.SHA256, ContentType: upload.ContentType, ExpiresAt: upload.ExpiresAt})
-	if err != nil {
-		writeI6MediaError(w, r, err)
-		return
-	}
-	writeJSON(w, r, http.StatusOK, envelope(r, info))
+	writeI6MediaStored(w, r, result.Status, envelope(r, result.Value), result.Headers, result.Replayed)
 }
 
 func (s *Server) completeI6MediaUpload(w http.ResponseWriter, r *http.Request) {
