@@ -11,7 +11,10 @@ python3 scripts/cattery-full-reverse/collect_catalogs.py
 # R2：Mach-O / 插件 / 通道 / 配置标记 / 静态关联图（需本机已安装样本 App）
 python3 scripts/cattery-full-reverse/collect_static_r2.py
 
-# 验收计数、版本冻结、样本哈希、脱敏、R2 产物与 SHA256
+# R9：公开管理端/编辑器 Web 逆向、Bridge、App×Web API 交叉映射
+python3 scripts/cattery-full-reverse/collect_web_r9.py
+
+# 验收计数、版本冻结、样本哈希、脱敏、R2/R3/R9 产物与 SHA256
 python3 scripts/cattery-full-reverse/validate_catalogs.py
 ```
 

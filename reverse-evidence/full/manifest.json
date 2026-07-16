@@ -237,5 +237,19 @@
       "No credentials or user business data stored",
       "Public web pages observed as W substitute only"
     ]
+  },
+  "r9": {
+    "collected_at": "2026-07-17T03:00:00+08:00",
+    "report": "web/r9-report.md",
+    "web_api_total": 231,
+    "web_api_method_resolved": 228,
+    "crossmap": {
+      "shared": 49,
+      "web_only": 181,
+      "app_only": 201,
+      "app_total": 250,
+      "web_total": 231
+    },
+    "p2_closure": "web/p2-closure.md"
   }
 }

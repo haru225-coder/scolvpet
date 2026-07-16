@@ -1,0 +1,21 @@
+id,module,name,path,route,evidence_level,evidence_ref,status,notes
+BRIDGE-0001,js-bridge,FMBridge,admin_count=47;editor_count=50,,W,cattery-admin.js + cattery-editor.js string counts,observed,Primary window.FMBridge in admin/editor
+BRIDGE-0002,js-bridge,FMBridgeChannel,admin_count=7;editor_count=6,,W,cattery-admin.js + cattery-editor.js string counts,observed,Channel alias for bridge detection
+BRIDGE-0003,js-bridge,FlutterBridge,admin_count=12;editor_count=8,,W,cattery-admin.js + cattery-editor.js string counts,observed,Compatibility bridge object
+BRIDGE-0004,app-data,__APP_DATA__,admin_count=4;editor_count=2,,W,cattery-admin.js + cattery-editor.js string counts,observed,Injected app payload (token/user/platform)
+BRIDGE-0005,auth,localStorage.token,admin_count=1;editor_count=1,,W,cattery-admin.js + cattery-editor.js string counts,observed,Browser fallback token key
+BRIDGE-0006,env-detect,isInApp,admin_count=16;editor_count=0,,W,cattery-admin.js + cattery-editor.js string counts,observed,Detect WebView vs browser
+BRIDGE-0007,bridge-api,getToken,admin_count=7;editor_count=4,,W,cattery-admin.js + cattery-editor.js string counts,observed,Request auth token from native
+BRIDGE-0008,bridge-api,getUserInfo,admin_count=10;editor_count=0,,W,cattery-admin.js + cattery-editor.js string counts,observed,Request user profile from native
+BRIDGE-0009,bridge-api,startPayment,admin_count=2;editor_count=0,,W,cattery-admin.js + cattery-editor.js string counts,observed,Native payment handoff
+BRIDGE-0010,bridge-api,openAppStore,admin_count=2;editor_count=0,,W,cattery-admin.js + cattery-editor.js string counts,observed,Open store / membership
+BRIDGE-0011,url-scheme,fmbridge://,admin_count=1;editor_count=1,,W,cattery-admin.js + cattery-editor.js string counts,observed,Custom bridge URL scheme marker
+BRIDGE-0012,env-detect,CatteryApp UA,admin_count=3;editor_count=0,,W,cattery-admin.js + cattery-editor.js string counts,observed,UserAgent contains catteryapp/flutter
+BRIDGE-0013,native-webview-handler,bridge_handler.dart,package:cattery_shared/core/webview/bridge_handler.dart,,S,App AOT package paths (R2),observed,Flutter-side WebView bridge handler package
+BRIDGE-0014,native-webview-handler,cat_handler.dart,package:cattery_shared/core/webview/cat_handler.dart,,S,App AOT package paths (R2),observed,Flutter-side WebView bridge handler package
+BRIDGE-0015,native-webview-handler,device_handler.dart,package:cattery_shared/core/webview/device_handler.dart,,S,App AOT package paths (R2),observed,Flutter-side WebView bridge handler package
+BRIDGE-0016,native-webview-handler,media_handler.dart,package:cattery_shared/core/webview/media_handler.dart,,S,App AOT package paths (R2),observed,Flutter-side WebView bridge handler package
+BRIDGE-0017,native-webview-handler,store_trade_handler.dart,package:cattery_shared/core/webview/store_trade_handler.dart,,S,App AOT package paths (R2),observed,Flutter-side WebView bridge handler package
+BRIDGE-0018,native-webview-handler,template_handler.dart,package:cattery_shared/core/webview/template_handler.dart,,S,App AOT package paths (R2),observed,Flutter-side WebView bridge handler package
+BRIDGE-0019,native-webview-handler,ui_handler.dart,package:cattery_shared/core/webview/ui_handler.dart,,S,App AOT package paths (R2),observed,Flutter-side WebView bridge handler package
+BRIDGE-0020,native-webview-handler,user_handler.dart,package:cattery_shared/core/webview/user_handler.dart,,S,App AOT package paths (R2),observed,Flutter-side WebView bridge handler package

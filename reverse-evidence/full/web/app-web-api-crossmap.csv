@@ -1,0 +1,432 @@
+id,module,name,path,route,evidence_level,evidence_ref,status,notes
+XMAP-0001,admin/articles,shared,app+web,/api/admin/articles,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0002,admin/breeding,shared,app+web,/api/admin/breeding/invite/accept,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0003,admin/breeding,shared,app+web,/api/admin/breeding/transaction/create,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0004,admin/breeding,shared,app+web,/api/admin/breeding/transaction/list,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0005,admin/cat,shared,app+web,/api/admin/cat/levels,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0006,admin/cat,shared,app+web,/api/admin/cat/levels/add,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0007,admin/cat,shared,app+web,/api/admin/cat/planes,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0008,admin/cat,shared,app+web,/api/admin/cat/planes/add,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0009,admin/cat,shared,app+web,/api/admin/cat/tags,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0010,admin/cat,shared,app+web,/api/admin/cat/tags/add,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0011,admin/cat,shared,app+web,/api/admin/cat/varieties,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0012,admin/cat,shared,app+web,/api/admin/cat/varieties/add,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0013,admin/cats,shared,app+web,/api/admin/cats,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0014,admin/cats,shared,app+web,/api/admin/cats/add,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0015,admin/doors,shared,app+web,/api/admin/doors/add,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0016,admin/doors,shared,app+web,/api/admin/doors/rule,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0017,admin/doors,shared,app+web,/api/admin/doors/rule/set,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0018,admin/membership,shared,app+web,/api/admin/membership/levels,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0019,admin/merchant,shared,app+web,/api/admin/merchant,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0020,admin/merchant,shared,app+web,/api/admin/merchant/create,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0021,admin/merchant,shared,app+web,/api/admin/merchant/update,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=put
+XMAP-0022,admin/pet,shared,app+web,/api/admin/pet/transfer/create,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0023,admin/pet,shared,app+web,/api/admin/pet/transfer/list,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0024,admin/point,shared,app+web,/api/admin/point/adjust,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0025,admin/point,shared,app+web,/api/admin/point/logs,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0026,admin/product,shared,app+web,/api/admin/product,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0027,admin/queues,shared,app+web,/api/admin/queues,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0028,admin/queues,shared,app+web,/api/admin/queues/add,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0029,admin/queues,shared,app+web,/api/admin/queues/rule,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0030,admin/queues,shared,app+web,/api/admin/queues/rule/set,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0031,admin/seo,shared,app+web,/api/admin/seo/profile,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0032,admin/shops,shared,app+web,/api/admin/shops/add,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0033,admin/sms,shared,app+web,/api/admin/sms,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0034,admin/tool,shared,app+web,/api/admin/tool/prices,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0035,admin/tool,shared,app+web,/api/admin/tool/watermark,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=put
+XMAP-0036,admin/user,shared,app+web,/api/admin/user,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0037,admin/users,shared,app+web,/api/admin/users/bind/cat,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0038,admin/users,shared,app+web,/api/admin/users/unbind/cat,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=delete
+XMAP-0039,admin/wallet,shared,app+web,/api/admin/wallet/adjust,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=put
+XMAP-0040,admin/weixin,shared,app+web,/api/admin/weixin/mini,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0041,admin/weixin,shared,app+web,/api/admin/weixin/mini/audit,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0042,admin/weixin,shared,app+web,/api/admin/weixin/mini/categories,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0043,admin/weixin,shared,app+web,/api/admin/weixin/mini/pages,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0044,admin/weixin,shared,app+web,/api/admin/weixin/mini/publish,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0045,admin/weixin,shared,app+web,/api/admin/weixin/mini/template,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0046,admin/weixin,shared,app+web,/api/admin/weixin/mini/upload,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=post
+XMAP-0047,admin/weixin,shared,app+web,/api/admin/weixin/mini/version,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0048,admin/work,shared,app+web,/api/admin/work/statis,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0049,filems/sts,shared,app+web,/api/filems/sts,S+W,api-routes.txt + web/api-routes.txt,shared,present in both App AOT and Web admin; method=get
+XMAP-0050,admin/articles,web-only,web,/api/admin/articles/add,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0051,admin/articles,web-only,web,/api/admin/articles/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0052,admin/articles,web-only,web,/api/admin/articles/detail/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0053,admin/articles,web-only,web,/api/admin/articles/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0054,admin/brands,web-only,web,/api/admin/brands,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0055,admin/brands,web-only,web,/api/admin/brands/add,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0056,admin/brands,web-only,web,/api/admin/brands/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0057,admin/brands,web-only,web,/api/admin/brands/detail/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0058,admin/brands,web-only,web,/api/admin/brands/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0059,admin/brands,web-only,web,/api/admin/brands/update/:id/show,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0060,admin/breeding,web-only,web,/api/admin/breeding/invite/:token/info,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0061,admin/cat,web-only,web,/api/admin/cat/:id/record,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0062,admin/cat,web-only,web,/api/admin/cat/:id/tags,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0063,admin/cat,web-only,web,/api/admin/cat/:record_id/record,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0064,admin/cat,web-only,web,/api/admin/cat/levels/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0065,admin/cat,web-only,web,/api/admin/cat/levels/detail/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0066,admin/cat,web-only,web,/api/admin/cat/levels/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0067,admin/cat,web-only,web,/api/admin/cat/planes/archive/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0068,admin/cat,web-only,web,/api/admin/cat/planes/breeding/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0069,admin/cat,web-only,web,/api/admin/cat/planes/breeding/:id/date,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0070,admin/cat,web-only,web,/api/admin/cat/planes/confirm/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0071,admin/cat,web-only,web,/api/admin/cat/planes/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0072,admin/cat,web-only,web,/api/admin/cat/planes/detail/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0073,admin/cat,web-only,web,/api/admin/cat/planes/update/:id/show,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0074,admin/cat,web-only,web,/api/admin/cat/planes/update/cats/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0075,admin/cat,web-only,web,/api/admin/cat/planes/weights/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0076,admin/cat,web-only,web,/api/admin/cat/planes/weights/:id/delete,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0077,admin/cat,web-only,web,/api/admin/cat/planes/weights/:id/update,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0078,admin/cat,web-only,web,/api/admin/cat/record/actions,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0079,admin/cat,web-only,web,/api/admin/cat/record/events,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0080,admin/cat,web-only,web,/api/admin/cat/tags/bind/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0081,admin/cat,web-only,web,/api/admin/cat/tags/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0082,admin/cat,web-only,web,/api/admin/cat/tags/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0083,admin/cat,web-only,web,/api/admin/cat/varieties/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0084,admin/cat,web-only,web,/api/admin/cat/varieties/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0085,admin/category,web-only,web,/api/admin/category,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0086,admin/category,web-only,web,/api/admin/category/update,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0087,admin/cats,web-only,web,/api/admin/cats/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0088,admin/cats,web-only,web,/api/admin/cats/detail/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0089,admin/cats,web-only,web,/api/admin/cats/unmother,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0090,admin/cats,web-only,web,/api/admin/cats/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0091,admin/cats,web-only,web,/api/admin/cats/update/:id/detail,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0092,admin/cats,web-only,web,/api/admin/cats/update/:id/show,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0093,admin/cats,web-only,web,/api/admin/cats/update/:id/show/detail,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0094,admin/cats,web-only,web,/api/admin/cats/update/:id/show/event,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0095,admin/cats,web-only,web,/api/admin/cats/update/:id/show/price,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0096,admin/cats,web-only,web,/api/admin/cats/update/:id/thumb,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0097,admin/cos,web-only,web,/api/admin/cos/upload,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=TBD
+XMAP-0098,admin/dam,web-only,web,/api/admin/dam/files/${zm.value.userTemplateId},W,web/api-routes.txt,web-only,not seen in App AOT route list; method=TBD
+XMAP-0099,admin/doors,web-only,web,/api/admin/doors,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0100,admin/doors,web-only,web,/api/admin/doors/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0101,admin/doors,web-only,web,/api/admin/doors/detail/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0102,admin/doors,web-only,web,/api/admin/doors/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0103,admin/doors,web-only,web,/api/admin/doors/update/:id/user,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0104,admin/goods,web-only,web,/api/admin/goods,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0105,admin/goods,web-only,web,/api/admin/goods/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0106,admin/goods,web-only,web,/api/admin/goods/:id/delete,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0107,admin/goods,web-only,web,/api/admin/goods/:id/member-prices,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0108,admin/goods,web-only,web,/api/admin/goods/:id/recommended,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0109,admin/goods,web-only,web,/api/admin/goods/:id/status,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0110,admin/goods,web-only,web,/api/admin/goods/:id/update,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0111,admin/goods,web-only,web,/api/admin/goods/categories,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0112,admin/goods,web-only,web,/api/admin/goods/categories/:id/delete,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0113,admin/goods,web-only,web,/api/admin/goods/categories/:id/update,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0114,admin/goods,web-only,web,/api/admin/goods/categories/create,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0115,admin/goods,web-only,web,/api/admin/goods/config,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0116,admin/goods,web-only,web,/api/admin/goods/create,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0117,admin/loans,web-only,web,/api/admin/loans,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0118,admin/loans,web-only,web,/api/admin/loans/add,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0119,admin/loans,web-only,web,/api/admin/loans/cat,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0120,admin/loans,web-only,web,/api/admin/loans/cat/add,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0121,admin/loans,web-only,web,/api/admin/loans/cat/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0122,admin/loans,web-only,web,/api/admin/loans/cat/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0123,admin/loans,web-only,web,/api/admin/loans/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0124,admin/loans,web-only,web,/api/admin/loans/detail/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0125,admin/loans,web-only,web,/api/admin/loans/rule,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0126,admin/loans,web-only,web,/api/admin/loans/rule/set,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0127,admin/loans,web-only,web,/api/admin/loans/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0128,admin/loans,web-only,web,/api/admin/loans/update/:id/user,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0129,admin/login,web-only,web,/api/admin/login,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0130,admin/marketing,web-only,web,/api/admin/marketing/breeding/info,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0131,admin/marketing,web-only,web,/api/admin/marketing/breeding/king/profile,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0132,admin/marketing,web-only,web,/api/admin/marketing/breeding/leaderboard,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0133,admin/marketing,web-only,web,/api/admin/marketing/breeding/public/info,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0134,admin/marketing,web-only,web,/api/admin/marketing/breeding/public/leaderboard,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0135,admin/marketing,web-only,web,/api/admin/marketing/breeding/share,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0136,admin/marketing,web-only,web,/api/admin/marketing/breeding/start,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0137,admin/marketing,web-only,web,/api/admin/marketing/breeding/submit,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0138,admin/membership,web-only,web,/api/admin/membership/:user_id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0139,admin/membership,web-only,web,/api/admin/membership/:user_id/level,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0140,admin/membership,web-only,web,/api/admin/membership/levels/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0141,admin/membership,web-only,web,/api/admin/membership/stats,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0142,admin/orders,web-only,web,/api/admin/orders,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0143,admin/orders,web-only,web,/api/admin/orders/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0144,admin/orders,web-only,web,/api/admin/orders/:id/pay-balance,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0145,admin/orders,web-only,web,/api/admin/orders/:id/qrcode,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0146,admin/orders,web-only,web,/api/admin/orders/:id/status,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0147,admin/orders,web-only,web,/api/admin/orders/manual,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0148,admin/pet-bean,web-only,web,/api/admin/pet-bean/consume,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0149,admin/pet-bean,web-only,web,/api/admin/pet-bean/grant,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0150,admin/pet-bean,web-only,web,/api/admin/pet-bean/logs,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0151,admin/pet-bean,web-only,web,/api/admin/pet-bean/order/:order_id/status,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0152,admin/pet-bean,web-only,web,/api/admin/pet-bean/order/create,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0153,admin/pet-bean,web-only,web,/api/admin/pet-bean/packages,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0154,admin/pet-bean,web-only,web,/api/admin/pet-bean/verify-iap,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0155,admin/pet-bean,web-only,web,/api/admin/pet-bean/wallet,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0156,admin/pet,web-only,web,/api/admin/pet/transfer/:code/accept,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0157,admin/pet,web-only,web,/api/admin/pet/transfer/:code/cancel,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0158,admin/point,web-only,web,/api/admin/point/activities,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0159,admin/point,web-only,web,/api/admin/point/activities/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0160,admin/point,web-only,web,/api/admin/point/products,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0161,admin/point,web-only,web,/api/admin/point/products/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0162,admin/point,web-only,web,/api/admin/point/rules,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0163,admin/point,web-only,web,/api/admin/point/rules/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0164,admin/point,web-only,web,/api/admin/point/settings,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0165,admin/point,web-only,web,/api/admin/point/sign-config,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0166,admin/point,web-only,web,/api/admin/point/stats,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0167,admin/public,web-only,web,/api/admin/public/pet/transfer/:code/info,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0168,admin/queues,web-only,web,/api/admin/queues/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0169,admin/queues,web-only,web,/api/admin/queues/detail/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0170,admin/queues,web-only,web,/api/admin/queues/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0171,admin/queues,web-only,web,/api/admin/queues/update/:id/user,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0172,admin/recharge,web-only,web,/api/admin/recharge/rules,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0173,admin/recharge,web-only,web,/api/admin/recharge/rules/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0174,admin/register,web-only,web,/api/admin/register,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0175,admin/seo,web-only,web,/api/admin/seo/preview-token,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0176,admin/seo,web-only,web,/api/admin/seo/publish,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0177,admin/seo,web-only,web,/api/admin/seo/translate,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0178,admin/shipping,web-only,web,/api/admin/shipping/templates,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0179,admin/shipping,web-only,web,/api/admin/shipping/templates/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0180,admin/shop,web-only,web,/api/admin/shop/templates,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0181,admin/shops,web-only,web,/api/admin/shops,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0182,admin/shops,web-only,web,/api/admin/shops/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0183,admin/shops,web-only,web,/api/admin/shops/detail/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0184,admin/shops,web-only,web,/api/admin/shops/detail/config,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0185,admin/shops,web-only,web,/api/admin/shops/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0186,admin/shops,web-only,web,/api/admin/shops/update/:id/default,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0187,admin/shops,web-only,web,/api/admin/shops/update/:id/dy-default,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0188,admin/shops,web-only,web,/api/admin/shops/update/:id/xhs-default,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0189,admin/store,web-only,web,/api/admin/store/order/:order_id/status,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0190,admin/store,web-only,web,/api/admin/store/order/create,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0191,admin/store,web-only,web,/api/admin/store/packages,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0192,admin/store,web-only,web,/api/admin/store/verify-iap,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0193,admin/tabbar,web-only,web,/api/admin/tabbar,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0194,admin/tabbar,web-only,web,/api/admin/tabbar/add,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0195,admin/tabbar,web-only,web,/api/admin/tabbar/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0196,admin/tabbar,web-only,web,/api/admin/tabbar/detail/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0197,admin/tabbar,web-only,web,/api/admin/tabbar/list,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0198,admin/tabbar,web-only,web,/api/admin/tabbar/set-active/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0199,admin/tabbar,web-only,web,/api/admin/tabbar/set-hidden/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0200,admin/tabbar,web-only,web,/api/admin/tabbar/update,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0201,admin/tabbar,web-only,web,/api/admin/tabbar/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0202,admin/tool,web-only,web,/api/admin/tool/prices/:id/reply,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0203,admin/tools,web-only,web,/api/admin/tools,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0204,admin/tools,web-only,web,/api/admin/tools/:id/switch,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0205,admin/trade,web-only,web,/api/admin/trade/createorder,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0206,admin/trade,web-only,web,/api/admin/trade/createorder-v2,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0207,admin/trade,web-only,web,/api/admin/trade/exchange,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0208,admin/trade,web-only,web,/api/admin/trade/order/{orderId}/status,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0209,admin/trade,web-only,web,/api/admin/trade/orders,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0210,admin/trade,web-only,web,/api/admin/trade/orders/:order_no,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0211,admin/trade,web-only,web,/api/admin/trade/orders/:order_no/invoice,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0212,admin/trade,web-only,web,/api/admin/trade/products-inference,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0213,admin/trade,web-only,web,/api/admin/trade/products-inference-v2,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0214,admin/trade,web-only,web,/api/admin/trade/showcase_list,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0215,admin/trade,web-only,web,/api/admin/trade/upgrade-quote,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0216,admin/users,web-only,web,/api/admin/users,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0217,admin/users,web-only,web,/api/admin/users/:userId/phone,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0218,admin/visual,web-only,web,/api/admin/visual/cats,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0219,admin/visual,web-only,web,/api/admin/visual/cats/add,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0220,admin/visual,web-only,web,/api/admin/visual/cats/delete/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=delete
+XMAP-0221,admin/visual,web-only,web,/api/admin/visual/cats/detail/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0222,admin/visual,web-only,web,/api/admin/visual/cats/update/:id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=put
+XMAP-0223,admin/wallet,web-only,web,/api/admin/wallet/user,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0224,admin/wallet,web-only,web,/api/admin/wallet/user/:user_id,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0225,admin/weixin,web-only,web,/api/admin/weixin/mini/auth,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0226,admin/weixin,web-only,web,/api/admin/weixin/mini/register,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0227,admin/weixin,web-only,web,/api/admin/weixin/mini/tester,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=get
+XMAP-0228,admin/weixin,web-only,web,/api/admin/weixin/service/code,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=post
+XMAP-0229,editor/fonts,web-only,web,/api/editor/fonts,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=TBD
+XMAP-0230,editor/fonts,web-only,web,/api/editor/fonts/categories/list,W,web/api-routes.txt,web-only,not seen in App AOT route list; method=TBD
+XMAP-0231,admin/account,app-only,app,/api/admin/account,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0232,admin/account,app-only,app,/api/admin/account/recover,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0233,admin/accounting,app-only,app,/api/admin/accounting/categories/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0234,admin/accounting,app-only,app,/api/admin/accounting/categoriesr,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0235,admin/accounting,app-only,app,/api/admin/accounting/daily-report,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0236,admin/accounting,app-only,app,/api/admin/accounting/goods-sales-report,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0237,admin/accounting,app-only,app,/api/admin/accounting/monthly-report,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0238,admin/accounting,app-only,app,/api/admin/accounting/records,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0239,admin/accounting,app-only,app,/api/admin/accounting/records/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0240,admin/accounting,app-only,app,/api/admin/accounting/statisticsr,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0241,admin/accounting,app-only,app,/api/admin/accounting/subcategories,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0242,admin/ad,app-only,app,/api/admin/ad/video,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0243,admin/ad,app-only,app,/api/admin/ad/video/set,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0244,admin/analytics,app-only,app,/api/admin/analytics/breeding/ranking,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0245,admin/analytics,app-only,app,/api/admin/analytics/cat/rankingr,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0246,admin/analytics,app-only,app,/api/admin/analytics/cat/stats,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0247,admin/analytics,app-only,app,/api/admin/analytics/overview,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0248,admin/analytics,app-only,app,/api/admin/analytics/trend,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0249,admin/analytics,app-only,app,/api/admin/analytics/visitors,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0250,admin/app-tool-badges,app-only,app,/api/admin/app-tool-badges,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0251,admin/app-version,app-only,app,/api/admin/app-version/check-update,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0252,admin/app,app-only,app,/api/admin/app/apple,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0253,admin/app,app-only,app,/api/admin/app/bind-phone,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0254,admin/app,app-only,app,/api/admin/app/login,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0255,admin/app,app-only,app,/api/admin/app/register,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0256,admin/auto-backup,app-only,app,/api/admin/auto-backup/config,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0257,admin/auto-backup,app-only,app,/api/admin/auto-backup/send-verify-code,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0258,admin/auto-backup,app-only,app,/api/admin/auto-backup/verify-email,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0259,admin/boarding,app-only,app,/api/admin/boarding/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0260,admin/boarding,app-only,app,/api/admin/boarding/add,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0261,admin/boarding,app-only,app,/api/admin/boarding/config,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0262,admin/boarding,app-only,app,/api/admin/boarding/detail/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0263,admin/boarding,app-only,app,/api/admin/boarding/list,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0264,admin/boarding,app-only,app,/api/admin/boarding/operate,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0265,admin/brand-tasks,app-only,app,/api/admin/brand-tasks/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0266,admin/brand-tasks,app-only,app,/api/admin/brand-tasks/availabler,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0267,admin/breeding,app-only,app,/api/admin/breeding/invite/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0268,admin/breeding,app-only,app,/api/admin/breeding/transaction/r,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0269,admin/calendar,app-only,app,/api/admin/calendar/events/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0270,admin/calendar,app-only,app,/api/admin/calendar/month-data,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0271,admin/cat,app-only,app,/api/admin/cat/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0272,admin/cat,app-only,app,/api/admin/cat/0/breeding-check,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0273,admin/cat,app-only,app,/api/admin/cat/bepro/planes,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0274,admin/cat,app-only,app,/api/admin/cat/health,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0275,admin/cat,app-only,app,/api/admin/cat/health/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0276,admin/cat,app-only,app,/api/admin/cat/levels/bind/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0277,admin/cat,app-only,app,/api/admin/cat/levels/delete/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0278,admin/cat,app-only,app,/api/admin/cat/levels/toggle-visibility/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0279,admin/cat,app-only,app,/api/admin/cat/levels/update/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0280,admin/cat,app-only,app,/api/admin/cat/levels/withcats,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0281,admin/cat,app-only,app,/api/admin/cat/planes/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0282,admin/cat,app-only,app,/api/admin/cat/planes/archive/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0283,admin/cat,app-only,app,/api/admin/cat/planes/breeding/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0284,admin/cat,app-only,app,/api/admin/cat/planes/confirm/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0285,admin/cat,app-only,app,/api/admin/cat/planes/delete/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0286,admin/cat,app-only,app,/api/admin/cat/planes/detail/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0287,admin/cat,app-only,app,/api/admin/cat/planes/remind/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0288,admin/cat,app-only,app,/api/admin/cat/planes/update/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0289,admin/cat,app-only,app,/api/admin/cat/planes/update/cats/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0290,admin/cat,app-only,app,/api/admin/cat/planes/weights/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0291,admin/cat,app-only,app,/api/admin/cat/planes/weights/cat,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0292,admin/cat,app-only,app,/api/admin/cat/planes/weights/cat/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0293,admin/cat,app-only,app,/api/admin/cat/record/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0294,admin/cat,app-only,app,/api/admin/cat/record/public/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0295,admin/cat,app-only,app,/api/admin/cat/record/v2,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0296,admin/cat,app-only,app,/api/admin/cat/record/v2/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0297,admin/cat,app-only,app,/api/admin/cat/tags/bind/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0298,admin/cat,app-only,app,/api/admin/cat/tags/count,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0299,admin/cat,app-only,app,/api/admin/cat/tags/delete/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0300,admin/cat,app-only,app,/api/admin/cat/tags/update/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0301,admin/cat,app-only,app,/api/admin/cat/varieties/delete/r,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0302,admin/cat,app-only,app,/api/admin/cat/varieties/update/r,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0303,admin/cat,app-only,app,/api/admin/cat/weights/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0304,admin/cats,app-only,app,/api/admin/cats/batch,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0305,admin/cats,app-only,app,/api/admin/cats/batch/config,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0306,admin/cats,app-only,app,/api/admin/cats/delete/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0307,admin/cats,app-only,app,/api/admin/cats/detail/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0308,admin/cats,app-only,app,/api/admin/cats/r,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0309,admin/cats,app-only,app,/api/admin/cats/update/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0310,admin/cats,app-only,app,/api/admin/cats/update/cat/sort,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0311,admin/cdn,app-only,app,/api/admin/cdn/settings/hd-videor,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0312,admin/cdn,app-only,app,/api/admin/cdn/traffic/overview,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0313,admin/common,app-only,app,/api/admin/common/event/add,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0314,admin/common,app-only,app,/api/admin/common/event/confirm/r,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0315,admin/common,app-only,app,/api/admin/common/event/reminds,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0316,admin/common,app-only,app,/api/admin/common/event/reminds/detail/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0317,admin/common,app-only,app,/api/admin/common/event/reminds/my-tasks,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0318,admin/common,app-only,app,/api/admin/common/event/reminds/r,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0319,admin/common,app-only,app,/api/admin/common/events,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0320,admin/contracts,app-only,app,/api/admin/contracts/document-imports,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0321,admin/contracts,app-only,app,/api/admin/contracts/document-imports/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0322,admin/contracts,app-only,app,/api/admin/contracts/documents,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0323,admin/contracts,app-only,app,/api/admin/contracts/documents/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0324,admin/contracts,app-only,app,/api/admin/contracts/templates,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0325,admin/contracts,app-only,app,/api/admin/contracts/templates/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0326,admin/dam,app-only,app,/api/admin/dam/files,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0327,admin/dam,app-only,app,/api/admin/dam/files/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0328,admin/dam,app-only,app,/api/admin/dam/files/v2,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0329,admin/dam,app-only,app,/api/admin/dam/folders,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0330,admin/dam,app-only,app,/api/admin/dam/folders/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0331,admin/decoration-packages,app-only,app,/api/admin/decoration-packages/save,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0332,admin/doors,app-only,app,/api/admin/doors/delete/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0333,admin/doors,app-only,app,/api/admin/doors/update/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0334,admin/doorsr,app-only,app,/api/admin/doorsr,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0335,admin/entitlements,app-only,app,/api/admin/entitlements,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0336,admin/enums,app-only,app,/api/admin/enums/merchant-types,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0337,admin/estrus,app-only,app,/api/admin/estrus/cycles,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0338,admin/estrus,app-only,app,/api/admin/estrus/cycles/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0339,admin/estrus,app-only,app,/api/admin/estrus/mothers/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0340,admin/export,app-only,app,/api/admin/export/create,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0341,admin/export,app-only,app,/api/admin/export/tasks,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0342,admin/feature-event,app-only,app,/api/admin/feature-event,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0343,admin/feature-usage-self,app-only,app,/api/admin/feature-usage-self,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0344,admin/feedback,app-only,app,/api/admin/feedback,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0345,admin/forward,app-only,app,/api/admin/forward,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0346,admin/forward,app-only,app,/api/admin/forward/set,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0347,admin/genetic,app-only,app,/api/admin/genetic/breed-standards,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0348,admin/genetic,app-only,app,/api/admin/genetic/breeding/simulate,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0349,admin/genetic,app-only,app,/api/admin/genetic/markers,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0350,admin/genetic,app-only,app,/api/admin/genetic/profile,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0351,admin/genetic,app-only,app,/api/admin/genetic/profile/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0352,admin/genetic,app-only,app,/api/admin/genetic/rules,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0353,admin/goods,app-only,app,/api/admin/goods/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0354,admin/goodsr,app-only,app,/api/admin/goodsr,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0355,admin/grooming,app-only,app,/api/admin/grooming/add,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0356,admin/grooming,app-only,app,/api/admin/grooming/config,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0357,admin/grooming,app-only,app,/api/admin/grooming/detail/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0358,admin/grooming,app-only,app,/api/admin/grooming/list,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0359,admin/grooming,app-only,app,/api/admin/grooming/operate,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0360,admin/marketing,app-only,app,/api/admin/marketing/campaign/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0361,admin/marketing,app-only,app,/api/admin/marketing/campaign/create,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0362,admin/marketing,app-only,app,/api/admin/marketing/campaigns,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0363,admin/marketing,app-only,app,/api/admin/marketing/campaigns/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0364,admin/membership,app-only,app,/api/admin/membership/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0365,admin/membership,app-only,app,/api/admin/membership/levels/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0366,admin/merchant,app-only,app,/api/admin/merchant/set-type,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0367,admin/merchant,app-only,app,/api/admin/merchant/theme,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0368,admin/merchant,app-only,app,/api/admin/merchant/theme/home,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0369,admin/merchant,app-only,app,/api/admin/merchant/theme/intro-splash,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0370,admin/operation,app-only,app,/api/admin/operation/banners,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0371,admin/pet,app-only,app,/api/admin/pet/transfer/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0372,admin/pet,app-only,app,/api/admin/pet/transfer/receivedr,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0373,admin/public,app-only,app,/api/admin/public/growth/event,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0374,admin/public,app-only,app,/api/admin/public/pet/transfer/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0375,admin/public,app-only,app,/api/admin/public/referral/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0376,admin/queues,app-only,app,/api/admin/queues/edit/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0377,admin/queues,app-only,app,/api/admin/queues/update/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0378,admin/rating-tags,app-only,app,/api/admin/rating-tags,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0379,admin/rating-tags,app-only,app,/api/admin/rating-tags/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0380,admin/rating-tags,app-only,app,/api/admin/rating-tags/batch-from-templates,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0381,admin/rating-tags,app-only,app,/api/admin/rating-tags/custom,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0382,admin/rating-tags,app-only,app,/api/admin/rating-tags/reorder,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0383,admin/receipt,app-only,app,/api/admin/receipt/add,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0384,admin/receipt,app-only,app,/api/admin/receipt/delete/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0385,admin/receipt,app-only,app,/api/admin/receipt/detail/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0386,admin/receipt,app-only,app,/api/admin/receipt/edit/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0387,admin/receipt,app-only,app,/api/admin/receipt/list,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0388,admin/referral,app-only,app,/api/admin/referral/bind,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0389,admin/referral,app-only,app,/api/admin/referral/code,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0390,admin/referral,app-only,app,/api/admin/referral/records,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0391,admin/shops,app-only,app,/api/admin/shops/delete/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0392,admin/shops,app-only,app,/api/admin/shops/update/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0393,admin/shopsr,app-only,app,/api/admin/shopsr,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0394,admin/stats,app-only,app,/api/admin/stats/generate-history,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0395,admin/stats,app-only,app,/api/admin/stats/trend,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0396,admin/store,app-only,app,/api/admin/store/order/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0397,admin/structure,app-only,app,/api/admin/structure/invite-qrcode,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0398,admin/structure,app-only,app,/api/admin/structure/member/delete/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0399,admin/structure,app-only,app,/api/admin/structure/member/update/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0400,admin/structure,app-only,app,/api/admin/structure/members,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0401,admin/structure,app-only,app,/api/admin/structure/merchant/switch,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0402,admin/structure,app-only,app,/api/admin/structure/merchants,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0403,admin/structure,app-only,app,/api/admin/structure/my-profile,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0404,admin/template-distributions,app-only,app,/api/admin/template-distributions/published,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0405,admin/template,app-only,app,/api/admin/template/categories,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0406,admin/templates,app-only,app,/api/admin/templates/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0407,admin/themes,app-only,app,/api/admin/themes,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0408,admin/tool,app-only,app,/api/admin/tool/prices/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0409,admin/tools,app-only,app,/api/admin/tools/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0410,admin/toolsr,app-only,app,/api/admin/toolsr,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0411,admin/trade,app-only,app,/api/admin/trade/order/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0412,admin/update,app-only,app,/api/admin/update/password,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0413,admin/user-tasks,app-only,app,/api/admin/user-tasks/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0414,admin/user-tasks,app-only,app,/api/admin/user-tasks/my,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0415,admin/users,app-only,app,/api/admin/users/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0416,admin/usersr,app-only,app,/api/admin/usersr,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0417,admin/wallet,app-only,app,/api/admin/wallet/adjust/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0418,admin/weight-alert,app-only,app,/api/admin/weight-alert/settingsr,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0419,admin/weixin,app-only,app,/api/admin/weixin/mini/qrcode/generate,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0420,admin/wishes,app-only,app,/api/admin/wishes,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0421,admin/wishes,app-only,app,/api/admin/wishes/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0422,admin/wishes,app-only,app,/api/admin/wishes/add,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0423,admin/wishes,app-only,app,/api/admin/wishes/delete/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0424,admin/wishes,app-only,app,/api/admin/wishes/edit/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0425,admin/work,app-only,app,/api/admin/work/cat/statis,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0426,agent/session,app-only,app,/api/agent/session/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0427,filems/before-after,app-only,app,/api/filems/before-after,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0428,filems/before-after,app-only,app,/api/filems/before-after/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0429,api/rating-tag-templates,app-only,app,/api/rating-tag-templates,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0430,api/record,app-only,app,/api/record/,S,api-routes.txt,app-only,not present in public web api-routes baseline
+XMAP-0431,record/comment,app-only,app,/api/record/comment/,S,api-routes.txt,app-only,not present in public web api-routes baseline

@@ -292,6 +292,35 @@ def main() -> int:
             t = (OUT / rel).read_text(encoding="utf-8")
             check("Bearer " not in t and "eyJ" not in t, f"R3 {rel} clean of tokens")
 
+    # R9 web reverse
+    r9_dir = OUT / "web"
+    if (r9_dir / "r9-report.md").is_file():
+        lines.append("")
+        lines.append("## R9 web reverse")
+        for rel in (
+            "web/r9-report.md",
+            "web/module-index.md",
+            "web/p2-closure.md",
+            "web/web-api-methods.csv",
+            "web/web-routes.csv",
+            "web/bridge-catalog.csv",
+            "web/app-web-api-crossmap.csv",
+            "web/r9-meta.json",
+        ):
+            check((OUT / rel).is_file(), f"R9 artifact {rel}")
+        web_methods = read_csv(OUT / "web/web-api-methods.csv")
+        check(len(web_methods) == 231, f"R9 web-api-methods count {len(web_methods)} (expect 231)")
+        # api-catalog still 481
+        api_rows = read_csv(OUT / "api-catalog.csv")
+        web_in_catalog = [r for r in api_rows if str(r.get("id","")).startswith("API-WEB")]
+        check(len(web_in_catalog) == 231, f"api-catalog web rows {len(web_in_catalog)}")
+        resolved = sum(1 for r in web_methods if r.get("status") == "method-resolved")
+        check(resolved >= 200, f"R9 method-resolved {resolved} (>=200)")
+        p2 = (OUT / "web/p2-closure.md").read_text(encoding="utf-8")
+        check("已验证" in p2 and "回滚" in p2, "R9 p2-closure has verified and rollback notes")
+        bridge = read_csv(OUT / "web/bridge-catalog.csv")
+        check(len(bridge) >= 10, f"R9 bridge-catalog {len(bridge)}")
+
     lines.append("")
     lines.append(f"结果： {'通过' if ok else '失败'}")
     REPORT.parent.mkdir(parents=True, exist_ok=True)
