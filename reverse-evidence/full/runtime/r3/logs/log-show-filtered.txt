@@ -1,0 +1,50 @@
+2026-07-17 01:51:38.124 Df appstoreagent[80813:1a0580] [com.apple.appstored:General] [Daemon] Starting FairPlay service
+2026-07-17 01:51:38.546 Df appstoreagent[80813:1a05af] [com.apple.appstored:SoftwareMap] Detected existing app: <SoftwareItem: 0xb24e57200>: (com.fanmeowy.catterytool, 2.15.0, 0:0 md:0xb24eebea0 /Applications/Cattery Manager.app)
+2026-07-17 01:51:38.633 Df promotedcontentd[80825:1a05e7] [com.apple.xpc:connection] [0xa60c8a580] activating connection: mach=true listener=false peer=false name=com.apple.fairplaydeviceidentityd
+2026-07-17 01:51:38.634 Df launchd[1:1a0269] [system/com.apple.fairplaydeviceidentityd:] internal event: WILL_SPAWN, code = 0
+2026-07-17 01:51:38.634 Df launchd[1:1a0269] [system/com.apple.fairplaydeviceidentityd:] service state: spawn scheduled
+2026-07-17 01:51:38.634 Df launchd[1:1a0269] [system/com.apple.fairplaydeviceidentityd:] service state: spawning
+2026-07-17 01:51:38.634 Df launchd[1:1a0269] [system/com.apple.fairplaydeviceidentityd:] launching: ipc (mach)
+2026-07-17 01:51:38.636 Df launchd[1:1a0269] [system/com.apple.fairplaydeviceidentityd [80826]:] xpcproxy spawned with pid 80826
+2026-07-17 01:51:38.636 Df launchd[1:1a0269] [system/com.apple.fairplaydeviceidentityd [80826]:] internal event: SPAWNED, code = 0
+2026-07-17 01:51:38.636 Df launchd[1:1a0269] [system/com.apple.fairplaydeviceidentityd [80826]:] service state: xpcproxy
+2026-07-17 01:51:38.636 Df launchd[1:1a0269] [system/com.apple.fairplaydeviceidentityd [80826]:] internal event: SOURCE_ATTACH, code = 0
+2026-07-17 01:51:38.648 Df launchd[1:1a010e] [system/com.apple.fairplaydeviceidentityd [80826]:] service state: running
+2026-07-17 01:51:38.648 Df launchd[1:1a010e] [system/com.apple.fairplaydeviceidentityd [80826]:] internal event: INIT, code = 0
+2026-07-17 01:51:38.648 Df launchd[1:1a010e] [system/com.apple.fairplaydeviceidentityd [80826]:] Successfully spawned fairplaydeviceidentityd[80826] because ipc (mach)
+2026-07-17 01:51:38.657 Df launchd[1:1a0269] [pid/80826 [fairplaydevicei]:] uncorking exec source upfront
+2026-07-17 01:51:38.657 Df launchd[1:1a0269] [pid/80826 [fairplaydevicei]:] created
+2026-07-17 01:51:38.663 A  fairplaydeviceidentityd[80826:1a05eb] (libsystem_info.dylib) Membership API: translate identifier
+2026-07-17 01:51:38.664 Df fairplaydeviceidentityd[80826:1a05eb] [com.apple.libcoreservices:] _dirhelper_update_tmpdir: old=<private>, new=<private>
+2026-07-17 01:51:38.700 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:51:38.701 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:51:38.707 Df fairplaydeviceidentityd[80826:1a05eb] [com.apple.xpc.activity:Client] xpc_activity_register: com.apple.fairplaydeviceidentityd.baa-prefetch, criteria: check-in
+2026-07-17 01:51:38.707 Df fairplaydeviceidentityd[80826:1a05eb] [com.apple.xpc:connection] [0x1038b3ff0] activating connection: mach=true listener=true peer=false name=com.apple.xpc.activity
+2026-07-17 01:51:38.707 Df fairplaydeviceidentityd[80826:1a05eb] [com.apple.xpc.activity:Client] _xpc_activity_register: com.apple.fairplaydeviceidentityd.baa-prefetch (0x1038b5460), 0
+2026-07-17 01:51:38.707 Df fairplaydeviceidentityd[80826:1a05eb] [com.apple.xpc.activity:Client] xpc_activity_set_criteria: com.apple.fairplaydeviceidentityd.baa-prefetch (0x1038b5460), check-in
+2026-07-17 01:51:38.707 Df fairplaydeviceidentityd[80826:1a05eb] [com.apple.xpc:connection] [0x1038b5870] activating connection: mach=true listener=true peer=false name=com.apple.fairplaydeviceidentityd
+2026-07-17 01:51:38.708 Df fairplaydeviceidentityd[80826:1a05f3] [com.apple.xpc:connection] [0x1038b5b80] activating connection: mach=false listener=false peer=true name=com.apple.fairplaydeviceidentityd.peer[80825].0x1038b5b80
+2026-07-17 01:51:38.743 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[80813].0x142004750
+2026-07-17 01:51:38.792 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc.activity:Client] xpc_activity_set_criteria, lower half: com.apple.fairplaydeviceidentityd.baa-prefetch (0x1038b5460), check-in
+2026-07-17 01:51:38.792 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc.activity:Client] _xpc_activity_set_criteria: com.apple.fairplaydeviceidentityd.baa-prefetch (0x1038b5460), check-in
+2026-07-17 01:51:38.792 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] invalidated because the client process (pid 80813) either cancelled the connection or exited
+2026-07-17 01:51:38.795 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc.activity:Client] xpc_activity_set_criteria: com.apple.fairplaydeviceidentityd.baa-prefetch (0x1038b5460), setting state now to 0
+2026-07-17 01:51:38.795 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc.activity:Client] _xpc_activity_set_state: com.apple.fairplaydeviceidentityd.baa-prefetch (0x1038b5460), 0
+2026-07-17 01:51:38.795 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc.activity:Client] __XPC_ACTIVITY_CALLING_HANDLER__: com.apple.fairplaydeviceidentityd.baa-prefetch (0x1038b5460), current state 0, pending state 0
+2026-07-17 01:51:38.795 Df fairplaydeviceidentityd[80826:1a05f4] kFPDIBAAPrefetchActivityEvent: CHECK_IN
+2026-07-17 01:51:38.795 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc.activity:Client] __XPC_ACTIVITY_CALLING_HANDLER__ returned from handler: com.apple.fairplaydeviceidentityd.baa-prefetch (0x1038b5460), current state 0, pending state 0
+2026-07-17 01:51:38.795 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc.activity:Client] _xpc_activity_set_state: com.apple.fairplaydeviceidentityd.baa-prefetch (0x1038b5460), 1
+2026-07-17 01:51:38.996 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc:connection] [0x1038b5b80] invalidated because the client process (pid 80825) either cancelled the connection or exited
+2026-07-17 01:51:39.001 Df promotedcontentd[80825:1a05e7] [com.apple.xpc:connection] [0xa60d28500] activating connection: mach=true listener=false peer=false name=com.apple.fairplaydeviceidentityd
+2026-07-17 01:51:39.022 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc:connection] [0x1038b6510] activating connection: mach=false listener=false peer=true name=com.apple.fairplaydeviceidentityd.peer[80825].0x1038b6510
+2026-07-17 01:51:39.030 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004930
+2026-07-17 01:51:39.054 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:51:39.057 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:51:39.059 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:51:39.085 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc:connection] [0x1038b6510] invalidated because the client process (pid 80825) either cancelled the connection or exited
+2026-07-17 01:51:39.090 Df promotedcontentd[80825:1a05e7] [com.apple.xpc:connection] [0xa60d288c0] activating connection: mach=true listener=false peer=false name=com.apple.fairplaydeviceidentityd
+2026-07-17 01:51:39.091 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc:connection] [0x1038b6510] activating connection: mach=false listener=false peer=true name=com.apple.fairplaydeviceidentityd.peer[80825].0x1038b6510
+2026-07-17 01:51:39.092 Df promotedcontentd[80825:1a05e7] [com.apple.xpc:connection] [0xa60d28640] activating connection: mach=true listener=false peer=false name=com.apple.fairplaydeviceidentityd
+2026-07-17 01:51:39.092 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc:connection] [0x1038b6510] invalidated because the client process (pid 80825) either cancelled the connection or exited
+2026-07-17 01:51:39.093 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc:connection] [0x1038b6510] activating connection: mach=false listener=false peer=true name=com.apple.fairplaydeviceidentityd.peer[80825].0x1038b6510
+2026-07-17 01:51:39.093 Df fairplaydeviceidentityd[80826:1a05f4] [com.apple.xpc:connection] [0x1038b6510] invalidated because the client process (pid 80825) either cancelled the connection or exited

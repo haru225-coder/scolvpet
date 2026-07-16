@@ -1,0 +1,6 @@
+attempt=D
+method=direct exec Runner
+started_at=2026-07-17T01:53:57+08:00
+exec_exit=0
+80002 find /Users/snowchan27/Documents /Users/snowchan27/Desktop /Users/snowchan27/Downloads -maxdepth 4 ( -iname *cattery* -o -iname *宠舍* -o -iname App.framework -o -name *.ipa )
+ended_at=2026-07-17T01:53:58+08:00

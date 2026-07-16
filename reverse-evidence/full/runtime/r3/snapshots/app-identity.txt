@@ -1,0 +1,9 @@
+app_path=/Applications/Cattery Manager.app
+runner=/Applications/Cattery Manager.app/Wrapper/Runner.app
+  "CFBundleDisplayName" => "宠舍管家"
+  "CFBundleIdentifier" => "com.fanmeowy.catterytool"
+  "CFBundleShortVersionString" => "2.15.0"
+  "CFBundleVersion" => "73"
+  "MinimumOSVersion" => "18.0"
+8bb590bb7a059f7d4078c3fafe4a366938f3ae9f359fa462f29c030bbadd69b8  /Applications/Cattery Manager.app/Wrapper/Runner.app/Frameworks/App.framework/App
+e751bacecdfd56afaddc9929a2b55f6addd4a55b06bfc660678e473741714479  /Applications/Cattery Manager.app/Wrapper/Runner.app/Runner

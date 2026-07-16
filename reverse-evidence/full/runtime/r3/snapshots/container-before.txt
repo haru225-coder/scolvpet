@@ -1,0 +1,58 @@
+path=/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool
+exists=yes
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/.com.apple.containermanagerd.metadata.plist
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/.CFUserTextEncoding
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Desktop
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Documents
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Downloads
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Application Scripts
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Application Scripts/com.fanmeowy.catterytool
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Application Support
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Application Support/AddressBook
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Application Support/SyncServices
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Application Support/iCloud
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Audio
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Caches
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Calendars
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/ColorPickers
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/ColorSync
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Colors
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Components
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Compositions
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Dictionaries
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Favorites
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Filters
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/FontCollections
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Fonts
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Images
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Images/People
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Input Methods
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/KeyBindings
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Keyboard Layouts
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Keychains
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Logs
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Mail
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/PDF Services
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Preferences
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Preferences/com.apple.security.plist
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Preferences/com.apple.security_common.plist
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/QuickLook
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Saved Application State
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Sounds
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Library/Spelling
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Movies
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Music
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/Pictures
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/StoreKit
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/StoreKit/receipt
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/SystemData
+/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/tmp
+--- files with meta ---
+3bdc4152699be150bb451479b6360120abb01e4ff9f01aafcc7f0ad9e911916e  size=596  mtime=2026-07-14T21:14:29+0800  /Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/.com.apple.containermanagerd.metadata.plist
+11b6e281d3ea1c402c903d3aaeaae91fecb3a41ac05af47cad9c0105efe26a97  size=4856  mtime=2026-07-14T21:15:19+0800  /Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/StoreKit/receipt
+--- group containers ---
+(none matching)
+ls: /Users/snowchan27/Library/Group Containers/group.com.cattery.widgets: No such file or directory

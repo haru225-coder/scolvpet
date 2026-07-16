@@ -1,0 +1,6 @@
+ping_cdn:
+cdn.fanmeowy.com HTTP 403 time=0.371163
+pricing:
+www.fanmeowy.com/pricing HTTP 200
+dns:
+198.18.0.5

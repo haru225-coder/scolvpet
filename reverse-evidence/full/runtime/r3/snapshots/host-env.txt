@@ -1,0 +1,13 @@
+collected_at=2026-07-17T01:53:44+08:00
+hostname=Snow's MacBook Air
+Darwin Snows-MacBook-Air.local 25.5.0 Darwin Kernel Version 25.5.0: Tue Jun  9 22:26:46 PDT 2026; root:xnu-12377.121.10~1/RELEASE_ARM64_T8103 arm64
+ProductName:		macOS
+ProductVersion:		26.5.2
+BuildVersion:		25F84
+cpu=Apple M1
+arch=arm64
+System Integrity Protection status: disabled.
+assessments enabled
+gatekeeper:
+assessments enabled
+developer id enabled

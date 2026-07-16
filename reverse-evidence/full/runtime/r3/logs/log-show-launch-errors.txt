@@ -1,0 +1,76 @@
+2026-07-17 01:44:49.553 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004750
+2026-07-17 01:44:49.554 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:44:55.804 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004750
+2026-07-17 01:44:55.805 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:47:49.189 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:47:49.191 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:47:53.742 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:47:53.744 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:48:01.483 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:48:01.486 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:48:32.608 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004750
+2026-07-17 01:48:32.610 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:48:32.611 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:48:32.614 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:49:07.046 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004930
+2026-07-17 01:49:07.048 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:49:09.467 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:49:09.471 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:50:52.579 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:50:52.581 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:51:38.546 Df appstoreagent[80813:1a05af] [com.apple.appstored:SoftwareMap] Detected existing app: <SoftwareItem: 0xb24e57200>: (com.fanmeowy.catterytool, 2.15.0, 0:0 md:0xb24eebea0 /Applications/Cattery Manager.app)
+2026-07-17 01:51:38.700 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:51:38.701 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:51:38.743 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[80813].0x142004750
+2026-07-17 01:51:38.792 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] invalidated because the client process (pid 80813) either cancelled the connection or exited
+2026-07-17 01:51:39.030 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004930
+2026-07-17 01:51:39.054 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:51:39.057 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:51:39.059 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:51:42.108 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004930
+2026-07-17 01:51:42.109 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:51:43.253 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:51:43.254 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:51:45.022 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[80828].0x142004750
+2026-07-17 01:51:45.023 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004750] invalidated because the client process (pid 80828) either cancelled the connection or exited
+2026-07-17 01:51:45.026 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[80828].0x142004ed0
+2026-07-17 01:51:45.027 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 80828) either cancelled the connection or exited
+2026-07-17 01:51:45.051 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:51:45.053 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:51:45.054 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:51:45.056 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:51:45.374 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004930
+2026-07-17 01:51:45.376 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:52:04.296 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004930
+2026-07-17 01:52:04.301 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004930] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:52:39.023 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:52:39.026 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:53:13.721 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] activating connection: mach=false listener=false peer=true name=com.apple.adid.peer[84672].0x142004ed0
+2026-07-17 01:53:13.723 Df adid[30481:1681df] [com.apple.xpc:connection] [0x142004ed0] invalidated because the client process (pid 84672) either cancelled the connection or exited
+2026-07-17 01:53:46.461 Df appinstalld[81148:1a13ea] (MobileSystemServices) 0x16f353000 -[MIClientConnection fetchInfoForAppWithBundleID:wrapperURL:completion:]: Got fetch info request for app at com.fanmeowy.catterytool with wrapper path: /Applications/Cattery Manager.app from client lsd (pid 663 (501/20))
+2026-07-17 01:53:46.462 Df com.apple.MobileInstallationHelperService[81151:1a13ef] (MobileSystemServices) 0x16af53000 -[MobileInstallationHelperService _onQueue_fetchInfoForAppWithBundleID:wrapperURL:completion:]: Fetch info for wrapped app with bundle identifier com.fanmeowy.catterytool installed at /Applications/Cattery Manager.app
+2026-07-17 01:53:46.717 Df lsd[663:1a11ce] [com.apple.appinstallation:TransactionLog] com.fanmeowy.catterytool/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-07-17 01:53:46.718 Df lsd[663:1a11ce] [com.apple.appinstallation:TransactionLog] com.fanmeowy.catterytool/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-07-17 01:53:46.724 Df lsd[663:1a11ce] [com.apple.appinstallation:TransactionLog] com.fanmeowy.catterytool/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-07-17 01:53:46.731 Df runningboardd[446:1a0c69] [com.apple.runningboard:general] Launch request for app<com.fanmeowy.catterytool(501)>[0] is using uid 501 (divined from auid 501 euid 501)
+2026-07-17 01:53:46.732 Df runningboardd[446:1a0c69] [com.apple.runningboard:ttl] Acquiring assertion targeting app<com.fanmeowy.catterytool(501)> from originator [osservice<com.apple.coreservices.uiagent(501)>:50483] with description <RBSAssertionDescriptor| "LS launch com.fanmeowy.catterytool" ID:446-50483-33899 target:app<com.fanmeowy.catterytool(501)> attributes:[
+2026-07-17 01:53:46.732 Df runningboardd[446:1a0c69] [com.apple.runningboard:ttl] Assertion 446-50483-33899 (target:app<com.fanmeowy.catterytool(501)>) will be created as active
+com.fanmeowy.catterytool
+2026-07-17 01:53:46.741 Df runningboardd[446:1a0c69] [com.apple.runningboard:job] Creating and launching job for: app<com.fanmeowy.catterytool(501)>
+2026-07-17 01:53:46.741 Df runningboardd[446:1a0c69] [com.apple.runningboard:general] _mutateContextIfNeeded called for com.fanmeowy.catterytool
+2026-07-17 01:53:46.742 Df runningboardd[446:1a0c69] [com.apple.runningboard:job] app<com.fanmeowy.catterytool(501)>: -[RBPersonaManager personaForIdentity:context:personaUID:personaUniqueString:] required 0.000000 ms (wallclock); resolved to {4294967295, (null)}
+2026-07-17 01:53:46.745 Df launchd[1:1a1398] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435:] internal event: WILL_SPAWN, code = 0
+2026-07-17 01:53:46.745 Df launchd[1:1a1398] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435:] service state: spawn scheduled
+2026-07-17 01:53:46.745 Df launchd[1:1a1398] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435:] service state: spawning
+2026-07-17 01:53:46.746 Df launchd[1:1a1398] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435:] launching: launch job demand
+2026-07-17 01:53:46.750 Df launchd[1:1a1398] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435 [81154]:] xpcproxy spawned with pid 81154
+2026-07-17 01:53:46.750 Df launchd[1:1a1398] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435 [81154]:] internal event: SPAWNED, code = 0
+2026-07-17 01:53:46.750 Df launchd[1:1a1398] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435 [81154]:] service state: xpcproxy
+2026-07-17 01:53:46.750 Df launchd[1:1a1398] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435 [81154]:] internal event: SOURCE_ATTACH, code = 0
+        "com.fanmeowy.catterytool"
+2026-07-17 01:53:48.269 Df kernel[0:1a1412] (IOTextEncryptionFamily) AppleFairplayTextCrypterSession::fairplayOpen() failed, error -42004
+2026-07-17 01:53:48.270 Df launchd[1:1a1396] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435 [81154]:] xpcproxy exited due to EXEC_EXIT_REASON_FAIRPLAY_DECRYPT
+2026-07-17 01:53:48.270 Df launchd[1:1a1396] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435 [81154]:] exited with exit reason (namespace: 9 code: 0xa) - EXEC_EXIT_REASON_FAIRPLAY_DECRYPT, ran for 1523ms
+2026-07-17 01:53:48.270 Df launchd[1:1a1396] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435 [81154]:] internal event: INIT, code = 80
+2026-07-17 01:53:48.270 Df launchd[1:1a1396] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435 [81154]:] job state = spawn failed
+2026-07-17 01:53:48.270 Df launchd[1:1a1396] [gui/501/application.com.fanmeowy.catterytool.177136444.177135435 [81154]:] service state: exited

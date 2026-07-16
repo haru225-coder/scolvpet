@@ -1,0 +1,13 @@
+id,module,name,path,route,evidence_level,evidence_ref,status,notes
+SCN-0001,runtime,unauthenticated_first_launch,runtime/r3/,,B,runtime/r3/launch-block-report.md,blocked,未登录/首次启动基线不可达：Runner spawn 前 FairPlay 解密失败
+SCN-0002,runtime,authenticated_session,runtime/r3/,,B,runtime/r3/launch-block-report.md,blocked,已登录基线不可达：App 进程未进入；禁止用真实账号绕过
+SCN-0003,runtime,offline_launch,runtime/r3/,,B,runtime/r3/launch-block-report.md,blocked,离线启动基线不可达：进程未启动；网络态与业务无关
+SCN-0004,runtime,cold_restart,runtime/r3/,,B,runtime/r3/launch-block-report.md,blocked,冷启动/重启基线不可达：重复 open 仍 -10671 + FAIRPLAY_DECRYPT
+SCN-0005,runtime,permission_dialogs,runtime/r3/,,B,runtime/r3/launch-block-report.md,blocked,权限弹窗（相机/相册/蓝牙/通知等）未触发
+SCN-0006,runtime,privacy_att,runtime/r3/,,B,runtime/r3/launch-block-report.md,blocked,ATT/隐私确认流程未进入
+SCN-0007,runtime,foreground_background,runtime/r3/,,B,runtime/r3/launch-block-report.md,blocked,前后台切换无进程可观察
+SCN-0008,runtime,token_expiry,runtime/r3/,,B,runtime/r3/launch-block-report.md,blocked,令牌过期路径需登录态；本轮未采集任何令牌
+SCN-0009,runtime,version_update_prompt,runtime/r3/,,B,runtime/r3/launch-block-report.md,blocked,更新提示需进入初始化链路
+SCN-0010,runtime,web_public_substitute,runtime/r3/snapshots/web-substitute-check.txt,,W,runtime/r3/snapshots/web-substitute-check.txt,observed,公开 pricing/trade/editor HTTP 200；不可替代 App 运行时基线
+SCN-0011,runtime,container_pre_post,runtime/r3/snapshots/container-diff.txt,,D,runtime/r3/snapshots/container-*.txt,observed,启动前后容器无业务变化；仅 metadata+StoreKit receipt
+SCN-0012,runtime,launch_error_chain,runtime/r3/logs/log-show-launch-errors.txt,,D,runtime/r3/logs/log-show-launch-errors.txt,observed,runningboardd 创建作业 → fairplayOpen -42004 → EXEC_EXIT_REASON_FAIRPLAY_DECRYPT → open -10671

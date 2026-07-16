@@ -1,0 +1,1 @@
+_LSOpenURLsWithCompletionHandler() failed for the application /Applications/Cattery Manager.app with error -10671.

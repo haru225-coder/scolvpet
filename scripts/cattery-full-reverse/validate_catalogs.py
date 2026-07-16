@@ -266,6 +266,32 @@ def main() -> int:
             f"framework_count {arch.get('macho', {}).get('framework_count')}",
         )
 
+    # R3 runtime baseline (required after R3)
+    r3_dir = OUT / "runtime" / "r3"
+    if r3_dir.is_dir():
+        lines.append("")
+        lines.append("## R3 runtime baseline")
+        for rel in (
+            "runtime/r3/launch-block-report.md",
+            "runtime/r3/runtime-baseline-report.md",
+            "runtime/r3/scenario-matrix.csv",
+            "runtime/r3/test-fixture-policy.md",
+            "runtime/r3/logs/log-show-launch-errors.txt",
+            "runtime/r3/attempts/A-open-wrapper/stderr.txt",
+        ):
+            check((OUT / rel).is_file(), f"R3 artifact {rel}")
+        scn = (OUT / "runtime/r3/scenario-matrix.csv").read_text(encoding="utf-8")
+        for key in ("unauthenticated_first_launch", "authenticated_session", "offline_launch", "cold_restart"):
+            check(key in scn, f"R3 scenario row {key}")
+        errlog = (OUT / "runtime/r3/logs/log-show-launch-errors.txt").read_text(encoding="utf-8")
+        check("FAIRPLAY_DECRYPT" in errlog or "-42004" in errlog, "R3 log contains FairPlay failure")
+        stderr_a = (OUT / "runtime/r3/attempts/A-open-wrapper/stderr.txt").read_text(encoding="utf-8")
+        check("-10671" in stderr_a, "R3 open stderr contains -10671")
+        # no obvious secrets
+        for rel in ("runtime/r3/scenario-matrix.csv", "runtime/r3/runtime-baseline-report.md"):
+            t = (OUT / rel).read_text(encoding="utf-8")
+            check("Bearer " not in t and "eyJ" not in t, f"R3 {rel} clean of tokens")
+
     lines.append("")
     lines.append(f"结果： {'通过' if ok else '失败'}")
     REPORT.parent.mkdir(parents=True, exist_ok=True)

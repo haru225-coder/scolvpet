@@ -1,0 +1,16 @@
+--- /Users/snowchan27/Documents/scolvpet/reverse-evidence/full/runtime/r3/snapshots/container-before.txt	2026-07-17 01:53:44
++++ /Users/snowchan27/Documents/scolvpet/reverse-evidence/full/runtime/r3/snapshots/container-after.txt	2026-07-17 01:54:17
+@@ -1,5 +1,5 @@
+ path=/Users/snowchan27/Library/Containers/com.fanmeowy.catterytool
+-exists=yes
++captured_at=2026-07-17T01:54:17+08:00
+ /Users/snowchan27/Library/Containers/com.fanmeowy.catterytool
+ /Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/.com.apple.containermanagerd.metadata.plist
+ /Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data
+@@ -54,5 +54,5 @@
+ 3bdc4152699be150bb451479b6360120abb01e4ff9f01aafcc7f0ad9e911916e  size=596  mtime=2026-07-14T21:14:29+0800  /Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/.com.apple.containermanagerd.metadata.plist
+ 11b6e281d3ea1c402c903d3aaeaae91fecb3a41ac05af47cad9c0105efe26a97  size=4856  mtime=2026-07-14T21:15:19+0800  /Users/snowchan27/Library/Containers/com.fanmeowy.catterytool/Data/StoreKit/receipt
+ --- group containers ---
+-(none matching)
+ ls: /Users/snowchan27/Library/Group Containers/group.com.cattery.widgets: No such file or directory
++(group not created)

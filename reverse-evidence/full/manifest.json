@@ -217,5 +217,25 @@
     "association_graph": "association-graph.csv",
     "static_architecture": "runtime/static-architecture.json",
     "association_edges": 1069
+  },
+  "r3": {
+    "collected_at": "2026-07-17T01:54:00+08:00",
+    "status": "blocked",
+    "evidence_level": "B+D",
+    "root_cause": "FairPlay decrypt fail -42004 / EXEC_EXIT_REASON_FAIRPLAY_DECRYPT; open -10671; SIP disabled",
+    "report": "runtime/r3/runtime-baseline-report.md",
+    "launch_block": "runtime/r3/launch-block-report.md",
+    "scenario_matrix": "runtime/r3/scenario-matrix.csv",
+    "scenarios": {
+      "unauthenticated": "B",
+      "authenticated": "B",
+      "offline": "B",
+      "restart": "B"
+    },
+    "notes": [
+      "Four required baselines recorded as blocked with补证条件",
+      "No credentials or user business data stored",
+      "Public web pages observed as W substitute only"
+    ]
   }
 }

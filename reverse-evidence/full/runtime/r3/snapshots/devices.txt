@@ -1,0 +1,35 @@
+=== xctrace devices ===
+== Devices ==
+Snow's MacBook Air (<REDACTED_UDID>)
+
+== Devices Offline ==
+Rivière的iPhone (18.6.2) (<REDACTED_UDID>)
+Snow’s 16 Pro Max (26.4.2) (<REDACTED_UDID>)
+Snow’s iPad (26.3) (<REDACTED_UDID>)
+
+== Simulators ==
+iPad (A16) (26.4.1) (<REDACTED_UDID>)
+iPad Air 11-inch (M4) (26.4.1) (<REDACTED_UDID>)
+iPad Air 13-inch (M4) (26.4.1) (<REDACTED_UDID>)
+iPad Pro 11-inch (M5) (26.4.1) (<REDACTED_UDID>)
+iPad Pro 13-inch (M5) (26.4.1) (<REDACTED_UDID>)
+iPad mini (A17 Pro) (26.4.1) (<REDACTED_UDID>)
+iPhone 17 (26.4.1) (<REDACTED_UDID>)
+iPhone 17 Pro (26.4.1) (<REDACTED_UDID>)
+iPhone 17 Pro Max (26.4.1) (<REDACTED_UDID>)
+iPhone 17e (26.4.1) (<REDACTED_UDID>)
+iPhone Air (26.4.1) (<REDACTED_UDID>)
+=== simctl available ===
+== Devices ==
+-- iOS 26.4 --
+    iPhone 17 Pro (<REDACTED_UDID>) (Shutdown) 
+    iPhone 17 Pro Max (<REDACTED_UDID>) (Shutdown) 
+    iPhone 17e (<REDACTED_UDID>) (Shutdown) 
+    iPhone Air (<REDACTED_UDID>) (Shutdown) 
+    iPhone 17 (<REDACTED_UDID>) (Shutdown) 
+    iPad Pro 13-inch (M5) (<REDACTED_UDID>) (Shutdown) 
+    iPad Pro 11-inch (M5) (<REDACTED_UDID>) (Shutdown) 
+    iPad mini (A17 Pro) (<REDACTED_UDID>) (Shutdown) 
+    iPad Air 13-inch (M4) (<REDACTED_UDID>) (Shutdown) 
+    iPad Air 11-inch (M4) (<REDACTED_UDID>) (Shutdown) 
+    iPad (A16) (<REDACTED_UDID>) (Shutdown) 

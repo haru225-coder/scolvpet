@@ -1,5 +1,5 @@
 宠舍管家全量逆向 R0/R1/R2 验证报告
-生成时间：2026-07-17T01:52:53+08:00
+生成时间：2026-07-17T01:55:36+08:00
 
 [OK] manifest exists: /Users/snowchan27/Documents/scolvpet/reverse-evidence/full/manifest.json
 [OK] frozen version: 2.15.0 (73)
@@ -102,5 +102,21 @@
 [OK] association edges all have source nodes (0 bad)
 [OK] R2 static-architecture App SHA-256
 [OK] framework_count 41
+
+## R3 runtime baseline
+[OK] R3 artifact runtime/r3/launch-block-report.md
+[OK] R3 artifact runtime/r3/runtime-baseline-report.md
+[OK] R3 artifact runtime/r3/scenario-matrix.csv
+[OK] R3 artifact runtime/r3/test-fixture-policy.md
+[OK] R3 artifact runtime/r3/logs/log-show-launch-errors.txt
+[OK] R3 artifact runtime/r3/attempts/A-open-wrapper/stderr.txt
+[OK] R3 scenario row unauthenticated_first_launch
+[OK] R3 scenario row authenticated_session
+[OK] R3 scenario row offline_launch
+[OK] R3 scenario row cold_restart
+[OK] R3 log contains FairPlay failure
+[OK] R3 open stderr contains -10671
+[OK] R3 runtime/r3/scenario-matrix.csv clean of tokens
+[OK] R3 runtime/r3/runtime-baseline-report.md clean of tokens
 
 结果： 通过
