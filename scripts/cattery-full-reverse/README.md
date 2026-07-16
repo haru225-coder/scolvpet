@@ -30,3 +30,7 @@ python3 scripts/cattery-full-reverse/validate_catalogs.py
 - 不访问业务 API，不写入令牌/手机号/用户业务数据。
 - 目标版本冻结为 `2.15.0 (73)`；发现新版本另开差异任务。
 - 权威知识报告引用远端 LA1：`/root/ScolvAtom/开发日志/2026/07/` 下两份 2026-07-14 报告。
+
+## R13
+
+最终验收：`validate_catalogs.py` + `git diff --check` + `make ci`；交接见 `docs/14-全量逆向R13交接.md`。

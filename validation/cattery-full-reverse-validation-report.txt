@@ -1,5 +1,5 @@
 宠舍管家全量逆向 R0/R1/R2 验证报告
-生成时间：2026-07-17T02:26:04+08:00
+生成时间：2026-07-17T02:31:20+08:00
 
 [OK] manifest exists: /Users/snowchan27/Documents/scolvpet/reverse-evidence/full/manifest.json
 [OK] frozen version: 2.15.0 (73)
@@ -170,8 +170,46 @@
 [OK] R12 artifact gap/r12-meta.json
 [OK] docs/13 gap doc exists
 [OK] capability gap rows 59
-[OK] gap statuses {'DROP', 'DEFER', 'DONE', 'HAMSTER', 'PARTIAL', 'MISSING'}
+[OK] gap statuses {'MISSING', 'DEFER', 'HAMSTER', 'DROP', 'DONE', 'PARTIAL'}
 [OK] P0 tasks 8
 [OK] docs/13 has P0 tasks and DROP
 
+## R13 final
+[OK] docs 01-04 pending closure record
+[OK] docs/14 handoff exists
+[OK] handoff section marker 已写入
+[OK] handoff section marker 已验证
+[OK] handoff section marker 待确认
+[OK] handoff section marker 下一实施
+[OK] R13 package 2111
+[OK] R13 page 205
+[OK] R13 controller 32
+[OK] R13 service 66
+[OK] R13 entity 87
+[OK] R13 app api 250
+[OK] R13 web api 231
+[OK] R13 page-catalog.csv count 205
+[OK] R13 page-catalog.csv unique ids
+[OK] R13 controller-catalog.csv count 32
+[OK] R13 controller-catalog.csv unique ids
+[OK] R13 service-catalog.csv count 66
+[OK] R13 service-catalog.csv unique ids
+[OK] R13 entity-catalog.csv count 87
+[OK] R13 entity-catalog.csv unique ids
+[OK] R13 api-catalog.csv count 481
+[OK] R13 api-catalog.csv unique ids
+[OK] closure has B numbers
+[OK] cross-link doc docs/11-宠舍管家API与数据契约逆向.md
+[OK] cross-link doc docs/12-宠舍管家技术架构与运行时逆向.md
+[OK] cross-link doc docs/13-熊舍管家全量对标差距与实现清单.md
+
 结果： 通过
+
+
+## R13 external gates
+[OK] git diff --check
+[OK] make ci full pipeline exit 0 (apk built, flutter tests passed)
+[待确认] B-MINIO-LIVE-ENV objectstore live smoke skipped
+[OK] LA1 dev log rsync 2026-07-17 宠舍管家全量逆向R0-R13
+结果： 通过（含已编号例外）
+

@@ -361,5 +361,25 @@
       "miniprogram",
       "paywall"
     ]
+  },
+  "r13": {
+    "collected_at": "2026-07-17T02:30:04+08:00",
+    "handoff": "docs/14-全量逆向R13交接.md",
+    "pending_closure": "docs-01-04-pending-closure.md",
+    "make_ci": {
+      "result": "passed",
+      "notes": [
+        "full make ci log /tmp/cattery-r13-make-ci.log on agent host",
+        "objectstore live smoke skipped: missing OBJECT_STORE_* env (local unit path passed) — 待确认 live MinIO",
+        "checksum_drift=detected on fresh postgres verify is known NOTICE from migrate tool, not failure"
+      ]
+    },
+    "exceptions_B": [
+      "B-R3-LAUNCH",
+      "B-R4-UI",
+      "B-R10-BODY",
+      "B-ROLLBACK",
+      "B-MINIO-LIVE-ENV"
+    ]
   }
 }

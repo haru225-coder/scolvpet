@@ -405,6 +405,48 @@ def main() -> int:
         body = docs13.read_text(encoding="utf-8")
         check("T-P0-01" in body and "DROP" in body, "docs/13 has P0 tasks and DROP")
 
+    # R13 final gates
+    if (OUT / "docs-01-04-pending-closure.md").is_file() or (ROOT / "docs" / "14-全量逆向R13交接.md").is_file():
+        lines.append("")
+        lines.append("## R13 final")
+        check((OUT / "docs-01-04-pending-closure.md").is_file(), "docs 01-04 pending closure record")
+        docs14 = ROOT / "docs" / "14-全量逆向R13交接.md"
+        check(docs14.is_file(), "docs/14 handoff exists")
+        handoff = docs14.read_text(encoding="utf-8")
+        for key in ("已写入", "已验证", "待确认", "下一实施"):
+            check(key in handoff, f"handoff section marker {key}")
+        # hard counts
+        def cnt(rel):
+            return sum(1 for ln in (SRC / rel).read_text(encoding="utf-8").splitlines() if ln.strip())
+        check(cnt("package-paths.txt") == 2111, "R13 package 2111")
+        check(cnt("page-paths.txt") == 205, "R13 page 205")
+        check(cnt("controller-paths.txt") == 32, "R13 controller 32")
+        check(cnt("service-paths.txt") == 66, "R13 service 66")
+        check(cnt("entity-paths.txt") == 87, "R13 entity 87")
+        check(cnt("api-routes.txt") == 250, "R13 app api 250")
+        check(cnt("web/api-routes.txt") == 231, "R13 web api 231")
+        # status distribution snapshot
+        for name, n in (
+            ("page-catalog.csv", 205),
+            ("controller-catalog.csv", 32),
+            ("service-catalog.csv", 66),
+            ("entity-catalog.csv", 87),
+            ("api-catalog.csv", 481),
+        ):
+            rows = read_csv(OUT / name)
+            check(len(rows) == n, f"R13 {name} count {len(rows)}")
+            ids = [r["id"] for r in rows]
+            check(len(ids) == len(set(ids)), f"R13 {name} unique ids")
+        closure = (OUT / "docs-01-04-pending-closure.md").read_text(encoding="utf-8")
+        check("B-R3-LAUNCH" in closure and "B-R4-UI" in closure, "closure has B numbers")
+        # cross links
+        for rel in (
+            "docs/11-宠舍管家API与数据契约逆向.md",
+            "docs/12-宠舍管家技术架构与运行时逆向.md",
+            "docs/13-熊舍管家全量对标差距与实现清单.md",
+        ):
+            check((ROOT / rel).is_file(), f"cross-link doc {rel}")
+
     lines.append("")
     lines.append(f"结果： {'通过' if ok else '失败'}")
     REPORT.parent.mkdir(parents=True, exist_ok=True)
