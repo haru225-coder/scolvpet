@@ -1,0 +1,87 @@
+宠舍管家全量逆向 R0/R1 验证报告
+生成时间：2026-07-17T01:48:33+08:00
+
+[OK] manifest exists: /Users/snowchan27/Documents/scolvpet/reverse-evidence/full/manifest.json
+[OK] frozen version: 2.15.0 (73)
+[OK] bundle_id: com.fanmeowy.catterytool
+[OK] branch: codex/cattery-full-reverse
+[OK] I6 baseline: 4138357c5c57f73f06300f6c20e3ea2ea2c71e26
+[OK] App.framework/App SHA-256: 8bb590bb7a059f7d4078c3fafe4a366938f3ae9f359fa462f29c030bbadd69b8
+[OK] App.framework/App sample present on disk
+[OK] LA1 static report referenced: /root/ScolvAtom/开发日志/2026/07/2026-07-14 · Cattery Manager iOS Flutter 静态逆向分析.md
+[OK] LA1 dynamic report referenced: /root/ScolvAtom/开发日志/2026/07/2026-07-14 · Cattery Manager 动态启动阻断与 WebView 前端核验.md
+[OK] LA1 static report SHA-256
+[OK] LA1 dynamic report SHA-256
+[OK] CSV columns frozen
+[OK] package-catalog.csv exists
+[OK] package-catalog.csv: 2111（期望 2111）
+[OK] package-catalog.csv column order
+[OK] package-catalog.csv ids present
+[OK] package-catalog.csv unique ids
+[OK] package-catalog.csv ids sorted (stable order)
+[OK] package-catalog.csv evidence levels: ['S']
+[OK] page-catalog.csv exists
+[OK] page-catalog.csv: 205（期望 205）
+[OK] page-catalog.csv column order
+[OK] page-catalog.csv ids present
+[OK] page-catalog.csv unique ids
+[OK] page-catalog.csv ids sorted (stable order)
+[OK] page-catalog.csv evidence levels: ['S']
+[OK] controller-catalog.csv exists
+[OK] controller-catalog.csv: 32（期望 32）
+[OK] controller-catalog.csv column order
+[OK] controller-catalog.csv ids present
+[OK] controller-catalog.csv unique ids
+[OK] controller-catalog.csv ids sorted (stable order)
+[OK] controller-catalog.csv evidence levels: ['S']
+[OK] service-catalog.csv exists
+[OK] service-catalog.csv: 66（期望 66）
+[OK] service-catalog.csv column order
+[OK] service-catalog.csv ids present
+[OK] service-catalog.csv unique ids
+[OK] service-catalog.csv ids sorted (stable order)
+[OK] service-catalog.csv evidence levels: ['S']
+[OK] entity-catalog.csv exists
+[OK] entity-catalog.csv: 87（期望 87）
+[OK] entity-catalog.csv column order
+[OK] entity-catalog.csv ids present
+[OK] entity-catalog.csv unique ids
+[OK] entity-catalog.csv ids sorted (stable order)
+[OK] entity-catalog.csv evidence levels: ['S']
+[OK] api-catalog.csv exists
+[OK] api-catalog.csv: 481（期望 481）
+[OK] api-catalog.csv column order
+[OK] api-catalog.csv ids present
+[OK] api-catalog.csv unique ids
+[OK] api-catalog.csv ids sorted (stable order)
+[OK] api-catalog.csv evidence levels: ['S', 'W']
+[OK] state-transition-catalog.csv exists (header-only until R6)
+[OK] state-transition rows: 0 (expect 0 in R1)
+[OK] source package-paths.txt=2111
+[OK] source page-paths.txt=205
+[OK] source controller-paths.txt=32
+[OK] source service-paths.txt=66
+[OK] source entity-paths.txt=87
+[OK] source api-routes.txt=250
+[OK] source web/api-routes.txt=231
+[OK] SHA256SUMS exists
+[OK] SHA256 match package-catalog.csv
+[OK] SHA256 match page-catalog.csv
+[OK] SHA256 match controller-catalog.csv
+[OK] SHA256 match service-catalog.csv
+[OK] SHA256 match entity-catalog.csv
+[OK] SHA256 match api-catalog.csv
+[OK] SHA256 match manifest.json
+[OK] SHA256 match state-transition-catalog.csv
+[OK] package-catalog.csv no sensitive marker (clean)
+[OK] page-catalog.csv no sensitive marker (clean)
+[OK] controller-catalog.csv no sensitive marker (clean)
+[OK] service-catalog.csv no sensitive marker (clean)
+[OK] entity-catalog.csv no sensitive marker (clean)
+[OK] api-catalog.csv no sensitive marker (clean)
+[OK] subdir ui/ present
+[OK] subdir runtime/ present
+[OK] subdir network/ present
+[OK] subdir web/ present
+
+结果： 通过

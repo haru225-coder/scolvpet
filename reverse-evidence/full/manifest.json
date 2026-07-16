@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "wave": "cattery-full-reverse",
+  "collected_at": "2026-07-17T02:00:00+08:00",
+  "target": {
+    "product_name": "宠舍管家 / Cattery Manager",
+    "version": "2.15.0",
+    "build": "73",
+    "version_label": "2.15.0 (73)",
+    "bundle_id": "com.fanmeowy.catterytool",
+    "app_store_id": "6753983437",
+    "freeze_policy": "New App versions spawn a delta task; do not mix into this baseline."
+  },
+  "git": {
+    "branch": "codex/cattery-full-reverse",
+    "plan_commit": "0f9ccdef109eee28b9caae4709082294d984192e",
+    "i6_acceptance_baseline": "4138357c5c57f73f06300f6c20e3ea2ea2c71e26",
+    "notes": "I6 acceptance baseline starts at 4138357; full-reverse work begins on this branch from plan commit 0f9ccde"
+  },
+  "csv_columns": [
+    "id",
+    "module",
+    "name",
+    "path",
+    "route",
+    "evidence_level",
+    "evidence_ref",
+    "status",
+    "notes"
+  ],
+  "expected_counts": {
+    "package": 2111,
+    "page": 205,
+    "controller": 32,
+    "service": 66,
+    "entity": 87,
+    "api_app": 250,
+    "api_web": 231
+  },
+  "sources": [
+    {
+      "id": "src-app-framework-app",
+      "kind": "binary",
+      "description": "Flutter AOT business binary App.framework/App",
+      "path": "/Applications/Cattery Manager.app/Wrapper/Runner.app/Frameworks/App.framework/App",
+      "version": "2.15.0 (73)",
+      "bundle_id": "com.fanmeowy.catterytool",
+      "size_bytes": 25039536,
+      "mtime_iso": "2026-07-13T04:34:59+08:00",
+      "sha256": "8bb590bb7a059f7d4078c3fafe4a366938f3ae9f359fa462f29c030bbadd69b8",
+      "evidence_level": "S",
+      "redaction_status": "n/a-binary",
+      "exists": true,
+      "notes": "Primary reverse sample; cryptid=0 per 2026-07-14 static report"
+    },
+    {
+      "id": "src-runner-bin",
+      "kind": "binary",
+      "description": "Native shell Runner binary (FairPlay encrypted)",
+      "path": "/Applications/Cattery Manager.app/Wrapper/Runner.app/Runner",
+      "version": "2.15.0 (73)",
+      "size_bytes": 31758864,
+      "mtime_iso": "2026-07-13T04:35:42+08:00",
+      "sha256": "e751bacecdfd56afaddc9929a2b55f6addd4a55b06bfc660678e473741714479",
+      "evidence_level": "S",
+      "redaction_status": "n/a-binary",
+      "exists": true,
+      "notes": "cryptid=1 FairPlay; limited static value"
+    },
+    {
+      "id": "src-app-root",
+      "kind": "install",
+      "description": "Installed Cattery Manager.app (iOS on Mac wrapper)",
+      "path": "/Applications/Cattery Manager.app",
+      "version": "2.15.0 (73)",
+      "evidence_level": "S",
+      "redaction_status": "n/a",
+      "exists": true,
+      "notes": "Wrapper/Runner.app layout; total ~99MB"
+    },
+    {
+      "id": "src-web-admin-js",
+      "kind": "web",
+      "description": "Public cattery admin production JavaScript",
+      "path": "/Users/snowchan27/Documents/scolvpet/reverse-evidence/web/cattery-admin.js",
+      "size_bytes": 1718030,
+      "mtime_iso": "2026-07-15T23:16:17+08:00",
+      "sha256": "5572f7031d4132799c29e9218173c6874269cb620cd616fe04142e5d8be43830",
+      "evidence_level": "W",
+      "redaction_status": "public-no-credentials",
+      "exists": true
+    },
+    {
+      "id": "src-web-editor-js",
+      "kind": "web",
+      "description": "Public cattery editor production JavaScript",
+      "path": "/Users/snowchan27/Documents/scolvpet/reverse-evidence/web/cattery-editor.js",
+      "size_bytes": 1925701,
+      "mtime_iso": "2026-07-15T23:16:18+08:00",
+      "sha256": "165b63693744cc94dd54c26b8b6eb9cf2f1cba19b2df72321a9cc7e26489d956",
+      "evidence_level": "W",
+      "redaction_status": "public-no-credentials",
+      "exists": true
+    },
+    {
+      "id": "src-baseline-static-lists",
+      "kind": "derived-list",
+      "description": "Existing reverse-evidence path/route lists from AOT extraction",
+      "path": "/Users/snowchan27/Documents/scolvpet/reverse-evidence",
+      "evidence_level": "S",
+      "redaction_status": "clean",
+      "exists": true,
+      "counts": {
+        "package": 2111,
+        "page": 205,
+        "controller": 32,
+        "service": 66,
+        "entity": 87,
+        "api_app": 250,
+        "api_web": 231
+      }
+    },
+    {
+      "id": "src-la1-static-report",
+      "kind": "knowledge-report",
+      "description": "Authoritative static reverse report on LA1",
+      "path_remote": "/root/ScolvAtom/开发日志/2026/07/2026-07-14 · Cattery Manager iOS Flutter 静态逆向分析.md",
+      "path_local_draft": "/Users/snowchan27/ScolvAtom/开发日志/2026/07/2026-07-14 · Cattery Manager iOS Flutter 静态逆向分析.md",
+      "sha256": "ee9529ab1e842e6f450aff7eb0ef6181a2ad624738aaa0dd4f5c53da66e34955",
+      "sha256_source": "local-draft-match-la1",
+      "lines": 321,
+      "collected_date": "2026-07-14",
+      "evidence_level": "S",
+      "redaction_status": "clean",
+      "exists_local": true,
+      "exists_remote_verified": true,
+      "notes": "Authoritative copy is LA1; local draft hash verified equal to remote 2026-07-17"
+    },
+    {
+      "id": "src-la1-dynamic-report",
+      "kind": "knowledge-report",
+      "description": "Authoritative dynamic launch-block + WebView report on LA1",
+      "path_remote": "/root/ScolvAtom/开发日志/2026/07/2026-07-14 · Cattery Manager 动态启动阻断与 WebView 前端核验.md",
+      "path_local_draft": "/Users/snowchan27/ScolvAtom/开发日志/2026/07/2026-07-14 · Cattery Manager 动态启动阻断与 WebView 前端核验.md",
+      "sha256": "f7e4fcc08299debaf24b85a3f238cd9055704753814acea5a1bf239f38bed0fe",
+      "sha256_source": "local-draft-match-la1",
+      "lines": 240,
+      "collected_date": "2026-07-14",
+      "evidence_level": "D",
+      "redaction_status": "clean",
+      "exists_local": true,
+      "exists_remote_verified": true,
+      "notes": "Documents FairPlay/SIP launch block; no credentials included"
+    },
+    {
+      "id": "src-appstore-public",
+      "kind": "public",
+      "description": "App Store product page, release history, 8 phone screenshots + OCR",
+      "path": "/Users/snowchan27/Documents/scolvpet/reverse-evidence/appstore",
+      "evidence_level": "P",
+      "redaction_status": "public",
+      "exists": true
+    }
+  ],
+  "catalogs": {
+    "page-catalog.csv": "page",
+    "controller-catalog.csv": "controller",
+    "service-catalog.csv": "service",
+    "entity-catalog.csv": "entity",
+    "api-catalog.csv": "api_app+api_web",
+    "package-catalog.csv": "package",
+    "state-transition-catalog.csv": "state (header-only until R6)"
+  },
+  "directories": {
+    "ui": "screenshots / interaction captures (R3/R4)",
+    "runtime": "logs and runtime traces (R3)",
+    "network": "request/response samples redacted (R3/R10)",
+    "web": "additional web slices (R9)"
+  },
+  "redaction_policy": {
+    "tokens": "delete or replace with <REDACTED_TOKEN>",
+    "cookies": "delete",
+    "phone_numbers": "replace with <REDACTED_PHONE>",
+    "user_business_data": "do not store",
+    "production_credentials": "do not store"
+  },
+  "notes": [
+    "R0 freezes version and sources; R1 imports baseline lists into unified catalogs.",
+    "Dynamic runtime evidence is empty until R3 (launch currently blocked by FairPlay/SIP policy on analysis Mac).",
+    "No unknown-version samples allowed under reverse-evidence/full/."
+  ],
+  "actual_counts": {
+    "package": 2111,
+    "page": 205,
+    "controller": 32,
+    "service": 66,
+    "entity": 87,
+    "api_app": 250,
+    "api_web": 231,
+    "api_total": 481
+  },
+  "catalog_sha256": {
+    "package-catalog.csv": "d39053834292346c904c976c1f1a979bd922ce0b45fa2a5340fc9b4da38960d0",
+    "page-catalog.csv": "1239fd0734d50eacd2e2fda3c05cd2b2368f748067fb3d0c868ad1e7cbe52b17",
+    "controller-catalog.csv": "cf3bca85ced69b1e76be45c15eada762e8a218b60988fbfaf552e9a4d5ff39a0",
+    "service-catalog.csv": "e0230b5a6a284748e8728ddedcf01c6bca53d770d0fc1fb74f8a0b08fbc06e84",
+    "entity-catalog.csv": "7ee7b4128ca9137a64ebfdcd22de24f100ee075b4093cf46d3109d91977dcde2",
+    "api-catalog.csv": "717aa25bf8c9f826e09ecbe8b7f826fd062184d509c2d7106ba1a63428eea93f",
+    "state-transition-catalog.csv": "ebefecaa7b0dabad239d9fbc08272e644eba557bad429d12708a8f5d5134dc59"
+  }
+}
