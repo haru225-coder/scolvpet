@@ -1,0 +1,27 @@
+{
+  "auth": {
+    "browser_token": "localStorage.token",
+    "app_bridge_token": "getToken via FMBridge/FlutterBridge",
+    "header": "Authorization present in HTTP client stack",
+    "public_candidates": [
+      "/api/admin/app/login",
+      "/api/admin/sms"
+    ]
+  },
+  "errors": {
+    "code_eq_0_count": 1,
+    "code_200_editor_pattern": 2,
+    "message_count_admin": 171,
+    "authorization_header_count": 2,
+    "form_data_count": 11,
+    "pageSize_count": 48,
+    "notes": [
+      "Unified business error schema not fully recovered from minified JS",
+      "Runtime HTTP captures blocked by R3 FairPlay"
+    ]
+  },
+  "pagination": {
+    "pageSize": true,
+    "total": true
+  }
+}

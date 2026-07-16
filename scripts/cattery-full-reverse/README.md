@@ -14,6 +14,9 @@ python3 scripts/cattery-full-reverse/collect_static_r2.py
 # R9：公开管理端/编辑器 Web 逆向、Bridge、App×Web API 交叉映射
 python3 scripts/cattery-full-reverse/collect_web_r9.py
 
+# R10：API 合并/方法/认证/P0 契约与 docs/11
+python3 scripts/cattery-full-reverse/collect_api_r10.py
+
 # 验收计数、版本冻结、样本哈希、脱敏、R2/R3/R9 产物与 SHA256
 python3 scripts/cattery-full-reverse/validate_catalogs.py
 ```

@@ -321,6 +321,39 @@ def main() -> int:
         bridge = read_csv(OUT / "web/bridge-catalog.csv")
         check(len(bridge) >= 10, f"R9 bridge-catalog {len(bridge)}")
 
+    # R10 API contracts
+    if (OUT / "api" / "r10-meta.json").is_file():
+        lines.append("")
+        lines.append("## R10 API contracts")
+        for rel in (
+            "api/api-normalized.csv",
+            "api/api-dedup-map.csv",
+            "api/p0-contracts.csv",
+            "api/p0-contracts.json",
+            "api/error-auth-model.json",
+            "api/r10-meta.json",
+        ):
+            check((OUT / rel).is_file(), f"R10 artifact {rel}")
+        docs11 = ROOT / "docs" / "11-宠舍管家API与数据契约逆向.md"
+        check(docs11.is_file(), "docs/11 API contract doc exists")
+        api_rows = read_csv(OUT / "api-catalog.csv")
+        check(len(api_rows) == 481, f"api-catalog still 481 ({len(api_rows)})")
+        analyzed = sum(1 for r in api_rows if str(r.get("status","")).startswith("analyzed"))
+        check(analyzed == 481, f"all routes analyzed status ({analyzed})")
+        # each has module and route
+        missing = [r["id"] for r in api_rows if not r.get("route") or not r.get("module")]
+        check(not missing, f"all routes have module+route ({len(missing)} missing)")
+        meta = json.loads((OUT / "api/r10-meta.json").read_text(encoding="utf-8"))
+        st = meta.get("stats", {})
+        check(st.get("raw_total") == 481, f"r10 raw_total {st.get('raw_total')}")
+        check(st.get("normalized_unique", 0) > 0, "normalized_unique > 0")
+        p0 = json.loads((OUT / "api/p0-contracts.json").read_text(encoding="utf-8"))
+        p0_only = [x for x in p0 if x.get("priority") == "P0"]
+        check(len(p0_only) >= 10, f"P0 contracts {len(p0_only)}")
+        # P0 must have B or field content for req/resp/err
+        bad = [x["route"] for x in p0_only if not x.get("request_body") or not x.get("errors")]
+        check(not bad, f"P0 req/err filled or B ({len(bad)} bad)")
+
     lines.append("")
     lines.append(f"结果： {'通过' if ok else '失败'}")
     REPORT.parent.mkdir(parents=True, exist_ok=True)

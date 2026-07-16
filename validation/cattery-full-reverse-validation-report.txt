@@ -1,5 +1,5 @@
 宠舍管家全量逆向 R0/R1/R2 验证报告
-生成时间：2026-07-17T02:17:10+08:00
+生成时间：2026-07-17T02:20:05+08:00
 
 [OK] manifest exists: /Users/snowchan27/Documents/scolvpet/reverse-evidence/full/manifest.json
 [OK] frozen version: 2.15.0 (73)
@@ -54,7 +54,7 @@
 [OK] api-catalog.csv ids present
 [OK] api-catalog.csv unique ids
 [OK] api-catalog.csv ids sorted (stable order)
-[OK] api-catalog.csv evidence levels: ['S', 'W']
+[OK] api-catalog.csv evidence levels: ['I', 'S', 'W']
 [OK] state-transition-catalog.csv exists (header-only until R6)
 [OK] state-transition rows: 0 (expect 0 in R1)
 [OK] source package-paths.txt=2111
@@ -133,5 +133,21 @@
 [OK] R9 method-resolved 228 (>=200)
 [OK] R9 p2-closure has verified and rollback notes
 [OK] R9 bridge-catalog 20
+
+## R10 API contracts
+[OK] R10 artifact api/api-normalized.csv
+[OK] R10 artifact api/api-dedup-map.csv
+[OK] R10 artifact api/p0-contracts.csv
+[OK] R10 artifact api/p0-contracts.json
+[OK] R10 artifact api/error-auth-model.json
+[OK] R10 artifact api/r10-meta.json
+[OK] docs/11 API contract doc exists
+[OK] api-catalog still 481 (481)
+[OK] all routes analyzed status (481)
+[OK] all routes have module+route (0 missing)
+[OK] r10 raw_total 481
+[OK] normalized_unique > 0
+[OK] P0 contracts 94
+[OK] P0 req/err filled or B (0 bad)
 
 结果： 通过
