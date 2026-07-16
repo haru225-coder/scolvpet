@@ -1,10 +1,11 @@
 # 熊舍管家 I2–I6 发布候选版全量验收报告
 
-状态：有条件通过（代码与本地自动化全绿；S3/MinIO live 与生产凭据待确认）
-日期：2026-07-16
+状态：有条件通过（代码与本地自动化全绿；本机 MinIO live smoke 已通过；生产云凭据/签名仍待确认）
+日期：2026-07-16（live 补验 2026-07-17）
 验收角色：Release Engineer（Grok）
 基线提交：96edc10 feat: close I6 media pipeline with codecs and Dart client sync
-验收提交：见本报告落盘后的 chore 提交（同分支本地提交）
+验收提交：d17f549 chore: complete I2-I6 release acceptance
+live 补验提交：见本轮补记提交
 分支：codex/i2-hamsters-enclosures-csv
 
 ## 1. 验收日期与 commit / 工作树
@@ -94,14 +95,19 @@
 | 命令 | 结果 |
 |------|------|
 | make objectstore-smoke（本地） | 通过：LocalFS + S3 签名单测 |
-| S3/MinIO live | **未执行** |
+| S3/MinIO live（本机临时 MinIO） | **已通过**（2026-07-17） |
 
-缺失环境变量（全部 MISSING）：
-- OBJECT_STORE_ENDPOINT
-- OBJECT_STORE_BUCKET
-- OBJECT_STORE_REGION
-- OBJECT_STORE_ACCESS_KEY
-- OBJECT_STORE_SECRET_KEY
+live 环境（本机临时，非生产）：
+- endpoint：http://127.0.0.1:19000
+- bucket：scolvpet-smoke
+- region：us-east-1
+- path-style：true
+- 凭据：仅进程环境变量注入；密钥日志已脱敏（sc***ss / sc***ey）
+- 结果：PUT/GET/DELETE 通过；size=30；path-style；删除后 not found
+- 示例 key：i6-objectstore-live/20260716T162037.330532000.bin
+- sha256：5367985236a51783851dfe91ef2be3e9a926f826ce53e9cfe7b1ca6991ebe841
+
+生产/云厂商 OBJECT_STORE_* 仍未配置，正式环境 live 仍待确认。
 
 ### 阶段六：Web 与移动端构建
 
@@ -139,7 +145,8 @@ Android debug APK（make ci 终态）：
 | cwebp | 是 | 是（TestLiveCodecIntegrationWhenInstalled） |
 | ffmpeg | 是 | 是（同上） |
 | ffprobe | 是 | 是（同上） |
-| S3/MinIO live | 否（无凭据） | 否 — 待确认 |
+| S3/MinIO live | 是（本机临时 MinIO） | 是 — path-style PUT/GET/DELETE 通过 |
+| 生产云 S3/MinIO | 否 | 否 — 待确认 |
 
 ## 6. 代码问题与修复记录
 
@@ -152,24 +159,22 @@ Android debug APK（make ci 终态）：
 
 ## 7. 环境问题与待确认
 
-1. **S3/MinIO live smoke 未跑**：缺全部 OBJECT_STORE_* 变量。
+1. **生产/云 S3/MinIO live 未跑**：仅完成了本机临时 MinIO live；云 endpoint 凭据仍缺。
 2. **生产部署凭据**：JWT、SMS HTTP、Outbox HTTP、生产对象存储未在本验收配置。
 3. **正式 Bundle ID / 签名**：仍为 cn.scolvpet.dev + debug 签名（见工程平台基线）。
 4. **iOS 26.5 simulator runtime**：本机 make ci 不覆盖；GH Actions 另有检查。
 5. **PATH 中默认 java**：需 JAVA_HOME 指向 Homebrew OpenJDK 17。
-6. **未 push**：本地领先 origin 提交由人工决定是否推送。
 
 ## 8. 最终结论
 
 **有条件通过 — 可作为本地发布候选版（release candidate）**
 
-- 全部可自动化的代码、迁移、契约、媒体、Web、Flutter、Android debug、outbox 路径已绿。
-- 条件：正式上线前必须完成 S3/MinIO live、生产凭据门禁与签名配置；当前不得声称“生产已联调”。
+- 全部可自动化的代码、迁移、契约、媒体、Web、Flutter、Android debug、outbox、本机 MinIO live 路径已绿。
+- 条件：正式上线前必须完成生产对象存储 live、生产凭据门禁与签名配置；当前不得声称“生产已联调”。
 
-## 9. 推荐人工下一步
+## 9. 后续交付动作（本轮已执行）
 
-1. 审阅本报告与 `git log origin..HEAD`（含验收 chore 提交）。
-2. 配置 OBJECT_STORE_* 后执行 `make objectstore-smoke`，将 live 结果补入本报告或新条目。
-3. 确认无密钥进入提交后：`git push -u origin codex/i2-hamsters-enclosures-csv`。
-4. 更新 Draft PR #1 描述，附上本报告路径。
-5. 生产部署前走 APP_ENV=production fail-fast 配置检查清单。
+1. 本机临时 MinIO live smoke：已通过。
+2. `git push origin codex/i2-hamsters-enclosures-csv`：见最终 status。
+3. Draft PR #1 描述更新：见 PR URL。
+4. 生产部署前仍需走 APP_ENV=production fail-fast 配置检查清单。
