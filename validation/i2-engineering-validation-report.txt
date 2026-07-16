@@ -3,7 +3,7 @@
 状态：已写入 / 已验证 / 待确认
 日期：2026-07-16
 分支：codex/i2-hamsters-enclosures-csv
-验证对象提交：05f2a17 feat: persist import uploads in local object store（基于 a035106）
+验证对象提交：544d8b9 fix(android): resolve Properties in Kotlin DSL（基于 05f2a17）
 复核时工作树：clean
 远端状态：仓库当前未配置 remote，尚未推送，尚未创建 PR
 
@@ -62,7 +62,8 @@ I2「仓鼠、笼舍、历史窝次/谱系、体重与 CSV 导入」工程收口
 
 - CSV 上传已接入本地 `ObjectStore` 文件适配器并持久化 `import_upload` 元数据；正式 S3/MinIO/CDN 适配器仍待实现。
 - import HTTP 层的映射/预检/提交会话状态仍为进程内存 + DB 混合；API 进程重启后任务会话恢复和多实例续传测试仍待补齐。
-- Android debug 构建本轮失败于 `apps/mobile/android/app/build.gradle.kts:7` 的 `java.util.Properties()` Kotlin DSL 解析错误；iOS Simulator/真机构建仍待执行。
+- `make flutter-build-android`：通过（Gradle assembleDebug 44.5s）；APK 为 `apps/mobile/build/app/outputs/flutter-apk/app-debug.apk`，SHA-256=`16e62079fc9fd818025ccc0a322f60eb3d7cfe0335f4b7ff08f6ebc04cf35a6d`。
+- iOS Simulator/真机构建仍待执行；无线设备发现返回 code `-27`。
 - 正式 Bundle ID、签名、密钥托管和生产部署仍待确认，不属于本轮 I2 验证闭环。
 - Flutter 与真实 API 的交互式 CSV 演示尚未纳入本轮验证；API 层 CSV 全链路已按上节结果通过。
 - 当前分支尚未推送远端，尚未创建 PR。
