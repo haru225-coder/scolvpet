@@ -1,13 +1,16 @@
 package auth
 
 import (
+	"context"
 	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 	"sync"
 	"time"
@@ -32,6 +35,30 @@ type Challenge struct {
 	Attempts  int
 }
 
+// Persistence stores authentication challenges and refresh sessions outside
+// the process. The in-memory maps remain available for auth-only unit tests.
+type Persistence interface {
+	CreateVerificationChallenge(context.Context, uuid.UUID, string, string, time.Time) error
+	DeleteVerificationChallenge(context.Context, uuid.UUID) error
+	VerifyVerificationChallenge(context.Context, uuid.UUID, string, string, time.Time) error
+	CreateRefreshSession(context.Context, string, uuid.UUID, time.Time) error
+	LookupRefreshSession(context.Context, string, time.Time) (uuid.UUID, error)
+	RotateRefreshSession(context.Context, string, string, uuid.UUID, time.Time, time.Time) error
+}
+
+type SMSProvider interface {
+	SendCode(context.Context, string, string) error
+}
+
+type MockSMSProvider struct{}
+
+func (MockSMSProvider) SendCode(context.Context, string, string) error { return nil }
+
+type Options struct {
+	Persistence Persistence
+	SMSProvider SMSProvider
+}
+
 type tokenClaims struct {
 	Subject string `json:"sub"`
 	Expires int64  `json:"exp"`
@@ -41,6 +68,8 @@ type tokenClaims struct {
 type Service struct {
 	secret       []byte
 	mockCode     string
+	persistence  Persistence
+	smsProvider  SMSProvider
 	mu           sync.Mutex
 	challenges   map[uuid.UUID]*Challenge
 	revoked      map[string]time.Time
@@ -49,15 +78,22 @@ type Service struct {
 }
 
 func New(secret, mockCode string) *Service {
+	return NewWithOptions(secret, mockCode, Options{})
+}
+
+func NewWithPersistence(secret, mockCode string, persistence Persistence) *Service {
+	return NewWithOptions(secret, mockCode, Options{Persistence: persistence})
+}
+
+func NewWithOptions(secret, mockCode string, options Options) *Service {
 	if secret == "" {
 		secret = "local-development-secret"
-	}
-	if mockCode == "" {
-		mockCode = "123456"
 	}
 	return &Service{
 		secret:       []byte(secret),
 		mockCode:     mockCode,
+		persistence:  options.Persistence,
+		smsProvider:  options.SMSProvider,
 		challenges:   make(map[uuid.UUID]*Challenge),
 		revoked:      make(map[string]time.Time),
 		refresh:      make(map[string]uuid.UUID),
@@ -65,23 +101,46 @@ func New(secret, mockCode string) *Service {
 	}
 }
 
-func (s *Service) RequestCode(phone string) Challenge {
+func (s *Service) RequestCode(ctx context.Context, phone string) (Challenge, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	code, err := s.nextCode()
+	if err != nil {
+		return Challenge{}, err
+	}
 	challenge := Challenge{
 		ID:        uuid.New(),
 		Phone:     phone,
-		Code:      s.mockCode,
+		Code:      code,
 		ExpiresAt: time.Now().Add(5 * time.Minute),
 	}
-	s.challenges[challenge.ID] = &challenge
-	return challenge
+	if s.persistence != nil {
+		if err := s.persistence.CreateVerificationChallenge(ctx, challenge.ID, challenge.Phone, digestHex(challenge.Code), challenge.ExpiresAt); err != nil {
+			return Challenge{}, err
+		}
+	} else {
+		s.challenges[challenge.ID] = &challenge
+	}
+	if s.smsProvider != nil {
+		if err := s.smsProvider.SendCode(ctx, challenge.Phone, challenge.Code); err != nil {
+			if s.persistence != nil {
+				_ = s.persistence.DeleteVerificationChallenge(ctx, challenge.ID)
+			} else {
+				delete(s.challenges, challenge.ID)
+			}
+			return Challenge{}, err
+		}
+	}
+	return challenge, nil
 }
 
-func (s *Service) VerifyCode(id uuid.UUID, phone, code string) error {
+func (s *Service) VerifyCode(ctx context.Context, id uuid.UUID, phone, code string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if s.persistence != nil {
+		return s.persistence.VerifyVerificationChallenge(ctx, id, phone, digestHex(code), time.Now().UTC())
+	}
 
 	challenge, ok := s.challenges[id]
 	if !ok || challenge.Phone != phone || time.Now().After(challenge.ExpiresAt) {
@@ -98,7 +157,7 @@ func (s *Service) VerifyCode(id uuid.UUID, phone, code string) error {
 	return nil
 }
 
-func (s *Service) CreateSession(ownerID uuid.UUID) (accessToken, refreshToken string) {
+func (s *Service) CreateSession(ctx context.Context, ownerID uuid.UUID) (accessToken, refreshToken string, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -106,14 +165,23 @@ func (s *Service) CreateSession(ownerID uuid.UUID) (accessToken, refreshToken st
 	claims := tokenClaims{Subject: ownerID.String(), Expires: now.Add(time.Hour).Unix(), JTI: uuid.NewString()}
 	accessToken = s.sign(claims)
 	refreshToken = "rt_" + uuid.NewString()
+	if s.persistence != nil {
+		if err := s.persistence.CreateRefreshSession(ctx, digestHex(refreshToken), ownerID, now.Add(30*24*time.Hour)); err != nil {
+			return "", "", err
+		}
+		return accessToken, refreshToken, nil
+	}
 	s.refresh[refreshToken] = ownerID
 	s.refreshOwner[refreshToken] = ownerID
-	return accessToken, refreshToken
+	return accessToken, refreshToken, nil
 }
 
-func (s *Service) OwnerForRefresh(refreshToken string) (uuid.UUID, error) {
+func (s *Service) OwnerForRefresh(ctx context.Context, refreshToken string) (uuid.UUID, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if s.persistence != nil {
+		return s.persistence.LookupRefreshSession(ctx, digestHex(refreshToken), time.Now().UTC())
+	}
 	ownerID, ok := s.refresh[refreshToken]
 	if !ok {
 		ownerID, ok = s.refreshOwner[refreshToken]
@@ -124,17 +192,33 @@ func (s *Service) OwnerForRefresh(refreshToken string) (uuid.UUID, error) {
 	return ownerID, nil
 }
 
-func (s *Service) Refresh(refreshToken string) (accessToken, nextRefreshToken string, err error) {
+func (s *Service) Refresh(ctx context.Context, refreshToken string) (accessToken, nextRefreshToken string, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	ownerID, ok := s.refresh[refreshToken]
-	if !ok {
-		return "", "", ErrInvalidRefresh
+	now := time.Now().UTC()
+	var ownerID uuid.UUID
+	if s.persistence != nil {
+		ownerID, err = s.persistence.LookupRefreshSession(ctx, digestHex(refreshToken), now)
+		if err != nil {
+			return "", "", err
+		}
+	} else {
+		var ok bool
+		ownerID, ok = s.refresh[refreshToken]
+		if !ok {
+			return "", "", ErrInvalidRefresh
+		}
 	}
-	delete(s.refresh, refreshToken)
-	claims := tokenClaims{Subject: ownerID.String(), Expires: time.Now().Add(time.Hour).Unix(), JTI: uuid.NewString()}
+	claims := tokenClaims{Subject: ownerID.String(), Expires: now.Add(time.Hour).Unix(), JTI: uuid.NewString()}
 	accessToken = s.sign(claims)
 	nextRefreshToken = "rt_" + uuid.NewString()
+	if s.persistence != nil {
+		if err := s.persistence.RotateRefreshSession(ctx, digestHex(refreshToken), digestHex(nextRefreshToken), ownerID, now.Add(30*24*time.Hour), now); err != nil {
+			return "", "", err
+		}
+		return accessToken, nextRefreshToken, nil
+	}
+	delete(s.refresh, refreshToken)
 	s.refresh[nextRefreshToken] = ownerID
 	s.refreshOwner[nextRefreshToken] = ownerID
 	return accessToken, nextRefreshToken, nil
@@ -190,4 +274,20 @@ func (s *Service) signature(payload []byte) string {
 	digest := hmac.New(sha256.New, s.secret)
 	_, _ = digest.Write(payload)
 	return base64.RawURLEncoding.EncodeToString(digest.Sum(nil))
+}
+
+func (s *Service) nextCode() (string, error) {
+	if s.mockCode != "" {
+		return s.mockCode, nil
+	}
+	value, err := rand.Int(rand.Reader, big.NewInt(1000000))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%06d", value.Int64()), nil
+}
+
+func digestHex(value string) string {
+	digest := sha256.Sum256([]byte(value))
+	return fmt.Sprintf("%x", digest)
 }

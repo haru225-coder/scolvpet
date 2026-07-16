@@ -3223,6 +3223,35 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /public/shares/{token}/media/{media_id}:
+    parameters:
+      - $ref: '#/components/parameters/ShareToken'
+      - $ref: '#/components/parameters/MediaId'
+    get:
+      tags: [分享]
+      operationId: getPublicShareMedia
+      summary: 读取公开分享媒体
+      description: 仅允许读取当前 token 显式选择的媒体；分享撤销或过期后返回 404。
+      security: []
+      responses:
+        '200':
+          description: 公开媒体二进制内容
+          headers:
+            Cache-Control:
+              description: 公开内容缓存策略
+              schema:
+                type: string
+              example: public, no-store, max-age=0
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /data-center/summary:
     get:
       tags: [数据中心]

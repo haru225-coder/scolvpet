@@ -62,6 +62,14 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('雪团熊舍'), findsOneWidget);
       expect(find.text('离线只读 · 联网后重新提交/再操作'), findsOneWidget);
+      await tester.tap(find.text('数据中心'));
+      await tester.pumpAndSettle();
+      expect(find.text('数据搬家与空间概览'), findsOneWidget);
+      await tester.drag(find.byType(ListView).last, const Offset(0, -500));
+      await tester.pumpAndSettle();
+      expect(find.text('最近备份'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
       await tester.tap(find.text('物种规则'));
       await tester.pumpAndSettle();
       expect(find.text('mesocricetus_auratus'), findsWidgets);

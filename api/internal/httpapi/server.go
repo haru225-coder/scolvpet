@@ -88,6 +88,11 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/species-rule-versions/{rule_version_id}", s.getRule)
 	s.registerI2CoreRoutes(mux)
 	s.registerI2ImportRoutes(mux)
+	s.registerI3Routes(mux)
+	s.registerI4Routes(mux)
+	s.registerI5Routes(mux)
+	s.registerI6DataRoutes(mux)
+	s.registerI6MediaRoutes(mux)
 	return requestIDMiddleware(s.Logger, mux)
 }
 
@@ -117,7 +122,10 @@ func (s *Server) sendVerificationCode(w http.ResponseWriter, r *http.Request) {
 	}
 	key := r.Header.Get("Idempotency-Key")
 	result, err := s.Store.RunIdempotent(r.Context(), ownerID, key, http.MethodPost, r.URL.Path, payload, func(ctx context.Context, _ pgx.Tx) (int, any, map[string]string, error) {
-		challenge := s.Auth.RequestCode(request.Phone)
+		challenge, err := s.Auth.RequestCode(ctx, request.Phone)
+		if err != nil {
+			return 0, nil, nil, err
+		}
 		return http.StatusAccepted, envelope(r, map[string]any{
 			"verification_id":     challenge.ID,
 			"expires_in_seconds":  300,
@@ -145,14 +153,17 @@ func (s *Server) createSession(w http.ResponseWriter, r *http.Request) {
 	}
 	key := r.Header.Get("Idempotency-Key")
 	result, err := s.Store.RunIdempotent(r.Context(), ownerID, key, http.MethodPost, r.URL.Path, payload, func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
-		if err := s.Auth.VerifyCode(request.VerificationID, request.Phone, request.Code); err != nil {
+		if err := s.Auth.VerifyCode(ctx, request.VerificationID, request.Phone, request.Code); err != nil {
 			return 0, nil, nil, err
 		}
 		organization, err := store.EnsureOrganizationTx(ctx, tx, ownerID)
 		if err != nil {
 			return 0, nil, nil, err
 		}
-		accessToken, refreshToken := s.Auth.CreateSession(ownerID)
+		accessToken, refreshToken, err := s.Auth.CreateSession(ctx, ownerID)
+		if err != nil {
+			return 0, nil, nil, err
+		}
 		return http.StatusCreated, envelope(r, map[string]any{
 			"token_type":           "Bearer",
 			"access_token":         accessToken,
@@ -176,7 +187,7 @@ func (s *Server) refreshSession(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, validationError("refresh_token", "刷新令牌不能为空"))
 		return
 	}
-	ownerID, err := s.Auth.OwnerForRefresh(request.RefreshToken)
+	ownerID, err := s.Auth.OwnerForRefresh(r.Context(), request.RefreshToken)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
@@ -191,7 +202,7 @@ func (s *Server) refreshSession(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return 0, nil, nil, err
 		}
-		accessToken, nextRefreshToken, err := s.Auth.Refresh(request.RefreshToken)
+		accessToken, nextRefreshToken, err := s.Auth.Refresh(ctx, request.RefreshToken)
 		if err != nil {
 			return 0, nil, nil, err
 		}

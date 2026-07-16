@@ -3,6 +3,7 @@ import 'package:scolvpet_api/scolvpet_api.dart';
 
 import '../core/app_state.dart';
 import '../features/i2/i2.dart';
+import '../features/i6/data_center.dart';
 
 const _accent = Color(0xffc77852);
 const _ink = Color(0xff1f2928);
@@ -415,10 +416,10 @@ class _HomeShellState extends State<HomeShell> {
     );
   }
 
-  void _openImport() {
+  void _openDataCenter() {
     Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) => I2ImportPage(controller: widget.i2Controller),
+        builder: (_) => DataCenterPage(i2Controller: widget.i2Controller),
       ),
     );
   }
@@ -443,7 +444,7 @@ class _HomeShellState extends State<HomeShell> {
         icon: Icons.sync_alt,
         detail: 'I3 将接入繁育计划与动作状态',
       ),
-      _MinePage(state: widget.state, onOpenImport: _openImport),
+      _MinePage(state: widget.state, onOpenDataCenter: _openDataCenter),
     ];
     return Scaffold(
       body: SafeArea(
@@ -528,10 +529,10 @@ class RulePage extends StatelessWidget {
 }
 
 class _MinePage extends StatelessWidget {
-  const _MinePage({required this.state, this.onOpenImport});
+  const _MinePage({required this.state, this.onOpenDataCenter});
 
   final AppState state;
-  final VoidCallback? onOpenImport;
+  final VoidCallback? onOpenDataCenter;
 
   @override
   Widget build(BuildContext context) {
@@ -565,7 +566,7 @@ class _MinePage extends StatelessWidget {
               style: TextStyle(color: Color(0xff5f7773)),
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: onOpenImport,
+            onTap: onOpenDataCenter,
           ),
         ),
         const SizedBox(height: 12),
