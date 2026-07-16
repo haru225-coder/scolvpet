@@ -3,7 +3,9 @@
 状态：已写入 / 已验证 / 待确认
 日期：2026-07-16
 分支：codex/i2-hamsters-enclosures-csv
-基线提交：a4d4d2c chore: establish I1 engineering baseline（I2 改动尚未提交）
+验证对象提交：a035106 feat: complete I2 hamsters enclosures csv import
+复核时工作树：clean
+远端状态：尚未推送，尚未创建 PR
 
 ## 范围
 
@@ -50,15 +52,17 @@ I2「仓鼠、笼舍、历史窝次/谱系、体重与 CSV 导入」工程收口
 - `I1_API_PORT=18591 I1_DB_PORT=56591 scripts/i1-smoke.sh`：I1 演示链通过（owner 隔离、幂等、ETag、events=4、published_outbox=2）。
 - `apps/mobile`：`flutter analyze` 无问题；`flutter test` 11 tests passed（含 I2 widget/controller/import/models 与壳层导航）。
 - `apps/web`：`npm test` 与 `npm run lint` 通过。
+- 临时 PostgreSQL + API CSV 全链路通过：上传 → 建任务 → 映射 → 预检 → 提交 → 逐行报告；最终 `preflight=succeeded`、`commit=succeeded`、`row=imported`。
+- CSV 提交阶段 `batch_key` 查询一致性修复已包含在验证对象提交中，并随上述全链路复核通过。
 
 ## 待确认
 
-- I2 工作树改动尚未 Git 提交；当前 `HEAD` 仍为 I1 基线 `a4d4d2c`。
 - CSV 上传为本地进程内会话（`PUT /v1/data-center/import-uploads/{id}/content`），非正式对象存储/CDN。
 - import HTTP 层的映射/预检/提交会话状态为进程内存 + DB 混合；API 进程重启后需重新上传。
-- 未在本轮重跑 Android APK / iOS Simulator 设备构建（iOS 仍缺 26.5 runtime）。
-- 正式 Bundle ID、短信、密钥托管、生产部署不在 I2 范围。
-- 全链路“真实 API + Flutter 联调 CSV 演示”建议在本地起库与 API 后手工走通一次。
+- Android/iOS 设备构建尚未完成；Android debug APK 的工程基线已单独记录，设备安装/启动与 iOS Simulator/真机构建仍待独立任务验证（iOS 需要 26.5 runtime）。
+- 正式 Bundle ID、签名、密钥托管和生产部署仍待确认，不属于本轮 I2 验证闭环。
+- Flutter 与真实 API 的交互式 CSV 演示尚未纳入本轮验证；API 层 CSV 全链路已按上节结果通过。
+- 当前分支尚未推送远端，尚未创建 PR。
 
 ## 关键修复点（相对 Codex 中断点）
 
@@ -67,3 +71,4 @@ I2「仓鼠、笼舍、历史窝次/谱系、体重与 CSV 导入」工程收口
 3. 补齐 import HTTP 适配与认证路由测试。
 4. OpenAPI default 清理后重生成客户端，Flutter analyze/test 变绿。
 5. CSV 单住预检提示与合法夹具（一鼠一笼）保持一致。
+6. 修复 CSV 提交阶段 `batch_key` 查询不一致，确保预检结果可进入提交并产生逐行导入报告。
