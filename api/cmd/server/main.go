@@ -99,7 +99,8 @@ func main() {
 	if !config.OutboxWorkerDisabled {
 		go outboxWorker.Run(ctx, 2*time.Second)
 	}
-	mediaWorker := worker.NewMediaProcessor(pool, importObjects, logger)
+	mediaCodec := worker.NewExternalCodec(mediaCodecConfig(config))
+	mediaWorker := worker.NewMediaProcessorWithCodec(pool, importObjects, logger, mediaCodec)
 	if !config.MediaWorkerDisabled {
 		go mediaWorker.Run(ctx, time.Duration(config.MediaWorkerIntervalSecs)*time.Second)
 	}

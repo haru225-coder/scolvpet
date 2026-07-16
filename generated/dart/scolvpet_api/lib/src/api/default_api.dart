@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:scolvpet_api/src/deserialize.dart';
 import 'package:dio/dio.dart';
 
+import 'dart:typed_data';
 import 'package:scolvpet_api/src/model/adjust_baseline_request.dart';
 import 'package:scolvpet_api/src/model/adjust_baseline_response.dart';
 import 'package:scolvpet_api/src/model/adjust_litter_count_request.dart';
@@ -160,13 +161,13 @@ class DefaultApi {
   const DefaultApi(this._dio);
 
   /// 修正配对基准时间
-  /// 仅允许 gestation 或可恢复的 hold 状态。追加日期纠正事件，重算预产区间， 并将旧提醒标记为 superseded；客户端不得提交重算后的日期或提醒集合。 
+  /// 仅允许 gestation 或可恢复的 hold 状态。追加日期纠正事件，重算预产区间， 并将旧提醒标记为 superseded；客户端不得提交重算后的日期或提醒集合。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [planId] 
-  /// * [adjustBaselineRequest] 
+  /// * [planId]
+  /// * [adjustBaselineRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -176,7 +177,7 @@ class DefaultApi {
   ///
   /// Returns a [Future] containing a [Response] with a [AdjustBaselineResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AdjustBaselineResponse>> adjustBreedingBaseline({ 
+  Future<Response<AdjustBaselineResponse>> adjustBreedingBaseline({
     required String idempotencyKey,
     required String ifMatch,
     required String planId,
@@ -268,8 +269,8 @@ _responseData = rawData == null ? null : deserialize<AdjustBaselineResponse, Adj
   /// 返回整体事务状态与逐项结果；每项使用 client_item_id 对齐客户端记录。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [hamsterBatchCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [hamsterBatchCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -279,7 +280,7 @@ _responseData = rawData == null ? null : deserialize<AdjustBaselineResponse, Adj
   ///
   /// Returns a [Future] containing a [Response] with a [HamsterBatchCreateResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<HamsterBatchCreateResponse>> batchCreateHamsters({ 
+  Future<Response<HamsterBatchCreateResponse>> batchCreateHamsters({
     required String idempotencyKey,
     required HamsterBatchCreateRequest hamsterBatchCreateRequest,
     CancelToken? cancelToken,
@@ -368,8 +369,8 @@ _responseData = rawData == null ? null : deserialize<HamsterBatchCreateResponse,
   /// 返回逐项成功、失败与告警结果，适用于整窝逐只称重。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [weightRecordBatchCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [weightRecordBatchCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -379,7 +380,7 @@ _responseData = rawData == null ? null : deserialize<HamsterBatchCreateResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [WeightRecordBatchCreateResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<WeightRecordBatchCreateResponse>> batchCreateWeightRecords({ 
+  Future<Response<WeightRecordBatchCreateResponse>> batchCreateWeightRecords({
     required String idempotencyKey,
     required WeightRecordBatchCreateRequest weightRecordBatchCreateRequest,
     CancelToken? cancelToken,
@@ -465,13 +466,13 @@ _responseData = rawData == null ? null : deserialize<WeightRecordBatchCreateResp
   }
 
   /// 提交正式导入
-  /// 使用幂等批次号正式写入；提交前重新校验 preflight_version、全部阻塞问题和逐项 更新确认。历史窝次先按预检计划原子创建，再建立成员与父母关系；部分失败时保留 逐行结果，但不允许产生缺父母、错窝次或悬空谱系引用。 
+  /// 使用幂等批次号正式写入；提交前重新校验 preflight_version、全部阻塞问题和逐项 更新确认。历史窝次先按预检计划原子创建，再建立成员与父母关系；部分失败时保留 逐行结果，但不允许产生缺父母、错窝次或悬空谱系引用。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [jobId] 
-  /// * [importCommitRequest] 
+  /// * [jobId]
+  /// * [importCommitRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -481,7 +482,7 @@ _responseData = rawData == null ? null : deserialize<WeightRecordBatchCreateResp
   ///
   /// Returns a [Future] containing a [Response] with a [ImportJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ImportJobResponse>> commitImportJob({ 
+  Future<Response<ImportJobResponse>> commitImportJob({
     required String idempotencyKey,
     required String ifMatch,
     required String jobId,
@@ -570,13 +571,13 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   }
 
   /// 完成繁育计划
-  /// 仅允许 individualizing。 服务端确认数量、性别、笼位、家谱和阻塞任务全部闭合后推进到 completed， 客户端不得提交目标状态或自行计算的对账数。 
+  /// 仅允许 individualizing。 服务端确认数量、性别、笼位、家谱和阻塞任务全部闭合后推进到 completed， 客户端不得提交目标状态或自行计算的对账数。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [planId] 
-  /// * [completeBreedingPlanRequest] 
+  /// * [planId]
+  /// * [completeBreedingPlanRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -586,7 +587,7 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   ///
   /// Returns a [Future] containing a [Response] with a [CompleteBreedingPlanResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CompleteBreedingPlanResponse>> completeBreedingPlan({ 
+  Future<Response<CompleteBreedingPlanResponse>> completeBreedingPlan({
     required String idempotencyKey,
     required String ifMatch,
     required String planId,
@@ -678,10 +679,10 @@ _responseData = rawData == null ? null : deserialize<CompleteBreedingPlanRespons
   /// 校验对象元数据后创建 media_asset；视频转码异步执行。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [uploadId] 
-  /// * [mediaUploadCompleteRequest] 
+  /// * [uploadId]
+  /// * [mediaUploadCompleteRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -691,7 +692,7 @@ _responseData = rawData == null ? null : deserialize<CompleteBreedingPlanRespons
   ///
   /// Returns a [Future] containing a [Response] with a [MediaUploadCompleteResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MediaUploadCompleteResponse>> completeMediaUpload({ 
+  Future<Response<MediaUploadCompleteResponse>> completeMediaUpload({
     required String idempotencyKey,
     required String ifMatch,
     required String uploadId,
@@ -783,10 +784,10 @@ _responseData = rawData == null ? null : deserialize<MediaUploadCompleteResponse
   /// 支持整窝任务逐只完成；全部 subject 完成或登记例外后任务自动关闭。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [taskId] 
-  /// * [completeTaskRequest] 
+  /// * [taskId]
+  /// * [completeTaskRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -796,7 +797,7 @@ _responseData = rawData == null ? null : deserialize<MediaUploadCompleteResponse
   ///
   /// Returns a [Future] containing a [Response] with a [CompleteTaskResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CompleteTaskResponse>> completeTask({ 
+  Future<Response<CompleteTaskResponse>> completeTask({
     required String idempotencyKey,
     required String ifMatch,
     required String taskId,
@@ -885,13 +886,13 @@ _responseData = rawData == null ? null : deserialize<CompleteTaskResponse, Compl
   }
 
   /// 确认产仔并建立窝次
-  /// 仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N&gt;0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N&#x3D;0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。 
+  /// 仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N&gt;0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N&#x3D;0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [planId] 
-  /// * [confirmBirthRequest] 
+  /// * [planId]
+  /// * [confirmBirthRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -901,7 +902,7 @@ _responseData = rawData == null ? null : deserialize<CompleteTaskResponse, Compl
   ///
   /// Returns a [Future] containing a [Response] with a [ConfirmBirthResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ConfirmBirthResponse>> confirmBirth({ 
+  Future<Response<ConfirmBirthResponse>> confirmBirth({
     required String idempotencyKey,
     required String ifMatch,
     required String planId,
@@ -990,13 +991,13 @@ _responseData = rawData == null ? null : deserialize<ConfirmBirthResponse, Confi
   }
 
   /// 确认产仔并建立窝次
-  /// 仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N&gt;0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N&#x3D;0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。 
+  /// 仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N&gt;0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N&#x3D;0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [planId] 
-  /// * [confirmBirthRequest] 
+  /// * [planId]
+  /// * [confirmBirthRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1006,7 +1007,7 @@ _responseData = rawData == null ? null : deserialize<ConfirmBirthResponse, Confi
   ///
   /// Returns a [Future] containing a [Response] with a [ConfirmBirthResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ConfirmBirthResponse>> confirmBirth_1({ 
+  Future<Response<ConfirmBirthResponse>> confirmBirth_1({
     required String idempotencyKey,
     required String ifMatch,
     required String planId,
@@ -1098,8 +1099,8 @@ _responseData = rawData == null ? null : deserialize<ConfirmBirthResponse, Confi
   /// 包含结构化数据、媒体清单和校验哈希。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [backupJobCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [backupJobCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1109,7 +1110,7 @@ _responseData = rawData == null ? null : deserialize<ConfirmBirthResponse, Confi
   ///
   /// Returns a [Future] containing a [Response] with a [BackupJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<BackupJobResponse>> createBackupJob({ 
+  Future<Response<BackupJobResponse>> createBackupJob({
     required String idempotencyKey,
     required BackupJobCreateRequest backupJobCreateRequest,
     CancelToken? cancelToken,
@@ -1198,8 +1199,8 @@ _responseData = rawData == null ? null : deserialize<BackupJobResponse, BackupJo
   /// 新建计划固定为 draft；请求体不接受 state 或 owner_id。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [breedingPlanCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [breedingPlanCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1209,7 +1210,7 @@ _responseData = rawData == null ? null : deserialize<BackupJobResponse, BackupJo
   ///
   /// Returns a [Future] containing a [Response] with a [BreedingPlanResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<BreedingPlanResponse>> createBreedingPlan({ 
+  Future<Response<BreedingPlanResponse>> createBreedingPlan({
     required String idempotencyKey,
     required BreedingPlanCreateRequest breedingPlanCreateRequest,
     CancelToken? cancelToken,
@@ -1298,8 +1299,8 @@ _responseData = rawData == null ? null : deserialize<BreedingPlanResponse, Breed
   /// 创建当前熊舍内唯一编号的笼盒。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [enclosureCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [enclosureCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1309,7 +1310,7 @@ _responseData = rawData == null ? null : deserialize<BreedingPlanResponse, Breed
   ///
   /// Returns a [Future] containing a [Response] with a [EnclosureResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EnclosureResponse>> createEnclosure({ 
+  Future<Response<EnclosureResponse>> createEnclosure({
     required String idempotencyKey,
     required EnclosureCreateRequest enclosureCreateRequest,
     CancelToken? cancelToken,
@@ -1398,10 +1399,10 @@ _responseData = rawData == null ? null : deserialize<EnclosureResponse, Enclosur
   /// 追加清洁事实并更新笼盒清洁投影；纠错通过新记录引用原记录完成。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [enclosureId] 
-  /// * [enclosureCleaningCreateRequest] 
+  /// * [enclosureId]
+  /// * [enclosureCleaningCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1411,7 +1412,7 @@ _responseData = rawData == null ? null : deserialize<EnclosureResponse, Enclosur
   ///
   /// Returns a [Future] containing a [Response] with a [EnclosureCleaningResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EnclosureCleaningResponse>> createEnclosureCleaning({ 
+  Future<Response<EnclosureCleaningResponse>> createEnclosureCleaning({
     required String idempotencyKey,
     required String ifMatch,
     required String enclosureId,
@@ -1503,10 +1504,10 @@ _responseData = rawData == null ? null : deserialize<EnclosureCleaningResponse, 
   /// 校验目标笼盒容量、时段冲突和配对授权。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [enclosureId] 
-  /// * [enclosureStayCreateRequest] 
+  /// * [enclosureId]
+  /// * [enclosureStayCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1516,7 +1517,7 @@ _responseData = rawData == null ? null : deserialize<EnclosureCleaningResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [EnclosureStayResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EnclosureStayResponse>> createEnclosureStay({ 
+  Future<Response<EnclosureStayResponse>> createEnclosureStay({
     required String idempotencyKey,
     required String ifMatch,
     required String enclosureId,
@@ -1608,8 +1609,8 @@ _responseData = rawData == null ? null : deserialize<EnclosureStayResponse, Encl
   /// 支持仓鼠、笼舍、繁育、窝次、体重、健康和谱系的 CSV 或 JSON 导出。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [exportJobCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [exportJobCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1619,7 +1620,7 @@ _responseData = rawData == null ? null : deserialize<EnclosureStayResponse, Encl
   ///
   /// Returns a [Future] containing a [Response] with a [ExportJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ExportJobResponse>> createExportJob({ 
+  Future<Response<ExportJobResponse>> createExportJob({
     required String idempotencyKey,
     required ExportJobCreateRequest exportJobCreateRequest,
     CancelToken? cancelToken,
@@ -1708,8 +1709,8 @@ _responseData = rawData == null ? null : deserialize<ExportJobResponse, ExportJo
   /// owner_id 从认证上下文解析；父母关系写入 pedigree_parentage。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [hamsterCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [hamsterCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1719,7 +1720,7 @@ _responseData = rawData == null ? null : deserialize<ExportJobResponse, ExportJo
   ///
   /// Returns a [Future] containing a [Response] with a [HamsterResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<HamsterResponse>> createHamster({ 
+  Future<Response<HamsterResponse>> createHamster({
     required String idempotencyKey,
     required HamsterCreateRequest hamsterCreateRequest,
     CancelToken? cancelToken,
@@ -1808,8 +1809,8 @@ _responseData = rawData == null ? null : deserialize<HamsterResponse, HamsterRes
   /// 仓鼠或窝次至少关联一项；通知副作用不影响记录落库。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [healthRecordCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [healthRecordCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1819,7 +1820,7 @@ _responseData = rawData == null ? null : deserialize<HamsterResponse, HamsterRes
   ///
   /// Returns a [Future] containing a [Response] with a [HealthRecordResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<HealthRecordResponse>> createHealthRecord({ 
+  Future<Response<HealthRecordResponse>> createHealthRecord({
     required String idempotencyKey,
     HealthRecordCreateRequest? healthRecordCreateRequest,
     CancelToken? cancelToken,
@@ -1908,8 +1909,8 @@ _responseData = rawData == null ? null : deserialize<HealthRecordResponse, Healt
   /// 识别编码、表头和列；后续通过映射、预检和提交推进。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [importJobCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [importJobCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1919,7 +1920,7 @@ _responseData = rawData == null ? null : deserialize<HealthRecordResponse, Healt
   ///
   /// Returns a [Future] containing a [Response] with a [ImportJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ImportJobResponse>> createImportJob({ 
+  Future<Response<ImportJobResponse>> createImportJob({
     required String idempotencyKey,
     required ImportJobCreateRequest importJobCreateRequest,
     CancelToken? cancelToken,
@@ -2008,8 +2009,8 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   /// 返回预签名地址，上传完成后用 upload_id 创建导入任务。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [importUploadCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [importUploadCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2019,7 +2020,7 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   ///
   /// Returns a [Future] containing a [Response] with a [ImportUploadResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ImportUploadResponse>> createImportUpload({ 
+  Future<Response<ImportUploadResponse>> createImportUpload({
     required String idempotencyKey,
     required ImportUploadCreateRequest importUploadCreateRequest,
     CancelToken? cancelToken,
@@ -2108,10 +2109,10 @@ _responseData = rawData == null ? null : deserialize<ImportUploadResponse, Impor
   /// 追加数量流水；根据后补发现或关闭原因同步临时幼崽身份。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [litterId] 
-  /// * [adjustLitterCountRequest] 
+  /// * [litterId]
+  /// * [adjustLitterCountRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2121,7 +2122,7 @@ _responseData = rawData == null ? null : deserialize<ImportUploadResponse, Impor
   ///
   /// Returns a [Future] containing a [Response] with a [AdjustLitterCountResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AdjustLitterCountResponse>> createLitterCountEvent({ 
+  Future<Response<AdjustLitterCountResponse>> createLitterCountEvent({
     required String idempotencyKey,
     required String ifMatch,
     required String litterId,
@@ -2213,10 +2214,10 @@ _responseData = rawData == null ? null : deserialize<AdjustLitterCountResponse, 
   /// 校验角色和祖先环，并保留关系断言来源。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [litterId] 
-  /// * [litterParentCreateRequest] 
+  /// * [litterId]
+  /// * [litterParentCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2226,7 +2227,7 @@ _responseData = rawData == null ? null : deserialize<AdjustLitterCountResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [LitterParentResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<LitterParentResponse>> createLitterParent({ 
+  Future<Response<LitterParentResponse>> createLitterParent({
     required String idempotencyKey,
     required String ifMatch,
     required String litterId,
@@ -2318,10 +2319,10 @@ _responseData = rawData == null ? null : deserialize<LitterParentResponse, Litte
   /// 保存裁剪、旋转、滤镜和标注配方，不覆盖原始文件。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [mediaId] 
-  /// * [mediaEditRecipeRequest] 
+  /// * [mediaId]
+  /// * [mediaEditRecipeRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2331,7 +2332,7 @@ _responseData = rawData == null ? null : deserialize<LitterParentResponse, Litte
   ///
   /// Returns a [Future] containing a [Response] with a [MediaEditRecipeResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MediaEditRecipeResponse>> createMediaEditRecipe({ 
+  Future<Response<MediaEditRecipeResponse>> createMediaEditRecipe({
     required String idempotencyKey,
     required String ifMatch,
     required String mediaId,
@@ -2423,8 +2424,8 @@ _responseData = rawData == null ? null : deserialize<MediaEditRecipeResponse, Me
   /// 服务端校验角色、性别和祖先环；关系修正保留审计链。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [pedigreeParentageCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [pedigreeParentageCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2434,7 +2435,7 @@ _responseData = rawData == null ? null : deserialize<MediaEditRecipeResponse, Me
   ///
   /// Returns a [Future] containing a [Response] with a [PedigreeParentageResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PedigreeParentageResponse>> createPedigreeParentage({ 
+  Future<Response<PedigreeParentageResponse>> createPedigreeParentage({
     required String idempotencyKey,
     required PedigreeParentageCreateRequest pedigreeParentageCreateRequest,
     CancelToken? cancelToken,
@@ -2523,8 +2524,8 @@ _responseData = rawData == null ? null : deserialize<PedigreeParentageResponse, 
   /// 校验验证码并返回 Bearer 访问令牌、刷新令牌和当前个人熊舍。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [phoneCodeLoginRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [phoneCodeLoginRequest]
   /// * [xTimezone] - IANA 时区；缺省时使用当前熊舍 timezone。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -2535,7 +2536,7 @@ _responseData = rawData == null ? null : deserialize<PedigreeParentageResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [SessionResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SessionResponse>> createSession({ 
+  Future<Response<SessionResponse>> createSession({
     required String idempotencyKey,
     required PhoneCodeLoginRequest phoneCodeLoginRequest,
     String? xTimezone = 'Asia/Shanghai',
@@ -2620,8 +2621,8 @@ _responseData = rawData == null ? null : deserialize<SessionResponse, SessionRes
   /// 为仓鼠或窝次生成随机公开令牌，只包含显式选择的字段和媒体。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [shareCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [shareCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2631,7 +2632,7 @@ _responseData = rawData == null ? null : deserialize<SessionResponse, SessionRes
   ///
   /// Returns a [Future] containing a [Response] with a [SharePageResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SharePageResponse>> createShare({ 
+  Future<Response<SharePageResponse>> createShare({
     required String idempotencyKey,
     required ShareCreateRequest shareCreateRequest,
     CancelToken? cancelToken,
@@ -2720,8 +2721,8 @@ _responseData = rawData == null ? null : deserialize<SharePageResponse, SharePag
   /// 可从系统模板复制并调整；历史繁育计划继续引用其原规则快照。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [speciesRuleVersionCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [speciesRuleVersionCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2731,7 +2732,7 @@ _responseData = rawData == null ? null : deserialize<SharePageResponse, SharePag
   ///
   /// Returns a [Future] containing a [Response] with a [SpeciesRuleVersionResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SpeciesRuleVersionResponse>> createSpeciesRuleVersion({ 
+  Future<Response<SpeciesRuleVersionResponse>> createSpeciesRuleVersion({
     required String idempotencyKey,
     required SpeciesRuleVersionCreateRequest speciesRuleVersionCreateRequest,
     CancelToken? cancelToken,
@@ -2820,8 +2821,8 @@ _responseData = rawData == null ? null : deserialize<SpeciesRuleVersionResponse,
   /// 系统生成任务也使用同一资源模型；关闭系统通知不影响任务存在。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [careTaskCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [careTaskCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2831,7 +2832,7 @@ _responseData = rawData == null ? null : deserialize<SpeciesRuleVersionResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [CareTaskResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CareTaskResponse>> createTask({ 
+  Future<Response<CareTaskResponse>> createTask({
     required String idempotencyKey,
     required CareTaskCreateRequest careTaskCreateRequest,
     CancelToken? cancelToken,
@@ -2920,8 +2921,8 @@ _responseData = rawData == null ? null : deserialize<CareTaskResponse, CareTaskR
   /// 原始克值只追加；服务端保存出生和上次体重比较快照。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [weightRecordCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [weightRecordCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2931,7 +2932,7 @@ _responseData = rawData == null ? null : deserialize<CareTaskResponse, CareTaskR
   ///
   /// Returns a [Future] containing a [Response] with a [WeightRecordResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<WeightRecordResponse>> createWeightRecord({ 
+  Future<Response<WeightRecordResponse>> createWeightRecord({
     required String idempotencyKey,
     required WeightRecordCreateRequest weightRecordCreateRequest,
     CancelToken? cancelToken,
@@ -3020,7 +3021,7 @@ _responseData = rawData == null ? null : deserialize<WeightRecordResponse, Weigh
   /// 使当前访问令牌与对应刷新令牌失效。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3030,7 +3031,7 @@ _responseData = rawData == null ? null : deserialize<WeightRecordResponse, Weigh
   ///
   /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> deleteCurrentSession({ 
+  Future<Response<void>> deleteCurrentSession({
     required String idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3074,7 +3075,7 @@ _responseData = rawData == null ? null : deserialize<WeightRecordResponse, Weigh
   /// 查询导入、导出、备份、媒体派生、转码或报喜卡任务状态。
   ///
   /// Parameters:
-  /// * [jobId] 
+  /// * [jobId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3084,7 +3085,7 @@ _responseData = rawData == null ? null : deserialize<WeightRecordResponse, Weigh
   ///
   /// Returns a [Future] containing a [Response] with a [AsyncJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AsyncJobResponse>> getAsyncJob({ 
+  Future<Response<AsyncJobResponse>> getAsyncJob({
     required String jobId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3152,7 +3153,7 @@ _responseData = rawData == null ? null : deserialize<AsyncJobResponse, AsyncJobR
   /// 返回短时有效下载地址、文件大小和 SHA-256。
   ///
   /// Parameters:
-  /// * [jobId] 
+  /// * [jobId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3162,7 +3163,7 @@ _responseData = rawData == null ? null : deserialize<AsyncJobResponse, AsyncJobR
   ///
   /// Returns a [Future] containing a [Response] with a [DownloadLinkResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DownloadLinkResponse>> getBackupDownload({ 
+  Future<Response<DownloadLinkResponse>> getBackupDownload({
     required String jobId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3230,7 +3231,7 @@ _responseData = rawData == null ? null : deserialize<DownloadLinkResponse, Downl
   /// 返回进度、大小、哈希、失败原因和可恢复状态。
   ///
   /// Parameters:
-  /// * [jobId] 
+  /// * [jobId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3240,7 +3241,7 @@ _responseData = rawData == null ? null : deserialize<DownloadLinkResponse, Downl
   ///
   /// Returns a [Future] containing a [Response] with a [BackupJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<BackupJobResponse>> getBackupJob({ 
+  Future<Response<BackupJobResponse>> getBackupJob({
     required String jobId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3308,7 +3309,7 @@ _responseData = rawData == null ? null : deserialize<BackupJobResponse, BackupJo
   /// 返回计划、规则快照、亲缘检查和当前版本。
   ///
   /// Parameters:
-  /// * [planId] 
+  /// * [planId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3318,7 +3319,7 @@ _responseData = rawData == null ? null : deserialize<BackupJobResponse, BackupJo
   ///
   /// Returns a [Future] containing a [Response] with a [BreedingPlanResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<BreedingPlanResponse>> getBreedingPlan({ 
+  Future<Response<BreedingPlanResponse>> getBreedingPlan({
     required String planId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3395,7 +3396,7 @@ _responseData = rawData == null ? null : deserialize<BreedingPlanResponse, Breed
   ///
   /// Returns a [Future] containing a [Response] with a [CurrentAccountResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CurrentAccountResponse>> getCurrentAccount({ 
+  Future<Response<CurrentAccountResponse>> getCurrentAccount({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -3471,7 +3472,7 @@ _responseData = rawData == null ? null : deserialize<CurrentAccountResponse, Cur
   ///
   /// Returns a [Future] containing a [Response] with a [OrganizationResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<OrganizationResponse>> getCurrentOrganization({ 
+  Future<Response<OrganizationResponse>> getCurrentOrganization({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -3547,7 +3548,7 @@ _responseData = rawData == null ? null : deserialize<OrganizationResponse, Organ
   ///
   /// Returns a [Future] containing a [Response] with a [UsageResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<UsageResponse>> getCurrentUsage({ 
+  Future<Response<UsageResponse>> getCurrentUsage({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -3623,7 +3624,7 @@ _responseData = rawData == null ? null : deserialize<UsageResponse, UsageRespons
   ///
   /// Returns a [Future] containing a [Response] with a [DataCenterSummaryResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DataCenterSummaryResponse>> getDataCenterSummary({ 
+  Future<Response<DataCenterSummaryResponse>> getDataCenterSummary({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -3690,7 +3691,7 @@ _responseData = rawData == null ? null : deserialize<DataCenterSummaryResponse, 
   /// 返回笼盒、当前占用和版本号。
   ///
   /// Parameters:
-  /// * [enclosureId] 
+  /// * [enclosureId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3700,7 +3701,7 @@ _responseData = rawData == null ? null : deserialize<DataCenterSummaryResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [EnclosureResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EnclosureResponse>> getEnclosure({ 
+  Future<Response<EnclosureResponse>> getEnclosure({
     required String enclosureId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3765,10 +3766,10 @@ _responseData = rawData == null ? null : deserialize<EnclosureResponse, Enclosur
   }
 
   /// 获取清洁记录
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [cleaningId] 
+  /// * [cleaningId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3778,7 +3779,7 @@ _responseData = rawData == null ? null : deserialize<EnclosureResponse, Enclosur
   ///
   /// Returns a [Future] containing a [Response] with a [EnclosureCleaningResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EnclosureCleaningResponse>> getEnclosureCleaning({ 
+  Future<Response<EnclosureCleaningResponse>> getEnclosureCleaning({
     required String cleaningId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3846,7 +3847,7 @@ _responseData = rawData == null ? null : deserialize<EnclosureCleaningResponse, 
   /// 仅成功且未过期的任务返回短时有效下载地址。
   ///
   /// Parameters:
-  /// * [jobId] 
+  /// * [jobId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3856,7 +3857,7 @@ _responseData = rawData == null ? null : deserialize<EnclosureCleaningResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [DownloadLinkResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DownloadLinkResponse>> getExportDownload({ 
+  Future<Response<DownloadLinkResponse>> getExportDownload({
     required String jobId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3924,7 +3925,7 @@ _responseData = rawData == null ? null : deserialize<DownloadLinkResponse, Downl
   /// 返回进度、失败原因、过期时间和下载状态。
   ///
   /// Parameters:
-  /// * [jobId] 
+  /// * [jobId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3934,7 +3935,7 @@ _responseData = rawData == null ? null : deserialize<DownloadLinkResponse, Downl
   ///
   /// Returns a [Future] containing a [Response] with a [ExportJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ExportJobResponse>> getExportJob({ 
+  Future<Response<ExportJobResponse>> getExportJob({
     required String jobId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4002,7 +4003,7 @@ _responseData = rawData == null ? null : deserialize<ExportJobResponse, ExportJo
   /// 返回档案、当前笼位和版本号。
   ///
   /// Parameters:
-  /// * [hamsterId] 
+  /// * [hamsterId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4012,7 +4013,7 @@ _responseData = rawData == null ? null : deserialize<ExportJobResponse, ExportJo
   ///
   /// Returns a [Future] containing a [Response] with a [HamsterResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<HamsterResponse>> getHamster({ 
+  Future<Response<HamsterResponse>> getHamster({
     required String hamsterId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4080,8 +4081,8 @@ _responseData = rawData == null ? null : deserialize<HamsterResponse, HamsterRes
   /// 返回 pedigree_parentage 边、窝次父母与窝次成员推导出的统一关系图。
   ///
   /// Parameters:
-  /// * [hamsterId] 
-  /// * [generations] 
+  /// * [hamsterId]
+  /// * [generations]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4091,7 +4092,7 @@ _responseData = rawData == null ? null : deserialize<HamsterResponse, HamsterRes
   ///
   /// Returns a [Future] containing a [Response] with a [PedigreeGraphResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PedigreeGraphResponse>> getHamsterPedigree({ 
+  Future<Response<PedigreeGraphResponse>> getHamsterPedigree({
     required String hamsterId,
     int? generations = 4,
     CancelToken? cancelToken,
@@ -4165,7 +4166,7 @@ _responseData = rawData == null ? null : deserialize<PedigreeGraphResponse, Pedi
   /// 返回结构化检查、用药、媒体和版本。
   ///
   /// Parameters:
-  /// * [healthRecordId] 
+  /// * [healthRecordId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4175,7 +4176,7 @@ _responseData = rawData == null ? null : deserialize<PedigreeGraphResponse, Pedi
   ///
   /// Returns a [Future] containing a [Response] with a [HealthRecordResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<HealthRecordResponse>> getHealthRecord({ 
+  Future<Response<HealthRecordResponse>> getHealthRecord({
     required String healthRecordId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4240,10 +4241,10 @@ _responseData = rawData == null ? null : deserialize<HealthRecordResponse, Healt
   }
 
   /// 下载 CSV 逐行错误报告
-  /// 为完成预检或正式导入的任务生成短期签名下载地址。报告包含行号、列名、 错误码、严重级别、原值和修复建议；下载前再次校验认证 owner_id。 
+  /// 为完成预检或正式导入的任务生成短期签名下载地址。报告包含行号、列名、 错误码、严重级别、原值和修复建议；下载前再次校验认证 owner_id。
   ///
   /// Parameters:
-  /// * [jobId] 
+  /// * [jobId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4253,7 +4254,7 @@ _responseData = rawData == null ? null : deserialize<HealthRecordResponse, Healt
   ///
   /// Returns a [Future] containing a [Response] with a [DownloadLinkResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DownloadLinkResponse>> getImportErrorReport({ 
+  Future<Response<DownloadLinkResponse>> getImportErrorReport({
     required String jobId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4321,7 +4322,7 @@ _responseData = rawData == null ? null : deserialize<DownloadLinkResponse, Downl
   /// 返回编码识别、映射、预检、提交进度和汇总。
   ///
   /// Parameters:
-  /// * [jobId] 
+  /// * [jobId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4331,7 +4332,7 @@ _responseData = rawData == null ? null : deserialize<DownloadLinkResponse, Downl
   ///
   /// Returns a [Future] containing a [Response] with a [ImportJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ImportJobResponse>> getImportJob({ 
+  Future<Response<ImportJobResponse>> getImportJob({
     required String jobId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4399,7 +4400,7 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   /// 首版提供 hamster、enclosure 和 weight 三类模板。
   ///
   /// Parameters:
-  /// * [templateType] 
+  /// * [templateType]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4409,7 +4410,7 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   ///
   /// Returns a [Future] containing a [Response] with a [ImportTemplateResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ImportTemplateResponse>> getImportTemplate({ 
+  Future<Response<ImportTemplateResponse>> getImportTemplate({
     required ImportTemplateType templateType,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4477,7 +4478,7 @@ _responseData = rawData == null ? null : deserialize<ImportTemplateResponse, Imp
   /// 返回数量对账、临时幼崽摘要和版本号。
   ///
   /// Parameters:
-  /// * [litterId] 
+  /// * [litterId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4487,7 +4488,7 @@ _responseData = rawData == null ? null : deserialize<ImportTemplateResponse, Imp
   ///
   /// Returns a [Future] containing a [Response] with a [LitterResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<LitterResponse>> getLitter({ 
+  Future<Response<LitterResponse>> getLitter({
     required String litterId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4552,10 +4553,10 @@ _responseData = rawData == null ? null : deserialize<LitterResponse, LitterRespo
   }
 
   /// 获取服务端个体化 eligible set
-  /// 服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。 
+  /// 服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。
   ///
   /// Parameters:
-  /// * [litterId] 
+  /// * [litterId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4565,7 +4566,7 @@ _responseData = rawData == null ? null : deserialize<LitterResponse, LitterRespo
   ///
   /// Returns a [Future] containing a [Response] with a [IndividualizationEligibilityResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<IndividualizationEligibilityResponse>> getLitterIndividualizationEligibility({ 
+  Future<Response<IndividualizationEligibilityResponse>> getLitterIndividualizationEligibility({
     required String litterId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4630,10 +4631,10 @@ _responseData = rawData == null ? null : deserialize<IndividualizationEligibilit
   }
 
   /// 获取服务端个体化 eligible set
-  /// 服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。 
+  /// 服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。
   ///
   /// Parameters:
-  /// * [litterId] 
+  /// * [litterId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4643,7 +4644,7 @@ _responseData = rawData == null ? null : deserialize<IndividualizationEligibilit
   ///
   /// Returns a [Future] containing a [Response] with a [IndividualizationEligibilityResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<IndividualizationEligibilityResponse>> getLitterIndividualizationEligibility_2({ 
+  Future<Response<IndividualizationEligibilityResponse>> getLitterIndividualizationEligibility_2({
     required String litterId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4708,10 +4709,10 @@ _responseData = rawData == null ? null : deserialize<IndividualizationEligibilit
   }
 
   /// 获取服务端个体化 eligible set
-  /// 服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。 
+  /// 服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。
   ///
   /// Parameters:
-  /// * [litterId] 
+  /// * [litterId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4721,7 +4722,7 @@ _responseData = rawData == null ? null : deserialize<IndividualizationEligibilit
   ///
   /// Returns a [Future] containing a [Response] with a [IndividualizationEligibilityResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<IndividualizationEligibilityResponse>> getLitterIndividualizationEligibility_3({ 
+  Future<Response<IndividualizationEligibilityResponse>> getLitterIndividualizationEligibility_3({
     required String litterId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4789,7 +4790,7 @@ _responseData = rawData == null ? null : deserialize<IndividualizationEligibilit
   /// 返回原始媒体、派生版本、转码状态与封面。
   ///
   /// Parameters:
-  /// * [mediaId] 
+  /// * [mediaId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4799,7 +4800,7 @@ _responseData = rawData == null ? null : deserialize<IndividualizationEligibilit
   ///
   /// Returns a [Future] containing a [Response] with a [MediaAssetResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MediaAssetResponse>> getMediaAsset({ 
+  Future<Response<MediaAssetResponse>> getMediaAsset({
     required String mediaId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4867,7 +4868,7 @@ _responseData = rawData == null ? null : deserialize<MediaAssetResponse, MediaAs
   /// 返回短视频转码、图片派生或编辑任务的异步状态。
   ///
   /// Parameters:
-  /// * [mediaId] 
+  /// * [mediaId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4877,7 +4878,7 @@ _responseData = rawData == null ? null : deserialize<MediaAssetResponse, MediaAs
   ///
   /// Returns a [Future] containing a [Response] with a [AsyncJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AsyncJobResponse>> getMediaTranscodeStatus({ 
+  Future<Response<AsyncJobResponse>> getMediaTranscodeStatus({
     required String mediaId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -4945,7 +4946,7 @@ _responseData = rawData == null ? null : deserialize<AsyncJobResponse, AsyncJobR
   /// 返回配对时间、结果、分笼截止时间和版本。
   ///
   /// Parameters:
-  /// * [attemptId] 
+  /// * [attemptId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -4955,7 +4956,7 @@ _responseData = rawData == null ? null : deserialize<AsyncJobResponse, AsyncJobR
   ///
   /// Returns a [Future] containing a [Response] with a [PairingAttemptResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PairingAttemptResponse>> getPairingAttempt({ 
+  Future<Response<PairingAttemptResponse>> getPairingAttempt({
     required String attemptId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -5020,10 +5021,10 @@ _responseData = rawData == null ? null : deserialize<PairingAttemptResponse, Pai
   }
 
   /// 无需认证读取公开分享
-  /// 只返回舍主显式选择的字段和 share-scoped 媒体 URL；撤销或过期后返回 404。 MVP API 响应使用 no-store，确保撤销完成后不会由浏览器或 CDN 回放历史 JSON。 
+  /// 只返回舍主显式选择的字段和 share-scoped 媒体 URL；撤销或过期后返回 404。 MVP API 响应使用 no-store，确保撤销完成后不会由浏览器或 CDN 回放历史 JSON。
   ///
   /// Parameters:
-  /// * [token] 
+  /// * [token]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -5033,7 +5034,7 @@ _responseData = rawData == null ? null : deserialize<PairingAttemptResponse, Pai
   ///
   /// Returns a [Future] containing a [Response] with a [PublicShareResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PublicShareResponse>> getPublicShare({ 
+  Future<Response<PublicShareResponse>> getPublicShare({
     required String token,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -5091,11 +5092,86 @@ _responseData = rawData == null ? null : deserialize<PublicShareResponse, Public
     );
   }
 
+  /// 读取公开分享媒体
+  /// 仅允许读取当前 token 显式选择的媒体；分享撤销或过期后返回 404。
+  ///
+  /// Parameters:
+  /// * [token]
+  /// * [mediaId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [Uint8List] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<Uint8List>> getPublicShareMedia({
+    required String token,
+    required String mediaId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/public/shares/{token}/media/{media_id}'.replaceAll('{' r'token' '}', token.toString()).replaceAll('{' r'media_id' '}', mediaId.toString());
+    final _options = Options(
+      method: r'GET',
+      responseType: ResponseType.bytes,
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    Uint8List? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : rawData as Uint8List;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<Uint8List>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// 获取提醒
   /// 返回提醒规则、基准事件和多通道投递状态。
   ///
   /// Parameters:
-  /// * [reminderId] 
+  /// * [reminderId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -5105,7 +5181,7 @@ _responseData = rawData == null ? null : deserialize<PublicShareResponse, Public
   ///
   /// Returns a [Future] containing a [Response] with a [ReminderResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ReminderResponse>> getReminder({ 
+  Future<Response<ReminderResponse>> getReminder({
     required String reminderId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -5173,7 +5249,7 @@ _responseData = rawData == null ? null : deserialize<ReminderResponse, ReminderR
   /// 返回单个规则版本及来源。
   ///
   /// Parameters:
-  /// * [ruleVersionId] 
+  /// * [ruleVersionId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -5183,7 +5259,7 @@ _responseData = rawData == null ? null : deserialize<ReminderResponse, ReminderR
   ///
   /// Returns a [Future] containing a [Response] with a [SpeciesRuleVersionResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SpeciesRuleVersionResponse>> getSpeciesRuleVersion({ 
+  Future<Response<SpeciesRuleVersionResponse>> getSpeciesRuleVersion({
     required String ruleVersionId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -5251,7 +5327,7 @@ _responseData = rawData == null ? null : deserialize<SpeciesRuleVersionResponse,
   /// 返回阶段进度、关联对象和版本。
   ///
   /// Parameters:
-  /// * [taskId] 
+  /// * [taskId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -5261,7 +5337,7 @@ _responseData = rawData == null ? null : deserialize<SpeciesRuleVersionResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [CareTaskResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CareTaskResponse>> getTask({ 
+  Future<Response<CareTaskResponse>> getTask({
     required String taskId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -5326,13 +5402,13 @@ _responseData = rawData == null ? null : deserialize<CareTaskResponse, CareTaskR
   }
 
   /// 将临时幼崽个体化
-  /// 仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。 
+  /// 仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [litterId] 
-  /// * [individualizeLitterRequest] 
+  /// * [litterId]
+  /// * [individualizeLitterRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -5342,7 +5418,7 @@ _responseData = rawData == null ? null : deserialize<CareTaskResponse, CareTaskR
   ///
   /// Returns a [Future] containing a [Response] with a [IndividualizeLitterResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<IndividualizeLitterResponse>> individualizeLitter({ 
+  Future<Response<IndividualizeLitterResponse>> individualizeLitter({
     required String idempotencyKey,
     required String ifMatch,
     required String litterId,
@@ -5431,13 +5507,13 @@ _responseData = rawData == null ? null : deserialize<IndividualizeLitterResponse
   }
 
   /// 将临时幼崽个体化
-  /// 仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。 
+  /// 仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [litterId] 
-  /// * [individualizeLitterRequest] 
+  /// * [litterId]
+  /// * [individualizeLitterRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -5447,7 +5523,7 @@ _responseData = rawData == null ? null : deserialize<IndividualizeLitterResponse
   ///
   /// Returns a [Future] containing a [Response] with a [IndividualizeLitterResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<IndividualizeLitterResponse>> individualizeLitter_4({ 
+  Future<Response<IndividualizeLitterResponse>> individualizeLitter_4({
     required String idempotencyKey,
     required String ifMatch,
     required String litterId,
@@ -5536,13 +5612,13 @@ _responseData = rawData == null ? null : deserialize<IndividualizeLitterResponse
   }
 
   /// 将临时幼崽个体化
-  /// 仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。 
+  /// 仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [litterId] 
-  /// * [individualizeLitterRequest] 
+  /// * [litterId]
+  /// * [individualizeLitterRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -5552,7 +5628,7 @@ _responseData = rawData == null ? null : deserialize<IndividualizeLitterResponse
   ///
   /// Returns a [Future] containing a [Response] with a [IndividualizeLitterResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<IndividualizeLitterResponse>> individualizeLitter_5({ 
+  Future<Response<IndividualizeLitterResponse>> individualizeLitter_5({
     required String idempotencyKey,
     required String ifMatch,
     required String litterId,
@@ -5655,7 +5731,7 @@ _responseData = rawData == null ? null : deserialize<IndividualizeLitterResponse
   ///
   /// Returns a [Future] containing a [Response] with a [BackupJobListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<BackupJobListResponse>> listBackupJobs({ 
+  Future<Response<BackupJobListResponse>> listBackupJobs({
     String? cursor,
     int? limit = 50,
     CancelToken? cancelToken,
@@ -5732,9 +5808,9 @@ _responseData = rawData == null ? null : deserialize<BackupJobListResponse, Back
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [state] 
-  /// * [sireId] 
-  /// * [damId] 
+  /// * [state]
+  /// * [sireId]
+  /// * [damId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -5744,7 +5820,7 @@ _responseData = rawData == null ? null : deserialize<BackupJobListResponse, Back
   ///
   /// Returns a [Future] containing a [Response] with a [BreedingPlanListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<BreedingPlanListResponse>> listBreedingPlans({ 
+  Future<Response<BreedingPlanListResponse>> listBreedingPlans({
     String? cursor,
     int? limit = 50,
     BreedingPlanState? state,
@@ -5825,7 +5901,7 @@ _responseData = rawData == null ? null : deserialize<BreedingPlanListResponse, B
   /// 返回清洁、消毒及纠错记录；历史记录只追加，不原地覆盖。
   ///
   /// Parameters:
-  /// * [enclosureId] 
+  /// * [enclosureId]
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -5837,7 +5913,7 @@ _responseData = rawData == null ? null : deserialize<BreedingPlanListResponse, B
   ///
   /// Returns a [Future] containing a [Response] with a [EnclosureCleaningListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EnclosureCleaningListResponse>> listEnclosureCleanings({ 
+  Future<Response<EnclosureCleaningListResponse>> listEnclosureCleanings({
     required String enclosureId,
     String? cursor,
     int? limit = 50,
@@ -5913,10 +5989,10 @@ _responseData = rawData == null ? null : deserialize<EnclosureCleaningListRespon
   /// 返回指定笼盒的入住、移笼和离开历史。
   ///
   /// Parameters:
-  /// * [enclosureId] 
+  /// * [enclosureId]
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [active] 
+  /// * [active]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -5926,7 +6002,7 @@ _responseData = rawData == null ? null : deserialize<EnclosureCleaningListRespon
   ///
   /// Returns a [Future] containing a [Response] with a [EnclosureStayListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EnclosureStayListResponse>> listEnclosureStays({ 
+  Future<Response<EnclosureStayListResponse>> listEnclosureStays({
     required String enclosureId,
     String? cursor,
     int? limit = 50,
@@ -6006,9 +6082,9 @@ _responseData = rawData == null ? null : deserialize<EnclosureStayListResponse, 
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [state] 
-  /// * [rackCode] 
-  /// * [cleanlinessState] 
+  /// * [state]
+  /// * [rackCode]
+  /// * [cleanlinessState]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -6018,7 +6094,7 @@ _responseData = rawData == null ? null : deserialize<EnclosureStayListResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [EnclosureListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EnclosureListResponse>> listEnclosures({ 
+  Future<Response<EnclosureListResponse>> listEnclosures({
     String? cursor,
     int? limit = 50,
     EnclosureState? state,
@@ -6110,7 +6186,7 @@ _responseData = rawData == null ? null : deserialize<EnclosureListResponse, Encl
   ///
   /// Returns a [Future] containing a [Response] with a [ExportJobListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ExportJobListResponse>> listExportJobs({ 
+  Future<Response<ExportJobListResponse>> listExportJobs({
     String? cursor,
     int? limit = 50,
     CancelToken? cancelToken,
@@ -6187,9 +6263,9 @@ _responseData = rawData == null ? null : deserialize<ExportJobListResponse, Expo
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [lifecycleStatus] 
-  /// * [sex] 
-  /// * [enclosureId] 
+  /// * [lifecycleStatus]
+  /// * [sex]
+  /// * [enclosureId]
   /// * [q] - 编号或昵称关键词
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -6200,7 +6276,7 @@ _responseData = rawData == null ? null : deserialize<ExportJobListResponse, Expo
   ///
   /// Returns a [Future] containing a [Response] with a [HamsterListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<HamsterListResponse>> listHamsters({ 
+  Future<Response<HamsterListResponse>> listHamsters({
     String? cursor,
     int? limit = 50,
     HamsterLifecycleStatus? lifecycleStatus,
@@ -6285,9 +6361,9 @@ _responseData = rawData == null ? null : deserialize<HamsterListResponse, Hamste
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [hamsterId] 
-  /// * [litterId] 
-  /// * [type] 
+  /// * [hamsterId]
+  /// * [litterId]
+  /// * [type]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -6297,7 +6373,7 @@ _responseData = rawData == null ? null : deserialize<HamsterListResponse, Hamste
   ///
   /// Returns a [Future] containing a [Response] with a [HealthRecordListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<HealthRecordListResponse>> listHealthRecords({ 
+  Future<Response<HealthRecordListResponse>> listHealthRecords({
     String? cursor,
     int? limit = 50,
     String? hamsterId,
@@ -6380,7 +6456,7 @@ _responseData = rawData == null ? null : deserialize<HealthRecordListResponse, H
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [status] 
+  /// * [status]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -6390,7 +6466,7 @@ _responseData = rawData == null ? null : deserialize<HealthRecordListResponse, H
   ///
   /// Returns a [Future] containing a [Response] with a [ImportJobListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ImportJobListResponse>> listImportJobs({ 
+  Future<Response<ImportJobListResponse>> listImportJobs({
     String? cursor,
     int? limit = 50,
     JobStatus? status,
@@ -6467,10 +6543,10 @@ _responseData = rawData == null ? null : deserialize<ImportJobListResponse, Impo
   /// 使用 cursor 分页返回每行映射值、状态、资源 ID 和错误。
   ///
   /// Parameters:
-  /// * [jobId] 
+  /// * [jobId]
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [status] 
+  /// * [status]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -6480,7 +6556,7 @@ _responseData = rawData == null ? null : deserialize<ImportJobListResponse, Impo
   ///
   /// Returns a [Future] containing a [Response] with a [ImportRowResultListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ImportRowResultListResponse>> listImportRowResults({ 
+  Future<Response<ImportRowResultListResponse>> listImportRowResults({
     required String jobId,
     String? cursor,
     int? limit = 50,
@@ -6558,7 +6634,7 @@ _responseData = rawData == null ? null : deserialize<ImportRowResultListResponse
   /// 返回 litter_member，对临时幼崽或正式 hamster 二选一关联。
   ///
   /// Parameters:
-  /// * [litterId] 
+  /// * [litterId]
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -6570,7 +6646,7 @@ _responseData = rawData == null ? null : deserialize<ImportRowResultListResponse
   ///
   /// Returns a [Future] containing a [Response] with a [LitterMemberListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<LitterMemberListResponse>> listLitterMembers({ 
+  Future<Response<LitterMemberListResponse>> listLitterMembers({
     required String litterId,
     String? cursor,
     int? limit = 50,
@@ -6646,7 +6722,7 @@ _responseData = rawData == null ? null : deserialize<LitterMemberListResponse, L
   /// 返回 litter_member，对临时幼崽或正式 hamster 二选一关联。
   ///
   /// Parameters:
-  /// * [litterId] 
+  /// * [litterId]
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -6658,7 +6734,7 @@ _responseData = rawData == null ? null : deserialize<LitterMemberListResponse, L
   ///
   /// Returns a [Future] containing a [Response] with a [LitterMemberListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<LitterMemberListResponse>> listLitterMembers_6({ 
+  Future<Response<LitterMemberListResponse>> listLitterMembers_6({
     required String litterId,
     String? cursor,
     int? limit = 50,
@@ -6734,7 +6810,7 @@ _responseData = rawData == null ? null : deserialize<LitterMemberListResponse, L
   /// 返回 litter_parent 关系。
   ///
   /// Parameters:
-  /// * [litterId] 
+  /// * [litterId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -6744,7 +6820,7 @@ _responseData = rawData == null ? null : deserialize<LitterMemberListResponse, L
   ///
   /// Returns a [Future] containing a [Response] with a [LitterParentListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<LitterParentListResponse>> listLitterParents({ 
+  Future<Response<LitterParentListResponse>> listLitterParents({
     required String litterId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -6814,9 +6890,9 @@ _responseData = rawData == null ? null : deserialize<LitterParentListResponse, L
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [state] 
-  /// * [bornFrom] 
-  /// * [bornTo] 
+  /// * [state]
+  /// * [bornFrom]
+  /// * [bornTo]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -6826,7 +6902,7 @@ _responseData = rawData == null ? null : deserialize<LitterParentListResponse, L
   ///
   /// Returns a [Future] containing a [Response] with a [LitterListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<LitterListResponse>> listLitters({ 
+  Future<Response<LitterListResponse>> listLitters({
     String? cursor,
     int? limit = 50,
     LitterState? state,
@@ -6907,7 +6983,7 @@ _responseData = rawData == null ? null : deserialize<LitterListResponse, LitterL
   /// 返回多次配对尝试及当前版本。
   ///
   /// Parameters:
-  /// * [planId] 
+  /// * [planId]
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -6919,7 +6995,7 @@ _responseData = rawData == null ? null : deserialize<LitterListResponse, LitterL
   ///
   /// Returns a [Future] containing a [Response] with a [PairingAttemptListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PairingAttemptListResponse>> listPairingAttempts({ 
+  Future<Response<PairingAttemptListResponse>> listPairingAttempts({
     required String planId,
     String? cursor,
     int? limit = 50,
@@ -6997,8 +7073,8 @@ _responseData = rawData == null ? null : deserialize<PairingAttemptListResponse,
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [childHamsterId] 
-  /// * [parentHamsterId] 
+  /// * [childHamsterId]
+  /// * [parentHamsterId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -7008,7 +7084,7 @@ _responseData = rawData == null ? null : deserialize<PairingAttemptListResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [PedigreeParentageListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PedigreeParentageListResponse>> listPedigreeParentages({ 
+  Future<Response<PedigreeParentageListResponse>> listPedigreeParentages({
     String? cursor,
     int? limit = 50,
     String? childHamsterId,
@@ -7087,11 +7163,11 @@ _responseData = rawData == null ? null : deserialize<PedigreeParentageListRespon
   /// 返回未个体化及已映射幼崽身份。
   ///
   /// Parameters:
-  /// * [litterId] 
+  /// * [litterId]
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [outcomeStatus] 
-  /// * [profileStatus] 
+  /// * [outcomeStatus]
+  /// * [profileStatus]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -7101,7 +7177,7 @@ _responseData = rawData == null ? null : deserialize<PedigreeParentageListRespon
   ///
   /// Returns a [Future] containing a [Response] with a [PupIdentityListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PupIdentityListResponse>> listPupIdentities({ 
+  Future<Response<PupIdentityListResponse>> listPupIdentities({
     required String litterId,
     String? cursor,
     int? limit = 50,
@@ -7183,8 +7259,8 @@ _responseData = rawData == null ? null : deserialize<PupIdentityListResponse, Pu
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [state] 
-  /// * [ruleCode] 
+  /// * [state]
+  /// * [ruleCode]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -7194,7 +7270,7 @@ _responseData = rawData == null ? null : deserialize<PupIdentityListResponse, Pu
   ///
   /// Returns a [Future] containing a [Response] with a [ReminderListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ReminderListResponse>> listReminders({ 
+  Future<Response<ReminderListResponse>> listReminders({
     String? cursor,
     int? limit = 50,
     ReminderState? state,
@@ -7275,7 +7351,7 @@ _responseData = rawData == null ? null : deserialize<ReminderListResponse, Remin
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [status] 
+  /// * [status]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -7285,7 +7361,7 @@ _responseData = rawData == null ? null : deserialize<ReminderListResponse, Remin
   ///
   /// Returns a [Future] containing a [Response] with a [SharePageListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SharePageListResponse>> listShares({ 
+  Future<Response<SharePageListResponse>> listShares({
     String? cursor,
     int? limit = 50,
     ShareStatus? status,
@@ -7373,7 +7449,7 @@ _responseData = rawData == null ? null : deserialize<SharePageListResponse, Shar
   ///
   /// Returns a [Future] containing a [Response] with a [SpeciesRuleVersionListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SpeciesRuleVersionListResponse>> listSpeciesRuleTemplates({ 
+  Future<Response<SpeciesRuleVersionListResponse>> listSpeciesRuleTemplates({
     String? cursor,
     int? limit = 50,
     CancelToken? cancelToken,
@@ -7460,7 +7536,7 @@ _responseData = rawData == null ? null : deserialize<SpeciesRuleVersionListRespo
   ///
   /// Returns a [Future] containing a [Response] with a [SpeciesRuleVersionListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SpeciesRuleVersionListResponse>> listSpeciesRuleVersions({ 
+  Future<Response<SpeciesRuleVersionListResponse>> listSpeciesRuleVersions({
     String? cursor,
     int? limit = 50,
     String? speciesCode,
@@ -7539,10 +7615,10 @@ _responseData = rawData == null ? null : deserialize<SpeciesRuleVersionListRespo
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [state] 
-  /// * [priority] 
-  /// * [targetType] 
-  /// * [dueBefore] 
+  /// * [state]
+  /// * [priority]
+  /// * [targetType]
+  /// * [dueBefore]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -7552,7 +7628,7 @@ _responseData = rawData == null ? null : deserialize<SpeciesRuleVersionListRespo
   ///
   /// Returns a [Future] containing a [Response] with a [CareTaskListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CareTaskListResponse>> listTasks({ 
+  Future<Response<CareTaskListResponse>> listTasks({
     String? cursor,
     int? limit = 50,
     TaskState? state,
@@ -7637,8 +7713,8 @@ _responseData = rawData == null ? null : deserialize<CareTaskListResponse, CareT
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [from] 
-  /// * [to] 
+  /// * [from]
+  /// * [to]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -7648,7 +7724,7 @@ _responseData = rawData == null ? null : deserialize<CareTaskListResponse, CareT
   ///
   /// Returns a [Future] containing a [Response] with a [UsageSnapshotListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<UsageSnapshotListResponse>> listUsageSnapshots({ 
+  Future<Response<UsageSnapshotListResponse>> listUsageSnapshots({
     String? cursor,
     int? limit = 50,
     DateTime? from,
@@ -7729,11 +7805,11 @@ _responseData = rawData == null ? null : deserialize<UsageSnapshotListResponse, 
   /// Parameters:
   /// * [cursor] - 上一页响应返回的不透明 next_cursor。
   /// * [limit] - 每页数量。
-  /// * [hamsterId] 
-  /// * [pupIdentityId] 
-  /// * [litterId] 
-  /// * [recordedFrom] 
-  /// * [recordedTo] 
+  /// * [hamsterId]
+  /// * [pupIdentityId]
+  /// * [litterId]
+  /// * [recordedFrom]
+  /// * [recordedTo]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -7743,7 +7819,7 @@ _responseData = rawData == null ? null : deserialize<UsageSnapshotListResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [WeightRecordListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<WeightRecordListResponse>> listWeightRecords({ 
+  Future<Response<WeightRecordListResponse>> listWeightRecords({
     String? cursor,
     int? limit = 50,
     String? hamsterId,
@@ -7825,13 +7901,13 @@ _responseData = rawData == null ? null : deserialize<WeightRecordListResponse, W
   }
 
   /// 全量预检 CSV
-  /// 全量检查缺列、重复编号、父母缺失、父母与既有窝次不一致、谱系环、笼位冲突 和非法体重。仓鼠模板可按窝次编号自动规划历史窝次，但只有同一窝次的出生时间、 双亲和物种规则全部一致时才允许创建；任何冲突均作为阻塞问题返回，不静默合并。 
+  /// 全量检查缺列、重复编号、父母缺失、父母与既有窝次不一致、谱系环、笼位冲突 和非法体重。仓鼠模板可按窝次编号自动规划历史窝次，但只有同一窝次的出生时间、 双亲和物种规则全部一致时才允许创建；任何冲突均作为阻塞问题返回，不静默合并。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [jobId] 
-  /// * [importPreflightRequest] 
+  /// * [jobId]
+  /// * [importPreflightRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -7841,7 +7917,7 @@ _responseData = rawData == null ? null : deserialize<WeightRecordListResponse, W
   ///
   /// Returns a [Future] containing a [Response] with a [ImportJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ImportJobResponse>> preflightImportJob({ 
+  Future<Response<ImportJobResponse>> preflightImportJob({
     required String idempotencyKey,
     required String ifMatch,
     required String jobId,
@@ -7933,8 +8009,8 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   /// 生成对象存储上传地址；支持图片与短视频。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [mediaUploadPresignRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [mediaUploadPresignRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -7944,7 +8020,7 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   ///
   /// Returns a [Future] containing a [Response] with a [MediaUploadPresignResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MediaUploadPresignResponse>> presignMediaUpload({ 
+  Future<Response<MediaUploadPresignResponse>> presignMediaUpload({
     required String idempotencyKey,
     required MediaUploadPresignRequest mediaUploadPresignRequest,
     CancelToken? cancelToken,
@@ -8033,7 +8109,7 @@ _responseData = rawData == null ? null : deserialize<MediaUploadPresignResponse,
   /// 认证态预览最终公开字段和媒体，不增加公开访问计数。
   ///
   /// Parameters:
-  /// * [shareId] 
+  /// * [shareId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -8043,7 +8119,7 @@ _responseData = rawData == null ? null : deserialize<MediaUploadPresignResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [PublicShareResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PublicShareResponse>> previewShare({ 
+  Future<Response<PublicShareResponse>> previewShare({
     required String shareId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -8108,11 +8184,11 @@ _responseData = rawData == null ? null : deserialize<PublicShareResponse, Public
   }
 
   /// 创建前预览公开分享
-  /// 不持久化分享，不生成公开令牌；按当前 owner 校验主体、字段和媒体后返回 匿名访客将看到的精确投影。禁止输出健康备注、联系方式、任务和审计字段。 
+  /// 不持久化分享，不生成公开令牌；按当前 owner 校验主体、字段和媒体后返回 匿名访客将看到的精确投影。禁止输出健康备注、联系方式、任务和审计字段。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [shareCreateRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [shareCreateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -8122,7 +8198,7 @@ _responseData = rawData == null ? null : deserialize<PublicShareResponse, Public
   ///
   /// Returns a [Future] containing a [Response] with a [PublicShareResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PublicShareResponse>> previewShareDraft({ 
+  Future<Response<PublicShareResponse>> previewShareDraft({
     required String idempotencyKey,
     required ShareCreateRequest shareCreateRequest,
     CancelToken? cancelToken,
@@ -8208,13 +8284,13 @@ _responseData = rawData == null ? null : deserialize<PublicShareResponse, Public
   }
 
   /// 发布繁育计划
-  /// 校验父母资格、并行计划、规则版本与亲缘风险后，将 draft 推进到 pair_ready。 仅允许当前状态为 draft；客户端不提交目标 state。 
+  /// 校验父母资格、并行计划、规则版本与亲缘风险后，将 draft 推进到 pair_ready。 仅允许当前状态为 draft；客户端不提交目标 state。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [planId] 
-  /// * [publishBreedingPlanRequest] 
+  /// * [planId]
+  /// * [publishBreedingPlanRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -8224,7 +8300,7 @@ _responseData = rawData == null ? null : deserialize<PublicShareResponse, Public
   ///
   /// Returns a [Future] containing a [Response] with a [PublishBreedingPlanResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PublishBreedingPlanResponse>> publishBreedingPlan({ 
+  Future<Response<PublishBreedingPlanResponse>> publishBreedingPlan({
     required String idempotencyKey,
     required String ifMatch,
     required String planId,
@@ -8316,10 +8392,10 @@ _responseData = rawData == null ? null : deserialize<PublishBreedingPlanResponse
   /// 在有效配对时间段内追加观察，不覆盖已有观察。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [attemptId] 
-  /// * [recordObservationRequest] 
+  /// * [attemptId]
+  /// * [recordObservationRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -8329,7 +8405,7 @@ _responseData = rawData == null ? null : deserialize<PublishBreedingPlanResponse
   ///
   /// Returns a [Future] containing a [Response] with a [RecordObservationResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<RecordObservationResponse>> recordPairingObservation({ 
+  Future<Response<RecordObservationResponse>> recordPairingObservation({
     required String idempotencyKey,
     required String ifMatch,
     required String attemptId,
@@ -8421,8 +8497,8 @@ _responseData = rawData == null ? null : deserialize<RecordObservationResponse, 
   /// 使用刷新令牌轮换访问令牌和刷新令牌，供客户端恢复认证 owner 上下文。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [refreshSessionRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [refreshSessionRequest]
   /// * [xTimezone] - IANA 时区；缺省时使用当前熊舍 timezone。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -8433,7 +8509,7 @@ _responseData = rawData == null ? null : deserialize<RecordObservationResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [SessionResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SessionResponse>> refreshSession({ 
+  Future<Response<SessionResponse>> refreshSession({
     required String idempotencyKey,
     required RefreshSessionRequest refreshSessionRequest,
     String? xTimezone = 'Asia/Shanghai',
@@ -8518,10 +8594,10 @@ _responseData = rawData == null ? null : deserialize<SessionResponse, SessionRes
   /// 保留原失败记录并创建新的执行尝试。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [jobId] 
-  /// * [retryJobRequest] 
+  /// * [jobId]
+  /// * [retryJobRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -8531,7 +8607,7 @@ _responseData = rawData == null ? null : deserialize<SessionResponse, SessionRes
   ///
   /// Returns a [Future] containing a [Response] with a [BackupJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<BackupJobResponse>> retryBackupJob({ 
+  Future<Response<BackupJobResponse>> retryBackupJob({
     required String idempotencyKey,
     required String ifMatch,
     required String jobId,
@@ -8623,10 +8699,10 @@ _responseData = rawData == null ? null : deserialize<BackupJobResponse, BackupJo
   /// 从相同导出快照创建新执行尝试。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [jobId] 
-  /// * [retryJobRequest] 
+  /// * [jobId]
+  /// * [retryJobRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -8636,7 +8712,7 @@ _responseData = rawData == null ? null : deserialize<BackupJobResponse, BackupJo
   ///
   /// Returns a [Future] containing a [Response] with a [ExportJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ExportJobResponse>> retryExportJob({ 
+  Future<Response<ExportJobResponse>> retryExportJob({
     required String idempotencyKey,
     required String ifMatch,
     required String jobId,
@@ -8728,10 +8804,10 @@ _responseData = rawData == null ? null : deserialize<ExportJobResponse, ExportJo
   /// 可重试全部失败行或指定行号，已成功行不会重复写入。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [jobId] 
-  /// * [retryImportRequest] 
+  /// * [jobId]
+  /// * [retryImportRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -8741,7 +8817,7 @@ _responseData = rawData == null ? null : deserialize<ExportJobResponse, ExportJo
   ///
   /// Returns a [Future] containing a [Response] with a [ImportJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ImportJobResponse>> retryImportJob({ 
+  Future<Response<ImportJobResponse>> retryImportJob({
     required String idempotencyKey,
     required String ifMatch,
     required String jobId,
@@ -8830,13 +8906,13 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   }
 
   /// 重试失败的媒体处理
-  /// 仅允许原始媒体已完成校验且目标派生处于 failed。保留原失败作业， 幂等创建新的图片派生或短视频转码作业；业务记录和原始媒体事实不回滚。 
+  /// 仅允许原始媒体已完成校验且目标派生处于 failed。保留原失败作业， 幂等创建新的图片派生或短视频转码作业；业务记录和原始媒体事实不回滚。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [mediaId] 
-  /// * [mediaProcessingRetryRequest] 
+  /// * [mediaId]
+  /// * [mediaProcessingRetryRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -8846,7 +8922,7 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   ///
   /// Returns a [Future] containing a [Response] with a [MediaProcessingRetryResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MediaProcessingRetryResponse>> retryMediaProcessing({ 
+  Future<Response<MediaProcessingRetryResponse>> retryMediaProcessing({
     required String idempotencyKey,
     required String ifMatch,
     required String mediaId,
@@ -8935,13 +9011,13 @@ _responseData = rawData == null ? null : deserialize<MediaProcessingRetryRespons
   }
 
   /// 撤销公开分享
-  /// 同一事务内标记令牌已撤销并写入 CDN purge Outbox，事务提交后立即返回 200； 公开 API 的下一次请求立即失效，HTML/JSON 使用 no-store。share-scoped 公开媒体 的边缘 TTL 不超过 60 秒，最迟 60 秒不再返回；内部资源和原始私有媒体不受影响。 
+  /// 同一事务内标记令牌已撤销并写入 CDN purge Outbox，事务提交后立即返回 200； 公开 API 的下一次请求立即失效，HTML/JSON 使用 no-store。share-scoped 公开媒体 的边缘 TTL 不超过 60 秒，最迟 60 秒不再返回；内部资源和原始私有媒体不受影响。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [shareId] 
-  /// * [revokeShareRequest] 
+  /// * [shareId]
+  /// * [revokeShareRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -8951,7 +9027,7 @@ _responseData = rawData == null ? null : deserialize<MediaProcessingRetryRespons
   ///
   /// Returns a [Future] containing a [Response] with a [ShareRevocationResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ShareRevocationResponse>> revokeShare({ 
+  Future<Response<ShareRevocationResponse>> revokeShare({
     required String idempotencyKey,
     required String ifMatch,
     required String shareId,
@@ -9043,8 +9119,8 @@ _responseData = rawData == null ? null : deserialize<ShareRevocationResponse, Sh
   /// 为登录目的发送验证码；相同手机号和用途受冷却时间与频率限制。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
-  /// * [sendVerificationCodeRequest] 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [sendVerificationCodeRequest]
   /// * [xTimezone] - IANA 时区；缺省时使用当前熊舍 timezone。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -9055,7 +9131,7 @@ _responseData = rawData == null ? null : deserialize<ShareRevocationResponse, Sh
   ///
   /// Returns a [Future] containing a [Response] with a [VerificationCodeChallengeResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<VerificationCodeChallengeResponse>> sendVerificationCode({ 
+  Future<Response<VerificationCodeChallengeResponse>> sendVerificationCode({
     required String idempotencyKey,
     required SendVerificationCodeRequest sendVerificationCodeRequest,
     String? xTimezone = 'Asia/Shanghai',
@@ -9137,13 +9213,13 @@ _responseData = rawData == null ? null : deserialize<VerificationCodeChallengeRe
   }
 
   /// 结束配对并完成分笼
-  /// 仅允许 active 或 safety_hold 的配对尝试。 原子关闭临时配对占用、登记双方去向并创建新入住事实。 若笼盒冲突或只登记一方，整体失败且不释放配对笼。 
+  /// 仅允许 active 或 safety_hold 的配对尝试。 原子关闭临时配对占用、登记双方去向并创建新入住事实。 若笼盒冲突或只登记一方，整体失败且不释放配对笼。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [attemptId] 
-  /// * [separatePairingRequest] 
+  /// * [attemptId]
+  /// * [separatePairingRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -9153,7 +9229,7 @@ _responseData = rawData == null ? null : deserialize<VerificationCodeChallengeRe
   ///
   /// Returns a [Future] containing a [Response] with a [SeparatePairingResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SeparatePairingResponse>> separatePairing({ 
+  Future<Response<SeparatePairingResponse>> separatePairing({
     required String idempotencyKey,
     required String ifMatch,
     required String attemptId,
@@ -9245,10 +9321,10 @@ _responseData = rawData == null ? null : deserialize<SeparatePairingResponse, Se
   /// 保存源列到目标字段的映射、空值策略和时区。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [jobId] 
-  /// * [importMappingRequest] 
+  /// * [jobId]
+  /// * [importMappingRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -9258,7 +9334,7 @@ _responseData = rawData == null ? null : deserialize<SeparatePairingResponse, Se
   ///
   /// Returns a [Future] containing a [Response] with a [ImportJobResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ImportJobResponse>> setImportMapping({ 
+  Future<Response<ImportJobResponse>> setImportMapping({
     required String idempotencyKey,
     required String ifMatch,
     required String jobId,
@@ -9350,10 +9426,10 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   /// 视频可选择时间点或已有媒体作为封面。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [mediaId] 
-  /// * [mediaCoverRequest] 
+  /// * [mediaId]
+  /// * [mediaCoverRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -9363,7 +9439,7 @@ _responseData = rawData == null ? null : deserialize<ImportJobResponse, ImportJo
   ///
   /// Returns a [Future] containing a [Response] with a [MediaAssetResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MediaAssetResponse>> setMediaCover({ 
+  Future<Response<MediaAssetResponse>> setMediaCover({
     required String idempotencyKey,
     required String ifMatch,
     required String mediaId,
@@ -9452,13 +9528,13 @@ _responseData = rawData == null ? null : deserialize<MediaAssetResponse, MediaAs
   }
 
   /// 分性并分笼
-  /// 仅允许 sexing_due；逐项提交性别、置信度和目标笼盒。服务端验证完整在管集合、 异性混笼、容量和待复核安排，客户端不得提交目标状态。 
+  /// 仅允许 sexing_due；逐项提交性别、置信度和目标笼盒。服务端验证完整在管集合、 异性混笼、容量和待复核安排，客户端不得提交目标状态。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [litterId] 
-  /// * [sexAndSeparateRequest] 
+  /// * [litterId]
+  /// * [sexAndSeparateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -9468,7 +9544,7 @@ _responseData = rawData == null ? null : deserialize<MediaAssetResponse, MediaAs
   ///
   /// Returns a [Future] containing a [Response] with a [SexAndSeparateResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SexAndSeparateResponse>> sexAndSeparateLitter({ 
+  Future<Response<SexAndSeparateResponse>> sexAndSeparateLitter({
     required String idempotencyKey,
     required String ifMatch,
     required String litterId,
@@ -9557,13 +9633,13 @@ _responseData = rawData == null ? null : deserialize<SexAndSeparateResponse, Sex
   }
 
   /// 从分笼后进入孕期观察
-  /// 仅允许 post_pair。服务端校验至少一次 pairing_attempt 已闭环、结果为有效或待定、 配对笼已释放，再计算预产区间、创建提醒并推进到 gestation。 
+  /// 仅允许 post_pair。服务端校验至少一次 pairing_attempt 已闭环、结果为有效或待定、 配对笼已释放，再计算预产区间、创建提醒并推进到 gestation。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [planId] 
-  /// * [startGestationRequest] 
+  /// * [planId]
+  /// * [startGestationRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -9573,7 +9649,7 @@ _responseData = rawData == null ? null : deserialize<SexAndSeparateResponse, Sex
   ///
   /// Returns a [Future] containing a [Response] with a [StartGestationResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StartGestationResponse>> startGestationMonitoring({ 
+  Future<Response<StartGestationResponse>> startGestationMonitoring({
     required String idempotencyKey,
     required String ifMatch,
     required String planId,
@@ -9662,13 +9738,13 @@ _responseData = rawData == null ? null : deserialize<StartGestationResponse, Sta
   }
 
   /// 开始配对
-  /// 仅允许当前状态为 pair_ready。原子创建 pairing_attempt、占用临时配对笼 并推进到 pairing；任一父母资格或笼位守卫失败时不产生部分事实。 
+  /// 仅允许当前状态为 pair_ready。原子创建 pairing_attempt、占用临时配对笼 并推进到 pairing；任一父母资格或笼位守卫失败时不产生部分事实。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [planId] 
-  /// * [startPairingRequest] 
+  /// * [planId]
+  /// * [startPairingRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -9678,7 +9754,7 @@ _responseData = rawData == null ? null : deserialize<StartGestationResponse, Sta
   ///
   /// Returns a [Future] containing a [Response] with a [StartPairingResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StartPairingResponse>> startPairing({ 
+  Future<Response<StartPairingResponse>> startPairing({
     required String idempotencyKey,
     required String ifMatch,
     required String planId,
@@ -9770,10 +9846,10 @@ _responseData = rawData == null ? null : deserialize<StartPairingResponse, Start
   /// 只更新非状态字段；客户端不得直接 PATCH state。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [planId] 
-  /// * [breedingPlanUpdateRequest] 
+  /// * [planId]
+  /// * [breedingPlanUpdateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -9783,7 +9859,7 @@ _responseData = rawData == null ? null : deserialize<StartPairingResponse, Start
   ///
   /// Returns a [Future] containing a [Response] with a [BreedingPlanResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<BreedingPlanResponse>> updateBreedingPlan({ 
+  Future<Response<BreedingPlanResponse>> updateBreedingPlan({
     required String idempotencyKey,
     required String ifMatch,
     required String planId,
@@ -9875,9 +9951,9 @@ _responseData = rawData == null ? null : deserialize<BreedingPlanResponse, Breed
   /// 仅更新熊舍资料；owner_id 由认证上下文解析且不在请求体中出现。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [organizationUpdateRequest] 
+  /// * [organizationUpdateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -9887,7 +9963,7 @@ _responseData = rawData == null ? null : deserialize<BreedingPlanResponse, Breed
   ///
   /// Returns a [Future] containing a [Response] with a [OrganizationResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<OrganizationResponse>> updateCurrentOrganization({ 
+  Future<Response<OrganizationResponse>> updateCurrentOrganization({
     required String idempotencyKey,
     required String ifMatch,
     required OrganizationUpdateRequest organizationUpdateRequest,
@@ -9978,10 +10054,10 @@ _responseData = rawData == null ? null : deserialize<OrganizationResponse, Organ
   /// 修改编号、位置、笼内设施（跑轮、饮水器、食盆、躲避屋、垫材等）和清洁资料；占用事实通过入住资源维护。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [enclosureId] 
-  /// * [enclosureUpdateRequest] 
+  /// * [enclosureId]
+  /// * [enclosureUpdateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -9991,7 +10067,7 @@ _responseData = rawData == null ? null : deserialize<OrganizationResponse, Organ
   ///
   /// Returns a [Future] containing a [Response] with a [EnclosureResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EnclosureResponse>> updateEnclosure({ 
+  Future<Response<EnclosureResponse>> updateEnclosure({
     required String idempotencyKey,
     required String ifMatch,
     required String enclosureId,
@@ -10083,10 +10159,10 @@ _responseData = rawData == null ? null : deserialize<EnclosureResponse, Enclosur
   /// 可填写结束时间与修正原因；历史修正保留审计信息。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [stayId] 
-  /// * [enclosureStayUpdateRequest] 
+  /// * [stayId]
+  /// * [enclosureStayUpdateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -10096,7 +10172,7 @@ _responseData = rawData == null ? null : deserialize<EnclosureResponse, Enclosur
   ///
   /// Returns a [Future] containing a [Response] with a [EnclosureStayResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EnclosureStayResponse>> updateEnclosureStay({ 
+  Future<Response<EnclosureStayResponse>> updateEnclosureStay({
     required String idempotencyKey,
     required String ifMatch,
     required String stayId,
@@ -10188,10 +10264,10 @@ _responseData = rawData == null ? null : deserialize<EnclosureStayResponse, Encl
   /// 请求体不接受 owner_id、state 或父母快捷字段；父母变更走家谱关系接口。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [hamsterId] 
-  /// * [hamsterUpdateRequest] 
+  /// * [hamsterId]
+  /// * [hamsterUpdateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -10201,7 +10277,7 @@ _responseData = rawData == null ? null : deserialize<EnclosureStayResponse, Encl
   ///
   /// Returns a [Future] containing a [Response] with a [HamsterResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<HamsterResponse>> updateHamster({ 
+  Future<Response<HamsterResponse>> updateHamster({
     required String idempotencyKey,
     required String ifMatch,
     required String hamsterId,
@@ -10293,10 +10369,10 @@ _responseData = rawData == null ? null : deserialize<HamsterResponse, HamsterRes
   /// 通过 If-Match 修正备注、结构化检查、媒体或复查时间。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [healthRecordId] 
-  /// * [healthRecordUpdateRequest] 
+  /// * [healthRecordId]
+  /// * [healthRecordUpdateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -10306,7 +10382,7 @@ _responseData = rawData == null ? null : deserialize<HamsterResponse, HamsterRes
   ///
   /// Returns a [Future] containing a [Response] with a [HealthRecordResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<HealthRecordResponse>> updateHealthRecord({ 
+  Future<Response<HealthRecordResponse>> updateHealthRecord({
     required String idempotencyKey,
     required String ifMatch,
     required String healthRecordId,
@@ -10398,10 +10474,10 @@ _responseData = rawData == null ? null : deserialize<HealthRecordResponse, Healt
   /// 已被繁育计划引用的规则版本保持只读，应创建新版本。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [ruleVersionId] 
-  /// * [speciesRuleVersionUpdateRequest] 
+  /// * [ruleVersionId]
+  /// * [speciesRuleVersionUpdateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -10411,7 +10487,7 @@ _responseData = rawData == null ? null : deserialize<HealthRecordResponse, Healt
   ///
   /// Returns a [Future] containing a [Response] with a [SpeciesRuleVersionResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SpeciesRuleVersionResponse>> updateSpeciesRuleVersion({ 
+  Future<Response<SpeciesRuleVersionResponse>> updateSpeciesRuleVersion({
     required String idempotencyKey,
     required String ifMatch,
     required String ruleVersionId,
@@ -10503,10 +10579,10 @@ _responseData = rawData == null ? null : deserialize<SpeciesRuleVersionResponse,
   /// 可修改计划时间、优先级、标题和备注；完成状态走 complete 动作。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [taskId] 
-  /// * [careTaskUpdateRequest] 
+  /// * [taskId]
+  /// * [careTaskUpdateRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -10516,7 +10592,7 @@ _responseData = rawData == null ? null : deserialize<SpeciesRuleVersionResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [CareTaskResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CareTaskResponse>> updateTask({ 
+  Future<Response<CareTaskResponse>> updateTask({
     required String idempotencyKey,
     required String ifMatch,
     required String taskId,
@@ -10605,13 +10681,13 @@ _responseData = rawData == null ? null : deserialize<CareTaskResponse, CareTaskR
   }
 
   /// 完成断奶
-  /// 仅允许 weaning_due；对服务端计算的当前在管幼崽逐项提交生存/离舍结果并校验去向。 断奶动作不接受或修改 profile_status，个体化进度仅由 individualize 动作推进。 缺少当前在管身份、包含已关闭身份或笼位冲突时整体不推进状态。 
+  /// 仅允许 weaning_due；对服务端计算的当前在管幼崽逐项提交生存/离舍结果并校验去向。 断奶动作不接受或修改 profile_status，个体化进度仅由 individualize 动作推进。 缺少当前在管身份、包含已关闭身份或笼位冲突时整体不推进状态。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-  /// * [litterId] 
-  /// * [weanLitterRequest] 
+  /// * [litterId]
+  /// * [weanLitterRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -10621,7 +10697,7 @@ _responseData = rawData == null ? null : deserialize<CareTaskResponse, CareTaskR
   ///
   /// Returns a [Future] containing a [Response] with a [WeanLitterResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<WeanLitterResponse>> weanLitter({ 
+  Future<Response<WeanLitterResponse>> weanLitter({
     required String idempotencyKey,
     required String ifMatch,
     required String litterId,

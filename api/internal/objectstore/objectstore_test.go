@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -299,6 +300,89 @@ func TestNewS3RejectsIncompleteConfig(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "S3 bucket is empty") {
 		t.Fatalf("expected bucket validation error, got %v", err)
 	}
+}
+
+// TestS3ObjectStoreLiveSmoke exercises a real S3/MinIO endpoint when the
+// OBJECT_STORE_* environment variables are present. Without them the test is
+// skipped and reported as 待确认 rather than a false success.
+func TestS3ObjectStoreLiveSmoke(t *testing.T) {
+	endpoint := strings.TrimSpace(os.Getenv("OBJECT_STORE_ENDPOINT"))
+	bucket := strings.TrimSpace(os.Getenv("OBJECT_STORE_BUCKET"))
+	region := strings.TrimSpace(os.Getenv("OBJECT_STORE_REGION"))
+	accessKey := os.Getenv("OBJECT_STORE_ACCESS_KEY")
+	secretKey := os.Getenv("OBJECT_STORE_SECRET_KEY")
+	if endpoint == "" || bucket == "" || region == "" || accessKey == "" || secretKey == "" {
+		t.Skip("待确认: S3/MinIO live smoke skipped (set OBJECT_STORE_ENDPOINT/BUCKET/REGION/ACCESS_KEY/SECRET_KEY)")
+	}
+	pathStyle := true
+	if raw := strings.TrimSpace(os.Getenv("OBJECT_STORE_PATH_STYLE")); raw != "" {
+		parsed, err := strconv.ParseBool(raw)
+		if err != nil {
+			t.Fatalf("OBJECT_STORE_PATH_STYLE: %v", err)
+		}
+		pathStyle = parsed
+	}
+	prefix := strings.Trim(strings.TrimSpace(os.Getenv("OBJECT_STORE_SMOKE_PREFIX")), "/")
+	if prefix == "" {
+		prefix = "i6-objectstore-smoke"
+	}
+	store, err := NewS3(S3Config{
+		Endpoint:        endpoint,
+		Bucket:          bucket,
+		Region:          region,
+		AccessKeyID:     accessKey,
+		SecretAccessKey: secretKey,
+		PathStyle:       pathStyle,
+	})
+	if err != nil {
+		t.Fatalf("NewS3: %v", err)
+	}
+	key := prefix + "/" + time.Now().UTC().Format("20060102T150405.000000000") + ".bin"
+	body := []byte("scolvpet-i6-objectstore-smoke\n")
+	digest := sha256Hex(body)
+	contentType := "application/octet-stream"
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	info, err := store.Put(ctx, PutRequest{
+		Key: key, Body: bytes.NewReader(body), SizeBytes: int64(len(body)),
+		SHA256: digest, ContentType: contentType, ExpiresAt: time.Now().UTC().Add(time.Hour),
+	})
+	if err != nil {
+		t.Fatalf("Put: %v", err)
+	}
+	if info.Key != key || info.SizeBytes != int64(len(body)) || !strings.EqualFold(info.SHA256, digest) || info.ContentType != contentType {
+		t.Fatalf("Put info = %+v", info)
+	}
+	reader, got, err := store.Get(ctx, key)
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	gotBody, readErr := io.ReadAll(reader)
+	closeErr := reader.Close()
+	if readErr != nil || closeErr != nil {
+		t.Fatalf("Get body: read=%v close=%v", readErr, closeErr)
+	}
+	if !bytes.Equal(gotBody, body) {
+		t.Fatalf("Get body mismatch")
+	}
+	if got.Key != key || got.SizeBytes != int64(len(body)) {
+		t.Fatalf("Get info = %+v", got)
+	}
+	if got.SHA256 != "" && !strings.EqualFold(got.SHA256, digest) {
+		t.Fatalf("Get sha256 = %s want %s", got.SHA256, digest)
+	}
+	if err := store.Delete(ctx, key); err != nil {
+		t.Fatalf("Delete: %v", err)
+	}
+	if _, _, err := store.Get(ctx, key); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("Get after Delete error = %v, want os.ErrNotExist", err)
+	}
+	style := "virtual-hosted-style"
+	if pathStyle {
+		style = "path-style"
+	}
+	t.Logf("objectstore live smoke passed: key=%s size=%d sha256=%s style=%s", key, len(body), digest, style)
 }
 
 func sha256Hex(body []byte) string {

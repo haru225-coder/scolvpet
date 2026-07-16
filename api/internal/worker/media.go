@@ -29,12 +29,18 @@ import (
 // MediaProcessor claims media_transform async jobs and materializes their
 // variants. It deliberately stays behind ObjectStore so local and S3-backed
 // deployments use the same processing state machine.
+//
+// Original media objects are never rewritten: derivatives are always written
+// under a distinct variant object key. WebP encoding and video transcoding are
+// injected via WebPEncoder / VideoTranscoder so tests can use fakes.
 type MediaProcessor struct {
-	Pool          *pgxpool.Pool
-	Objects       objectstore.ObjectStore
-	Logger        *slog.Logger
-	ID            string
-	LeaseDuration time.Duration
+	Pool            *pgxpool.Pool
+	Objects         objectstore.ObjectStore
+	Logger          *slog.Logger
+	ID              string
+	LeaseDuration   time.Duration
+	WebPEncoder     WebPEncoder
+	VideoTranscoder VideoTranscoder
 }
 
 type mediaJob struct {
@@ -63,6 +69,8 @@ type derivedMedia struct {
 	ContentType string
 	Width       int
 	Height      int
+	DurationMS  int64
+	Codec       string
 }
 
 type mediaRecipe struct {
@@ -71,13 +79,27 @@ type mediaRecipe struct {
 }
 
 func NewMediaProcessor(pool *pgxpool.Pool, objects objectstore.ObjectStore, logger *slog.Logger) *MediaProcessor {
+	codec := NewExternalCodec(DefaultCodecConfig())
 	return &MediaProcessor{
-		Pool:          pool,
-		Objects:       objects,
-		Logger:        logger,
-		ID:            "media-worker-" + uuid.NewString(),
-		LeaseDuration: time.Minute,
+		Pool:            pool,
+		Objects:         objects,
+		Logger:          logger,
+		ID:              "media-worker-" + uuid.NewString(),
+		LeaseDuration:   time.Minute,
+		WebPEncoder:     codec,
+		VideoTranscoder: codec,
 	}
+}
+
+// NewMediaProcessorWithCodec injects codec tools and optional object store for
+// production wiring where paths/timeouts come from runtime configuration.
+func NewMediaProcessorWithCodec(pool *pgxpool.Pool, objects objectstore.ObjectStore, logger *slog.Logger, codec *ExternalCodec) *MediaProcessor {
+	processor := NewMediaProcessor(pool, objects, logger)
+	if codec != nil {
+		processor.WebPEncoder = codec
+		processor.VideoTranscoder = codec
+	}
+	return processor
 }
 
 func (w *MediaProcessor) Run(ctx context.Context, interval time.Duration) {
@@ -231,11 +253,16 @@ func (w *MediaProcessor) process(ctx context.Context, job mediaJob) (map[string]
 		if !ok {
 			info = sourceInfos[item.MediaAssetID]
 		}
-		derived, err := deriveMedia(body, item.OriginalMime, item.VariantKind, item.EditRecipe)
+		derived, err := w.deriveMedia(ctx, body, item.OriginalMime, item.VariantKind, item.EditRecipe)
 		if err != nil {
 			return nil, fmt.Errorf("派生媒体 variant=%s: %w", item.ID, err)
 		}
+		// Original object keys are never overwritten; derivatives always use a
+		// variant-specific key under the asset namespace.
 		outputKey := fmt.Sprintf("%s/media/%s/variants/%s", item.OwnerID, item.MediaAssetID, item.ID)
+		if outputKey == item.OriginalKey {
+			return nil, fmt.Errorf("拒绝覆盖原始媒体对象 %s", item.OriginalKey)
+		}
 		digest := sha256.Sum256(derived.Body)
 		sha := hex.EncodeToString(digest[:])
 		stored, err := w.Objects.Put(ctx, objectstore.PutRequest{
@@ -250,6 +277,7 @@ func (w *MediaProcessor) process(ctx context.Context, job mediaJob) (map[string]
 			"object_key": stored.Key, "sha256": stored.SHA256, "size_bytes": stored.SizeBytes,
 			"content_type": derived.ContentType,
 			"width_px":     derived.Width, "height_px": derived.Height,
+			"duration_ms":  derived.DurationMS, "codec": derived.Codec,
 		})
 		_ = info
 	}
@@ -280,13 +308,16 @@ func (w *MediaProcessor) finish(ctx context.Context, job mediaJob, result map[st
 		contentType, _ := raw["content_type"].(string)
 		width, _ := raw["width_px"].(int)
 		height, _ := raw["height_px"].(int)
+		durationMS, _ := raw["duration_ms"].(int64)
+		codec, _ := raw["codec"].(string)
 		if _, err := tx.Exec(ctx, `
 			UPDATE media_variant
 			SET status='ready', object_key=$4, mime_type=$5,
-				byte_size=$6, width_px=NULLIF($7,0), height_px=NULLIF($8,0), sha256=$9,
+				byte_size=$6, width_px=NULLIF($7,0), height_px=NULLIF($8,0),
+				duration_ms=NULLIF($9,0), codec=NULLIF($10,''), sha256=$11,
 				failure_code=NULL, failure_detail=NULL, updated_at=now()
 			WHERE owner_id=$1 AND id=$2 AND async_job_id=$3 AND deleted_at IS NULL
-		`, job.OwnerID, variantID, job.ID, objectKey, contentType, size, width, height, sha); err != nil {
+		`, job.OwnerID, variantID, job.ID, objectKey, contentType, size, width, height, durationMS, codec, sha); err != nil {
 			return err
 		}
 	}
@@ -326,16 +357,63 @@ func (w *MediaProcessor) fail(ctx context.Context, job mediaJob, cause error) er
 	return tx.Commit(ctx)
 }
 
+func (w *MediaProcessor) deriveMedia(ctx context.Context, source []byte, sourceMime, variantKind string, recipeJSON []byte) (derivedMedia, error) {
+	return deriveMediaWith(ctx, source, sourceMime, variantKind, recipeJSON, w.WebPEncoder, w.VideoTranscoder)
+}
+
+// deriveMedia is the package-level helper used by pure unit tests that do not
+// need a full MediaProcessor / database fixture.
 func deriveMedia(source []byte, sourceMime, variantKind string, recipeJSON []byte) (derivedMedia, error) {
-	if variantKind != "image_edit" {
+	return deriveMediaWith(context.Background(), source, sourceMime, variantKind, recipeJSON, nil, nil)
+}
+
+func deriveMediaWith(
+	ctx context.Context,
+	source []byte,
+	sourceMime, variantKind string,
+	recipeJSON []byte,
+	webpEncoder WebPEncoder,
+	videoTranscoder VideoTranscoder,
+) (derivedMedia, error) {
+	switch variantKind {
+	case "video_transcode":
+		if videoTranscoder == nil {
+			return derivedMedia{}, fmt.Errorf("%w: video transcoder not configured", ErrCodecUnavailable)
+		}
+		result, err := videoTranscoder.Transcode(ctx, source)
+		if err != nil {
+			return derivedMedia{}, err
+		}
+		return derivedMedia{
+			Body:        result.Body,
+			ContentType: result.ContentType,
+			Width:       result.Width,
+			Height:      result.Height,
+			DurationMS:  result.DurationMS,
+			Codec:       result.Codec,
+		}, nil
+	case "image_edit":
+		// handled below
+	default:
+		// preview and other non-edit derivatives keep a content-addressed copy
+		// of the original bytes without mutating the original object key.
 		if strings.HasPrefix(sourceMime, "image/") {
 			config, _, err := image.DecodeConfig(bytes.NewReader(source))
 			if err == nil {
 				return derivedMedia{Body: source, ContentType: sourceMime, Width: config.Width, Height: config.Height}, nil
 			}
 		}
+		if strings.HasPrefix(sourceMime, "video/") && videoTranscoder != nil {
+			if probe, err := videoTranscoder.Probe(ctx, source); err == nil {
+				return derivedMedia{
+					Body: source, ContentType: sourceMime,
+					Width: probe.Width, Height: probe.Height, DurationMS: probe.DurationMS, Codec: probe.CodecName,
+				}, nil
+			}
+		}
 		return derivedMedia{Body: source, ContentType: sourceMime}, nil
 	}
+
 	var recipe mediaRecipe
 	if err := json.Unmarshal(recipeJSON, &recipe); err != nil {
 		return derivedMedia{}, fmt.Errorf("解析编辑配方: %w", err)
@@ -390,7 +468,15 @@ func deriveMedia(source []byte, sourceMime, variantKind string, recipeJSON []byt
 		}
 		contentType = "image/png"
 	case "webp":
-		return derivedMedia{}, errors.New("webp 派生需要外部编码器")
+		if webpEncoder == nil {
+			return derivedMedia{}, fmt.Errorf("%w: webp encoder not configured", ErrCodecUnavailable)
+		}
+		encoded, err := webpEncoder.Encode(ctx, img, 80)
+		if err != nil {
+			return derivedMedia{}, err
+		}
+		bounds := img.Bounds()
+		return derivedMedia{Body: encoded, ContentType: "image/webp", Width: bounds.Dx(), Height: bounds.Dy(), Codec: "webp"}, nil
 	default:
 		return derivedMedia{}, fmt.Errorf("不支持输出格式 %q", outputFormat)
 	}

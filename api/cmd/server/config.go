@@ -6,8 +6,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/scolvpet/scolvpet/api/internal/objectstore"
+	"github.com/scolvpet/scolvpet/api/internal/worker"
 )
 
 const (
@@ -42,6 +44,12 @@ type runtimeConfig struct {
 	OutboxWorkerDisabled    bool
 	MediaWorkerIntervalSecs int
 	MediaWorkerDisabled     bool
+	MediaCWebPPath          string
+	MediaFFmpegPath         string
+	MediaFFprobePath        string
+	MediaCodecTimeoutSecs   int
+	MediaCodecMaxInputBytes int64
+	MediaCodecMaxOutputBytes int64
 }
 
 type envLookup func(string) (string, bool)
@@ -106,8 +114,14 @@ func loadRuntimeConfigFrom(lookup envLookup) (runtimeConfig, error) {
 		OutboxPublisherEndpoint: strings.TrimRight(strings.TrimSpace(envOrDefault(lookup, "OUTBOX_PUBLISHER_ENDPOINT", "")), "/"),
 		OutboxPublisherToken:    envOrDefault(lookup, "OUTBOX_PUBLISHER_TOKEN", ""),
 		OutboxWorkerDisabled:    envOrDefault(lookup, "OUTBOX_WORKER_DISABLED", "0") == "1",
-		MediaWorkerIntervalSecs: getenvIntFrom(lookup, "MEDIA_WORKER_INTERVAL_SECONDS", 2),
-		MediaWorkerDisabled:     envOrDefault(lookup, "MEDIA_WORKER_DISABLED", "0") == "1",
+		MediaWorkerIntervalSecs:  getenvIntFrom(lookup, "MEDIA_WORKER_INTERVAL_SECONDS", 2),
+		MediaWorkerDisabled:      envOrDefault(lookup, "MEDIA_WORKER_DISABLED", "0") == "1",
+		MediaCWebPPath:           envOrDefault(lookup, "MEDIA_CWEBP_PATH", "cwebp"),
+		MediaFFmpegPath:          envOrDefault(lookup, "MEDIA_FFMPEG_PATH", "ffmpeg"),
+		MediaFFprobePath:         envOrDefault(lookup, "MEDIA_FFPROBE_PATH", "ffprobe"),
+		MediaCodecTimeoutSecs:    getenvIntFrom(lookup, "MEDIA_CODEC_TIMEOUT_SECONDS", 120),
+		MediaCodecMaxInputBytes:  int64(getenvIntFrom(lookup, "MEDIA_CODEC_MAX_INPUT_BYTES", 512<<20)),
+		MediaCodecMaxOutputBytes: int64(getenvIntFrom(lookup, "MEDIA_CODEC_MAX_OUTPUT_BYTES", 512<<20)),
 	}
 
 	if environment == "production" {
@@ -226,6 +240,21 @@ func newObjectStore(config runtimeConfig) (objectstore.ObjectStore, error) {
 		})
 	default:
 		return nil, fmt.Errorf("unsupported object store provider %q", config.ObjectStoreProvider)
+	}
+}
+
+func mediaCodecConfig(config runtimeConfig) worker.CodecConfig {
+	timeout := time.Duration(config.MediaCodecTimeoutSecs) * time.Second
+	if timeout <= 0 {
+		timeout = 2 * time.Minute
+	}
+	return worker.CodecConfig{
+		CWebPPath:      config.MediaCWebPPath,
+		FFmpegPath:     config.MediaFFmpegPath,
+		FFprobePath:    config.MediaFFprobePath,
+		Timeout:        timeout,
+		MaxInputBytes:  config.MediaCodecMaxInputBytes,
+		MaxOutputBytes: config.MediaCodecMaxOutputBytes,
 	}
 }
 

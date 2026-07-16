@@ -67,6 +67,20 @@ if (fs.existsSync(apiPath)) {
   fs.writeFileSync(apiPath, source);
 }
 
+// OpenAPI Generator leaves trailing spaces on some doc/comment lines; strip
+// them so git diff --check and CI whitespace gates stay green.
+function stripTrailingWhitespace(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  const original = fs.readFileSync(filePath, 'utf8');
+  const cleaned = original.replace(/[ \t]+$/gm, '');
+  if (cleaned !== original) {
+    fs.writeFileSync(filePath, cleaned);
+  }
+}
+stripTrailingWhitespace(apiPath);
+stripTrailingWhitespace(path.join(generated, 'doc/DefaultApi.md'));
+stripTrailingWhitespace(path.join(generated, 'README.md'));
+
 const emptyExample = path.join(modelDir, 'import_template_response_data_columns_inner_example.dart');
 if (fs.existsSync(emptyExample)) {
   let source = fs.readFileSync(emptyExample, 'utf8');

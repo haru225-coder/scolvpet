@@ -10,7 +10,7 @@ GRADLE_NETWORK_TIMEOUT_MS ?= 60000
 FLUTTER_GRADLE_OPTS = -Dhttp.connectionTimeout=$(GRADLE_NETWORK_TIMEOUT_MS) -Dhttp.socketTimeout=$(GRADLE_NETWORK_TIMEOUT_MS) -Dhttps.connectionTimeout=$(GRADLE_NETWORK_TIMEOUT_MS) -Dhttps.socketTimeout=$(GRADLE_NETWORK_TIMEOUT_MS)
 TIMEOUT_SCRIPT := $(CURDIR)/scripts/with-timeout.sh
 
-.PHONY: help api-test api-run db-verify db-seed generate-migrations migration-drift openapi-lint client-drift web-test web-build web-lint flutter-pub-get flutter-analyze flutter-test flutter-build-android smoke media-smoke outbox-test timeout-test ci
+.PHONY: help api-test api-run db-verify db-seed generate-migrations migration-drift openapi-lint client-drift web-test web-build web-lint flutter-pub-get flutter-analyze flutter-test flutter-build-android smoke media-smoke objectstore-smoke outbox-test timeout-test ci
 
 help:
 	@printf '%s\n' '主入口:' '  make ci              运行可执行的 I1 检查' '  make db-verify       新建临时 PostgreSQL 并验证迁移复跑/种子/checksum' '  make api-test        API 单元测试' '  make generate-client 用固定 OpenAPI Generator 生成 dart-dio 客户端' '  make smoke            启动 API 并跑 I1 演示链' '  make flutter-test    Flutter 单元/Widget/契约模型测试'
@@ -77,4 +77,7 @@ smoke:
 media-smoke:
 	scripts/i6-media-smoke.sh
 
-ci: db-verify migration-drift openapi-lint client-drift api-test smoke media-smoke outbox-test timeout-test web-lint web-test web-build flutter-pub-get flutter-analyze flutter-test flutter-build-android
+objectstore-smoke:
+	scripts/i6-objectstore-smoke.sh
+
+ci: db-verify migration-drift openapi-lint client-drift api-test smoke media-smoke objectstore-smoke outbox-test timeout-test web-lint web-test web-build flutter-pub-get flutter-analyze flutter-test flutter-build-android

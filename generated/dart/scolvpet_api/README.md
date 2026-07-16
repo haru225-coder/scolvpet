@@ -61,10 +61,10 @@ import 'package:scolvpet_api/scolvpet_api.dart';
 
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final AdjustBaselineRequest adjustBaselineRequest = {"new_baseline_at":"2026-07-18T12:12:00Z","reason":"以明确交配观察作为新基准","timezone":"Asia/Shanghai"}; // AdjustBaselineRequest | 
+final String planId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final AdjustBaselineRequest adjustBaselineRequest = {"new_baseline_at":"2026-07-18T12:12:00Z","reason":"以明确交配观察作为新基准","timezone":"Asia/Shanghai"}; // AdjustBaselineRequest |
 
 try {
     final response = await api.adjustBreedingBaseline(idempotencyKey, ifMatch, planId, adjustBaselineRequest);
@@ -136,6 +136,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**getMediaTranscodeStatus**](doc/DefaultApi.md#getmediatranscodestatus) | **GET** /media/{media_id}/transcode-status | 获取转码状态
 [*DefaultApi*](doc/DefaultApi.md) | [**getPairingAttempt**](doc/DefaultApi.md#getpairingattempt) | **GET** /pairing-attempts/{attempt_id} | 获取配对尝试
 [*DefaultApi*](doc/DefaultApi.md) | [**getPublicShare**](doc/DefaultApi.md#getpublicshare) | **GET** /public/shares/{token} | 无需认证读取公开分享
+[*DefaultApi*](doc/DefaultApi.md) | [**getPublicShareMedia**](doc/DefaultApi.md#getpublicsharemedia) | **GET** /public/shares/{token}/media/{media_id} | 读取公开分享媒体
 [*DefaultApi*](doc/DefaultApi.md) | [**getReminder**](doc/DefaultApi.md#getreminder) | **GET** /reminders/{reminder_id} | 获取提醒
 [*DefaultApi*](doc/DefaultApi.md) | [**getSpeciesRuleVersion**](doc/DefaultApi.md#getspeciesruleversion) | **GET** /species-rule-versions/{rule_version_id} | 获取规则版本
 [*DefaultApi*](doc/DefaultApi.md) | [**getTask**](doc/DefaultApi.md#gettask) | **GET** /tasks/{task_id} | 获取任务

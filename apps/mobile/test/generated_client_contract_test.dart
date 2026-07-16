@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_api/scolvpet_api.dart';
 
@@ -71,6 +74,28 @@ void main() {
       });
       expect(rule.speciesCode, 'mesocricetus_auratus');
       expect(rule.toJson().containsKey('display_name'), isFalse);
+    },
+  );
+
+  test(
+    'generated DefaultApi exposes getPublicShareMedia as binary Uint8List',
+    () {
+      // Contract check: OpenAPI operationId getPublicShareMedia must stay
+      // generated as a binary GET that returns Response<Uint8List> with
+      // ResponseType.bytes (compile-time signature + runtime method presence).
+      final api = DefaultApi(Dio());
+      Future<Response<Uint8List>> Function({
+        required String token,
+        required String mediaId,
+        CancelToken? cancelToken,
+        Map<String, dynamic>? headers,
+        Map<String, dynamic>? extra,
+        ValidateStatus? validateStatus,
+        ProgressCallback? onSendProgress,
+        ProgressCallback? onReceiveProgress,
+      }) typed = api.getPublicShareMedia;
+      expect(typed, isNotNull);
+      expect(ScolvpetApi().getDefaultApi().getPublicShareMedia, isA<Function>());
     },
   );
 }
