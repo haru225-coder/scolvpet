@@ -77,6 +77,10 @@ jobs:
           channel: stable
       - name: Flutter dependencies
         run: make flutter-pub-get
+      - name: Database migrations and seed
+        env:
+          DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
+        run: DATABASE_URL="$DATABASE_URL" db/scripts/migrate.sh --seed
       - name: API unit tests
         run: make api-test
       - name: API I1 smoke and integration checks
@@ -156,4 +160,5 @@ jobs:
             exit 1
           fi
       - name: iOS simulator build
+        working-directory: apps/mobile
         run: flutter build ios --simulator --no-codesign --no-pub
