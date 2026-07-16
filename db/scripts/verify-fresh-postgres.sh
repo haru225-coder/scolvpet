@@ -48,7 +48,7 @@ ENUMS="$(psql -XAt "$URL" -c "select count(*) from pg_type where typtype='e' and
 RULES="$(psql -XAt "$URL" -c "select count(*) from species_rule_version where scope='system';")"
 META_TABLES="$(psql -XAt "$URL" -c "select count(*) from pg_class where relkind='r' and relnamespace='scolvpet_meta'::regnamespace;")"
 
-[[ "$TABLES" == "38" ]] || { printf 'table count mismatch: %s\n' "$TABLES" >&2; exit 1; }
+[[ "$TABLES" == "39" ]] || { printf 'table count mismatch: %s\n' "$TABLES" >&2; exit 1; }
 [[ "$ENUMS" == "60" ]] || { printf 'enum count mismatch: %s\n' "$ENUMS" >&2; exit 1; }
 [[ "$RULES" == "1" ]] || { printf 'seed rule count mismatch: %s\n' "$RULES" >&2; exit 1; }
 [[ "$META_TABLES" == "1" ]] || { printf 'metadata table count mismatch: %s\n' "$META_TABLES" >&2; exit 1; }

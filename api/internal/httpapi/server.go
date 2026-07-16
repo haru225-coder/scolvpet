@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -16,13 +17,15 @@ import (
 
 	"github.com/scolvpet/scolvpet/api/internal/auth"
 	"github.com/scolvpet/scolvpet/api/internal/domain"
+	"github.com/scolvpet/scolvpet/api/internal/objectstore"
 	"github.com/scolvpet/scolvpet/api/internal/store"
 )
 
 type Server struct {
-	Store  *store.Store
-	Auth   *auth.Service
-	Logger *slog.Logger
+	Store         *store.Store
+	Auth          *auth.Service
+	Logger        *slog.Logger
+	ImportObjects objectstore.ObjectStore
 }
 
 type deviceInfo struct {
@@ -55,7 +58,17 @@ type meta struct {
 }
 
 func NewServer(store *store.Store, authService *auth.Service, logger *slog.Logger) *Server {
-	return &Server{Store: store, Auth: authService, Logger: logger}
+	root := os.Getenv("IMPORT_OBJECT_STORE_DIR")
+	if root == "" {
+		root = os.TempDir() + "/scolvpet-imports"
+	}
+	objects, err := objectstore.NewLocalFS(root)
+	if err != nil {
+		// Keep auth-only/unit-test construction functional. A DB-backed server
+		// reports the storage error when an upload is attempted.
+		logger.Warn("import object store unavailable", "error", err)
+	}
+	return &Server{Store: store, Auth: authService, Logger: logger, ImportObjects: objects}
 }
 
 func (s *Server) Handler() http.Handler {

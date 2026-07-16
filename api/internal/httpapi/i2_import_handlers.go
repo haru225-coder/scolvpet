@@ -1,6 +1,8 @@
 package httpapi
 
 import (
+	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -14,20 +16,25 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/scolvpet/scolvpet/api/internal/importcsv"
+	"github.com/scolvpet/scolvpet/api/internal/objectstore"
 	"github.com/scolvpet/scolvpet/api/internal/store"
 )
 
+const maxI2ImportUploadBytes = 100 * 1024 * 1024
+
 type i2ImportUpload struct {
-	ID        uuid.UUID
-	OwnerID   uuid.UUID
-	FileName  string
-	SizeBytes int
-	SHA256    string
-	Bytes     []byte
-	Uploaded  bool
-	ExpiresAt time.Time
-	Version   int
-	CreatedAt time.Time
+	ID          uuid.UUID
+	OwnerID     uuid.UUID
+	FileName    string
+	SizeBytes   int
+	SHA256      string
+	ObjectKey   string
+	ContentType string
+	Bytes       []byte
+	Uploaded    bool
+	ExpiresAt   time.Time
+	Version     int
+	CreatedAt   time.Time
 }
 
 type i2ImportSession struct {
@@ -109,15 +116,35 @@ func (s *Server) createI2ImportUpload(w http.ResponseWriter, r *http.Request) {
 		writeI2CoreError(w, r, validationError("body", "导入上传请求体格式不正确"))
 		return
 	}
+	if request.SizeBytes > maxI2ImportUploadBytes {
+		writeI2CoreError(w, r, validationError("size_bytes", "CSV 文件超过 100 MiB 限制"))
+		return
+	}
+	if _, err := hex.DecodeString(request.SHA256); err != nil {
+		writeI2CoreError(w, r, validationError("sha256", "SHA-256 格式不正确"))
+		return
+	}
 	uploadID := uuid.New()
 	expiresAt := time.Now().UTC().Add(30 * time.Minute)
+	objectKey := "local-import/" + uploadID.String()
 	session := &i2ImportUpload{
 		ID: uploadID, OwnerID: ownerID, FileName: request.FileName, SizeBytes: request.SizeBytes,
-		SHA256: strings.ToLower(request.SHA256), ExpiresAt: expiresAt, Version: 1, CreatedAt: time.Now().UTC(),
+		SHA256: strings.ToLower(request.SHA256), ObjectKey: objectKey, ContentType: "text/csv", ExpiresAt: expiresAt, Version: 1, CreatedAt: time.Now().UTC(),
 	}
-	i2ImportStateLock.Lock()
-	i2ImportUploads[uploadID] = session
-	i2ImportStateLock.Unlock()
+	if s.Store != nil && s.Store.Pool != nil {
+		_, err := s.Store.Pool.Exec(r.Context(), `
+			INSERT INTO import_upload (id, owner_id, object_key, original_filename, declared_size, file_sha256, content_type, expires_at)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+		`, uploadID, ownerID, objectKey, request.FileName, request.SizeBytes, strings.ToLower(request.SHA256), "text/csv", expiresAt)
+		if err != nil {
+			writeI2CoreError(w, r, err)
+			return
+		}
+	} else {
+		i2ImportStateLock.Lock()
+		i2ImportUploads[uploadID] = session
+		i2ImportStateLock.Unlock()
+	}
 
 	scheme := "http"
 	if r.TLS != nil {
@@ -131,18 +158,22 @@ func (s *Server) createI2ImportUpload(w http.ResponseWriter, r *http.Request) {
 	writeI2Stored(w, r, http.StatusCreated, envelope(r, map[string]any{
 		"id": uploadID, "upload_url": uploadURL, "method": "PUT",
 		"headers":    map[string]string{"Content-Type": "text/csv"},
-		"object_key": "local-import/" + uploadID.String(),
+		"object_key": objectKey,
 		"expires_at": expiresAt, "version": 1,
 	}), false, "", "/v1/data-center/import-uploads/"+uploadID.String())
 }
 
 func (s *Server) putI2ImportUploadContent(w http.ResponseWriter, r *http.Request) {
+	ownerID, ok := s.authenticateI2(w, r)
+	if !ok {
+		return
+	}
 	uploadID, err := uuid.Parse(strings.TrimSpace(r.PathValue("upload_id")))
 	if err != nil {
 		writeI2CoreError(w, r, validationError("upload_id", "上传 ID 格式不正确"))
 		return
 	}
-	body, err := io.ReadAll(io.LimitReader(r.Body, 104857600))
+	body, err := io.ReadAll(io.LimitReader(r.Body, maxI2ImportUploadBytes+1))
 	if err != nil {
 		writeI2CoreError(w, r, validationError("body", "读取上传内容失败"))
 		return
@@ -150,15 +181,14 @@ func (s *Server) putI2ImportUploadContent(w http.ResponseWriter, r *http.Request
 	sum := sha256.Sum256(body)
 	hash := hex.EncodeToString(sum[:])
 
-	i2ImportStateLock.Lock()
-	defer i2ImportStateLock.Unlock()
-	upload, ok := i2ImportUploads[uploadID]
+	upload, ok := s.loadI2ImportUpload(r.Context(), ownerID, uploadID)
 	if !ok || time.Now().After(upload.ExpiresAt) {
 		writeI2CoreError(w, r, notFoundError("upload", "导入上传会话不存在或已过期"))
 		return
 	}
-	if upload.SizeBytes > 0 && len(body) != upload.SizeBytes && upload.SizeBytes != len(body) {
-		// size is advisory; only reject empty
+	if len(body) > maxI2ImportUploadBytes || int64(len(body)) != int64(upload.SizeBytes) {
+		writeI2CoreError(w, r, validationError("body", "上传内容大小与声明不一致"))
+		return
 	}
 	if len(body) == 0 {
 		writeI2CoreError(w, r, validationError("body", "CSV 内容不能为空"))
@@ -168,10 +198,42 @@ func (s *Server) putI2ImportUploadContent(w http.ResponseWriter, r *http.Request
 		writeI2CoreError(w, r, validationError("sha256", "上传内容与声明的 SHA-256 不一致"))
 		return
 	}
-	upload.Bytes = append([]byte(nil), body...)
-	upload.Uploaded = true
-	upload.SHA256 = hash
-	upload.SizeBytes = len(body)
+	if s.ImportObjects == nil {
+		writeI2CoreError(w, r, errors.New("导入对象存储未配置"))
+		return
+	}
+	if _, err := s.ImportObjects.Put(r.Context(), objectstore.PutRequest{
+		Key: upload.ObjectKey, Body: bytes.NewReader(body), SizeBytes: int64(len(body)),
+		SHA256: hash, ContentType: "text/csv", ExpiresAt: upload.ExpiresAt,
+	}); err != nil {
+		writeI2CoreError(w, r, err)
+		return
+	}
+	if s.Store != nil && s.Store.Pool != nil {
+		result, err := s.Store.Pool.Exec(r.Context(), `
+			UPDATE import_upload
+			SET status='uploaded', uploaded_at=now(), version=version+1, updated_at=now()
+			WHERE owner_id=$1 AND id=$2 AND expires_at > now() AND status <> 'deleted'
+		`, ownerID, uploadID)
+		if err != nil {
+			_ = s.ImportObjects.Delete(r.Context(), upload.ObjectKey)
+			writeI2CoreError(w, r, err)
+			return
+		}
+		if result.RowsAffected() != 1 {
+			_ = s.ImportObjects.Delete(r.Context(), upload.ObjectKey)
+			writeI2CoreError(w, r, notFoundError("upload", "导入上传会话不存在或已过期"))
+			return
+		}
+	} else {
+		i2ImportStateLock.Lock()
+		upload.Bytes = append([]byte(nil), body...)
+		upload.Uploaded = true
+		upload.SHA256 = hash
+		upload.SizeBytes = len(body)
+		upload.Version++
+		i2ImportStateLock.Unlock()
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -229,16 +291,17 @@ func (s *Server) createI2ImportJob(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = payload
 
-	i2ImportStateLock.Lock()
-	upload, ok := i2ImportUploads[request.UploadID]
-	if !ok || upload.OwnerID != ownerID || !upload.Uploaded || len(upload.Bytes) == 0 {
-		i2ImportStateLock.Unlock()
+	upload, ok := s.loadI2ImportUpload(r.Context(), ownerID, request.UploadID)
+	if !ok || !upload.Uploaded {
 		writeI2CoreError(w, r, validationError("upload_id", "上传尚未完成或不存在"))
 		return
 	}
-	csvBytes := append([]byte(nil), upload.Bytes...)
+	csvBytes, err := s.readI2ImportUpload(r.Context(), upload)
+	if err != nil {
+		writeI2CoreError(w, r, err)
+		return
+	}
 	fileName := upload.FileName
-	i2ImportStateLock.Unlock()
 
 	templateType := importcsv.TemplateType(request.TemplateType)
 	if _, ok := importcsv.TemplateFor(templateType); !ok {
@@ -667,4 +730,117 @@ func cloneStringMap(values map[string]string) map[string]string {
 		result[key] = value
 	}
 	return result
+}
+
+// loadI2ImportUpload reads durable metadata when a database is configured and
+// falls back to the in-memory fixture store used by auth-only/unit tests.
+func (s *Server) loadI2ImportUpload(ctx context.Context, ownerID, uploadID uuid.UUID) (*i2ImportUpload, bool) {
+	if s.Store != nil && s.Store.Pool != nil {
+		var upload i2ImportUpload
+		var status string
+		var owner uuid.UUID
+		var size int64
+		var uploadedAt *time.Time
+		err := s.Store.Pool.QueryRow(ctx, `
+			SELECT id, owner_id, object_key, original_filename, declared_size, file_sha256,
+			       content_type, status, expires_at, uploaded_at, version, created_at
+			FROM import_upload WHERE owner_id=$1 AND id=$2
+		`, ownerID, uploadID).Scan(
+			&upload.ID, &owner, &upload.ObjectKey, &upload.FileName, &size, &upload.SHA256,
+			&upload.ContentType, &status, &upload.ExpiresAt, &uploadedAt, &upload.Version, &upload.CreatedAt,
+		)
+		if err != nil || owner != ownerID || size < 1 || size > maxI2ImportUploadBytes {
+			return nil, false
+		}
+		upload.OwnerID = owner
+		upload.SizeBytes = int(size)
+		upload.Uploaded = status == "uploaded" && uploadedAt != nil
+		return &upload, true
+	}
+	i2ImportStateLock.Lock()
+	defer i2ImportStateLock.Unlock()
+	upload, ok := i2ImportUploads[uploadID]
+	if !ok || upload.OwnerID != ownerID {
+		return nil, false
+	}
+	copy := *upload
+	copy.Bytes = append([]byte(nil), upload.Bytes...)
+	return &copy, true
+}
+
+func (s *Server) readI2ImportUpload(ctx context.Context, upload *i2ImportUpload) ([]byte, error) {
+	if upload == nil || !upload.Uploaded {
+		return nil, validationError("upload_id", "上传尚未完成或不存在")
+	}
+	if len(upload.Bytes) > 0 {
+		return append([]byte(nil), upload.Bytes...), nil
+	}
+	if s.ImportObjects == nil {
+		return nil, errors.New("导入对象存储未配置")
+	}
+	reader, info, err := s.ImportObjects.Get(ctx, upload.ObjectKey)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	body, err := io.ReadAll(io.LimitReader(reader, maxI2ImportUploadBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(body) > maxI2ImportUploadBytes || int64(len(body)) != int64(upload.SizeBytes) || (info.SizeBytes > 0 && int64(len(body)) != info.SizeBytes) {
+		return nil, objectstore.ErrSizeMismatch
+	}
+	sum := sha256.Sum256(body)
+	if !strings.EqualFold(upload.SHA256, hex.EncodeToString(sum[:])) {
+		return nil, objectstore.ErrChecksumMismatch
+	}
+	return body, nil
+}
+
+// ReapExpiredI2ImportUploads removes expired object bytes and marks their
+// metadata expired. It is safe to call repeatedly from a scheduler.
+func (s *Server) ReapExpiredI2ImportUploads(ctx context.Context) (int, error) {
+	if s.Store == nil || s.Store.Pool == nil {
+		return 0, nil
+	}
+	rows, err := s.Store.Pool.Query(ctx, `
+		SELECT id, object_key FROM import_upload
+		WHERE expires_at <= now() AND status IN ('pending_upload','uploaded')
+		ORDER BY expires_at
+	`)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	type expiredUpload struct {
+		id  uuid.UUID
+		key string
+	}
+	items := make([]expiredUpload, 0)
+	for rows.Next() {
+		var item expiredUpload
+		if err := rows.Scan(&item.id, &item.key); err != nil {
+			return 0, err
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+	count := 0
+	for _, item := range items {
+		if s.ImportObjects != nil {
+			if err := s.ImportObjects.Delete(ctx, item.key); err != nil {
+				return count, err
+			}
+		}
+		if _, err := s.Store.Pool.Exec(ctx, `
+			UPDATE import_upload SET status='expired', version=version+1, updated_at=now()
+			WHERE id=$1 AND status IN ('pending_upload','uploaded')
+		`, item.id); err != nil {
+			return count, err
+		}
+		count++
+	}
+	return count, nil
 }
