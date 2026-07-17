@@ -10,6 +10,7 @@ import 'package:scolvpet_mobile/data/i2_repository.dart';
 import 'package:scolvpet_mobile/features/breeding/breeding.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/litter/litter.dart';
+import 'package:scolvpet_mobile/features/health/health.dart';
 import 'package:scolvpet_mobile/features/pedigree/pedigree.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
 import 'package:scolvpet_mobile/ui/screens.dart';
@@ -49,8 +50,9 @@ void main() {
       final litterBoardController = LitterBoardController(
         repository: MemoryLitterBoardRepository(),
       );
+      final taskRepo = MemoryTaskRepository();
       final taskController = TaskController(
-        repository: MemoryTaskRepository(),
+        repository: taskRepo,
         notifications: MemoryLocalNotificationScheduler(),
       );
 
@@ -62,6 +64,7 @@ void main() {
           litterBoardController: litterBoardController,
           taskController: taskController,
           pedigreeRepository: MemoryPedigreeRepository(),
+          healthRepository: MemoryHealthRepository(),
         ),
       );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);

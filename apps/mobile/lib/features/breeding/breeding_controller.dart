@@ -1,13 +1,16 @@
 import 'package:flutter/foundation.dart';
 
+import '../health/breeding_task_hooks.dart';
 import '../i2/i2_models.dart';
+import '../tasks/task_repository.dart';
 import 'breeding_models.dart';
 import 'breeding_repository.dart';
 
 class BreedingController extends ChangeNotifier {
-  BreedingController({required this.repository});
+  BreedingController({required this.repository, this.taskRepository});
 
   final BreedingRepository repository;
+  final TaskRepository? taskRepository;
 
   I2AsyncState<List<BreedingPlan>> listState = const I2AsyncState.idle();
   I2AsyncState<void> actionState = const I2AsyncState.idle();
@@ -74,6 +77,9 @@ class BreedingController extends ChangeNotifier {
         : damDestinationEnclosureId;
 
     return _run(() async {
+      final before = plan;
+      String? birthLitterId;
+      var birthPups = 0;
       switch (plan.state) {
         case 'draft':
           selected = await repository.publishPlan(
@@ -135,14 +141,58 @@ class BreedingController extends ChangeNotifier {
             initialAliveCount: livePups,
           );
           selected = result.plan;
+          birthLitterId = result.litterId;
+          birthPups = livePups;
           lastMessage = result.litterId == null
               ? '已记录无活仔结果'
               : '产仔确认成功，窝次 ${result.litterId}';
         default:
           lastMessage = '当前状态无需继续主路径动作';
       }
+      final after = selected ?? before;
+      final taskCount = await _seedBreedingTasks(
+        before: before,
+        after: after,
+        enclosureId: enclosureId,
+        litterId: birthLitterId,
+        livePups: birthPups,
+        now: now,
+      );
+      if (taskCount > 0) {
+        lastMessage = '${lastMessage ?? '状态已更新'} · 已生成 $taskCount 条任务';
+      }
       await refresh();
     });
+  }
+
+  Future<int> _seedBreedingTasks({
+    required BreedingPlan before,
+    required BreedingPlan after,
+    required String enclosureId,
+    String? litterId,
+    int livePups = 0,
+    DateTime? now,
+  }) async {
+    final repo = taskRepository;
+    if (repo == null) return 0;
+    final drafts = breedingTasksForTransition(
+      planBefore: before,
+      planAfter: after,
+      enclosureId: enclosureId,
+      litterId: litterId,
+      livePups: livePups,
+      now: now,
+    );
+    var count = 0;
+    for (final draft in drafts) {
+      try {
+        await repo.createTask(draft);
+        count++;
+      } catch (error) {
+        debugPrint('breeding task seed failed: $error');
+      }
+    }
+    return count;
   }
 
   Future<bool> _run(Future<void> Function() body) async {

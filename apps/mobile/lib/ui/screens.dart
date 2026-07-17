@@ -7,6 +7,7 @@ import '../features/i6/data_center.dart';
 import '../features/breeding/breeding.dart';
 import '../features/litter/litter.dart';
 import '../features/calendar/calendar.dart';
+import '../features/health/health.dart';
 import '../features/pedigree/pedigree.dart';
 import '../features/shell/home_overview.dart';
 import '../features/tasks/tasks.dart';
@@ -274,6 +275,7 @@ class HomeShell extends StatefulWidget {
     required this.litterBoardController,
     required this.taskController,
     required this.pedigreeRepository,
+    required this.healthRepository,
   });
 
   final AppState state;
@@ -282,6 +284,7 @@ class HomeShell extends StatefulWidget {
   final LitterBoardController litterBoardController;
   final TaskController taskController;
   final PedigreeRepository pedigreeRepository;
+  final HealthRepository healthRepository;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -399,6 +402,24 @@ class _HomeShellState extends State<HomeShell> {
                   hamsterId: current.id,
                   hamsterLabel: current.displayName,
                   generations: 3,
+                ),
+              ),
+            );
+          },
+          onOpenHealth: () {
+            final current =
+                widget.i2Controller.hamsterDetailState.data?.hamster ?? hamster;
+            Navigator.of(detailContext).push<void>(
+              MaterialPageRoute(
+                builder: (_) => HealthQuickPage(
+                  controller: HealthController(
+                    repository: widget.healthRepository,
+                    taskRepository: widget.taskController.repository,
+                  ),
+                  hamsterId: current.id,
+                  hamsterLabel: current.displayName,
+                  canWrite:
+                      !widget.state.offline && widget.i2Controller.canWrite,
                 ),
               ),
             );

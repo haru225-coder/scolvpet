@@ -202,6 +202,7 @@ class HamsterDetailPage extends StatefulWidget {
     this.onEdit,
     this.onAddWeight,
     this.onOpenPedigree,
+    this.onOpenHealth,
   });
 
   final I2Controller controller;
@@ -209,6 +210,7 @@ class HamsterDetailPage extends StatefulWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onAddWeight;
   final VoidCallback? onOpenPedigree;
+  final VoidCallback? onOpenHealth;
 
   @override
   State<HamsterDetailPage> createState() => _HamsterDetailPageState();
@@ -277,13 +279,28 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                       ],
                     ),
                   ),
-                  if (widget.onOpenPedigree != null) ...[
+                  if (widget.onOpenPedigree != null ||
+                      widget.onOpenHealth != null) ...[
                     const SizedBox(height: 12),
-                    OutlinedButton.icon(
-                      key: const Key('hamster-open-pedigree'),
-                      onPressed: widget.onOpenPedigree,
-                      icon: const Icon(Icons.account_tree_outlined),
-                      label: const Text('查看谱系（三代祖先）'),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (widget.onOpenPedigree != null)
+                          OutlinedButton.icon(
+                            key: const Key('hamster-open-pedigree'),
+                            onPressed: widget.onOpenPedigree,
+                            icon: const Icon(Icons.account_tree_outlined),
+                            label: const Text('谱系'),
+                          ),
+                        if (widget.onOpenHealth != null)
+                          OutlinedButton.icon(
+                            key: const Key('hamster-open-health'),
+                            onPressed: widget.onOpenHealth,
+                            icon: const Icon(Icons.health_and_safety_outlined),
+                            label: const Text('健康快捷记录'),
+                          ),
+                      ],
                     ),
                   ],
                   const SizedBox(height: 16),

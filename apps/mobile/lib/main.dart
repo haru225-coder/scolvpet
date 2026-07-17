@@ -7,6 +7,7 @@ import 'core/session_store.dart';
 import 'data/i1_repository.dart';
 import 'data/i2_repository.dart';
 import 'features/breeding/breeding.dart';
+import 'features/health/health.dart';
 import 'features/i2/i2.dart';
 import 'features/litter/litter.dart';
 import 'features/pedigree/pedigree.dart';
@@ -32,17 +33,20 @@ Future<void> main() async {
     repository: DefaultApiI2Repository(client: apiClient),
     localStore: SharedPreferencesI2LocalStore(preferences: preferences),
   );
+  final taskRepository = DefaultApiTaskRepository(client: apiClient);
   final breedingController = BreedingController(
     repository: DefaultApiBreedingRepository(client: apiClient),
+    taskRepository: taskRepository,
   );
   final litterBoardController = LitterBoardController(
     repository: DefaultApiLitterBoardRepository(client: apiClient),
   );
   final taskController = TaskController(
-    repository: DefaultApiTaskRepository(client: apiClient),
+    repository: taskRepository,
     notifications: PluginLocalNotificationScheduler(),
   );
   final pedigreeRepository = DefaultApiPedigreeRepository(client: apiClient);
+  final healthRepository = DefaultApiHealthRepository(client: apiClient);
   runApp(
     ScolvPetApp(
       state: state,
@@ -51,6 +55,7 @@ Future<void> main() async {
       litterBoardController: litterBoardController,
       taskController: taskController,
       pedigreeRepository: pedigreeRepository,
+      healthRepository: healthRepository,
     ),
   );
 }
@@ -64,6 +69,7 @@ class ScolvPetApp extends StatefulWidget {
     required this.litterBoardController,
     required this.taskController,
     required this.pedigreeRepository,
+    required this.healthRepository,
   });
 
   final AppState state;
@@ -72,6 +78,7 @@ class ScolvPetApp extends StatefulWidget {
   final LitterBoardController litterBoardController;
   final TaskController taskController;
   final PedigreeRepository pedigreeRepository;
+  final HealthRepository healthRepository;
 
   @override
   State<ScolvPetApp> createState() => _ScolvPetAppState();
@@ -125,6 +132,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
               litterBoardController: widget.litterBoardController,
               taskController: widget.taskController,
               pedigreeRepository: widget.pedigreeRepository,
+              healthRepository: widget.healthRepository,
             ),
           },
         );
