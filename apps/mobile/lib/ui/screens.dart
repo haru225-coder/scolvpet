@@ -8,6 +8,7 @@ import '../features/breeding/breeding.dart';
 import '../features/litter/litter.dart';
 import '../features/calendar/calendar.dart';
 import '../features/health/health.dart';
+import '../features/crm/crm.dart';
 import '../features/members/members.dart';
 import '../features/pedigree/pedigree.dart';
 import '../features/shell/home_overview.dart';
@@ -278,6 +279,7 @@ class HomeShell extends StatefulWidget {
     required this.pedigreeRepository,
     required this.healthRepository,
     required this.memberRepository,
+    required this.crmRepository,
   });
 
   final AppState state;
@@ -288,6 +290,7 @@ class HomeShell extends StatefulWidget {
   final PedigreeRepository pedigreeRepository;
   final HealthRepository healthRepository;
   final MemberRepository memberRepository;
+  final CrmRepository crmRepository;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -594,6 +597,15 @@ class _HomeShellState extends State<HomeShell> {
             ),
           );
         },
+        onOpenCrm: () {
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => CrmHubPage(
+                controller: CrmController(repository: widget.crmRepository),
+              ),
+            ),
+          );
+        },
       ),
     ];
     return Scaffold(
@@ -683,11 +695,13 @@ class _MinePage extends StatelessWidget {
     required this.state,
     this.onOpenDataCenter,
     this.onOpenMembers,
+    this.onOpenCrm,
   });
 
   final AppState state;
   final VoidCallback? onOpenDataCenter;
   final VoidCallback? onOpenMembers;
+  final VoidCallback? onOpenCrm;
 
   @override
   Widget build(BuildContext context) {
@@ -734,6 +748,19 @@ class _MinePage extends StatelessWidget {
               subtitle: const Text('邀请繁育员 / 饲养员 / 客服 / 访客'),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenMembers,
+            ),
+          ),
+        ],
+        if (onOpenCrm != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              key: const Key('mine-open-crm'),
+              leading: const Icon(Icons.handshake_outlined),
+              title: const Text('客户与交付'),
+              subtitle: const Text('意向客户 · 预订 · 交付交接'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenCrm,
             ),
           ),
         ],

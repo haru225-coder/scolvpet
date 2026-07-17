@@ -10,6 +10,7 @@ import 'features/breeding/breeding.dart';
 import 'features/health/health.dart';
 import 'features/i2/i2.dart';
 import 'features/litter/litter.dart';
+import 'features/crm/crm.dart';
 import 'features/members/members.dart';
 import 'features/pedigree/pedigree.dart';
 import 'features/tasks/tasks.dart';
@@ -49,6 +50,7 @@ Future<void> main() async {
   final pedigreeRepository = DefaultApiPedigreeRepository(client: apiClient);
   final healthRepository = DefaultApiHealthRepository(client: apiClient);
   final memberRepository = DefaultApiMemberRepository(client: apiClient);
+  final crmRepository = DefaultApiCrmRepository(client: apiClient);
   runApp(
     ScolvPetApp(
       state: state,
@@ -59,6 +61,7 @@ Future<void> main() async {
       pedigreeRepository: pedigreeRepository,
       healthRepository: healthRepository,
       memberRepository: memberRepository,
+      crmRepository: crmRepository,
     ),
   );
 }
@@ -74,6 +77,7 @@ class ScolvPetApp extends StatefulWidget {
     required this.pedigreeRepository,
     required this.healthRepository,
     required this.memberRepository,
+    required this.crmRepository,
   });
 
   final AppState state;
@@ -84,6 +88,7 @@ class ScolvPetApp extends StatefulWidget {
   final PedigreeRepository pedigreeRepository;
   final HealthRepository healthRepository;
   final MemberRepository memberRepository;
+  final CrmRepository crmRepository;
 
   @override
   State<ScolvPetApp> createState() => _ScolvPetAppState();
@@ -139,6 +144,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
               pedigreeRepository: widget.pedigreeRepository,
               healthRepository: widget.healthRepository,
               memberRepository: widget.memberRepository,
+              crmRepository: widget.crmRepository,
             ),
           },
         );
