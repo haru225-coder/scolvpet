@@ -93,6 +93,7 @@ func (s *Server) Handler() http.Handler {
 	s.registerI5Routes(mux)
 	s.registerI6DataRoutes(mux)
 	s.registerI6MediaRoutes(mux)
+	s.registerP1MemberRoutes(mux)
 	return requestIDMiddleware(s.Logger, mux)
 }
 

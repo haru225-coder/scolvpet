@@ -11,6 +11,7 @@ import 'package:scolvpet_mobile/features/breeding/breeding.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/litter/litter.dart';
 import 'package:scolvpet_mobile/features/health/health.dart';
+import 'package:scolvpet_mobile/features/members/members.dart';
 import 'package:scolvpet_mobile/features/pedigree/pedigree.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
 import 'package:scolvpet_mobile/ui/screens.dart';
@@ -65,6 +66,7 @@ void main() {
           taskController: taskController,
           pedigreeRepository: MemoryPedigreeRepository(),
           healthRepository: MemoryHealthRepository(),
+          memberRepository: MemoryMemberRepository(),
         ),
       );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);

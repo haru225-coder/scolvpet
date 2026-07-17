@@ -8,6 +8,7 @@ import '../features/breeding/breeding.dart';
 import '../features/litter/litter.dart';
 import '../features/calendar/calendar.dart';
 import '../features/health/health.dart';
+import '../features/members/members.dart';
 import '../features/pedigree/pedigree.dart';
 import '../features/shell/home_overview.dart';
 import '../features/tasks/tasks.dart';
@@ -276,6 +277,7 @@ class HomeShell extends StatefulWidget {
     required this.taskController,
     required this.pedigreeRepository,
     required this.healthRepository,
+    required this.memberRepository,
   });
 
   final AppState state;
@@ -285,6 +287,7 @@ class HomeShell extends StatefulWidget {
   final TaskController taskController;
   final PedigreeRepository pedigreeRepository;
   final HealthRepository healthRepository;
+  final MemberRepository memberRepository;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -576,7 +579,22 @@ class _HomeShellState extends State<HomeShell> {
           );
         },
       ),
-      _MinePage(state: widget.state, onOpenDataCenter: _openDataCenter),
+      _MinePage(
+        state: widget.state,
+        onOpenDataCenter: _openDataCenter,
+        onOpenMembers: () {
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => MemberListPage(
+                controller: MemberController(
+                  repository: widget.memberRepository,
+                  currentRole: 'owner',
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     ];
     return Scaffold(
       body: SafeArea(
@@ -661,10 +679,15 @@ class RulePage extends StatelessWidget {
 }
 
 class _MinePage extends StatelessWidget {
-  const _MinePage({required this.state, this.onOpenDataCenter});
+  const _MinePage({
+    required this.state,
+    this.onOpenDataCenter,
+    this.onOpenMembers,
+  });
 
   final AppState state;
   final VoidCallback? onOpenDataCenter;
+  final VoidCallback? onOpenMembers;
 
   @override
   Widget build(BuildContext context) {
@@ -701,6 +724,19 @@ class _MinePage extends StatelessWidget {
             onTap: onOpenDataCenter,
           ),
         ),
+        if (onOpenMembers != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              key: const Key('mine-open-members'),
+              leading: const Icon(Icons.group_outlined),
+              title: const Text('成员与权限'),
+              subtitle: const Text('邀请繁育员 / 饲养员 / 客服 / 访客'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenMembers,
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         Card(
           child: ListTile(
