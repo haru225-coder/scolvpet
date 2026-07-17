@@ -7,6 +7,7 @@ import '../features/i6/data_center.dart';
 import '../features/breeding/breeding.dart';
 import '../features/litter/litter.dart';
 import '../features/shell/home_overview.dart';
+import '../features/weight/weight_batch_page.dart';
 
 const _accent = Color(0xffc77852);
 const _ink = Color(0xff1f2928);
@@ -352,6 +353,18 @@ class _HomeShellState extends State<HomeShell> {
     await widget.i2Controller.retry();
   }
 
+  Future<void> _openBatchWeight() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (pageContext) => WeightBatchPage(
+          controller: widget.i2Controller,
+          onSaved: () => Navigator.of(pageContext).pop(),
+        ),
+      ),
+    );
+    await widget.i2Controller.retry();
+  }
+
   Future<void> _openHamsterDetail(I2Hamster hamster) async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
@@ -457,6 +470,7 @@ class _HomeShellState extends State<HomeShell> {
         onOpenLitters: _openLitters,
         onOpenDataCenter: _openDataCenter,
         onCreateHamster: () => _openHamsterEditor(),
+        onOpenBatchWeight: _openBatchWeight,
       ),
       HamsterListPage(
         controller: widget.i2Controller,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../weight/weight_alerts.dart';
 import 'i2_controller.dart';
 import 'i2_models.dart';
 import 'i2_widgets.dart';
@@ -125,21 +126,45 @@ class _HamsterListPageState extends State<HamsterListPage> {
                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final hamster = values[index];
+                      final weightAlert =
+                          snapshot.recentWeights
+                              .where((w) => w.hamsterId == hamster.id)
+                              .toList()
+                            ..sort(
+                              (a, b) =>
+                                  b.recordedAt.compareTo(a.recordedAt),
+                            );
+                      final latest = weightAlert.isEmpty
+                          ? null
+                          : weightAlert.first;
+                      final abnormal = latest != null &&
+                          evaluateWeightFlags(latest).isNotEmpty;
                       return Card(
+                        color: abnormal ? const Color(0xffffe8e5) : null,
                         child: ListTile(
                           onTap: widget.onOpenDetail == null
                               ? null
                               : () => widget.onOpenDetail!(hamster),
                           leading: CircleAvatar(
+                            backgroundColor: abnormal
+                                ? const Color(0xffb6534a)
+                                : null,
                             child: Text(i2SexLabel(hamster.sex)),
                           ),
                           title: Text(hamster.displayName),
                           subtitle: Text(
                             '${hamster.varietyCode ?? '未填品系'} · '
                             '${i2LifecycleLabel(hamster.lifecycleStatus)} · '
-                            '笼盒 ${hamster.currentEnclosureId ?? '未分配'}',
+                            '笼盒 ${hamster.currentEnclosureId ?? '未分配'}'
+                            '${latest == null ? '' : ' · ${latest.weightG} g'}'
+                            '${abnormal ? ' · 体重异常' : ''}',
                           ),
-                          trailing: const Icon(Icons.chevron_right),
+                          trailing: Icon(
+                            abnormal
+                                ? Icons.warning_amber_rounded
+                                : Icons.chevron_right,
+                            color: abnormal ? const Color(0xffb6534a) : null,
+                          ),
                         ),
                       );
                     },
@@ -271,22 +296,42 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                   if (detail.weights.isEmpty)
                     const Text('暂无体重记录')
                   else
-                    ...detail.weights.map(
-                      (weight) => ListTile(
+                    ...detail.weights.map((weight) {
+                      final flags = evaluateWeightFlags(weight);
+                      final abnormal = flags.isNotEmpty;
+                      return ListTile(
                         dense: true,
-                        leading: const Icon(Icons.monitor_weight_outlined),
-                        title: Text('${weight.weightG} g'),
+                        tileColor: abnormal ? const Color(0xffffe8e5) : null,
+                        leading: Icon(
+                          Icons.monitor_weight_outlined,
+                          color: abnormal ? const Color(0xffb6534a) : null,
+                        ),
+                        title: Text(
+                          '${weight.weightG} g'
+                          '${abnormal ? ' · 异常' : ''}',
+                          style: TextStyle(
+                            color: abnormal ? const Color(0xffb6534a) : null,
+                            fontWeight: abnormal ? FontWeight.w700 : null,
+                          ),
+                        ),
                         subtitle: Text(
                           '${i2DateTimeLabel(weight.recordedAt)} · ${weight.source}'
-                          '${weight.measurementKind == 'individual' ? '' : ' · ${weight.measurementKind}'}',
+                          '${weight.measurementKind == 'individual' ? '' : ' · ${weight.measurementKind}'}'
+                          '${flags.isEmpty ? '' : ' · ${flags.join(', ')}'}',
                         ),
                         trailing: Text(
                           weight.changeFromPreviousG == null
                               ? ''
                               : '${weight.changeFromPreviousG! >= 0 ? '+' : ''}${weight.changeFromPreviousG} g',
+                          style: TextStyle(
+                            color:
+                                (weight.changeFromPreviousG ?? 0) < 0
+                                ? const Color(0xffb6534a)
+                                : null,
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                   const SizedBox(height: 16),
                   Text('历史窝次', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
@@ -647,7 +692,12 @@ class _WeightEntryPageState extends State<WeightEntryPage> {
 
   Future<void> _save() async {
     final value = num.tryParse(_weight.text.trim());
-    if (value == null || value < 0) return;
+    if (value == null || value <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入大于 0 的克值')),
+      );
+      return;
+    }
     await widget.controller.createWeight(
       I2WeightDraft(
         hamsterId: widget.hamsterId,
@@ -657,6 +707,17 @@ class _WeightEntryPageState extends State<WeightEntryPage> {
       ),
     );
     if (mounted && widget.controller.actionState.status == I2AsyncStatus.data) {
+      final latest = widget.controller.weightState.data;
+      final alert = latest != null &&
+              latest.isNotEmpty &&
+              latest.first.alertFlags.isNotEmpty;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            alert ? '已保存 $value g（检测到体重异常）' : '已保存 $value g',
+          ),
+        ),
+      );
       widget.onSaved?.call();
     }
   }
@@ -667,10 +728,18 @@ class _WeightEntryPageState extends State<WeightEntryPage> {
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        const Text(
+          '单位：克（g）。服务端会快照上次体重差；客户端会标记掉重/过低。',
+          style: TextStyle(color: Color(0xff6c7774), fontSize: 13),
+        ),
+        const SizedBox(height: 12),
         TextField(
           controller: _weight,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(labelText: '体重（g） *'),
+          decoration: const InputDecoration(
+            labelText: '体重（g） *',
+            helperText: '必须 > 0',
+          ),
         ),
         TextField(
           controller: _notes,

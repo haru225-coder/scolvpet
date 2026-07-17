@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api_client.dart';
 import '../features/i2/i2_models.dart';
+import '../features/weight/weight_alerts.dart';
 
 abstract interface class I2Repository {
   Future<I2Snapshot> loadSnapshot();
@@ -233,11 +234,14 @@ class DefaultApiI2Repository implements I2Repository {
       api.listHamsters(limit: 100),
       api.listLitters(limit: 100),
       api.listEnclosures(limit: 100),
+      api.listWeightRecords(limit: 100),
     ]);
     final hamsterResponse = (results[0] as Response<HamsterListResponse>).data!;
     final litterResponse = (results[1] as Response<LitterListResponse>).data!;
     final enclosureResponse =
         (results[2] as Response<EnclosureListResponse>).data!;
+    final weightResponse =
+        (results[3] as Response<WeightRecordListResponse>).data!;
     return I2Snapshot(
       hamsters: hamsterResponse.data
           .map((value) => I2Hamster.fromJson(value.toJson()))
@@ -249,6 +253,9 @@ class DefaultApiI2Repository implements I2Repository {
           .map((value) => I2Enclosure.fromJson(value.toJson()))
           .toList(),
       lastSyncedAt: DateTime.now(),
+      recentWeights: weightResponse.data
+          .map((value) => I2WeightRecord.fromJson(value.toJson()))
+          .toList(),
     );
   }
 
@@ -700,6 +707,7 @@ class MemoryI2Repository implements I2Repository {
     I2Snapshot? snapshot,
     this.failReads = false,
     this.failWrites = false,
+    List<I2WeightRecord>? weights,
   }) : _snapshot =
            snapshot ??
            I2Snapshot(
@@ -707,9 +715,11 @@ class MemoryI2Repository implements I2Repository {
              litters: const <I2Litter>[],
              enclosures: const <I2Enclosure>[],
              lastSyncedAt: null,
-           );
+           ),
+       _weights = [...?weights, ...?snapshot?.recentWeights];
 
   I2Snapshot _snapshot;
+  final List<I2WeightRecord> _weights;
   final bool failReads;
   final bool failWrites;
   final List<I2ImportRowResult> _rows = <I2ImportRowResult>[];
@@ -726,7 +736,13 @@ class MemoryI2Repository implements I2Repository {
   @override
   Future<I2Snapshot> loadSnapshot() async {
     _readGuard();
-    return _snapshot;
+    return I2Snapshot(
+      hamsters: _snapshot.hamsters,
+      litters: _snapshot.litters,
+      enclosures: _snapshot.enclosures,
+      lastSyncedAt: _snapshot.lastSyncedAt ?? DateTime.now(),
+      recentWeights: List<I2WeightRecord>.from(_weights),
+    );
   }
 
   @override
@@ -735,6 +751,9 @@ class MemoryI2Repository implements I2Repository {
     final hamster = _snapshot.hamsters.firstWhere(
       (value) => value.id == hamsterId,
     );
+    final weights =
+        _weights.where((w) => w.hamsterId == hamsterId).toList()
+          ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
     return I2HamsterDetail(
       hamster: hamster,
       litters: _snapshot.litters
@@ -742,7 +761,7 @@ class MemoryI2Repository implements I2Repository {
             (value) => value.sireId == hamsterId || value.damId == hamsterId,
           )
           .toList(),
-      weights: const <I2WeightRecord>[],
+      weights: weights,
     );
   }
 
@@ -855,13 +874,35 @@ class MemoryI2Repository implements I2Repository {
       throw const I2RepositoryException('测试 repository 未实现清洁历史写入');
 
   @override
-  Future<I2WeightRecord> createWeight(I2WeightDraft draft) async =>
-      throw const I2RepositoryException('测试 repository 未实现体重写入');
+  Future<I2WeightRecord> createWeight(I2WeightDraft draft) async {
+    _writeGuard();
+    if (draft.weightG <= 0) {
+      throw const I2RepositoryException('体重必须大于 0 克');
+    }
+    final hamsterId = draft.hamsterId;
+    I2WeightRecord? previous;
+    if (hamsterId != null) {
+      final history =
+          _weights.where((w) => w.hamsterId == hamsterId).toList()
+            ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
+      if (history.isNotEmpty) previous = history.first;
+    }
+    final record = buildWeightRecord(
+      id: 'weight-${_sequence++}',
+      draft: draft,
+      previous: previous,
+    );
+    _weights.insert(0, record);
+    return record;
+  }
 
   @override
   Future<List<I2WeightRecord>> listWeights(String hamsterId) async {
     _readGuard();
-    return const <I2WeightRecord>[];
+    final values =
+        _weights.where((w) => w.hamsterId == hamsterId).toList()
+          ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
+    return values;
   }
 
   @override

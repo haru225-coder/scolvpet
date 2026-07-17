@@ -267,6 +267,18 @@ class I2Controller extends ChangeNotifier {
       if (draft.hamsterId != null) {
         await loadWeights(draft.hamsterId!);
       }
+      await restore();
+    });
+  }
+
+  Future<void> createWeightsBatch(List<I2WeightDraft> drafts) async {
+    if (drafts.isEmpty) return;
+    if (!await _ensureWritable()) return;
+    await _runAction(() async {
+      for (final draft in drafts) {
+        await repository.createWeight(draft);
+      }
+      await restore();
     });
   }
 

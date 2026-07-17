@@ -386,6 +386,8 @@ class I2WeightRecord {
     required this.source,
     required this.previousWeightG,
     required this.changeFromPreviousG,
+    this.birthWeightG,
+    this.alertFlags = const <String>[],
     required this.notes,
   });
 
@@ -399,7 +401,11 @@ class I2WeightRecord {
   final String source;
   final num? previousWeightG;
   final num? changeFromPreviousG;
+  final num? birthWeightG;
+  final List<String> alertFlags;
   final String? notes;
+
+  bool get hasAlert => alertFlags.isNotEmpty;
 
   factory I2WeightRecord.fromJson(Map<String, dynamic> json) => I2WeightRecord(
     id: json['id'] as String? ?? '',
@@ -413,6 +419,10 @@ class I2WeightRecord {
     source: json['source'] as String? ?? 'manual',
     previousWeightG: json['previous_weight_g'] as num?,
     changeFromPreviousG: json['change_from_previous_g'] as num?,
+    birthWeightG: json['birth_weight_g'] as num?,
+    alertFlags: ((json['alert_flags'] as List?) ?? const <dynamic>[])
+        .map((e) => e.toString())
+        .toList(),
     notes: json['notes'] as String?,
   );
 
@@ -427,6 +437,8 @@ class I2WeightRecord {
     'source': source,
     'previous_weight_g': previousWeightG,
     'change_from_previous_g': changeFromPreviousG,
+    'birth_weight_g': birthWeightG,
+    'alert_flags': alertFlags,
     'notes': notes,
   };
 }
@@ -652,6 +664,7 @@ class I2Snapshot {
     required this.litters,
     required this.enclosures,
     required this.lastSyncedAt,
+    this.recentWeights = const <I2WeightRecord>[],
   });
 
   final List<I2Hamster> hamsters;
@@ -659,11 +672,15 @@ class I2Snapshot {
   final List<I2Enclosure> enclosures;
   final DateTime? lastSyncedAt;
 
+  /// Latest/recent individual weights used for home/list alerts.
+  final List<I2WeightRecord> recentWeights;
+
   Map<String, dynamic> toJson() => {
     'hamsters': hamsters.map((value) => value.toJson()).toList(),
     'litters': litters.map((value) => value.toJson()).toList(),
     'enclosures': enclosures.map((value) => value.toJson()).toList(),
     'last_synced_at': lastSyncedAt?.toIso8601String(),
+    'recent_weights': recentWeights.map((value) => value.toJson()).toList(),
   };
 
   factory I2Snapshot.fromJson(Map<String, dynamic> json) => I2Snapshot(
@@ -680,6 +697,12 @@ class I2Snapshot {
         .map((value) => I2Enclosure.fromJson(Map<String, dynamic>.from(value)))
         .toList(),
     lastSyncedAt: _date(json['last_synced_at']),
+    recentWeights: ((json['recent_weights'] as List?) ?? const <dynamic>[])
+        .whereType<Map>()
+        .map(
+          (value) => I2WeightRecord.fromJson(Map<String, dynamic>.from(value)),
+        )
+        .toList(),
   );
 }
 

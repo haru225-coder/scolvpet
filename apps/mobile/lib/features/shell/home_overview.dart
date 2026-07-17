@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
 import '../i2/i2.dart';
+import '../weight/weight_alerts.dart';
 
 /// Pure aggregation over the I2 domain snapshot for the home dashboard.
 class HomeOverviewMetrics {
@@ -13,9 +14,11 @@ class HomeOverviewMetrics {
     required this.gestatingDamCount,
     required this.dirtyEnclosureCount,
     required this.draftCount,
+    required this.weightAlertCount,
     required this.offline,
     this.lastSyncLabel,
     this.organizationName,
+    this.weightAlerts = const <WeightAlert>[],
   });
 
   final int hamsterCount;
@@ -25,12 +28,18 @@ class HomeOverviewMetrics {
   final int gestatingDamCount;
   final int dirtyEnclosureCount;
   final int draftCount;
+  final int weightAlertCount;
   final bool offline;
   final String? lastSyncLabel;
   final String? organizationName;
+  final List<WeightAlert> weightAlerts;
 
   int get attentionCount =>
-      pendingWeanOrSexCount + gestatingDamCount + dirtyEnclosureCount + draftCount;
+      pendingWeanOrSexCount +
+      gestatingDamCount +
+      dirtyEnclosureCount +
+      draftCount +
+      weightAlertCount;
 
   factory HomeOverviewMetrics.fromSnapshot({
     required I2Snapshot? snapshot,
@@ -79,6 +88,10 @@ class HomeOverviewMetrics {
           c == 'needs_cleaning';
     }).length;
 
+    final weightAlerts = buildWeightAlerts(
+      snapshot?.recentWeights ?? const <I2WeightRecord>[],
+    );
+
     return HomeOverviewMetrics(
       hamsterCount: activeHamsters,
       enclosureCount: enclosures.length,
@@ -87,9 +100,11 @@ class HomeOverviewMetrics {
       gestatingDamCount: gestating,
       dirtyEnclosureCount: dirty,
       draftCount: drafts.length,
+      weightAlertCount: weightAlerts.length,
       offline: offline,
       lastSyncLabel: lastSyncLabel,
       organizationName: organizationName,
+      weightAlerts: weightAlerts,
     );
   }
 
@@ -116,6 +131,7 @@ class HomeOverviewPage extends StatelessWidget {
     required this.onOpenLitters,
     required this.onOpenDataCenter,
     required this.onCreateHamster,
+    this.onOpenBatchWeight,
   });
 
   final AppState state;
@@ -126,6 +142,7 @@ class HomeOverviewPage extends StatelessWidget {
   final VoidCallback onOpenLitters;
   final VoidCallback onOpenDataCenter;
   final VoidCallback onCreateHamster;
+  final VoidCallback? onOpenBatchWeight;
 
   @override
   Widget build(BuildContext context) {
@@ -208,6 +225,7 @@ class HomeOverviewPage extends StatelessWidget {
                   onOpenEnclosures: onOpenEnclosures,
                   onOpenBreeding: onOpenBreeding,
                   onOpenHamsters: onOpenHamsters,
+                  onOpenBatchWeight: onOpenBatchWeight,
                 ),
                 const SizedBox(height: 20),
                 const Text(
@@ -259,6 +277,13 @@ class HomeOverviewPage extends StatelessWidget {
                       label: '仓鼠列表',
                       onTap: onOpenHamsters,
                     ),
+                    if (onOpenBatchWeight != null)
+                      _QuickChip(
+                        buttonKey: const Key('home-quick-batch-weight'),
+                        icon: Icons.monitor_weight_outlined,
+                        label: '批量称重',
+                        onTap: onOpenBatchWeight!,
+                      ),
                   ],
                 ),
                 if (metrics.lastSyncLabel != null) ...[
@@ -345,6 +370,7 @@ class _AttentionSection extends StatelessWidget {
     required this.onOpenEnclosures,
     required this.onOpenBreeding,
     required this.onOpenHamsters,
+    this.onOpenBatchWeight,
   });
 
   final HomeOverviewMetrics metrics;
@@ -352,6 +378,7 @@ class _AttentionSection extends StatelessWidget {
   final VoidCallback onOpenEnclosures;
   final VoidCallback onOpenBreeding;
   final VoidCallback onOpenHamsters;
+  final VoidCallback? onOpenBatchWeight;
 
   @override
   Widget build(BuildContext context) {
@@ -393,6 +420,20 @@ class _AttentionSection extends StatelessWidget {
           subtitle: '${metrics.draftCount} 条离线草稿待提交',
           icon: Icons.edit_note,
           onTap: onOpenHamsters,
+        ),
+      );
+    }
+    if (metrics.weightAlertCount > 0) {
+      final sample = metrics.weightAlerts
+          .take(2)
+          .map((a) => a.summary)
+          .join('；');
+      rows.add(
+        _AttentionTile(
+          title: '体重异常',
+          subtitle: '${metrics.weightAlertCount} 只 · $sample',
+          icon: Icons.monitor_weight_outlined,
+          onTap: onOpenBatchWeight ?? onOpenHamsters,
         ),
       );
     }
