@@ -8,6 +8,7 @@ import '../features/breeding/breeding.dart';
 import '../features/litter/litter.dart';
 import '../features/calendar/calendar.dart';
 import '../features/health/health.dart';
+import '../features/accounting/accounting.dart';
 import '../features/contracts/contracts.dart';
 import '../features/crm/crm.dart';
 import '../features/members/members.dart';
@@ -282,6 +283,7 @@ class HomeShell extends StatefulWidget {
     required this.memberRepository,
     required this.crmRepository,
     required this.contractsRepository,
+    required this.accountingRepository,
   });
 
   final AppState state;
@@ -294,6 +296,7 @@ class HomeShell extends StatefulWidget {
   final MemberRepository memberRepository;
   final CrmRepository crmRepository;
   final ContractsRepository contractsRepository;
+  final AccountingRepository accountingRepository;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -620,6 +623,17 @@ class _HomeShellState extends State<HomeShell> {
             ),
           );
         },
+        onOpenAccounting: () {
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => AccountingHubPage(
+                controller: AccountingController(
+                  repository: widget.accountingRepository,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     ];
     return Scaffold(
@@ -711,6 +725,7 @@ class _MinePage extends StatelessWidget {
     this.onOpenMembers,
     this.onOpenCrm,
     this.onOpenContracts,
+    this.onOpenAccounting,
   });
 
   final AppState state;
@@ -718,6 +733,7 @@ class _MinePage extends StatelessWidget {
   final VoidCallback? onOpenMembers;
   final VoidCallback? onOpenCrm;
   final VoidCallback? onOpenContracts;
+  final VoidCallback? onOpenAccounting;
 
   @override
   Widget build(BuildContext context) {
@@ -790,6 +806,19 @@ class _MinePage extends StatelessWidget {
               subtitle: const Text('模板 · 草稿签发 · 复制分享'),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenContracts,
+            ),
+          ),
+        ],
+        if (onOpenAccounting != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              key: const Key('mine-open-accounting'),
+              leading: const Icon(Icons.account_balance_wallet_outlined),
+              title: const Text('财务收支'),
+              subtitle: const Text('记账 · 分类 · 本月汇总'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenAccounting,
             ),
           ),
         ],
