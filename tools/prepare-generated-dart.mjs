@@ -28,6 +28,9 @@ for (const file of fs.readdirSync(modelDir)) {
   source = source.replaceAll('const MediaEditRecipeRequestOutputFormatEnum.jpeg', 'MediaEditRecipeRequestOutputFormatEnum.jpeg');
   source = source.replaceAll("const ImportPreflightRequestDuplicatePolicyEnum._('reject')", 'ImportPreflightRequestDuplicatePolicyEnum.reject');
   source = source.replaceAll("const MediaEditRecipeRequestOutputFormatEnum._('jpeg')", 'MediaEditRecipeRequestOutputFormatEnum.jpeg');
+  source = source.replaceAll("const CreateCrmContactRequestStatusEnum._('lead')", 'CreateCrmContactRequestStatusEnum.lead');
+  source = source.replaceAll("const CreateGeneticProfileRequestConfidenceEnum._('unknown')", 'CreateGeneticProfileRequestConfidenceEnum.unknown');
+  source = source.replaceAll("const SandboxActivatePlanRequestPlanCodeEnum._('pro')", 'SandboxActivatePlanRequestPlanCodeEnum.pro');
   if (file === 'import_preflight_request.dart') {
     source = source.replaceAll(
       "defaultValue: 'reject'",
@@ -39,6 +42,15 @@ for (const file of fs.readdirSync(modelDir)) {
       "defaultValue: 'jpeg'",
       'defaultValue: MediaEditRecipeRequestOutputFormatEnum.jpeg',
     );
+  }
+  if (file === 'create_crm_contact_request.dart') {
+    source = source.replaceAll("defaultValue: 'lead'", 'defaultValue: CreateCrmContactRequestStatusEnum.lead');
+  }
+  if (file === 'create_genetic_profile_request.dart') {
+    source = source.replaceAll("defaultValue: 'unknown'", 'defaultValue: CreateGeneticProfileRequestConfidenceEnum.unknown');
+  }
+  if (file === 'sandbox_activate_plan_request.dart') {
+    source = source.replaceAll("defaultValue: 'pro'", 'defaultValue: SandboxActivatePlanRequestPlanCodeEnum.pro');
   }
   for (const importName of unusedImports.get(file) ?? []) {
     source = source.replaceAll(`import 'package:scolvpet_api/src/model/${importName}';\n`, '');
@@ -56,6 +68,18 @@ for (const file of fs.readdirSync(modelDir).filter((name) => name.endsWith('.g.d
   source = source.replace(
     /\$enumDecodeNullable\(\n\s+_\$MediaEditRecipeRequestOutputFormatEnumEnumMap,\n\s+v,\n\s+\) \?\?\n\s+'jpeg'/,
     '$enumDecodeNullable(\n              _$MediaEditRecipeRequestOutputFormatEnumEnumMap,\n              v,\n            ) ??\n            MediaEditRecipeRequestOutputFormatEnum.jpeg',
+  );
+  source = source.replace(
+    /\$enumDecodeNullable\(\n\s+_\$CreateCrmContactRequestStatusEnumEnumMap,\n\s+v,\n\s+\) \?\?\n\s+'lead'/,
+    '$enumDecodeNullable(\n              _$CreateCrmContactRequestStatusEnumEnumMap,\n              v,\n            ) ??\n            CreateCrmContactRequestStatusEnum.lead',
+  );
+  source = source.replace(
+    /\$enumDecodeNullable\(\n\s+_\$CreateGeneticProfileRequestConfidenceEnumEnumMap,\n\s+v,\n\s+\) \?\?\n\s+'unknown'/,
+    '$enumDecodeNullable(\n              _$CreateGeneticProfileRequestConfidenceEnumEnumMap,\n              v,\n            ) ??\n            CreateGeneticProfileRequestConfidenceEnum.unknown',
+  );
+  source = source.replace(
+    /\$enumDecodeNullable\(\n\s+_\$SandboxActivatePlanRequestPlanCodeEnumEnumMap,\n\s+v,\n\s+\) \?\?\n\s+'pro'/,
+    '$enumDecodeNullable(\n              _$SandboxActivatePlanRequestPlanCodeEnumEnumMap,\n              v,\n            ) ??\n            SandboxActivatePlanRequestPlanCodeEnum.pro',
   );
   fs.writeFileSync(filePath, source);
 }

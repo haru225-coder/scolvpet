@@ -195,11 +195,85 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**updateSpeciesRuleVersion**](doc/DefaultApi.md#updatespeciesruleversion) | **PATCH** /species-rule-versions/{rule_version_id} | 更新尚未冻结的规则版本
 [*DefaultApi*](doc/DefaultApi.md) | [**updateTask**](doc/DefaultApi.md#updatetask) | **PATCH** /tasks/{task_id} | 更新任务非状态字段
 [*DefaultApi*](doc/DefaultApi.md) | [**weanLitter**](doc/DefaultApi.md#weanlitter) | **POST** /litters/{litter_id}/wean | 完成断奶
+[*P1Api*](doc/P1Api.md) | [**checkEntitlement**](doc/P1Api.md#checkentitlement) | **POST** /v1/entitlements/check | 检查功能或指标权益
+[*P1Api*](doc/P1Api.md) | [**createAccountingCategory**](doc/P1Api.md#createaccountingcategory) | **POST** /v1/accounting/categories | 创建记账分类
+[*P1Api*](doc/P1Api.md) | [**createAccountingRecord**](doc/P1Api.md#createaccountingrecord) | **POST** /v1/accounting/records | 创建记账流水
+[*P1Api*](doc/P1Api.md) | [**createContract**](doc/P1Api.md#createcontract) | **POST** /v1/contracts | 创建合同单据
+[*P1Api*](doc/P1Api.md) | [**createContractTemplate**](doc/P1Api.md#createcontracttemplate) | **POST** /v1/contracts/templates | 创建合同模板
+[*P1Api*](doc/P1Api.md) | [**createGeneticProfile**](doc/P1Api.md#creategeneticprofile) | **POST** /v1/genetic/profiles | 创建遗传档案
+[*P1Api*](doc/P1Api.md) | [**createPushMessage**](doc/P1Api.md#createpushmessage) | **POST** /v1/push/messages | 创建推送消息
+[*P1Api*](doc/P1Api.md) | [**createReceipt**](doc/P1Api.md#createreceipt) | **POST** /v1/receipts | 创建回执单据
+[*P1Api*](doc/P1Api.md) | [**createReceiptTemplate**](doc/P1Api.md#createreceipttemplate) | **POST** /v1/receipts/templates | 创建回执模板
+[*P1Api*](doc/P1Api.md) | [**disablePushDevice**](doc/P1Api.md#disablepushdevice) | **DELETE** /v1/push/devices/{device_id} | 停用推送设备
+[*P1Api*](doc/P1Api.md) | [**getAccountingSummary**](doc/P1Api.md#getaccountingsummary) | **GET** /v1/accounting/summary | 读取记账汇总
+[*P1Api*](doc/P1Api.md) | [**getCurrentEntitlement**](doc/P1Api.md#getcurrententitlement) | **GET** /v1/entitlements/current | 读取当前权益快照
+[*P1Api*](doc/P1Api.md) | [**getEntitlementCatalog**](doc/P1Api.md#getentitlementcatalog) | **GET** /v1/entitlements/catalog | 读取权益套餐目录
+[*P1Api*](doc/P1Api.md) | [**inviteOrganizationMember**](doc/P1Api.md#inviteorganizationmember) | **POST** /v1/organization-members | 邀请熊舍成员
+[*P1Api*](doc/P1Api.md) | [**issueContract**](doc/P1Api.md#issuecontract) | **POST** /v1/contracts/{document_id}/issue | 签发合同
+[*P1Api*](doc/P1Api.md) | [**issueReceipt**](doc/P1Api.md#issuereceipt) | **POST** /v1/receipts/{document_id}/issue | 签发回执
+[*P1Api*](doc/P1Api.md) | [**listAccountingCategories**](doc/P1Api.md#listaccountingcategories) | **GET** /v1/accounting/categories | 列出记账分类
+[*P1Api*](doc/P1Api.md) | [**listAccountingRecords**](doc/P1Api.md#listaccountingrecords) | **GET** /v1/accounting/records | 列出记账流水
+[*P1Api*](doc/P1Api.md) | [**listContractTemplates**](doc/P1Api.md#listcontracttemplates) | **GET** /v1/contracts/templates | 列出合同模板
+[*P1Api*](doc/P1Api.md) | [**listContracts**](doc/P1Api.md#listcontracts) | **GET** /v1/contracts | 列出合同单据
+[*P1Api*](doc/P1Api.md) | [**listGeneticLoci**](doc/P1Api.md#listgeneticloci) | **GET** /v1/genetic/loci | 列出遗传位点
+[*P1Api*](doc/P1Api.md) | [**listGeneticProfiles**](doc/P1Api.md#listgeneticprofiles) | **GET** /v1/genetic/profiles | 列出遗传档案
+[*P1Api*](doc/P1Api.md) | [**listOrganizationMembers**](doc/P1Api.md#listorganizationmembers) | **GET** /v1/organization-members | 列出熊舍成员
+[*P1Api*](doc/P1Api.md) | [**listPushDevices**](doc/P1Api.md#listpushdevices) | **GET** /v1/push/devices | 列出推送设备
+[*P1Api*](doc/P1Api.md) | [**listPushMessages**](doc/P1Api.md#listpushmessages) | **GET** /v1/push/messages | 列出推送消息
+[*P1Api*](doc/P1Api.md) | [**listReceiptTemplates**](doc/P1Api.md#listreceipttemplates) | **GET** /v1/receipts/templates | 列出回执模板
+[*P1Api*](doc/P1Api.md) | [**listReceipts**](doc/P1Api.md#listreceipts) | **GET** /v1/receipts | 列出回执单据
+[*P1Api*](doc/P1Api.md) | [**revokeOrganizationMember**](doc/P1Api.md#revokeorganizationmember) | **POST** /v1/organization-members/{member_id}/revoke | 撤销熊舍成员
+[*P1Api*](doc/P1Api.md) | [**sandboxActivatePlan**](doc/P1Api.md#sandboxactivateplan) | **POST** /v1/entitlements/sandbox/activate | 沙箱激活权益套餐
+[*P1Api*](doc/P1Api.md) | [**simulateGeneticBreeding**](doc/P1Api.md#simulategeneticbreeding) | **POST** /v1/genetic/simulate | 模拟遗传配对
+[*P1Api*](doc/P1Api.md) | [**updateOrganizationMember**](doc/P1Api.md#updateorganizationmember) | **PATCH** /v1/organization-members/{member_id} | 更新熊舍成员
+[*P1Api*](doc/P1Api.md) | [**upsertPushDevice**](doc/P1Api.md#upsertpushdevice) | **PUT** /v1/push/devices | 登记推送设备
+[*P1CRMApi*](doc/P1CRMApi.md) | [**cancelCrmReservation**](doc/P1CRMApi.md#cancelcrmreservation) | **POST** /v1/crm/reservations/{reservation_id}/cancel | 取消客户预订
+[*P1CRMApi*](doc/P1CRMApi.md) | [**completeCrmHandover**](doc/P1CRMApi.md#completecrmhandover) | **POST** /v1/crm/handovers/{handover_id}/complete | 完成客户交付
+[*P1CRMApi*](doc/P1CRMApi.md) | [**confirmCrmReservation**](doc/P1CRMApi.md#confirmcrmreservation) | **POST** /v1/crm/reservations/{reservation_id}/confirm | 确认客户预订
+[*P1CRMApi*](doc/P1CRMApi.md) | [**createCrmContact**](doc/P1CRMApi.md#createcrmcontact) | **POST** /v1/crm/contacts | 创建 CRM 客户
+[*P1CRMApi*](doc/P1CRMApi.md) | [**createCrmHandover**](doc/P1CRMApi.md#createcrmhandover) | **POST** /v1/crm/handovers | 创建交付记录
+[*P1CRMApi*](doc/P1CRMApi.md) | [**createCrmReservation**](doc/P1CRMApi.md#createcrmreservation) | **POST** /v1/crm/reservations | 创建客户预订
+[*P1CRMApi*](doc/P1CRMApi.md) | [**listCrmContacts**](doc/P1CRMApi.md#listcrmcontacts) | **GET** /v1/crm/contacts | 列出 CRM 客户
+[*P1CRMApi*](doc/P1CRMApi.md) | [**listCrmHandovers**](doc/P1CRMApi.md#listcrmhandovers) | **GET** /v1/crm/handovers | 列出交付记录
+[*P1CRMApi*](doc/P1CRMApi.md) | [**listCrmReservations**](doc/P1CRMApi.md#listcrmreservations) | **GET** /v1/crm/reservations | 列出客户预订
+[*P2Api*](doc/P2Api.md) | [**askAssistant**](doc/P2Api.md#askassistant) | **POST** /v1/assistant/ask | 向只读助手提问
+[*P2Api*](doc/P2Api.md) | [**assistantCapabilities**](doc/P2Api.md#assistantcapabilities) | **GET** /v1/assistant/capabilities | 读取助手能力
+[*P2Api*](doc/P2Api.md) | [**auditMiniprogramRelease**](doc/P2Api.md#auditminiprogramrelease) | **POST** /v1/miniprogram/releases/{release_id}/audit | 审核小程序版本
+[*P2Api*](doc/P2Api.md) | [**cancelStudDeal**](doc/P2Api.md#cancelstuddeal) | **POST** /v1/stud/deals/{deal_id}/cancel | 取消跨舍借配单
+[*P2Api*](doc/P2Api.md) | [**completeStudDeal**](doc/P2Api.md#completestuddeal) | **POST** /v1/stud/deals/{deal_id}/complete | 完成跨舍借配单
+[*P2Api*](doc/P2Api.md) | [**confirmStudDeal**](doc/P2Api.md#confirmstuddeal) | **POST** /v1/stud/deals/{deal_id}/confirm | 确认跨舍借配单
+[*P2Api*](doc/P2Api.md) | [**createMiniprogramRelease**](doc/P2Api.md#createminiprogramrelease) | **POST** /v1/miniprogram/releases | 创建小程序版本
+[*P2Api*](doc/P2Api.md) | [**createStudDeal**](doc/P2Api.md#createstuddeal) | **POST** /v1/stud/deals | 创建跨舍借配单
+[*P2Api*](doc/P2Api.md) | [**createStudListing**](doc/P2Api.md#createstudlisting) | **POST** /v1/stud/listings | 创建种公借配挂牌
+[*P2Api*](doc/P2Api.md) | [**getMiniprogramConfig**](doc/P2Api.md#getminiprogramconfig) | **GET** /v1/miniprogram/config | 读取小程序配置
+[*P2Api*](doc/P2Api.md) | [**getOwnerPublicSite**](doc/P2Api.md#getownerpublicsite) | **GET** /v1/public-site | 读取熊舍公开主页草稿
+[*P2Api*](doc/P2Api.md) | [**getPublicSiteBySlug**](doc/P2Api.md#getpublicsitebyslug) | **GET** /v1/public/sites/{slug} | 读取公开主页投影
+[*P2Api*](doc/P2Api.md) | [**listMiniprogramReleases**](doc/P2Api.md#listminiprogramreleases) | **GET** /v1/miniprogram/releases | 列出小程序版本
+[*P2Api*](doc/P2Api.md) | [**listStudDeals**](doc/P2Api.md#liststuddeals) | **GET** /v1/stud/deals | 列出跨舍借配单
+[*P2Api*](doc/P2Api.md) | [**listStudListings**](doc/P2Api.md#liststudlistings) | **GET** /v1/stud/listings | 列出种公借配挂牌
+[*P2Api*](doc/P2Api.md) | [**publishMiniprogramRelease**](doc/P2Api.md#publishminiprogramrelease) | **POST** /v1/miniprogram/releases/{release_id}/publish | 发布小程序版本
+[*P2Api*](doc/P2Api.md) | [**publishOwnerPublicSite**](doc/P2Api.md#publishownerpublicsite) | **POST** /v1/public-site/publish | 发布熊舍公开主页
+[*P2Api*](doc/P2Api.md) | [**rollbackMiniprogramRelease**](doc/P2Api.md#rollbackminiprogramrelease) | **POST** /v1/miniprogram/releases/{release_id}/rollback | 回滚小程序版本
+[*P2Api*](doc/P2Api.md) | [**startStudDeal**](doc/P2Api.md#startstuddeal) | **POST** /v1/stud/deals/{deal_id}/start | 开始跨舍借配单
+[*P2Api*](doc/P2Api.md) | [**submitMiniprogramRelease**](doc/P2Api.md#submitminiprogramrelease) | **POST** /v1/miniprogram/releases/{release_id}/submit | 提交小程序审核
+[*P2Api*](doc/P2Api.md) | [**unpublishOwnerPublicSite**](doc/P2Api.md#unpublishownerpublicsite) | **POST** /v1/public-site/unpublish | 撤下熊舍公开主页
+[*P2Api*](doc/P2Api.md) | [**unpublishStudListing**](doc/P2Api.md#unpublishstudlisting) | **POST** /v1/stud/listings/{listing_id}/unpublish | 撤下种公挂牌
+[*P2Api*](doc/P2Api.md) | [**upsertMiniprogramConfig**](doc/P2Api.md#upsertminiprogramconfig) | **PUT** /v1/miniprogram/config | 保存小程序配置
+[*P2Api*](doc/P2Api.md) | [**upsertOwnerPublicSite**](doc/P2Api.md#upsertownerpublicsite) | **PUT** /v1/public-site | 保存熊舍公开主页
 
 
 ## Documentation For Models
 
  - [Account](doc/Account.md)
+ - [AccountingCategory](doc/AccountingCategory.md)
+ - [AccountingCategoryListResponse](doc/AccountingCategoryListResponse.md)
+ - [AccountingCategoryResponse](doc/AccountingCategoryResponse.md)
+ - [AccountingCategorySummary](doc/AccountingCategorySummary.md)
+ - [AccountingRecord](doc/AccountingRecord.md)
+ - [AccountingRecordListResponse](doc/AccountingRecordListResponse.md)
+ - [AccountingRecordResponse](doc/AccountingRecordResponse.md)
+ - [AccountingSummary](doc/AccountingSummary.md)
+ - [AccountingSummaryResponse](doc/AccountingSummaryResponse.md)
  - [ActionItemResult](doc/ActionItemResult.md)
  - [AdjustBaselineRequest](doc/AdjustBaselineRequest.md)
  - [AdjustBaselineResponse](doc/AdjustBaselineResponse.md)
@@ -207,8 +281,15 @@ Class | Method | HTTP request | Description
  - [AdjustLitterCountRequest](doc/AdjustLitterCountRequest.md)
  - [AdjustLitterCountResponse](doc/AdjustLitterCountResponse.md)
  - [AdjustLitterCountResponseData](doc/AdjustLitterCountResponseData.md)
+ - [AssistantAnswer](doc/AssistantAnswer.md)
+ - [AssistantAnswerResponse](doc/AssistantAnswerResponse.md)
+ - [AssistantAskRequest](doc/AssistantAskRequest.md)
+ - [AssistantCapabilities](doc/AssistantCapabilities.md)
+ - [AssistantCapabilitiesResponse](doc/AssistantCapabilitiesResponse.md)
+ - [AssistantFact](doc/AssistantFact.md)
  - [AsyncJob](doc/AsyncJob.md)
  - [AsyncJobResponse](doc/AsyncJobResponse.md)
+ - [AuditMiniprogramReleaseRequest](doc/AuditMiniprogramReleaseRequest.md)
  - [BackupJob](doc/BackupJob.md)
  - [BackupJobCreateRequest](doc/BackupJobCreateRequest.md)
  - [BackupJobListResponse](doc/BackupJobListResponse.md)
@@ -240,12 +321,40 @@ Class | Method | HTTP request | Description
  - [ConfirmBirthRequest](doc/ConfirmBirthRequest.md)
  - [ConfirmBirthResponse](doc/ConfirmBirthResponse.md)
  - [ConfirmBirthResponseData](doc/ConfirmBirthResponseData.md)
+ - [CreateAccountingCategoryRequest](doc/CreateAccountingCategoryRequest.md)
+ - [CreateAccountingRecordRequest](doc/CreateAccountingRecordRequest.md)
+ - [CreateContractRequest](doc/CreateContractRequest.md)
+ - [CreateCrmContactRequest](doc/CreateCrmContactRequest.md)
+ - [CreateCrmHandoverRequest](doc/CreateCrmHandoverRequest.md)
+ - [CreateCrmReservationRequest](doc/CreateCrmReservationRequest.md)
+ - [CreateDocumentTemplateRequest](doc/CreateDocumentTemplateRequest.md)
+ - [CreateGeneticProfileRequest](doc/CreateGeneticProfileRequest.md)
+ - [CreateMiniprogramReleaseRequest](doc/CreateMiniprogramReleaseRequest.md)
+ - [CreatePushMessageRequest](doc/CreatePushMessageRequest.md)
+ - [CreateReceiptRequest](doc/CreateReceiptRequest.md)
+ - [CreateStudDealRequest](doc/CreateStudDealRequest.md)
+ - [CreateStudListingRequest](doc/CreateStudListingRequest.md)
+ - [CrmContact](doc/CrmContact.md)
+ - [CrmContactListResponse](doc/CrmContactListResponse.md)
+ - [CrmContactResponse](doc/CrmContactResponse.md)
+ - [CrmHandover](doc/CrmHandover.md)
+ - [CrmHandoverListResponse](doc/CrmHandoverListResponse.md)
+ - [CrmHandoverResponse](doc/CrmHandoverResponse.md)
+ - [CrmReservation](doc/CrmReservation.md)
+ - [CrmReservationListResponse](doc/CrmReservationListResponse.md)
+ - [CrmReservationResponse](doc/CrmReservationResponse.md)
  - [CurrentAccountResponse](doc/CurrentAccountResponse.md)
  - [CurrentAccountResponseData](doc/CurrentAccountResponseData.md)
  - [DamCondition](doc/DamCondition.md)
  - [DataCenterSummaryResponse](doc/DataCenterSummaryResponse.md)
  - [DataCenterSummaryResponseData](doc/DataCenterSummaryResponseData.md)
  - [DeviceInfo](doc/DeviceInfo.md)
+ - [Document](doc/Document.md)
+ - [DocumentListResponse](doc/DocumentListResponse.md)
+ - [DocumentResponse](doc/DocumentResponse.md)
+ - [DocumentTemplate](doc/DocumentTemplate.md)
+ - [DocumentTemplateListResponse](doc/DocumentTemplateListResponse.md)
+ - [DocumentTemplateResponse](doc/DocumentTemplateResponse.md)
  - [DownloadLinkResponse](doc/DownloadLinkResponse.md)
  - [DownloadLinkResponseData](doc/DownloadLinkResponseData.md)
  - [Enclosure](doc/Enclosure.md)
@@ -265,6 +374,14 @@ Class | Method | HTTP request | Description
  - [EnclosureStayResponse](doc/EnclosureStayResponse.md)
  - [EnclosureStayUpdateRequest](doc/EnclosureStayUpdateRequest.md)
  - [EnclosureUpdateRequest](doc/EnclosureUpdateRequest.md)
+ - [EntitlementCatalogResponse](doc/EntitlementCatalogResponse.md)
+ - [EntitlementCheckRequest](doc/EntitlementCheckRequest.md)
+ - [EntitlementCheckResponse](doc/EntitlementCheckResponse.md)
+ - [EntitlementCheckResult](doc/EntitlementCheckResult.md)
+ - [EntitlementFeature](doc/EntitlementFeature.md)
+ - [EntitlementLimit](doc/EntitlementLimit.md)
+ - [EntitlementSnapshot](doc/EntitlementSnapshot.md)
+ - [EntitlementSnapshotResponse](doc/EntitlementSnapshotResponse.md)
  - [ErrorObject](doc/ErrorObject.md)
  - [ErrorResponse](doc/ErrorResponse.md)
  - [ExportJob](doc/ExportJob.md)
@@ -272,6 +389,15 @@ Class | Method | HTTP request | Description
  - [ExportJobListResponse](doc/ExportJobListResponse.md)
  - [ExportJobResponse](doc/ExportJobResponse.md)
  - [FieldError](doc/FieldError.md)
+ - [GeneticLocus](doc/GeneticLocus.md)
+ - [GeneticLocusListResponse](doc/GeneticLocusListResponse.md)
+ - [GeneticOutcome](doc/GeneticOutcome.md)
+ - [GeneticProfile](doc/GeneticProfile.md)
+ - [GeneticProfileListResponse](doc/GeneticProfileListResponse.md)
+ - [GeneticProfileResponse](doc/GeneticProfileResponse.md)
+ - [GeneticSimulationRequest](doc/GeneticSimulationRequest.md)
+ - [GeneticSimulationResponse](doc/GeneticSimulationResponse.md)
+ - [GeneticSimulationResult](doc/GeneticSimulationResult.md)
  - [Hamster](doc/Hamster.md)
  - [HamsterBatchCreateRequest](doc/HamsterBatchCreateRequest.md)
  - [HamsterBatchCreateRequestItemsInner](doc/HamsterBatchCreateRequestItemsInner.md)
@@ -319,6 +445,7 @@ Class | Method | HTTP request | Description
  - [IndividualizeLitterResponse](doc/IndividualizeLitterResponse.md)
  - [IndividualizeLitterResponseData](doc/IndividualizeLitterResponseData.md)
  - [IndividualizeMapping](doc/IndividualizeMapping.md)
+ - [InviteOrganizationMemberRequest](doc/InviteOrganizationMemberRequest.md)
  - [JobStatus](doc/JobStatus.md)
  - [KinshipCheck](doc/KinshipCheck.md)
  - [Litter](doc/Litter.md)
@@ -352,8 +479,16 @@ Class | Method | HTTP request | Description
  - [MediaUploadPresignRequest](doc/MediaUploadPresignRequest.md)
  - [MediaUploadPresignResponse](doc/MediaUploadPresignResponse.md)
  - [MediaVariant](doc/MediaVariant.md)
+ - [MiniprogramConfig](doc/MiniprogramConfig.md)
+ - [MiniprogramConfigResponse](doc/MiniprogramConfigResponse.md)
+ - [MiniprogramRelease](doc/MiniprogramRelease.md)
+ - [MiniprogramReleaseListResponse](doc/MiniprogramReleaseListResponse.md)
+ - [MiniprogramReleaseResponse](doc/MiniprogramReleaseResponse.md)
  - [ObservationType](doc/ObservationType.md)
  - [Organization](doc/Organization.md)
+ - [OrganizationMember](doc/OrganizationMember.md)
+ - [OrganizationMemberListResponse](doc/OrganizationMemberListResponse.md)
+ - [OrganizationMemberResponse](doc/OrganizationMemberResponse.md)
  - [OrganizationResponse](doc/OrganizationResponse.md)
  - [OrganizationUpdateRequest](doc/OrganizationUpdateRequest.md)
  - [PageInfo](doc/PageInfo.md)
@@ -370,8 +505,13 @@ Class | Method | HTTP request | Description
  - [PedigreeParentageListResponse](doc/PedigreeParentageListResponse.md)
  - [PedigreeParentageResponse](doc/PedigreeParentageResponse.md)
  - [PhoneCodeLoginRequest](doc/PhoneCodeLoginRequest.md)
+ - [PlanCatalogEntry](doc/PlanCatalogEntry.md)
  - [PublicShareResponse](doc/PublicShareResponse.md)
  - [PublicShareResponseData](doc/PublicShareResponseData.md)
+ - [PublicSite](doc/PublicSite.md)
+ - [PublicSiteResponse](doc/PublicSiteResponse.md)
+ - [PublicSiteView](doc/PublicSiteView.md)
+ - [PublicSiteViewResponse](doc/PublicSiteViewResponse.md)
  - [PublishBreedingPlanRequest](doc/PublishBreedingPlanRequest.md)
  - [PublishBreedingPlanResponse](doc/PublishBreedingPlanResponse.md)
  - [PublishBreedingPlanResponseData](doc/PublishBreedingPlanResponseData.md)
@@ -379,6 +519,12 @@ Class | Method | HTTP request | Description
  - [PupIdentityListResponse](doc/PupIdentityListResponse.md)
  - [PupOutcomeStatus](doc/PupOutcomeStatus.md)
  - [PupProfileStatus](doc/PupProfileStatus.md)
+ - [PushDevice](doc/PushDevice.md)
+ - [PushDeviceListResponse](doc/PushDeviceListResponse.md)
+ - [PushDeviceResponse](doc/PushDeviceResponse.md)
+ - [PushMessage](doc/PushMessage.md)
+ - [PushMessageListResponse](doc/PushMessageListResponse.md)
+ - [PushMessageResponse](doc/PushMessageResponse.md)
  - [Reconciliation](doc/Reconciliation.md)
  - [RecordObservationRequest](doc/RecordObservationRequest.md)
  - [RecordObservationResponse](doc/RecordObservationResponse.md)
@@ -394,6 +540,7 @@ Class | Method | HTTP request | Description
  - [RetryImportRequest](doc/RetryImportRequest.md)
  - [RetryJobRequest](doc/RetryJobRequest.md)
  - [RevokeShareRequest](doc/RevokeShareRequest.md)
+ - [SandboxActivatePlanRequest](doc/SandboxActivatePlanRequest.md)
  - [SendVerificationCodeRequest](doc/SendVerificationCodeRequest.md)
  - [SeparatePairingRequest](doc/SeparatePairingRequest.md)
  - [SeparatePairingResponse](doc/SeparatePairingResponse.md)
@@ -426,9 +573,19 @@ Class | Method | HTTP request | Description
  - [StartPairingRequest](doc/StartPairingRequest.md)
  - [StartPairingResponse](doc/StartPairingResponse.md)
  - [StartPairingResponseData](doc/StartPairingResponseData.md)
+ - [StudDeal](doc/StudDeal.md)
+ - [StudDealListResponse](doc/StudDealListResponse.md)
+ - [StudDealResponse](doc/StudDealResponse.md)
+ - [StudListing](doc/StudListing.md)
+ - [StudListingListResponse](doc/StudListingListResponse.md)
+ - [StudListingResponse](doc/StudListingResponse.md)
  - [TaskPriority](doc/TaskPriority.md)
  - [TaskState](doc/TaskState.md)
+ - [UpdateOrganizationMemberRequest](doc/UpdateOrganizationMemberRequest.md)
  - [UploadSession](doc/UploadSession.md)
+ - [UpsertMiniprogramConfigRequest](doc/UpsertMiniprogramConfigRequest.md)
+ - [UpsertPublicSiteRequest](doc/UpsertPublicSiteRequest.md)
+ - [UpsertPushDeviceRequest](doc/UpsertPushDeviceRequest.md)
  - [UsageMetric](doc/UsageMetric.md)
  - [UsageResponse](doc/UsageResponse.md)
  - [UsageResponseData](doc/UsageResponseData.md)

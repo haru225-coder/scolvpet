@@ -60,6 +60,28 @@ tags:
     description: 通用异步作业状态
   - name: 用量
     description: 当前用量与历史快照
+  - name: P1 成员
+    description: 熊舍成员邀请、角色和撤销
+  - name: P1 CRM
+    description: 客户、预订和交付
+  - name: P1 合同与回执
+    description: 合同与回执模板、单据和签发
+  - name: P1 记账
+    description: 分类、流水与汇总
+  - name: P1 遗传
+    description: 遗传位点、档案和配对模拟
+  - name: P1 推送
+    description: 设备令牌与推送审计
+  - name: P1 权益
+    description: 套餐、用量门限和沙箱激活
+  - name: P2 官网
+    description: 公开主页配置、发布和匿名投影
+  - name: P2 小程序
+    description: 小程序配置与沙箱审核流水
+  - name: P2 助手
+    description: 只读数据助手
+  - name: P2 借配
+    description: 种公挂牌与跨舍借配履约
 security:
   - bearerAuth: []
 paths:
@@ -3927,6 +3949,1695 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  "/v1/organization-members":
+    get:
+      tags:
+      - P1 成员
+      operationId: listOrganizationMembers
+      summary: 列出熊舍成员
+      description: 需要 Bearer 令牌；仅舍主和具备成员管理权限的成员可读。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出熊舍成员成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrganizationMemberListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 成员
+      operationId: inviteOrganizationMember
+      summary: 邀请熊舍成员
+      description: 需要 Bearer 令牌；仅舍主可邀请成员。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - &1
+        "$ref": "#/components/parameters/P1P2IdempotencyKey"
+      responses:
+        '201':
+          description: 邀请熊舍成员成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrganizationMemberResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/InviteOrganizationMemberRequest"
+  "/v1/organization-members/{member_id}":
+    patch:
+      tags:
+      - P1 成员
+      operationId: updateOrganizationMember
+      summary: 更新熊舍成员
+      description: 需要 Bearer 令牌；仅舍主可修改成员角色或显示名。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: member_id
+        in: path
+        required: true
+        description: 成员 ID
+        schema:
+          type: string
+          format: uuid
+      - &2
+        "$ref": "#/components/parameters/IfMatchOptional"
+      - *1
+      responses:
+        '200':
+          description: 更新熊舍成员成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrganizationMemberResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateOrganizationMemberRequest"
+  "/v1/organization-members/{member_id}/revoke":
+    post:
+      tags:
+      - P1 成员
+      operationId: revokeOrganizationMember
+      summary: 撤销熊舍成员
+      description: 需要 Bearer 令牌；仅舍主可撤销成员。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: member_id
+        in: path
+        required: true
+        description: 成员 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 撤销熊舍成员成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrganizationMemberResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/crm/contacts":
+    get:
+      tags:
+      - P1 CRM
+      operationId: listCrmContacts
+      summary: 列出 CRM 客户
+      description: 需要 Bearer 令牌；当前熊舍成员可读客户档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出 CRM 客户成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmContactListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 CRM
+      operationId: createCrmContact
+      summary: 创建 CRM 客户
+      description: 需要 Bearer 令牌；当前熊舍成员可创建客户档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建 CRM 客户成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmContactResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateCrmContactRequest"
+  "/v1/crm/reservations":
+    get:
+      tags:
+      - P1 CRM
+      operationId: listCrmReservations
+      summary: 列出客户预订
+      description: 需要 Bearer 令牌；当前熊舍成员可读预订记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出客户预订成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmReservationListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 CRM
+      operationId: createCrmReservation
+      summary: 创建客户预订
+      description: 需要 Bearer 令牌；当前熊舍成员可创建预订记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建客户预订成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmReservationResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateCrmReservationRequest"
+  "/v1/crm/reservations/{reservation_id}/confirm":
+    post:
+      tags:
+      - P1 CRM
+      operationId: confirmCrmReservation
+      summary: 确认客户预订
+      description: 需要 Bearer 令牌；当前熊舍成员可推进预订状态。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: reservation_id
+        in: path
+        required: true
+        description: 预订 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 确认客户预订成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmReservationResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/crm/reservations/{reservation_id}/cancel":
+    post:
+      tags:
+      - P1 CRM
+      operationId: cancelCrmReservation
+      summary: 取消客户预订
+      description: 需要 Bearer 令牌；当前熊舍成员可取消预订。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: reservation_id
+        in: path
+        required: true
+        description: 预订 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 取消客户预订成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmReservationResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/crm/handovers":
+    get:
+      tags:
+      - P1 CRM
+      operationId: listCrmHandovers
+      summary: 列出交付记录
+      description: 需要 Bearer 令牌；当前熊舍成员可读交付记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出交付记录成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmHandoverListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 CRM
+      operationId: createCrmHandover
+      summary: 创建交付记录
+      description: 需要 Bearer 令牌；当前熊舍成员可创建交付记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建交付记录成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmHandoverResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateCrmHandoverRequest"
+  "/v1/crm/handovers/{handover_id}/complete":
+    post:
+      tags:
+      - P1 CRM
+      operationId: completeCrmHandover
+      summary: 完成客户交付
+      description: 需要 Bearer 令牌；当前熊舍成员可完成交付并闭合关联预订。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回
+        404。
+      parameters:
+      - name: handover_id
+        in: path
+        required: true
+        description: 交付 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 完成客户交付成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmHandoverResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/contracts/templates":
+    get:
+      tags:
+      - P1 合同与回执
+      operationId: listContractTemplates
+      summary: 列出合同模板
+      description: 需要 Bearer 令牌；当前熊舍成员可读合同模板。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出合同模板成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentTemplateListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 合同与回执
+      operationId: createContractTemplate
+      summary: 创建合同模板
+      description: 需要 Bearer 令牌；当前熊舍成员可创建合同模板。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建合同模板成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentTemplateResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateDocumentTemplateRequest"
+  "/v1/contracts":
+    get:
+      tags:
+      - P1 合同与回执
+      operationId: listContracts
+      summary: 列出合同单据
+      description: 需要 Bearer 令牌；当前熊舍成员可读合同单据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出合同单据成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 合同与回执
+      operationId: createContract
+      summary: 创建合同单据
+      description: 需要 Bearer 令牌；当前熊舍成员可创建合同草稿。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建合同单据成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateContractRequest"
+  "/v1/contracts/{document_id}/issue":
+    post:
+      tags:
+      - P1 合同与回执
+      operationId: issueContract
+      summary: 签发合同
+      description: 需要 Bearer 令牌；当前熊舍成员可签发合同草稿。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        description: 合同单据 ID
+        schema:
+          type: string
+          format: uuid
+      - *2
+      - *1
+      responses:
+        '200':
+          description: 签发合同成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/receipts/templates":
+    get:
+      tags:
+      - P1 合同与回执
+      operationId: listReceiptTemplates
+      summary: 列出回执模板
+      description: 需要 Bearer 令牌；当前熊舍成员可读回执模板。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出回执模板成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentTemplateListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 合同与回执
+      operationId: createReceiptTemplate
+      summary: 创建回执模板
+      description: 需要 Bearer 令牌；当前熊舍成员可创建回执模板。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建回执模板成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentTemplateResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateDocumentTemplateRequest"
+  "/v1/receipts":
+    get:
+      tags:
+      - P1 合同与回执
+      operationId: listReceipts
+      summary: 列出回执单据
+      description: 需要 Bearer 令牌；当前熊舍成员可读回执单据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出回执单据成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 合同与回执
+      operationId: createReceipt
+      summary: 创建回执单据
+      description: 需要 Bearer 令牌；当前熊舍成员可创建回执草稿。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建回执单据成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateReceiptRequest"
+  "/v1/receipts/{document_id}/issue":
+    post:
+      tags:
+      - P1 合同与回执
+      operationId: issueReceipt
+      summary: 签发回执
+      description: 需要 Bearer 令牌；当前熊舍成员可签发回执草稿。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        description: 回执单据 ID
+        schema:
+          type: string
+          format: uuid
+      - *2
+      - *1
+      responses:
+        '200':
+          description: 签发回执成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/accounting/categories":
+    get:
+      tags:
+      - P1 记账
+      operationId: listAccountingCategories
+      summary: 列出记账分类
+      description: 需要 Bearer 令牌；当前熊舍成员可读记账分类。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: entry_type
+        in: query
+        required: false
+        description: 按收入或支出筛选
+        schema:
+          type: string
+          enum:
+          - income
+          - expense
+      responses:
+        '200':
+          description: 列出记账分类成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AccountingCategoryListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 记账
+      operationId: createAccountingCategory
+      summary: 创建记账分类
+      description: 需要 Bearer 令牌；当前熊舍成员可创建记账分类。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建记账分类成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AccountingCategoryResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateAccountingCategoryRequest"
+  "/v1/accounting/records":
+    get:
+      tags:
+      - P1 记账
+      operationId: listAccountingRecords
+      summary: 列出记账流水
+      description: 需要 Bearer 令牌；当前熊舍成员可读记账流水。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - &3
+        name: entry_type
+        in: query
+        required: false
+        description: 按收支类型筛选
+        schema:
+          type: string
+          enum:
+          - income
+          - expense
+      - &4
+        name: from
+        in: query
+        required: false
+        description: 起始时间
+        schema:
+          type: string
+          format: date-time
+      - &5
+        name: to
+        in: query
+        required: false
+        description: 结束时间
+        schema:
+          type: string
+          format: date-time
+      responses:
+        '200':
+          description: 列出记账流水成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AccountingRecordListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 记账
+      operationId: createAccountingRecord
+      summary: 创建记账流水
+      description: 需要 Bearer 令牌；当前熊舍成员可创建记账流水。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建记账流水成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AccountingRecordResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateAccountingRecordRequest"
+  "/v1/accounting/summary":
+    get:
+      tags:
+      - P1 记账
+      operationId: getAccountingSummary
+      summary: 读取记账汇总
+      description: 需要 Bearer 令牌；当前熊舍成员可读收支汇总。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *3
+      - *4
+      - *5
+      responses:
+        '200':
+          description: 读取记账汇总成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AccountingSummaryResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/genetic/loci":
+    get:
+      tags:
+      - P1 遗传
+      operationId: listGeneticLoci
+      summary: 列出遗传位点
+      description: 需要 Bearer 令牌；当前熊舍成员可读系统遗传位点目录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出遗传位点成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GeneticLocusListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/genetic/profiles":
+    get:
+      tags:
+      - P1 遗传
+      operationId: listGeneticProfiles
+      summary: 列出遗传档案
+      description: 需要 Bearer 令牌；当前熊舍成员可读遗传档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出遗传档案成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GeneticProfileListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 遗传
+      operationId: createGeneticProfile
+      summary: 创建遗传档案
+      description: 需要 Bearer 令牌；当前熊舍成员可创建遗传档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建遗传档案成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GeneticProfileResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateGeneticProfileRequest"
+  "/v1/genetic/simulate":
+    post:
+      tags:
+      - P1 遗传
+      operationId: simulateGeneticBreeding
+      summary: 模拟遗传配对
+      description: 需要 Bearer 令牌；当前熊舍成员可运行只读遗传模拟。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '200':
+          description: 模拟遗传配对成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GeneticSimulationResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/GeneticSimulationRequest"
+  "/v1/push/devices":
+    get:
+      tags:
+      - P1 推送
+      operationId: listPushDevices
+      summary: 列出推送设备
+      description: 需要 Bearer 令牌；当前熊舍成员可读自己的推送设备。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出推送设备成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PushDeviceListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    put:
+      tags:
+      - P1 推送
+      operationId: upsertPushDevice
+      summary: 登记推送设备
+      description: 需要 Bearer 令牌；当前熊舍成员可登记或恢复推送设备。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '200':
+          description: 登记推送设备成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PushDeviceResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpsertPushDeviceRequest"
+  "/v1/push/devices/{device_id}":
+    delete:
+      tags:
+      - P1 推送
+      operationId: disablePushDevice
+      summary: 停用推送设备
+      description: 需要 Bearer 令牌；当前熊舍成员可停用自己的推送设备。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        description: 设备 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 停用推送设备成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PushDeviceResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/push/messages":
+    get:
+      tags:
+      - P1 推送
+      operationId: listPushMessages
+      summary: 列出推送消息
+      description: 需要 Bearer 令牌；当前熊舍成员可读推送审计记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出推送消息成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PushMessageListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P1 推送
+      operationId: createPushMessage
+      summary: 创建推送消息
+      description: 需要 Bearer 令牌；当前熊舍成员可发送测试或业务推送。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建推送消息成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PushMessageResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreatePushMessageRequest"
+  "/v1/entitlements/catalog":
+    get:
+      tags:
+      - P1 权益
+      operationId: getEntitlementCatalog
+      summary: 读取权益套餐目录
+      description: 需要 Bearer 令牌；当前熊舍成员可读公开套餐与功能目录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 读取权益套餐目录成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/EntitlementCatalogResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/entitlements/current":
+    get:
+      tags:
+      - P1 权益
+      operationId: getCurrentEntitlement
+      summary: 读取当前权益快照
+      description: 需要 Bearer 令牌；当前熊舍成员可读本舍权益与用量门限。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 读取当前权益快照成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/EntitlementSnapshotResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/entitlements/check":
+    post:
+      tags:
+      - P1 权益
+      operationId: checkEntitlement
+      summary: 检查功能或指标权益
+      description: 需要 Bearer 令牌；当前熊舍成员可检查本舍功能与指标门限。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回
+        404。
+      parameters:
+      - *1
+      responses:
+        '200':
+          description: 检查功能或指标权益成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/EntitlementCheckResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/EntitlementCheckRequest"
+  "/v1/entitlements/sandbox/activate":
+    post:
+      tags:
+      - P1 权益
+      operationId: sandboxActivatePlan
+      summary: 沙箱激活权益套餐
+      description: 需要 Bearer 令牌；仅写入 sandbox 来源的权益记录，不代表正式支付或生产订阅。
+      parameters:
+      - *1
+      responses:
+        '200':
+          description: 沙箱激活权益套餐成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/EntitlementSnapshotResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SandboxActivatePlanRequest"
+  "/v1/public-site":
+    get:
+      tags:
+      - P2 官网
+      operationId: getOwnerPublicSite
+      summary: 读取熊舍公开主页草稿
+      description: 需要 Bearer 令牌；当前熊舍成员可读本舍公开主页配置。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 读取熊舍公开主页草稿成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicSiteResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    put:
+      tags:
+      - P2 官网
+      operationId: upsertOwnerPublicSite
+      summary: 保存熊舍公开主页
+      description: 需要 Bearer 令牌；当前熊舍成员可保存本舍公开主页配置。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '200':
+          description: 保存熊舍公开主页成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicSiteResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpsertPublicSiteRequest"
+  "/v1/public-site/publish":
+    post:
+      tags:
+      - P2 官网
+      operationId: publishOwnerPublicSite
+      summary: 发布熊舍公开主页
+      description: 需要 Bearer 令牌；当前熊舍成员可发布本舍公开主页。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '200':
+          description: 发布熊舍公开主页成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicSiteResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/public-site/unpublish":
+    post:
+      tags:
+      - P2 官网
+      operationId: unpublishOwnerPublicSite
+      summary: 撤下熊舍公开主页
+      description: 需要 Bearer 令牌；当前熊舍成员可撤下本舍公开主页。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '200':
+          description: 撤下熊舍公开主页成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicSiteResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/public/sites/{slug}":
+    get:
+      tags:
+      - P2 官网
+      operationId: getPublicSiteBySlug
+      summary: 读取公开主页投影
+      description: 匿名公开读取；仅返回 published=true 的主页投影，未发布或不存在统一返回 404。
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 2
+          maxLength: 64
+          pattern: "^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$"
+      responses:
+        '200':
+          description: 读取公开主页投影成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicSiteViewResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      security: []
+  "/v1/miniprogram/config":
+    get:
+      tags:
+      - P2 小程序
+      operationId: getMiniprogramConfig
+      summary: 读取小程序配置
+      description: 需要 Bearer 令牌；当前熊舍成员可读小程序配置。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 读取小程序配置成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/MiniprogramConfigResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    put:
+      tags:
+      - P2 小程序
+      operationId: upsertMiniprogramConfig
+      summary: 保存小程序配置
+      description: 需要 Bearer 令牌；当前熊舍成员可保存小程序配置。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '200':
+          description: 保存小程序配置成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/MiniprogramConfigResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpsertMiniprogramConfigRequest"
+  "/v1/miniprogram/releases":
+    get:
+      tags:
+      - P2 小程序
+      operationId: listMiniprogramReleases
+      summary: 列出小程序版本
+      description: 需要 Bearer 令牌；当前熊舍成员可读小程序发布流水。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出小程序版本成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/MiniprogramReleaseListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P2 小程序
+      operationId: createMiniprogramRelease
+      summary: 创建小程序版本
+      description: 需要 Bearer 令牌；当前熊舍成员可创建小程序草稿版本。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建小程序版本成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/MiniprogramReleaseResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateMiniprogramReleaseRequest"
+  "/v1/miniprogram/releases/{release_id}/submit":
+    post:
+      tags:
+      - P2 小程序
+      operationId: submitMiniprogramRelease
+      summary: 提交小程序审核
+      description: 需要 Bearer 令牌；当前熊舍成员可提交草稿或驳回版本。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: release_id
+        in: path
+        required: true
+        description: 版本 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 提交小程序审核成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/MiniprogramReleaseResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/miniprogram/releases/{release_id}/audit":
+    post:
+      tags:
+      - P2 小程序
+      operationId: auditMiniprogramRelease
+      summary: 审核小程序版本
+      description: 需要 Bearer 令牌；当前熊舍成员可在沙箱审核流水中通过或驳回版本。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回
+        404。
+      parameters:
+      - name: release_id
+        in: path
+        required: true
+        description: 版本 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 审核小程序版本成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/MiniprogramReleaseResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AuditMiniprogramReleaseRequest"
+  "/v1/miniprogram/releases/{release_id}/publish":
+    post:
+      tags:
+      - P2 小程序
+      operationId: publishMiniprogramRelease
+      summary: 发布小程序版本
+      description: 需要 Bearer 令牌；当前熊舍成员可发布已审核通过版本。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: release_id
+        in: path
+        required: true
+        description: 版本 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 发布小程序版本成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/MiniprogramReleaseResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/miniprogram/releases/{release_id}/rollback":
+    post:
+      tags:
+      - P2 小程序
+      operationId: rollbackMiniprogramRelease
+      summary: 回滚小程序版本
+      description: 需要 Bearer 令牌；当前熊舍成员可回滚线上版本。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: release_id
+        in: path
+        required: true
+        description: 版本 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 回滚小程序版本成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/MiniprogramReleaseResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/assistant/ask":
+    post:
+      tags:
+      - P2 助手
+      operationId: askAssistant
+      summary: 向只读助手提问
+      description: 需要 Bearer 令牌；当前熊舍成员可查询本舍结构化数据；助手不修改业务数据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回
+        404。
+      parameters:
+      - *1
+      responses:
+        '200':
+          description: 向只读助手提问成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AssistantAnswerResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AssistantAskRequest"
+  "/v1/assistant/capabilities":
+    get:
+      tags:
+      - P2 助手
+      operationId: assistantCapabilities
+      summary: 读取助手能力
+      description: 需要 Bearer 令牌；当前熊舍成员可读取只读助手能力与可用模式。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回
+        404。
+      parameters: []
+      responses:
+        '200':
+          description: 读取助手能力成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AssistantCapabilitiesResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/stud/listings":
+    get:
+      tags:
+      - P2 借配
+      operationId: listStudListings
+      summary: 列出种公借配挂牌
+      description: 需要 Bearer 令牌；当前成员可读公开挂牌及自己的未公开挂牌。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回
+        404。
+      parameters:
+      - name: mine
+        in: query
+        required: false
+        description: 仅查看自己的挂牌时传 1
+        schema:
+          type: string
+          enum:
+          - '0'
+          - '1'
+      responses:
+        '200':
+          description: 列出种公借配挂牌成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/StudListingListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P2 借配
+      operationId: createStudListing
+      summary: 创建种公借配挂牌
+      description: 需要 Bearer 令牌；当前熊舍成员可创建本舍种公挂牌。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建种公借配挂牌成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/StudListingResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateStudListingRequest"
+  "/v1/stud/listings/{listing_id}/unpublish":
+    post:
+      tags:
+      - P2 借配
+      operationId: unpublishStudListing
+      summary: 撤下种公挂牌
+      description: 需要 Bearer 令牌；当前熊舍成员可撤下自己的种公挂牌。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: listing_id
+        in: path
+        required: true
+        description: 挂牌 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 撤下种公挂牌成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/StudListingResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/stud/deals":
+    get:
+      tags:
+      - P2 借配
+      operationId: listStudDeals
+      summary: 列出跨舍借配单
+      description: 需要 Bearer 令牌；当前熊舍成员可读本舍借配履约记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters: []
+      responses:
+        '200':
+          description: 列出跨舍借配单成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/StudDealListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    post:
+      tags:
+      - P2 借配
+      operationId: createStudDeal
+      summary: 创建跨舍借配单
+      description: 需要 Bearer 令牌；当前熊舍成员可创建借配履约记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - *1
+      responses:
+        '201':
+          description: 创建跨舍借配单成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/StudDealResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateStudDealRequest"
+  "/v1/stud/deals/{deal_id}/confirm":
+    post:
+      tags:
+      - P2 借配
+      operationId: confirmStudDeal
+      summary: 确认跨舍借配单
+      description: 需要 Bearer 令牌；当前熊舍成员可推进本舍借配履约状态。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: deal_id
+        in: path
+        required: true
+        description: 借配单 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 确认跨舍借配单成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/StudDealResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/stud/deals/{deal_id}/start":
+    post:
+      tags:
+      - P2 借配
+      operationId: startStudDeal
+      summary: 开始跨舍借配单
+      description: 需要 Bearer 令牌；当前熊舍成员可推进本舍借配履约状态。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: deal_id
+        in: path
+        required: true
+        description: 借配单 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 开始跨舍借配单成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/StudDealResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/stud/deals/{deal_id}/complete":
+    post:
+      tags:
+      - P2 借配
+      operationId: completeStudDeal
+      summary: 完成跨舍借配单
+      description: 需要 Bearer 令牌；当前熊舍成员可推进本舍借配履约状态。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: deal_id
+        in: path
+        required: true
+        description: 借配单 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 完成跨舍借配单成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/StudDealResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/stud/deals/{deal_id}/cancel":
+    post:
+      tags:
+      - P2 借配
+      operationId: cancelStudDeal
+      summary: 取消跨舍借配单
+      description: 需要 Bearer 令牌；当前熊舍成员可推进本舍借配履约状态。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: deal_id
+        in: path
+        required: true
+        description: 借配单 ID
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 取消跨舍借配单成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/StudDealResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -3936,6 +5647,23 @@ components:
       description: 手机验证码登录后取得的访问令牌
 
   parameters:
+    P1P2IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+    IfMatchOptional:
+      name: If-Match
+      in: header
+      required: false
+      description: 可选的当前资源版本 ETag；传入时用于乐观并发控制。
+      schema:
+        type: string
+        pattern: ^W?/"[0-9]+"$
     IdempotencyKey:
       name: Idempotency-Key
       in: header
@@ -9181,4 +10909,2318 @@ components:
           additionalProperties: false
         meta:
           $ref: '#/components/schemas/ResponseMeta'
+      additionalProperties: false
+    OrganizationMember:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        organization_id:
+          type: string
+          format: uuid
+        account_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        phone:
+          type: string
+          maxLength: 20
+        display_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 120
+        role:
+          type: string
+          enum:
+          - owner
+          - breeder
+          - caretaker
+          - staff
+          - viewer
+        status:
+          type: string
+          enum:
+          - invited
+          - active
+          - revoked
+        invited_at:
+          type: string
+          format: date-time
+        accepted_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        revoked_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - organization_id
+      - phone
+      - role
+      - status
+      - invited_at
+      - version
+      additionalProperties: false
+    InviteOrganizationMemberRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          minLength: 6
+          maxLength: 20
+        role:
+          type: string
+          enum:
+          - breeder
+          - caretaker
+          - staff
+          - viewer
+        display_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 120
+      required:
+      - phone
+      - role
+      additionalProperties: false
+    UpdateOrganizationMemberRequest:
+      type: object
+      properties:
+        role:
+          type:
+          - string
+          - 'null'
+          enum:
+          -
+          - breeder
+          - caretaker
+          - staff
+          - viewer
+        display_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 120
+      additionalProperties: false
+    OrganizationMemberResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/OrganizationMember"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    OrganizationMemberListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/OrganizationMember"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    CrmContact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type:
+          - string
+          - 'null'
+          maxLength: 64
+        wechat:
+          type:
+          - string
+          - 'null'
+          maxLength: 128
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        status:
+          type: string
+          enum:
+          - lead
+          - active
+          - archived
+        version:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - name
+      - status
+      - version
+      additionalProperties: false
+    CreateCrmContactRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        phone:
+          type:
+          - string
+          - 'null'
+          maxLength: 64
+        wechat:
+          type:
+          - string
+          - 'null'
+          maxLength: 128
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        status:
+          type: string
+          enum:
+          - lead
+          - active
+          - archived
+          default: lead
+      required:
+      - name
+      additionalProperties: false
+    CrmReservation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        contact_id:
+          type: string
+          format: uuid
+        hamster_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        title:
+          type: string
+        status:
+          type: string
+          enum:
+          - held
+          - confirmed
+          - handed_over
+          - cancelled
+        reserved_at:
+          type: string
+          format: date-time
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        version:
+          type: integer
+          minimum: 1
+        contact_name:
+          type: string
+      required:
+      - id
+      - contact_id
+      - title
+      - status
+      - reserved_at
+      - version
+      additionalProperties: false
+    CreateCrmReservationRequest:
+      type: object
+      properties:
+        contact_id:
+          type: string
+          format: uuid
+        hamster_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        title:
+          type: string
+          maxLength: 200
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+      required:
+      - contact_id
+      additionalProperties: false
+    CrmHandover:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        contact_id:
+          type: string
+          format: uuid
+        reservation_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        hamster_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        status:
+          type: string
+          enum:
+          - scheduled
+          - completed
+          - cancelled
+        scheduled_at:
+          type: string
+          format: date-time
+        completed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        version:
+          type: integer
+          minimum: 1
+        contact_name:
+          type: string
+      required:
+      - id
+      - contact_id
+      - status
+      - scheduled_at
+      - version
+      additionalProperties: false
+    CreateCrmHandoverRequest:
+      type: object
+      properties:
+        contact_id:
+          type: string
+          format: uuid
+        reservation_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        hamster_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        scheduled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      required:
+      - contact_id
+      additionalProperties: false
+    CrmContactResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/CrmContact"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    CrmContactListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CrmContact"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    CrmReservationResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/CrmReservation"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    CrmReservationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CrmReservation"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    CrmHandoverResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/CrmHandover"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    CrmHandoverListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CrmHandover"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    DocumentTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - contract
+          - receipt
+        name:
+          type: string
+        body_text:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - kind
+      - name
+      - body_text
+      - version
+      additionalProperties: false
+    CreateDocumentTemplateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        body_text:
+          type: string
+          maxLength: 20000
+      required:
+      - name
+      additionalProperties: false
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        template_id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - contract
+          - receipt
+        contact_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        handover_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        title:
+          type: string
+        body_filled:
+          type: string
+        amount_cents:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        status:
+          type: string
+          enum:
+          - draft
+          - issued
+          - archived
+        issued_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        version:
+          type: integer
+          minimum: 1
+        contact_name:
+          type: string
+      required:
+      - id
+      - template_id
+      - kind
+      - title
+      - body_filled
+      - currency
+      - status
+      - version
+      additionalProperties: false
+    CreateContractRequest:
+      type: object
+      properties:
+        template_id:
+          type: string
+          format: uuid
+        contact_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        handover_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        title:
+          type: string
+          maxLength: 200
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        contact_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        hamster_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+      required:
+      - template_id
+      additionalProperties: false
+    CreateReceiptRequest:
+      type: object
+      properties:
+        template_id:
+          type: string
+          format: uuid
+        contact_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        title:
+          type: string
+          maxLength: 200
+        amount_cents:
+          type: integer
+          format: int64
+          minimum: 0
+        currency:
+          type: string
+          default: CNY
+          minLength: 3
+          maxLength: 3
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        contact_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+      required:
+      - template_id
+      - amount_cents
+      additionalProperties: false
+    DocumentTemplateListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/DocumentTemplate"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    DocumentTemplateResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/DocumentTemplate"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    DocumentListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Document"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    DocumentResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/Document"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    AccountingCategory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        entry_type:
+          type: string
+          enum:
+          - income
+          - expense
+        name:
+          type: string
+        sort_order:
+          type: integer
+        version:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - entry_type
+      - name
+      - sort_order
+      - version
+      additionalProperties: false
+    CreateAccountingCategoryRequest:
+      type: object
+      properties:
+        entry_type:
+          type: string
+          enum:
+          - income
+          - expense
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        sort_order:
+          type:
+          - integer
+          - 'null'
+      required:
+      - entry_type
+      - name
+      additionalProperties: false
+    AccountingRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        category_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        entry_type:
+          type: string
+          enum:
+          - income
+          - expense
+        amount_cents:
+          type: integer
+          format: int64
+          minimum: 1
+        currency:
+          type: string
+        title:
+          type: string
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        contact_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        occurred_at:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+        category_name:
+          type: string
+        contact_name:
+          type: string
+      required:
+      - id
+      - entry_type
+      - amount_cents
+      - currency
+      - title
+      - occurred_at
+      - version
+      additionalProperties: false
+    CreateAccountingRecordRequest:
+      type: object
+      properties:
+        category_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        entry_type:
+          type: string
+          enum:
+          - income
+          - expense
+        amount_cents:
+          type: integer
+          format: int64
+          minimum: 1
+        currency:
+          type: string
+          default: CNY
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        contact_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        occurred_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      required:
+      - entry_type
+      - amount_cents
+      - title
+      additionalProperties: false
+    AccountingCategorySummary:
+      type: object
+      properties:
+        category_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        category_name:
+          type: string
+        entry_type:
+          type: string
+          enum:
+          - income
+          - expense
+        amount_cents:
+          type: integer
+          format: int64
+        count:
+          type: integer
+          minimum: 0
+      required:
+      - category_name
+      - entry_type
+      - amount_cents
+      - count
+      additionalProperties: false
+    AccountingSummary:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        income_cents:
+          type: integer
+          format: int64
+        expense_cents:
+          type: integer
+          format: int64
+        net_cents:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        record_count:
+          type: integer
+          minimum: 0
+        by_category:
+          type: array
+          items:
+            "$ref": "#/components/schemas/AccountingCategorySummary"
+      required:
+      - from
+      - to
+      - income_cents
+      - expense_cents
+      - net_cents
+      - currency
+      - record_count
+      - by_category
+      additionalProperties: false
+    AccountingCategoryListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/AccountingCategory"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    AccountingCategoryResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/AccountingCategory"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    AccountingRecordListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/AccountingRecord"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    AccountingRecordResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/AccountingRecord"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    AccountingSummaryResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/AccountingSummary"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    GeneticLocus:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        dominant_allele:
+          type: string
+        recessive_allele:
+          type: string
+        dominant_label:
+          type: string
+        recessive_label:
+          type: string
+        description:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+      required:
+      - code
+      - name
+      - dominant_allele
+      - recessive_allele
+      - dominant_label
+      - recessive_label
+      additionalProperties: false
+    GeneticProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        hamster_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        name:
+          type: string
+        phenotype:
+          type: object
+          additionalProperties: true
+        genotype:
+          type: object
+          additionalProperties:
+            type: string
+        confidence:
+          type: string
+          enum:
+          - observed
+          - inferred
+          - unknown
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        version:
+          type: integer
+          minimum: 1
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - name
+      - phenotype
+      - genotype
+      - confidence
+      - version
+      - updated_at
+      additionalProperties: false
+    CreateGeneticProfileRequest:
+      type: object
+      properties:
+        hamster_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        phenotype:
+          type: object
+          additionalProperties: true
+        genotype:
+          type: object
+          additionalProperties:
+            type: string
+        confidence:
+          type: string
+          enum:
+          - observed
+          - inferred
+          - unknown
+          default: unknown
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+      required:
+      - name
+      additionalProperties: false
+    GeneticSimulationRequest:
+      type: object
+      properties:
+        sire:
+          type: object
+          additionalProperties:
+            type: string
+        dam:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+      - sire
+      - dam
+      additionalProperties: false
+    GeneticOutcome:
+      type: object
+      properties:
+        genotype_key:
+          type: string
+        genotype:
+          type: object
+          additionalProperties:
+            type: string
+        phenotype_label:
+          type: string
+        phenotype:
+          type: object
+          additionalProperties:
+            type: string
+        probability:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+        count_weight:
+          type: integer
+          minimum: 1
+      required:
+      - genotype_key
+      - genotype
+      - phenotype_label
+      - phenotype
+      - probability
+      - count_weight
+      additionalProperties: false
+    GeneticSimulationResult:
+      type: object
+      properties:
+        sire:
+          type: object
+          additionalProperties:
+            type: string
+        dam:
+          type: object
+          additionalProperties:
+            type: string
+        outcomes:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GeneticOutcome"
+        notes:
+          type: string
+      required:
+      - sire
+      - dam
+      - outcomes
+      - notes
+      additionalProperties: false
+    GeneticLocusListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GeneticLocus"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    GeneticProfileListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GeneticProfile"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    GeneticProfileResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/GeneticProfile"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    GeneticSimulationResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/GeneticSimulationResult"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    PushDevice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        platform:
+          type: string
+          enum:
+          - ios
+          - android
+          - web
+          - unknown
+        provider:
+          type: string
+          enum:
+          - apns
+          - fcm
+          - log
+        token:
+          type: string
+        device_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        app_version:
+          type:
+          - string
+          - 'null'
+          maxLength: 64
+        enabled:
+          type: boolean
+        last_seen_at:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - platform
+      - provider
+      - token
+      - enabled
+      - last_seen_at
+      - version
+      additionalProperties: false
+    UpsertPushDeviceRequest:
+      type: object
+      properties:
+        platform:
+          type: string
+          enum:
+          - ios
+          - android
+          - web
+          - unknown
+        provider:
+          type: string
+          enum:
+          - apns
+          - fcm
+          - log
+        token:
+          type: string
+          minLength: 1
+          maxLength: 512
+        device_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        app_version:
+          type:
+          - string
+          - 'null'
+          maxLength: 64
+      required:
+      - token
+      additionalProperties: false
+    PushMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        body:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+          enum:
+          - queued
+          - sending
+          - sent
+          - failed
+        target_device_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        provider:
+          type: string
+        provider_message_id:
+          type:
+          - string
+          - 'null'
+          maxLength: 256
+        attempt_count:
+          type: integer
+          minimum: 0
+        last_error:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+        sent_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - title
+      - body
+      - data
+      - status
+      - provider
+      - attempt_count
+      - version
+      - created_at
+      additionalProperties: false
+    CreatePushMessageRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        body:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        data:
+          type: object
+          additionalProperties: true
+        target_device_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      required:
+      - title
+      - body
+      additionalProperties: false
+    PushDeviceListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PushDevice"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    PushDeviceResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/PushDevice"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    PushMessageListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PushMessage"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    PushMessageResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/PushMessage"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    EntitlementFeature:
+      type: object
+      properties:
+        code:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        allowed:
+          type: boolean
+      required:
+      - code
+      - title
+      - description
+      - allowed
+      additionalProperties: false
+    EntitlementLimit:
+      type: object
+      properties:
+        code:
+          type: string
+        metric:
+          type: string
+        title:
+          type: string
+        limit:
+          type:
+          - number
+          - 'null'
+        used:
+          type: number
+        remaining:
+          type:
+          - number
+          - 'null'
+        over:
+          type: boolean
+        unit:
+          type: string
+      required:
+      - code
+      - metric
+      - title
+      - used
+      - over
+      - unit
+      additionalProperties: false
+    PlanCatalogEntry:
+      type: object
+      properties:
+        code:
+          type: string
+          enum:
+          - free
+          - pro
+        title:
+          type: string
+        description:
+          type: string
+        price_hint:
+          type: string
+        features:
+          type: object
+          additionalProperties:
+            type: boolean
+        limits:
+          type: object
+          additionalProperties:
+            type: number
+        enforcement:
+          type: string
+          enum:
+          - none
+          - soft
+          - hard
+        highlight:
+          type: boolean
+      required:
+      - code
+      - title
+      - description
+      - price_hint
+      - features
+      - limits
+      - enforcement
+      additionalProperties: false
+    EntitlementSnapshot:
+      type: object
+      properties:
+        plan_code:
+          type: string
+        plan_title:
+          type: string
+        enforcement:
+          type: string
+          enum:
+          - none
+          - soft
+          - hard
+        source:
+          type: string
+        effective_at:
+          type: string
+          format: date-time
+        expires_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        features:
+          type: array
+          items:
+            "$ref": "#/components/schemas/EntitlementFeature"
+        limits:
+          type: array
+          items:
+            "$ref": "#/components/schemas/EntitlementLimit"
+        over_limit:
+          type: boolean
+        paywall_hint:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+      required:
+      - plan_code
+      - plan_title
+      - enforcement
+      - source
+      - effective_at
+      - features
+      - limits
+      - over_limit
+      additionalProperties: false
+    EntitlementCheckRequest:
+      type: object
+      properties:
+        feature:
+          type: string
+          maxLength: 160
+        metric:
+          type: string
+          maxLength: 160
+      additionalProperties: false
+    EntitlementCheckResult:
+      type: object
+      properties:
+        allowed:
+          type: boolean
+        enforcement:
+          type: string
+        plan_code:
+          type: string
+        reason:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+        feature:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        metric:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        used:
+          type:
+          - number
+          - 'null'
+        limit:
+          type:
+          - number
+          - 'null'
+      required:
+      - allowed
+      - enforcement
+      - plan_code
+      additionalProperties: false
+    SandboxActivatePlanRequest:
+      type: object
+      properties:
+        plan_code:
+          type: string
+          enum:
+          - free
+          - pro
+          default: pro
+      additionalProperties: false
+    EntitlementCatalogResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PlanCatalogEntry"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    EntitlementSnapshotResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/EntitlementSnapshot"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    EntitlementCheckResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/EntitlementCheckResult"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    PublicSite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+          pattern: "^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$"
+        title:
+          type: string
+        tagline:
+          type:
+          - string
+          - 'null'
+          maxLength: 400
+        about:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        contact_wechat:
+          type:
+          - string
+          - 'null'
+          maxLength: 128
+        contact_phone:
+          type:
+          - string
+          - 'null'
+          maxLength: 64
+        theme_color:
+          type: string
+          pattern: "^#[0-9A-Fa-f]{6}$"
+        show_stats:
+          type: boolean
+        show_contact:
+          type: boolean
+        published:
+          type: boolean
+        published_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+        updated_at:
+          type: string
+          format: date-time
+        public_url_path:
+          type: string
+      required:
+      - slug
+      - title
+      - theme_color
+      - show_stats
+      - show_contact
+      - published
+      additionalProperties: false
+    PublicSiteView:
+      type: object
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        tagline:
+          type:
+          - string
+          - 'null'
+          maxLength: 400
+        about:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        theme_color:
+          type: string
+        contact_wechat:
+          type:
+          - string
+          - 'null'
+          maxLength: 128
+        contact_phone:
+          type:
+          - string
+          - 'null'
+          maxLength: 64
+        stats:
+          type: object
+          additionalProperties: true
+        organization_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        published_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      required:
+      - slug
+      - title
+      - theme_color
+      additionalProperties: false
+    UpsertPublicSiteRequest:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 64
+          pattern: "^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$"
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+        tagline:
+          type:
+          - string
+          - 'null'
+          maxLength: 400
+        about:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        contact_wechat:
+          type:
+          - string
+          - 'null'
+          maxLength: 128
+        contact_phone:
+          type:
+          - string
+          - 'null'
+          maxLength: 64
+        theme_color:
+          type: string
+          pattern: "^#[0-9A-Fa-f]{6}$"
+          default: "#c77852"
+        show_stats:
+          type:
+          - boolean
+          - 'null'
+          default: true
+        show_contact:
+          type:
+          - boolean
+          - 'null'
+          default: true
+      required:
+      - slug
+      - title
+      additionalProperties: false
+    PublicSiteResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/PublicSite"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    PublicSiteViewResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/PublicSiteView"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    MiniprogramConfig:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+        app_id:
+          type:
+          - string
+          - 'null'
+          maxLength: 128
+        bound_public_slug:
+          type:
+          - string
+          - 'null'
+          maxLength: 64
+        enabled:
+          type: boolean
+        version:
+          type: integer
+          minimum: 1
+        updated_at:
+          type: string
+          format: date-time
+        pipeline_note:
+          type: string
+      required:
+      - display_name
+      - enabled
+      - pipeline_note
+      additionalProperties: false
+    UpsertMiniprogramConfigRequest:
+      type: object
+      properties:
+        display_name:
+          type: string
+          maxLength: 80
+        app_id:
+          type:
+          - string
+          - 'null'
+          maxLength: 128
+        bound_public_slug:
+          type:
+          - string
+          - 'null'
+          maxLength: 64
+        enabled:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
+    MiniprogramRelease:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version_label:
+          type: string
+        status:
+          type: string
+          enum:
+          - draft
+          - submitted
+          - auditing
+          - approved
+          - rejected
+          - published
+          - rolled_back
+        title:
+          type: string
+        summary:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+        public_slug:
+          type:
+          - string
+          - 'null'
+          maxLength: 64
+        audit_note:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+        submitted_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        audited_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        published_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        rolled_back_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - version_label
+      - status
+      - title
+      - version
+      - created_at
+      - updated_at
+      additionalProperties: false
+    CreateMiniprogramReleaseRequest:
+      type: object
+      properties:
+        version_label:
+          type: string
+          maxLength: 32
+        title:
+          type: string
+          maxLength: 160
+        summary:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+        public_slug:
+          type:
+          - string
+          - 'null'
+          maxLength: 64
+      additionalProperties: false
+    AuditMiniprogramReleaseRequest:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum:
+          - approve
+          - reject
+        note:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+      required:
+      - decision
+      additionalProperties: false
+    MiniprogramConfigResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/MiniprogramConfig"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    MiniprogramReleaseListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/MiniprogramRelease"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    MiniprogramReleaseResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/MiniprogramRelease"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    AssistantFact:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        value:
+          type: string
+        source:
+          type: string
+      required:
+      - key
+      - label
+      - value
+      - source
+      additionalProperties: false
+    AssistantAnswer:
+      type: object
+      properties:
+        answer:
+          type: string
+        intent:
+          type: string
+        mode:
+          type: string
+          enum:
+          - rules
+          - llm
+        facts:
+          type: array
+          items:
+            "$ref": "#/components/schemas/AssistantFact"
+        disclaimer:
+          type: string
+      required:
+      - answer
+      - intent
+      - mode
+      - facts
+      - disclaimer
+      additionalProperties: false
+    AssistantCapabilities:
+      type: object
+      properties:
+        intents:
+          type: array
+          items:
+            type: string
+        mode_default:
+          type: string
+          const: rules
+        llm_available:
+          type: boolean
+        disclaimer:
+          type: string
+      required:
+      - intents
+      - mode_default
+      - llm_available
+      - disclaimer
+      additionalProperties: false
+    AssistantAskRequest:
+      type: object
+      properties:
+        question:
+          type: string
+          minLength: 1
+          maxLength: 500
+        prefer_llm:
+          type: boolean
+          default: false
+      required:
+      - question
+      additionalProperties: false
+    AssistantAnswerResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/AssistantAnswer"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    AssistantCapabilitiesResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/AssistantCapabilities"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    StudListing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_id:
+          type: string
+          format: uuid
+        sire_label:
+          type: string
+        title:
+          type: string
+        fee_cents:
+          type: integer
+          format: int64
+          minimum: 0
+        currency:
+          type: string
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        published:
+          type: boolean
+        version:
+          type: integer
+          minimum: 1
+        updated_at:
+          type: string
+          format: date-time
+        cattery_name:
+          type: string
+        is_mine:
+          type: boolean
+      required:
+      - id
+      - owner_id
+      - sire_label
+      - title
+      - fee_cents
+      - currency
+      - published
+      - version
+      - updated_at
+      - is_mine
+      additionalProperties: false
+    CreateStudListingRequest:
+      type: object
+      properties:
+        sire_label:
+          type: string
+          minLength: 1
+          maxLength: 160
+        title:
+          type: string
+          maxLength: 200
+        fee_cents:
+          type: integer
+          format: int64
+          minimum: 0
+        currency:
+          type: string
+          default: CNY
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        published:
+          type:
+          - boolean
+          - 'null'
+          default: true
+      required:
+      - sire_label
+      additionalProperties: false
+    StudDeal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        listing_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        side:
+          type: string
+          enum:
+          - provider
+          - requester
+        status:
+          type: string
+          enum:
+          - draft
+          - requested
+          - confirmed
+          - in_progress
+          - completed
+          - cancelled
+        my_hamster_label:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        partner_cattery_name:
+          type: string
+        partner_contact:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        partner_animal_label:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        fee_cents:
+          type: integer
+          format: int64
+          minimum: 0
+        currency:
+          type: string
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        confirmed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        started_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        completed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        cancelled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - side
+      - status
+      - partner_cattery_name
+      - fee_cents
+      - currency
+      - version
+      - updated_at
+      additionalProperties: false
+    CreateStudDealRequest:
+      type: object
+      properties:
+        listing_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        side:
+          type: string
+          enum:
+          - provider
+          - requester
+        my_hamster_label:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        partner_cattery_name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        partner_contact:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        partner_animal_label:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        fee_cents:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 0
+        currency:
+          type: string
+          default: CNY
+        notes:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+      required:
+      - side
+      - partner_cattery_name
+      additionalProperties: false
+    StudListingListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/StudListing"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    StudListingResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/StudListing"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    StudDealListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/StudDeal"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
+      additionalProperties: false
+    StudDealResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/StudDeal"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required:
+      - data
+      - meta
       additionalProperties: false

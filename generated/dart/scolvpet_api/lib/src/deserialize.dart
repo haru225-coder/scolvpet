@@ -1,4 +1,13 @@
 import 'package:scolvpet_api/src/model/account.dart';
+import 'package:scolvpet_api/src/model/accounting_category.dart';
+import 'package:scolvpet_api/src/model/accounting_category_list_response.dart';
+import 'package:scolvpet_api/src/model/accounting_category_response.dart';
+import 'package:scolvpet_api/src/model/accounting_category_summary.dart';
+import 'package:scolvpet_api/src/model/accounting_record.dart';
+import 'package:scolvpet_api/src/model/accounting_record_list_response.dart';
+import 'package:scolvpet_api/src/model/accounting_record_response.dart';
+import 'package:scolvpet_api/src/model/accounting_summary.dart';
+import 'package:scolvpet_api/src/model/accounting_summary_response.dart';
 import 'package:scolvpet_api/src/model/action_item_result.dart';
 import 'package:scolvpet_api/src/model/adjust_baseline_request.dart';
 import 'package:scolvpet_api/src/model/adjust_baseline_response.dart';
@@ -6,8 +15,15 @@ import 'package:scolvpet_api/src/model/adjust_baseline_response_data.dart';
 import 'package:scolvpet_api/src/model/adjust_litter_count_request.dart';
 import 'package:scolvpet_api/src/model/adjust_litter_count_response.dart';
 import 'package:scolvpet_api/src/model/adjust_litter_count_response_data.dart';
+import 'package:scolvpet_api/src/model/assistant_answer.dart';
+import 'package:scolvpet_api/src/model/assistant_answer_response.dart';
+import 'package:scolvpet_api/src/model/assistant_ask_request.dart';
+import 'package:scolvpet_api/src/model/assistant_capabilities.dart';
+import 'package:scolvpet_api/src/model/assistant_capabilities_response.dart';
+import 'package:scolvpet_api/src/model/assistant_fact.dart';
 import 'package:scolvpet_api/src/model/async_job.dart';
 import 'package:scolvpet_api/src/model/async_job_response.dart';
+import 'package:scolvpet_api/src/model/audit_miniprogram_release_request.dart';
 import 'package:scolvpet_api/src/model/backup_job.dart';
 import 'package:scolvpet_api/src/model/backup_job_create_request.dart';
 import 'package:scolvpet_api/src/model/backup_job_list_response.dart';
@@ -35,12 +51,40 @@ import 'package:scolvpet_api/src/model/confirm_birth_no_litter_data.dart';
 import 'package:scolvpet_api/src/model/confirm_birth_request.dart';
 import 'package:scolvpet_api/src/model/confirm_birth_response.dart';
 import 'package:scolvpet_api/src/model/confirm_birth_response_data.dart';
+import 'package:scolvpet_api/src/model/create_accounting_category_request.dart';
+import 'package:scolvpet_api/src/model/create_accounting_record_request.dart';
+import 'package:scolvpet_api/src/model/create_contract_request.dart';
+import 'package:scolvpet_api/src/model/create_crm_contact_request.dart';
+import 'package:scolvpet_api/src/model/create_crm_handover_request.dart';
+import 'package:scolvpet_api/src/model/create_crm_reservation_request.dart';
+import 'package:scolvpet_api/src/model/create_document_template_request.dart';
+import 'package:scolvpet_api/src/model/create_genetic_profile_request.dart';
+import 'package:scolvpet_api/src/model/create_miniprogram_release_request.dart';
+import 'package:scolvpet_api/src/model/create_push_message_request.dart';
+import 'package:scolvpet_api/src/model/create_receipt_request.dart';
+import 'package:scolvpet_api/src/model/create_stud_deal_request.dart';
+import 'package:scolvpet_api/src/model/create_stud_listing_request.dart';
+import 'package:scolvpet_api/src/model/crm_contact.dart';
+import 'package:scolvpet_api/src/model/crm_contact_list_response.dart';
+import 'package:scolvpet_api/src/model/crm_contact_response.dart';
+import 'package:scolvpet_api/src/model/crm_handover.dart';
+import 'package:scolvpet_api/src/model/crm_handover_list_response.dart';
+import 'package:scolvpet_api/src/model/crm_handover_response.dart';
+import 'package:scolvpet_api/src/model/crm_reservation.dart';
+import 'package:scolvpet_api/src/model/crm_reservation_list_response.dart';
+import 'package:scolvpet_api/src/model/crm_reservation_response.dart';
 import 'package:scolvpet_api/src/model/current_account_response.dart';
 import 'package:scolvpet_api/src/model/current_account_response_data.dart';
 import 'package:scolvpet_api/src/model/dam_condition.dart';
 import 'package:scolvpet_api/src/model/data_center_summary_response.dart';
 import 'package:scolvpet_api/src/model/data_center_summary_response_data.dart';
 import 'package:scolvpet_api/src/model/device_info.dart';
+import 'package:scolvpet_api/src/model/document.dart';
+import 'package:scolvpet_api/src/model/document_list_response.dart';
+import 'package:scolvpet_api/src/model/document_response.dart';
+import 'package:scolvpet_api/src/model/document_template.dart';
+import 'package:scolvpet_api/src/model/document_template_list_response.dart';
+import 'package:scolvpet_api/src/model/document_template_response.dart';
 import 'package:scolvpet_api/src/model/download_link_response.dart';
 import 'package:scolvpet_api/src/model/download_link_response_data.dart';
 import 'package:scolvpet_api/src/model/enclosure.dart';
@@ -58,6 +102,14 @@ import 'package:scolvpet_api/src/model/enclosure_stay_list_response.dart';
 import 'package:scolvpet_api/src/model/enclosure_stay_response.dart';
 import 'package:scolvpet_api/src/model/enclosure_stay_update_request.dart';
 import 'package:scolvpet_api/src/model/enclosure_update_request.dart';
+import 'package:scolvpet_api/src/model/entitlement_catalog_response.dart';
+import 'package:scolvpet_api/src/model/entitlement_check_request.dart';
+import 'package:scolvpet_api/src/model/entitlement_check_response.dart';
+import 'package:scolvpet_api/src/model/entitlement_check_result.dart';
+import 'package:scolvpet_api/src/model/entitlement_feature.dart';
+import 'package:scolvpet_api/src/model/entitlement_limit.dart';
+import 'package:scolvpet_api/src/model/entitlement_snapshot.dart';
+import 'package:scolvpet_api/src/model/entitlement_snapshot_response.dart';
 import 'package:scolvpet_api/src/model/error_object.dart';
 import 'package:scolvpet_api/src/model/error_response.dart';
 import 'package:scolvpet_api/src/model/export_job.dart';
@@ -65,6 +117,15 @@ import 'package:scolvpet_api/src/model/export_job_create_request.dart';
 import 'package:scolvpet_api/src/model/export_job_list_response.dart';
 import 'package:scolvpet_api/src/model/export_job_response.dart';
 import 'package:scolvpet_api/src/model/field_error.dart';
+import 'package:scolvpet_api/src/model/genetic_locus.dart';
+import 'package:scolvpet_api/src/model/genetic_locus_list_response.dart';
+import 'package:scolvpet_api/src/model/genetic_outcome.dart';
+import 'package:scolvpet_api/src/model/genetic_profile.dart';
+import 'package:scolvpet_api/src/model/genetic_profile_list_response.dart';
+import 'package:scolvpet_api/src/model/genetic_profile_response.dart';
+import 'package:scolvpet_api/src/model/genetic_simulation_request.dart';
+import 'package:scolvpet_api/src/model/genetic_simulation_response.dart';
+import 'package:scolvpet_api/src/model/genetic_simulation_result.dart';
 import 'package:scolvpet_api/src/model/hamster.dart';
 import 'package:scolvpet_api/src/model/hamster_batch_create_request.dart';
 import 'package:scolvpet_api/src/model/hamster_batch_create_request_items_inner.dart';
@@ -106,6 +167,7 @@ import 'package:scolvpet_api/src/model/individualize_litter_request_items_inner.
 import 'package:scolvpet_api/src/model/individualize_litter_response.dart';
 import 'package:scolvpet_api/src/model/individualize_litter_response_data.dart';
 import 'package:scolvpet_api/src/model/individualize_mapping.dart';
+import 'package:scolvpet_api/src/model/invite_organization_member_request.dart';
 import 'package:scolvpet_api/src/model/kinship_check.dart';
 import 'package:scolvpet_api/src/model/litter.dart';
 import 'package:scolvpet_api/src/model/litter_count_event.dart';
@@ -137,7 +199,15 @@ import 'package:scolvpet_api/src/model/media_upload_complete_response_data.dart'
 import 'package:scolvpet_api/src/model/media_upload_presign_request.dart';
 import 'package:scolvpet_api/src/model/media_upload_presign_response.dart';
 import 'package:scolvpet_api/src/model/media_variant.dart';
+import 'package:scolvpet_api/src/model/miniprogram_config.dart';
+import 'package:scolvpet_api/src/model/miniprogram_config_response.dart';
+import 'package:scolvpet_api/src/model/miniprogram_release.dart';
+import 'package:scolvpet_api/src/model/miniprogram_release_list_response.dart';
+import 'package:scolvpet_api/src/model/miniprogram_release_response.dart';
 import 'package:scolvpet_api/src/model/organization.dart';
+import 'package:scolvpet_api/src/model/organization_member.dart';
+import 'package:scolvpet_api/src/model/organization_member_list_response.dart';
+import 'package:scolvpet_api/src/model/organization_member_response.dart';
 import 'package:scolvpet_api/src/model/organization_response.dart';
 import 'package:scolvpet_api/src/model/organization_update_request.dart';
 import 'package:scolvpet_api/src/model/page_info.dart';
@@ -152,13 +222,24 @@ import 'package:scolvpet_api/src/model/pedigree_parentage_create_request.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage_list_response.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage_response.dart';
 import 'package:scolvpet_api/src/model/phone_code_login_request.dart';
+import 'package:scolvpet_api/src/model/plan_catalog_entry.dart';
 import 'package:scolvpet_api/src/model/public_share_response.dart';
 import 'package:scolvpet_api/src/model/public_share_response_data.dart';
+import 'package:scolvpet_api/src/model/public_site.dart';
+import 'package:scolvpet_api/src/model/public_site_response.dart';
+import 'package:scolvpet_api/src/model/public_site_view.dart';
+import 'package:scolvpet_api/src/model/public_site_view_response.dart';
 import 'package:scolvpet_api/src/model/publish_breeding_plan_request.dart';
 import 'package:scolvpet_api/src/model/publish_breeding_plan_response.dart';
 import 'package:scolvpet_api/src/model/publish_breeding_plan_response_data.dart';
 import 'package:scolvpet_api/src/model/pup_identity.dart';
 import 'package:scolvpet_api/src/model/pup_identity_list_response.dart';
+import 'package:scolvpet_api/src/model/push_device.dart';
+import 'package:scolvpet_api/src/model/push_device_list_response.dart';
+import 'package:scolvpet_api/src/model/push_device_response.dart';
+import 'package:scolvpet_api/src/model/push_message.dart';
+import 'package:scolvpet_api/src/model/push_message_list_response.dart';
+import 'package:scolvpet_api/src/model/push_message_response.dart';
 import 'package:scolvpet_api/src/model/reconciliation.dart';
 import 'package:scolvpet_api/src/model/record_observation_request.dart';
 import 'package:scolvpet_api/src/model/record_observation_response.dart';
@@ -173,6 +254,7 @@ import 'package:scolvpet_api/src/model/response_meta.dart';
 import 'package:scolvpet_api/src/model/retry_import_request.dart';
 import 'package:scolvpet_api/src/model/retry_job_request.dart';
 import 'package:scolvpet_api/src/model/revoke_share_request.dart';
+import 'package:scolvpet_api/src/model/sandbox_activate_plan_request.dart';
 import 'package:scolvpet_api/src/model/send_verification_code_request.dart';
 import 'package:scolvpet_api/src/model/separate_pairing_request.dart';
 import 'package:scolvpet_api/src/model/separate_pairing_response.dart';
@@ -201,7 +283,17 @@ import 'package:scolvpet_api/src/model/start_gestation_response_data.dart';
 import 'package:scolvpet_api/src/model/start_pairing_request.dart';
 import 'package:scolvpet_api/src/model/start_pairing_response.dart';
 import 'package:scolvpet_api/src/model/start_pairing_response_data.dart';
+import 'package:scolvpet_api/src/model/stud_deal.dart';
+import 'package:scolvpet_api/src/model/stud_deal_list_response.dart';
+import 'package:scolvpet_api/src/model/stud_deal_response.dart';
+import 'package:scolvpet_api/src/model/stud_listing.dart';
+import 'package:scolvpet_api/src/model/stud_listing_list_response.dart';
+import 'package:scolvpet_api/src/model/stud_listing_response.dart';
+import 'package:scolvpet_api/src/model/update_organization_member_request.dart';
 import 'package:scolvpet_api/src/model/upload_session.dart';
+import 'package:scolvpet_api/src/model/upsert_miniprogram_config_request.dart';
+import 'package:scolvpet_api/src/model/upsert_public_site_request.dart';
+import 'package:scolvpet_api/src/model/upsert_push_device_request.dart';
 import 'package:scolvpet_api/src/model/usage_metric.dart';
 import 'package:scolvpet_api/src/model/usage_response.dart';
 import 'package:scolvpet_api/src/model/usage_response_data.dart';
@@ -247,6 +339,24 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return (value is double ? value : double.parse('$value')) as ReturnType;
         case 'Account':
           return Account.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AccountingCategory':
+          return AccountingCategory.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AccountingCategoryListResponse':
+          return AccountingCategoryListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AccountingCategoryResponse':
+          return AccountingCategoryResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AccountingCategorySummary':
+          return AccountingCategorySummary.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AccountingRecord':
+          return AccountingRecord.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AccountingRecordListResponse':
+          return AccountingRecordListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AccountingRecordResponse':
+          return AccountingRecordResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AccountingSummary':
+          return AccountingSummary.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AccountingSummaryResponse':
+          return AccountingSummaryResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ActionItemResult':
           return ActionItemResult.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'AdjustBaselineRequest':
@@ -261,10 +371,24 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return AdjustLitterCountResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'AdjustLitterCountResponseData':
           return AdjustLitterCountResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantAnswer':
+          return AssistantAnswer.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantAnswerResponse':
+          return AssistantAnswerResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantAskRequest':
+          return AssistantAskRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantCapabilities':
+          return AssistantCapabilities.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantCapabilitiesResponse':
+          return AssistantCapabilitiesResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantFact':
+          return AssistantFact.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'AsyncJob':
           return AsyncJob.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'AsyncJobResponse':
           return AsyncJobResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AuditMiniprogramReleaseRequest':
+          return AuditMiniprogramReleaseRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'BackupJob':
           return BackupJob.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'BackupJobCreateRequest':
@@ -331,6 +455,50 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return ConfirmBirthResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ConfirmBirthResponseData':
           return ConfirmBirthResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateAccountingCategoryRequest':
+          return CreateAccountingCategoryRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateAccountingRecordRequest':
+          return CreateAccountingRecordRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateContractRequest':
+          return CreateContractRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateCrmContactRequest':
+          return CreateCrmContactRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateCrmHandoverRequest':
+          return CreateCrmHandoverRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateCrmReservationRequest':
+          return CreateCrmReservationRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateDocumentTemplateRequest':
+          return CreateDocumentTemplateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateGeneticProfileRequest':
+          return CreateGeneticProfileRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateMiniprogramReleaseRequest':
+          return CreateMiniprogramReleaseRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreatePushMessageRequest':
+          return CreatePushMessageRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateReceiptRequest':
+          return CreateReceiptRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateStudDealRequest':
+          return CreateStudDealRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateStudListingRequest':
+          return CreateStudListingRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CrmContact':
+          return CrmContact.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CrmContactListResponse':
+          return CrmContactListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CrmContactResponse':
+          return CrmContactResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CrmHandover':
+          return CrmHandover.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CrmHandoverListResponse':
+          return CrmHandoverListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CrmHandoverResponse':
+          return CrmHandoverResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CrmReservation':
+          return CrmReservation.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CrmReservationListResponse':
+          return CrmReservationListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CrmReservationResponse':
+          return CrmReservationResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CurrentAccountResponse':
           return CurrentAccountResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CurrentAccountResponseData':
@@ -343,6 +511,18 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return DataCenterSummaryResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'DeviceInfo':
           return DeviceInfo.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'Document':
+          return Document.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'DocumentListResponse':
+          return DocumentListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'DocumentResponse':
+          return DocumentResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'DocumentTemplate':
+          return DocumentTemplate.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'DocumentTemplateListResponse':
+          return DocumentTemplateListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'DocumentTemplateResponse':
+          return DocumentTemplateResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'DownloadLinkResponse':
           return DownloadLinkResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'DownloadLinkResponseData':
@@ -383,6 +563,22 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return EnclosureStayUpdateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'EnclosureUpdateRequest':
           return EnclosureUpdateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EntitlementCatalogResponse':
+          return EntitlementCatalogResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EntitlementCheckRequest':
+          return EntitlementCheckRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EntitlementCheckResponse':
+          return EntitlementCheckResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EntitlementCheckResult':
+          return EntitlementCheckResult.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EntitlementFeature':
+          return EntitlementFeature.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EntitlementLimit':
+          return EntitlementLimit.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EntitlementSnapshot':
+          return EntitlementSnapshot.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'EntitlementSnapshotResponse':
+          return EntitlementSnapshotResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ErrorObject':
           return ErrorObject.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ErrorResponse':
@@ -397,6 +593,24 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return ExportJobResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'FieldError':
           return FieldError.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GeneticLocus':
+          return GeneticLocus.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GeneticLocusListResponse':
+          return GeneticLocusListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GeneticOutcome':
+          return GeneticOutcome.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GeneticProfile':
+          return GeneticProfile.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GeneticProfileListResponse':
+          return GeneticProfileListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GeneticProfileResponse':
+          return GeneticProfileResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GeneticSimulationRequest':
+          return GeneticSimulationRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GeneticSimulationResponse':
+          return GeneticSimulationResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GeneticSimulationResult':
+          return GeneticSimulationResult.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'Hamster':
           return Hamster.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'HamsterBatchCreateRequest':
@@ -497,6 +711,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return IndividualizeLitterResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'IndividualizeMapping':
           return IndividualizeMapping.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'InviteOrganizationMemberRequest':
+          return InviteOrganizationMemberRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'JobStatus':
           
           
@@ -565,11 +781,27 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return MediaUploadPresignResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'MediaVariant':
           return MediaVariant.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'MiniprogramConfig':
+          return MiniprogramConfig.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'MiniprogramConfigResponse':
+          return MiniprogramConfigResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'MiniprogramRelease':
+          return MiniprogramRelease.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'MiniprogramReleaseListResponse':
+          return MiniprogramReleaseListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'MiniprogramReleaseResponse':
+          return MiniprogramReleaseResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ObservationType':
           
           
         case 'Organization':
           return Organization.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'OrganizationMember':
+          return OrganizationMember.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'OrganizationMemberListResponse':
+          return OrganizationMemberListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'OrganizationMemberResponse':
+          return OrganizationMemberResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'OrganizationResponse':
           return OrganizationResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'OrganizationUpdateRequest':
@@ -604,10 +836,20 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return PedigreeParentageResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PhoneCodeLoginRequest':
           return PhoneCodeLoginRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PlanCatalogEntry':
+          return PlanCatalogEntry.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublicShareResponse':
           return PublicShareResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublicShareResponseData':
           return PublicShareResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicSite':
+          return PublicSite.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicSiteResponse':
+          return PublicSiteResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicSiteView':
+          return PublicSiteView.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicSiteViewResponse':
+          return PublicSiteViewResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublishBreedingPlanRequest':
           return PublishBreedingPlanRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublishBreedingPlanResponse':
@@ -624,6 +866,18 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'PupProfileStatus':
           
           
+        case 'PushDevice':
+          return PushDevice.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PushDeviceListResponse':
+          return PushDeviceListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PushDeviceResponse':
+          return PushDeviceResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PushMessage':
+          return PushMessage.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PushMessageListResponse':
+          return PushMessageListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PushMessageResponse':
+          return PushMessageResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'Reconciliation':
           return Reconciliation.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'RecordObservationRequest':
@@ -655,6 +909,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return RetryJobRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'RevokeShareRequest':
           return RevokeShareRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'SandboxActivatePlanRequest':
+          return SandboxActivatePlanRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'SendVerificationCodeRequest':
           return SendVerificationCodeRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'SeparatePairingRequest':
@@ -723,14 +979,34 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return StartPairingResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'StartPairingResponseData':
           return StartPairingResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'StudDeal':
+          return StudDeal.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'StudDealListResponse':
+          return StudDealListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'StudDealResponse':
+          return StudDealResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'StudListing':
+          return StudListing.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'StudListingListResponse':
+          return StudListingListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'StudListingResponse':
+          return StudListingResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'TaskPriority':
           
           
         case 'TaskState':
           
           
+        case 'UpdateOrganizationMemberRequest':
+          return UpdateOrganizationMemberRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'UploadSession':
           return UploadSession.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'UpsertMiniprogramConfigRequest':
+          return UpsertMiniprogramConfigRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'UpsertPublicSiteRequest':
+          return UpsertPublicSiteRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'UpsertPushDeviceRequest':
+          return UpsertPushDeviceRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'UsageMetric':
           return UsageMetric.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'UsageResponse':
