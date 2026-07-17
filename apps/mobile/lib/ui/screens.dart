@@ -11,6 +11,7 @@ import '../features/health/health.dart';
 import '../features/accounting/accounting.dart';
 import '../features/contracts/contracts.dart';
 import '../features/crm/crm.dart';
+import '../features/genetic/genetic.dart';
 import '../features/home_widget/home_widget.dart';
 import '../features/members/members.dart';
 import '../features/pedigree/pedigree.dart';
@@ -285,6 +286,7 @@ class HomeShell extends StatefulWidget {
     required this.crmRepository,
     required this.contractsRepository,
     required this.accountingRepository,
+    required this.geneticRepository,
     this.todayWidgetPublisher,
   });
 
@@ -299,6 +301,7 @@ class HomeShell extends StatefulWidget {
   final CrmRepository crmRepository;
   final ContractsRepository contractsRepository;
   final AccountingRepository accountingRepository;
+  final GeneticRepository geneticRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -649,6 +652,17 @@ class _HomeShellState extends State<HomeShell> {
                   ),
                 );
               },
+        onOpenGenetic: () {
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => GeneticHubPage(
+                controller: GeneticController(
+                  repository: widget.geneticRepository,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     ];
     return Scaffold(
@@ -742,6 +756,7 @@ class _MinePage extends StatelessWidget {
     this.onOpenContracts,
     this.onOpenAccounting,
     this.onOpenTodayWidget,
+    this.onOpenGenetic,
   });
 
   final AppState state;
@@ -751,6 +766,7 @@ class _MinePage extends StatelessWidget {
   final VoidCallback? onOpenContracts;
   final VoidCallback? onOpenAccounting;
   final VoidCallback? onOpenTodayWidget;
+  final VoidCallback? onOpenGenetic;
 
   @override
   Widget build(BuildContext context) {
@@ -849,6 +865,19 @@ class _MinePage extends StatelessWidget {
               subtitle: const Text('桌面小组件 · 预览与同步'),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenTodayWidget,
+            ),
+          ),
+        ],
+        if (onOpenGenetic != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              key: const Key('mine-open-genetic'),
+              leading: const Icon(Icons.biotech_outlined),
+              title: const Text('遗传表型与模拟'),
+              subtitle: const Text('位点档案 · 配对概率'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenGenetic,
             ),
           ),
         ],

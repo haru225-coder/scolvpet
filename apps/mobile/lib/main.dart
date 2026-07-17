@@ -13,6 +13,7 @@ import 'features/litter/litter.dart';
 import 'features/accounting/accounting.dart';
 import 'features/contracts/contracts.dart';
 import 'features/crm/crm.dart';
+import 'features/genetic/genetic.dart';
 import 'features/home_widget/home_widget.dart';
 import 'features/members/members.dart';
 import 'features/pedigree/pedigree.dart';
@@ -58,6 +59,7 @@ Future<void> main() async {
   final crmRepository = DefaultApiCrmRepository(client: apiClient);
   final contractsRepository = DefaultApiContractsRepository(client: apiClient);
   final accountingRepository = DefaultApiAccountingRepository(client: apiClient);
+  final geneticRepository = DefaultApiGeneticRepository(client: apiClient);
   runApp(
     ScolvPetApp(
       state: state,
@@ -71,6 +73,7 @@ Future<void> main() async {
       crmRepository: crmRepository,
       contractsRepository: contractsRepository,
       accountingRepository: accountingRepository,
+      geneticRepository: geneticRepository,
       todayWidgetPublisher: todayWidgetPublisher,
     ),
   );
@@ -90,6 +93,7 @@ class ScolvPetApp extends StatefulWidget {
     required this.crmRepository,
     required this.contractsRepository,
     required this.accountingRepository,
+    required this.geneticRepository,
     this.todayWidgetPublisher,
   });
 
@@ -104,6 +108,7 @@ class ScolvPetApp extends StatefulWidget {
   final CrmRepository crmRepository;
   final ContractsRepository contractsRepository;
   final AccountingRepository accountingRepository;
+  final GeneticRepository geneticRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -163,6 +168,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
               crmRepository: widget.crmRepository,
               contractsRepository: widget.contractsRepository,
               accountingRepository: widget.accountingRepository,
+              geneticRepository: widget.geneticRepository,
               todayWidgetPublisher: widget.todayWidgetPublisher,
             ),
           },

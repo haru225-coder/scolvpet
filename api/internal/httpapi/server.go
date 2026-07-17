@@ -97,6 +97,7 @@ func (s *Server) Handler() http.Handler {
 	s.registerP1CrmRoutes(mux)
 	s.registerP1ContractRoutes(mux)
 	s.registerP1AccountingRoutes(mux)
+	s.registerP1GeneticRoutes(mux)
 	return requestIDMiddleware(s.Logger, mux)
 }
 
