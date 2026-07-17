@@ -11,6 +11,7 @@ import '../features/health/health.dart';
 import '../features/accounting/accounting.dart';
 import '../features/contracts/contracts.dart';
 import '../features/crm/crm.dart';
+import '../features/home_widget/home_widget.dart';
 import '../features/members/members.dart';
 import '../features/pedigree/pedigree.dart';
 import '../features/shell/home_overview.dart';
@@ -284,6 +285,7 @@ class HomeShell extends StatefulWidget {
     required this.crmRepository,
     required this.contractsRepository,
     required this.accountingRepository,
+    this.todayWidgetPublisher,
   });
 
   final AppState state;
@@ -297,6 +299,7 @@ class HomeShell extends StatefulWidget {
   final CrmRepository crmRepository;
   final ContractsRepository contractsRepository;
   final AccountingRepository accountingRepository;
+  final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -634,6 +637,18 @@ class _HomeShellState extends State<HomeShell> {
             ),
           );
         },
+        onOpenTodayWidget: widget.todayWidgetPublisher == null
+            ? null
+            : () {
+                Navigator.of(context).push<void>(
+                  MaterialPageRoute(
+                    builder: (_) => TodayWidgetPreviewPage(
+                      taskController: widget.taskController,
+                      publisher: widget.todayWidgetPublisher!,
+                    ),
+                  ),
+                );
+              },
       ),
     ];
     return Scaffold(
@@ -726,6 +741,7 @@ class _MinePage extends StatelessWidget {
     this.onOpenCrm,
     this.onOpenContracts,
     this.onOpenAccounting,
+    this.onOpenTodayWidget,
   });
 
   final AppState state;
@@ -734,6 +750,7 @@ class _MinePage extends StatelessWidget {
   final VoidCallback? onOpenCrm;
   final VoidCallback? onOpenContracts;
   final VoidCallback? onOpenAccounting;
+  final VoidCallback? onOpenTodayWidget;
 
   @override
   Widget build(BuildContext context) {
@@ -819,6 +836,19 @@ class _MinePage extends StatelessWidget {
               subtitle: const Text('记账 · 分类 · 本月汇总'),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenAccounting,
+            ),
+          ),
+        ],
+        if (onOpenTodayWidget != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              key: const Key('mine-open-today-widget'),
+              leading: const Icon(Icons.widgets_outlined),
+              title: const Text('今日待办组件'),
+              subtitle: const Text('桌面小组件 · 预览与同步'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenTodayWidget,
             ),
           ),
         ],

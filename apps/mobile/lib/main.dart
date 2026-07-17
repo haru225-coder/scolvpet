@@ -13,6 +13,7 @@ import 'features/litter/litter.dart';
 import 'features/accounting/accounting.dart';
 import 'features/contracts/contracts.dart';
 import 'features/crm/crm.dart';
+import 'features/home_widget/home_widget.dart';
 import 'features/members/members.dart';
 import 'features/pedigree/pedigree.dart';
 import 'features/tasks/tasks.dart';
@@ -38,6 +39,7 @@ Future<void> main() async {
     localStore: SharedPreferencesI2LocalStore(preferences: preferences),
   );
   final taskRepository = DefaultApiTaskRepository(client: apiClient);
+  final todayWidgetPublisher = SharedPreferencesTodayWidgetPublisher();
   final breedingController = BreedingController(
     repository: DefaultApiBreedingRepository(client: apiClient),
     taskRepository: taskRepository,
@@ -48,6 +50,7 @@ Future<void> main() async {
   final taskController = TaskController(
     repository: taskRepository,
     notifications: PluginLocalNotificationScheduler(),
+    widgetPublisher: todayWidgetPublisher,
   );
   final pedigreeRepository = DefaultApiPedigreeRepository(client: apiClient);
   final healthRepository = DefaultApiHealthRepository(client: apiClient);
@@ -68,6 +71,7 @@ Future<void> main() async {
       crmRepository: crmRepository,
       contractsRepository: contractsRepository,
       accountingRepository: accountingRepository,
+      todayWidgetPublisher: todayWidgetPublisher,
     ),
   );
 }
@@ -86,6 +90,7 @@ class ScolvPetApp extends StatefulWidget {
     required this.crmRepository,
     required this.contractsRepository,
     required this.accountingRepository,
+    this.todayWidgetPublisher,
   });
 
   final AppState state;
@@ -99,6 +104,7 @@ class ScolvPetApp extends StatefulWidget {
   final CrmRepository crmRepository;
   final ContractsRepository contractsRepository;
   final AccountingRepository accountingRepository;
+  final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
   State<ScolvPetApp> createState() => _ScolvPetAppState();
@@ -157,6 +163,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
               crmRepository: widget.crmRepository,
               contractsRepository: widget.contractsRepository,
               accountingRepository: widget.accountingRepository,
+              todayWidgetPublisher: widget.todayWidgetPublisher,
             ),
           },
         );

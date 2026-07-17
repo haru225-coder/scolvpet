@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../home_widget/today_widget_publisher.dart';
+import '../home_widget/today_widget_snapshot.dart';
 import '../i2/i2_models.dart';
 import 'local_notifications.dart';
 import 'task_models.dart';
@@ -9,10 +11,12 @@ class TaskController extends ChangeNotifier {
   TaskController({
     required this.repository,
     LocalNotificationScheduler? notifications,
+    this.widgetPublisher,
   }) : notifications = notifications ?? MemoryLocalNotificationScheduler();
 
   final TaskRepository repository;
   final LocalNotificationScheduler notifications;
+  final TodayWidgetPublisher? widgetPublisher;
 
   I2AsyncState<List<CareTaskItem>> listState = const I2AsyncState.idle();
   I2AsyncState<void> actionState = const I2AsyncState.idle();
@@ -53,6 +57,7 @@ class TaskController extends ChangeNotifier {
         reminders = const <TaskReminderItem>[];
       }
       await _syncNotifications(tasks);
+      await _syncHomeWidget(tasks);
       lastMessage = null;
     } catch (error) {
       listState = I2AsyncState.error(taskRepositoryErrorMessage(error));
@@ -78,6 +83,7 @@ class TaskController extends ChangeNotifier {
           : I2AsyncState.data(current);
       await notifications.cancelTask(next.id);
       await _syncNotifications(current);
+      await _syncHomeWidget(current);
       actionState = const I2AsyncState.data(null);
       lastMessage = '已完成「${next.displayTitle}」';
       notifyListeners();
@@ -103,6 +109,7 @@ class TaskController extends ChangeNotifier {
       current.sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
       listState = I2AsyncState.data(current);
       await _syncNotifications(current);
+      await _syncHomeWidget(current);
       actionState = const I2AsyncState.data(null);
       lastMessage = '已创建任务';
       notifyListeners();
@@ -125,6 +132,16 @@ class TaskController extends ChangeNotifier {
       await notifications.syncOpenTasks(tasks.where((t) => t.isOpen));
     } catch (error) {
       debugPrint('sync notifications failed: $error');
+    }
+  }
+
+  Future<void> _syncHomeWidget(List<CareTaskItem> tasks) async {
+    final publisher = widgetPublisher;
+    if (publisher == null) return;
+    try {
+      await publisher.publish(TodayWidgetSnapshot.fromTasks(tasks));
+    } catch (error) {
+      debugPrint('sync home widget failed: $error');
     }
   }
 }

@@ -11,7 +11,7 @@ T-P1-01,P1,rbac_members,api+db+flutter,/organization-members,S,docs/13+impl,PART
 T-P1-02,P1,crm_handover,api+db+flutter,/crm/*,S,docs/13+impl,PARTIAL,contacts+reservations+handover complete
 T-P1-03,P1,contracts_receipts,api+db+flutter,"/contracts/*,/receipts/*",S,docs/13+impl,PARTIAL,templates+draft issue+text preview/share; PDF deferred
 T-P1-04,P1,accounting,api+db+flutter,"/accounting/*",S,docs/13+impl,PARTIAL,categories+records+monthly summary; charts/PDF deferred
-T-P1-05,P1,widgets,mobile native,,S,docs/13,DEFER,
+T-P1-05,P1,widgets,mobile native+flutter,today-widget,S,docs/13+impl,PARTIAL,Android AppWidget+Dart sync+preview; iOS WidgetKit scaffold only
 T-P1-06,P1,genetics,api+flutter,,S,docs/13,DEFER,
 T-P1-07,P1,push_server,infra,,I,docs/13,DEFER,
 T-P1-08,P1,paywall,entitlement+store,,S,docs/13,DEFER,

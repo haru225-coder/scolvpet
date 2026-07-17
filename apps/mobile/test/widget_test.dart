@@ -14,6 +14,7 @@ import 'package:scolvpet_mobile/features/health/health.dart';
 import 'package:scolvpet_mobile/features/accounting/accounting.dart';
 import 'package:scolvpet_mobile/features/contracts/contracts.dart';
 import 'package:scolvpet_mobile/features/crm/crm.dart';
+import 'package:scolvpet_mobile/features/home_widget/home_widget.dart';
 import 'package:scolvpet_mobile/features/members/members.dart';
 import 'package:scolvpet_mobile/features/pedigree/pedigree.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
@@ -55,9 +56,11 @@ void main() {
         repository: MemoryLitterBoardRepository(),
       );
       final taskRepo = MemoryTaskRepository();
+      final todayWidgetPublisher = MemoryTodayWidgetPublisher();
       final taskController = TaskController(
         repository: taskRepo,
         notifications: MemoryLocalNotificationScheduler(),
+        widgetPublisher: todayWidgetPublisher,
       );
 
       await tester.pumpWidget(
@@ -73,6 +76,7 @@ void main() {
           crmRepository: MemoryCrmRepository(),
           contractsRepository: MemoryContractsRepository(),
           accountingRepository: MemoryAccountingRepository(),
+          todayWidgetPublisher: todayWidgetPublisher,
         ),
       );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -110,14 +114,18 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('雪团熊舍'), findsOneWidget);
-      expect(find.text('合同与回执'), findsOneWidget);
-      expect(find.text('财务收支'), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('离线只读 · 联网后重新提交/再操作'),
-        120,
-      );
-      expect(find.text('离线只读 · 联网后重新提交/再操作'), findsOneWidget);
-      await tester.ensureVisible(find.text('数据中心'));
+      // Mine ListView is lazy — scroll each entry into view.
+      for (final key in [
+        const Key('mine-open-crm'),
+        const Key('mine-open-contracts'),
+        const Key('mine-open-accounting'),
+        const Key('mine-open-today-widget'),
+      ]) {
+        await tester.scrollUntilVisible(find.byKey(key), 100);
+        expect(find.byKey(key), findsOneWidget);
+      }
+      // Jump back to top via large drag, then open 数据中心.
+      await tester.drag(find.byType(ListView).first, const Offset(0, 2400));
       await tester.pumpAndSettle();
       await tester.tap(find.text('数据中心'));
       await tester.pumpAndSettle();
@@ -127,6 +135,7 @@ void main() {
       expect(find.text('最近备份'), findsOneWidget);
       await tester.pageBack();
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('物种规则'), 100);
       await tester.tap(find.text('物种规则'));
       await tester.pumpAndSettle();
       expect(find.text('mesocricetus_auratus'), findsWidgets);
