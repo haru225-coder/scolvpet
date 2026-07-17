@@ -6,6 +6,7 @@ import '../features/i2/i2.dart';
 import '../features/i6/data_center.dart';
 import '../features/breeding/breeding.dart';
 import '../features/litter/litter.dart';
+import '../features/calendar/calendar.dart';
 import '../features/shell/home_overview.dart';
 import '../features/tasks/tasks.dart';
 import '../features/weight/weight_batch_page.dart';
@@ -474,6 +475,18 @@ class _HomeShellState extends State<HomeShell> {
     );
   }
 
+  void _openCalendar() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => CalendarMonthPage(
+          taskController: widget.taskController,
+          breedingController: widget.breedingController,
+          i2Controller: widget.i2Controller,
+        ),
+      ),
+    );
+  }
+
   void _goTab(int value) => setState(() => index = value);
 
   @override
@@ -489,6 +502,7 @@ class _HomeShellState extends State<HomeShell> {
         onOpenLitters: _openLitters,
         onOpenDataCenter: _openDataCenter,
         onOpenTasks: _openTasks,
+        onOpenCalendar: _openCalendar,
         onCreateHamster: () => _openHamsterEditor(),
         onOpenBatchWeight: _openBatchWeight,
       ),

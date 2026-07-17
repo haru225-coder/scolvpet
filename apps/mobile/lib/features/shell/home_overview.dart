@@ -134,6 +134,7 @@ class HomeOverviewPage extends StatelessWidget {
     required this.onCreateHamster,
     this.taskController,
     this.onOpenTasks,
+    this.onOpenCalendar,
     this.onOpenBatchWeight,
   });
 
@@ -147,6 +148,7 @@ class HomeOverviewPage extends StatelessWidget {
   final VoidCallback onOpenDataCenter;
   final VoidCallback onCreateHamster;
   final VoidCallback? onOpenTasks;
+  final VoidCallback? onOpenCalendar;
   final VoidCallback? onOpenBatchWeight;
 
   @override
@@ -302,6 +304,13 @@ class HomeOverviewPage extends StatelessWidget {
                         icon: Icons.task_alt,
                         label: '任务',
                         onTap: onOpenTasks!,
+                      ),
+                    if (onOpenCalendar != null)
+                      _QuickChip(
+                        buttonKey: const Key('home-quick-calendar'),
+                        icon: Icons.calendar_month_outlined,
+                        label: '日历',
+                        onTap: onOpenCalendar!,
                       ),
                   ],
                 ),
