@@ -9,6 +9,7 @@ import 'package:scolvpet_mobile/data/i1_repository.dart';
 import 'package:scolvpet_mobile/data/i2_repository.dart';
 import 'package:scolvpet_mobile/features/breeding/breeding.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
+import 'package:scolvpet_mobile/features/litter/litter.dart';
 import 'package:scolvpet_mobile/ui/screens.dart';
 import 'package:scolvpet_mobile/main.dart';
 
@@ -43,12 +44,16 @@ void main() {
       final breedingController = BreedingController(
         repository: MemoryBreedingRepository(),
       );
+      final litterBoardController = LitterBoardController(
+        repository: MemoryLitterBoardRepository(),
+      );
 
       await tester.pumpWidget(
         ScolvPetApp(
           state: state,
           i2Controller: i2Controller,
           breedingController: breedingController,
+          litterBoardController: litterBoardController,
         ),
       );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);

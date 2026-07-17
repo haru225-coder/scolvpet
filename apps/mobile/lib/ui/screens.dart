@@ -5,6 +5,7 @@ import '../core/app_state.dart';
 import '../features/i2/i2.dart';
 import '../features/i6/data_center.dart';
 import '../features/breeding/breeding.dart';
+import '../features/litter/litter.dart';
 import '../features/shell/home_overview.dart';
 
 const _accent = Color(0xffc77852);
@@ -266,11 +267,13 @@ class HomeShell extends StatefulWidget {
     required this.state,
     required this.i2Controller,
     required this.breedingController,
+    required this.litterBoardController,
   });
 
   final AppState state;
   final I2Controller i2Controller;
   final BreedingController breedingController;
+  final LitterBoardController litterBoardController;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -418,9 +421,16 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   void _openLitters() {
+    final snapshot = widget.i2Controller.snapshotState.data;
     Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) => LitterListPage(controller: widget.i2Controller),
+        builder: (_) => LitterBoardListPage(
+          controller: widget.litterBoardController,
+          enclosures: snapshot?.enclosures ?? const <I2Enclosure>[],
+          canWrite: !widget.state.offline && widget.i2Controller.canWrite,
+          offline: widget.state.offline || widget.i2Controller.offline,
+          lastSyncLabel: widget.i2Controller.lastSyncLabel,
+        ),
       ),
     );
   }
