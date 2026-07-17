@@ -17,6 +17,6 @@ T-P1-07,P1,push_server,api+db+flutter,"/push/*",S,docs/13+impl,PARTIAL,device re
 T-P1-08,P1,paywall,api+flutter+existing entitlement,"/entitlements/*",S,docs/13+impl,PARTIAL,soft paywall+sandbox activate; StoreKit/CN pay deferred
 T-P2-01,P2,public_site,api+db+flutter,"/public-site,/public/sites/{slug}",S,docs/13+impl,PARTIAL,lightweight homepage+publish; no visual editor
 T-P2-02,P2,miniprogram,api+db+flutter,"/miniprogram/*",S,docs/13+impl,PARTIAL,sandbox audit chain draft→submit→audit→publish→rollback; real WeChat API deferred
-T-P2-03,P2,ai_readonly,agent,,S,docs/13,DEFER,
+T-P2-03,P2,ai_readonly,api+flutter,"/assistant/*",S,docs/13+impl,PARTIAL,rules Q&A on structured metrics; optional xAI polish via XAI_API_KEY
 T-P2-04,P2,ble_scale,mobile,,S,docs/13,DEFER,
 T-P2-05,P2,cross_cattery_stud,api,,S,docs/13,DEFER,

@@ -16,6 +16,7 @@ import 'features/crm/crm.dart';
 import 'features/genetic/genetic.dart';
 import 'features/home_widget/home_widget.dart';
 import 'features/members/members.dart';
+import 'features/assistant/assistant.dart';
 import 'features/miniprogram/miniprogram.dart';
 import 'features/paywall/paywall.dart';
 import 'features/pedigree/pedigree.dart';
@@ -68,6 +69,7 @@ Future<void> main() async {
   final paywallRepository = DefaultApiPaywallRepository(client: apiClient);
   final publicSiteRepository = DefaultApiPublicSiteRepository(client: apiClient);
   final miniprogramRepository = DefaultApiMiniprogramRepository(client: apiClient);
+  final assistantRepository = DefaultApiAssistantRepository(client: apiClient);
   runApp(
     ScolvPetApp(
       state: state,
@@ -86,6 +88,7 @@ Future<void> main() async {
       paywallRepository: paywallRepository,
       publicSiteRepository: publicSiteRepository,
       miniprogramRepository: miniprogramRepository,
+      assistantRepository: assistantRepository,
       todayWidgetPublisher: todayWidgetPublisher,
     ),
   );
@@ -110,6 +113,7 @@ class ScolvPetApp extends StatefulWidget {
     required this.paywallRepository,
     required this.publicSiteRepository,
     required this.miniprogramRepository,
+    required this.assistantRepository,
     this.todayWidgetPublisher,
   });
 
@@ -129,6 +133,7 @@ class ScolvPetApp extends StatefulWidget {
   final PaywallRepository paywallRepository;
   final PublicSiteRepository publicSiteRepository;
   final MiniprogramRepository miniprogramRepository;
+  final AssistantRepository assistantRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -193,6 +198,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
               paywallRepository: widget.paywallRepository,
               publicSiteRepository: widget.publicSiteRepository,
               miniprogramRepository: widget.miniprogramRepository,
+              assistantRepository: widget.assistantRepository,
               todayWidgetPublisher: widget.todayWidgetPublisher,
             ),
           },

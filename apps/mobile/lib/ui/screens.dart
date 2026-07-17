@@ -14,6 +14,7 @@ import '../features/crm/crm.dart';
 import '../features/genetic/genetic.dart';
 import '../features/home_widget/home_widget.dart';
 import '../features/members/members.dart';
+import '../features/assistant/assistant.dart';
 import '../features/miniprogram/miniprogram.dart';
 import '../features/paywall/paywall.dart';
 import '../features/pedigree/pedigree.dart';
@@ -295,6 +296,7 @@ class HomeShell extends StatefulWidget {
     required this.paywallRepository,
     required this.publicSiteRepository,
     required this.miniprogramRepository,
+    required this.assistantRepository,
     this.todayWidgetPublisher,
   });
 
@@ -314,6 +316,7 @@ class HomeShell extends StatefulWidget {
   final PaywallRepository paywallRepository;
   final PublicSiteRepository publicSiteRepository;
   final MiniprogramRepository miniprogramRepository;
+  final AssistantRepository assistantRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -719,6 +722,17 @@ class _HomeShellState extends State<HomeShell> {
             ),
           );
         },
+        onOpenAssistant: () {
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => AssistantPage(
+                controller: AssistantController(
+                  repository: widget.assistantRepository,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     ];
     return Scaffold(
@@ -817,6 +831,7 @@ class _MinePage extends StatelessWidget {
     this.onOpenPaywall,
     this.onOpenPublicSite,
     this.onOpenMiniprogram,
+    this.onOpenAssistant,
   });
 
   final AppState state;
@@ -831,6 +846,7 @@ class _MinePage extends StatelessWidget {
   final VoidCallback? onOpenPaywall;
   final VoidCallback? onOpenPublicSite;
   final VoidCallback? onOpenMiniprogram;
+  final VoidCallback? onOpenAssistant;
 
   @override
   Widget build(BuildContext context) {
@@ -994,6 +1010,19 @@ class _MinePage extends StatelessWidget {
               subtitle: const Text('审核链 · 版本发布'),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenMiniprogram,
+            ),
+          ),
+        ],
+        if (onOpenAssistant != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              key: const Key('mine-open-assistant'),
+              leading: const Icon(Icons.smart_toy_outlined),
+              title: const Text('AI 只读助手'),
+              subtitle: const Text('结构化查询 · 不改数据'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenAssistant,
             ),
           ),
         ],
