@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../i2/i2_models.dart';
 import '../i2/i2_widgets.dart';
 import 'public_site_controller.dart';
 import 'public_site_models.dart';
