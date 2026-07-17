@@ -9,6 +9,7 @@ import 'data/i2_repository.dart';
 import 'features/breeding/breeding.dart';
 import 'features/i2/i2.dart';
 import 'features/litter/litter.dart';
+import 'features/pedigree/pedigree.dart';
 import 'features/tasks/tasks.dart';
 import 'ui/screens.dart';
 
@@ -41,6 +42,7 @@ Future<void> main() async {
     repository: DefaultApiTaskRepository(client: apiClient),
     notifications: PluginLocalNotificationScheduler(),
   );
+  final pedigreeRepository = DefaultApiPedigreeRepository(client: apiClient);
   runApp(
     ScolvPetApp(
       state: state,
@@ -48,6 +50,7 @@ Future<void> main() async {
       breedingController: breedingController,
       litterBoardController: litterBoardController,
       taskController: taskController,
+      pedigreeRepository: pedigreeRepository,
     ),
   );
 }
@@ -60,6 +63,7 @@ class ScolvPetApp extends StatefulWidget {
     required this.breedingController,
     required this.litterBoardController,
     required this.taskController,
+    required this.pedigreeRepository,
   });
 
   final AppState state;
@@ -67,6 +71,7 @@ class ScolvPetApp extends StatefulWidget {
   final BreedingController breedingController;
   final LitterBoardController litterBoardController;
   final TaskController taskController;
+  final PedigreeRepository pedigreeRepository;
 
   @override
   State<ScolvPetApp> createState() => _ScolvPetAppState();
@@ -119,6 +124,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
               breedingController: widget.breedingController,
               litterBoardController: widget.litterBoardController,
               taskController: widget.taskController,
+              pedigreeRepository: widget.pedigreeRepository,
             ),
           },
         );

@@ -201,12 +201,14 @@ class HamsterDetailPage extends StatefulWidget {
     required this.hamsterId,
     this.onEdit,
     this.onAddWeight,
+    this.onOpenPedigree,
   });
 
   final I2Controller controller;
   final String hamsterId;
   final VoidCallback? onEdit;
   final VoidCallback? onAddWeight;
+  final VoidCallback? onOpenPedigree;
 
   @override
   State<HamsterDetailPage> createState() => _HamsterDetailPageState();
@@ -275,6 +277,15 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                       ],
                     ),
                   ),
+                  if (widget.onOpenPedigree != null) ...[
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      key: const Key('hamster-open-pedigree'),
+                      onPressed: widget.onOpenPedigree,
+                      icon: const Icon(Icons.account_tree_outlined),
+                      label: const Text('查看谱系（三代祖先）'),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

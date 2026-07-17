@@ -7,6 +7,7 @@ import '../features/i6/data_center.dart';
 import '../features/breeding/breeding.dart';
 import '../features/litter/litter.dart';
 import '../features/calendar/calendar.dart';
+import '../features/pedigree/pedigree.dart';
 import '../features/shell/home_overview.dart';
 import '../features/tasks/tasks.dart';
 import '../features/weight/weight_batch_page.dart';
@@ -272,6 +273,7 @@ class HomeShell extends StatefulWidget {
     required this.breedingController,
     required this.litterBoardController,
     required this.taskController,
+    required this.pedigreeRepository,
   });
 
   final AppState state;
@@ -279,6 +281,7 @@ class HomeShell extends StatefulWidget {
   final BreedingController breedingController;
   final LitterBoardController litterBoardController;
   final TaskController taskController;
+  final PedigreeRepository pedigreeRepository;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -375,7 +378,7 @@ class _HomeShellState extends State<HomeShell> {
   Future<void> _openHamsterDetail(I2Hamster hamster) async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) => HamsterDetailPage(
+        builder: (detailContext) => HamsterDetailPage(
           controller: widget.i2Controller,
           hamsterId: hamster.id,
           onEdit: () {
@@ -384,6 +387,22 @@ class _HomeShellState extends State<HomeShell> {
             _openHamsterEditor(existing: current);
           },
           onAddWeight: () => _openWeightEntry(hamster.id),
+          onOpenPedigree: () {
+            final current =
+                widget.i2Controller.hamsterDetailState.data?.hamster ?? hamster;
+            Navigator.of(detailContext).push<void>(
+              MaterialPageRoute(
+                builder: (_) => PedigreePage(
+                  controller: PedigreeController(
+                    repository: widget.pedigreeRepository,
+                  ),
+                  hamsterId: current.id,
+                  hamsterLabel: current.displayName,
+                  generations: 3,
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
