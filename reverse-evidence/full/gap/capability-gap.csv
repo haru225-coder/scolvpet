@@ -6,8 +6,8 @@ C-ORG-01,org,organization,/organizations/current,,S,docs/13,PARTIAL,多组织DEF
 C-ORG-02,org,rbac_members,member_management,,S,docs/13,DEFER,MVP排除
 C-MEM-01,commerce,iap_membership,storekit,,S,docs/13,DEFER,usage预留
 C-MEM-02,commerce,entitlements,/usage/*,,S,docs/13,PARTIAL,计量有门禁无
-C-NAV-01,shell,main_tabs,apps/mobile,,I,docs/13,MISSING,P0导航
-C-HOME-01,shell,home_overview,apps/mobile,,I,docs/13,MISSING,P0首页
+C-NAV-01,shell,main_tabs,apps/mobile,,S,docs/13+T-P0-01,DONE,五Tab壳+首页聚合
+C-HOME-01,shell,home_overview,apps/mobile,,S,docs/13+T-P0-01,PARTIAL,I2快照聚合;任务API待T-P0-05
 C-HOME-02,shell,home_customize,overview_module,,S,docs/13,DROP,不做装修
 C-PET-01,pet,hamster_vs_cat,/hamsters,,S,docs/13,HAMSTER,DONE服务端
 C-PET-02,pet,species_rules,/species-rule-*,,S,docs/13,PARTIAL,字典UI

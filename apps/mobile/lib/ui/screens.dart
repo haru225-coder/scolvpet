@@ -4,6 +4,7 @@ import 'package:scolvpet_api/scolvpet_api.dart';
 import '../core/app_state.dart';
 import '../features/i2/i2.dart';
 import '../features/i6/data_center.dart';
+import '../features/shell/home_overview.dart';
 
 const _accent = Color(0xffc77852);
 const _ink = Color(0xff1f2928);
@@ -424,10 +425,21 @@ class _HomeShellState extends State<HomeShell> {
     );
   }
 
+  void _goTab(int value) => setState(() => index = value);
+
   @override
   Widget build(BuildContext context) {
     final pages = [
-      const _TodayPage(),
+      HomeOverviewPage(
+        state: widget.state,
+        controller: widget.i2Controller,
+        onOpenHamsters: () => _goTab(1),
+        onOpenEnclosures: () => _goTab(2),
+        onOpenBreeding: () => _goTab(3),
+        onOpenLitters: _openLitters,
+        onOpenDataCenter: _openDataCenter,
+        onCreateHamster: () => _openHamsterEditor(),
+      ),
       HamsterListPage(
         controller: widget.i2Controller,
         onOpenDetail: _openHamsterDetail,
@@ -439,10 +451,9 @@ class _HomeShellState extends State<HomeShell> {
         controller: widget.i2Controller,
         onOpenDetail: _openEnclosureDetail,
       ),
-      const _EmptyDomainPage(
-        title: '繁育',
-        icon: Icons.sync_alt,
-        detail: 'I3 将接入繁育计划与动作状态',
+      BreedingHubPage(
+        controller: widget.i2Controller,
+        onOpenLitters: _openLitters,
       ),
       _MinePage(state: widget.state, onOpenDataCenter: _openDataCenter),
     ];
@@ -452,7 +463,7 @@ class _HomeShellState extends State<HomeShell> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: index,
-        onDestinationSelected: (value) => setState(() => index = value),
+        onDestinationSelected: _goTab,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.today_outlined),
@@ -604,57 +615,6 @@ class _MinePage extends StatelessWidget {
       ],
     );
   }
-}
-
-class _TodayPage extends StatelessWidget {
-  const _TodayPage();
-
-  @override
-  Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(16),
-    children: [
-      Text(
-        '今天',
-        style: Theme.of(
-          context,
-        ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
-      ),
-      const Text('I1 壳层', style: TextStyle(color: _muted)),
-      const SizedBox(height: 20),
-      const _EmptyState(label: '暂无今日任务'),
-    ],
-  );
-}
-
-class _EmptyDomainPage extends StatelessWidget {
-  const _EmptyDomainPage({
-    required this.title,
-    required this.icon,
-    required this.detail,
-  });
-
-  final String title;
-  final IconData icon;
-  final String detail;
-
-  @override
-  Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(16),
-    children: [
-      Icon(icon, size: 48, color: _accent),
-      const SizedBox(height: 12),
-      Text(
-        title,
-        style: Theme.of(
-          context,
-        ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
-      ),
-      const SizedBox(height: 8),
-      Text(detail, style: const TextStyle(color: _muted)),
-      const SizedBox(height: 28),
-      const _EmptyState(label: '暂无数据'),
-    ],
-  );
 }
 
 class _RuleCard extends StatelessWidget {

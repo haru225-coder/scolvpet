@@ -58,7 +58,23 @@ void main() {
           findsOneWidget,
         );
       }
-      await tester.tap(find.text('我的'));
+      expect(find.text('快捷操作'), findsOneWidget);
+      expect(find.text('在养'), findsOneWidget);
+      expect(find.byKey(const Key('home-quick-litters')), findsOneWidget);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text('繁育'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('窝次列表'), findsOneWidget);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text('我的'),
+        ),
+      );
       await tester.pumpAndSettle();
       expect(find.text('雪团熊舍'), findsOneWidget);
       expect(find.text('离线只读 · 联网后重新提交/再操作'), findsOneWidget);
