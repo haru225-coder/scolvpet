@@ -22,6 +22,7 @@ import 'features/paywall/paywall.dart';
 import 'features/pedigree/pedigree.dart';
 import 'features/public_site/public_site.dart';
 import 'features/push/push.dart';
+import 'features/stud/stud.dart';
 import 'features/tasks/tasks.dart';
 import 'ui/screens.dart';
 
@@ -70,6 +71,7 @@ Future<void> main() async {
   final publicSiteRepository = DefaultApiPublicSiteRepository(client: apiClient);
   final miniprogramRepository = DefaultApiMiniprogramRepository(client: apiClient);
   final assistantRepository = DefaultApiAssistantRepository(client: apiClient);
+  final studRepository = DefaultApiStudRepository(client: apiClient);
   runApp(
     ScolvPetApp(
       state: state,
@@ -89,6 +91,7 @@ Future<void> main() async {
       publicSiteRepository: publicSiteRepository,
       miniprogramRepository: miniprogramRepository,
       assistantRepository: assistantRepository,
+      studRepository: studRepository,
       todayWidgetPublisher: todayWidgetPublisher,
     ),
   );
@@ -114,6 +117,7 @@ class ScolvPetApp extends StatefulWidget {
     required this.publicSiteRepository,
     required this.miniprogramRepository,
     required this.assistantRepository,
+    required this.studRepository,
     this.todayWidgetPublisher,
   });
 
@@ -134,6 +138,7 @@ class ScolvPetApp extends StatefulWidget {
   final PublicSiteRepository publicSiteRepository;
   final MiniprogramRepository miniprogramRepository;
   final AssistantRepository assistantRepository;
+  final StudRepository studRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -199,6 +204,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
               publicSiteRepository: widget.publicSiteRepository,
               miniprogramRepository: widget.miniprogramRepository,
               assistantRepository: widget.assistantRepository,
+              studRepository: widget.studRepository,
               todayWidgetPublisher: widget.todayWidgetPublisher,
             ),
           },

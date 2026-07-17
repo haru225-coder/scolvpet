@@ -103,6 +103,7 @@ func (s *Server) Handler() http.Handler {
 	s.registerP2PublicSiteRoutes(mux)
 	s.registerP2MiniprogramRoutes(mux)
 	s.registerP2AssistantRoutes(mux)
+	s.registerP2StudRoutes(mux)
 	return requestIDMiddleware(s.Logger, mux)
 }
 

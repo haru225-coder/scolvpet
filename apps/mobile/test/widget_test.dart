@@ -23,6 +23,7 @@ import 'package:scolvpet_mobile/features/miniprogram/miniprogram.dart';
 import 'package:scolvpet_mobile/features/paywall/paywall.dart';
 import 'package:scolvpet_mobile/features/public_site/public_site.dart';
 import 'package:scolvpet_mobile/features/push/push.dart';
+import 'package:scolvpet_mobile/features/stud/stud.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
 import 'package:scolvpet_mobile/ui/screens.dart';
 import 'package:scolvpet_mobile/main.dart';
@@ -88,6 +89,7 @@ void main() {
           publicSiteRepository: MemoryPublicSiteRepository(),
           miniprogramRepository: MemoryMiniprogramRepository(),
           assistantRepository: MemoryAssistantRepository(),
+          studRepository: MemoryStudRepository(),
           todayWidgetPublisher: todayWidgetPublisher,
         ),
       );
@@ -138,6 +140,7 @@ void main() {
         const Key('mine-open-public-site'),
         const Key('mine-open-miniprogram'),
         const Key('mine-open-assistant'),
+        const Key('mine-open-stud'),
       ]) {
         await tester.scrollUntilVisible(find.byKey(key), 100);
         expect(find.byKey(key), findsOneWidget);

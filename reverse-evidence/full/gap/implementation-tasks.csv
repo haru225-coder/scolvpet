@@ -19,4 +19,4 @@ T-P2-01,P2,public_site,api+db+flutter,"/public-site,/public/sites/{slug}",S,docs
 T-P2-02,P2,miniprogram,api+db+flutter,"/miniprogram/*",S,docs/13+impl,PARTIAL,sandbox audit chain draft→submit→audit→publish→rollback; real WeChat API deferred
 T-P2-03,P2,ai_readonly,api+flutter,"/assistant/*",S,docs/13+impl,PARTIAL,rules Q&A on structured metrics; optional xAI polish via XAI_API_KEY
 T-P2-04,P2,ble_scale,mobile,,S,docs/13,DEFER,
-T-P2-05,P2,cross_cattery_stud,api,,S,docs/13,DEFER,
+T-P2-05,P2,cross_cattery_stud,api+db+flutter,"/stud/*",S,docs/13+impl,PARTIAL,listings market+deal ledger; full multi-owner messaging deferred

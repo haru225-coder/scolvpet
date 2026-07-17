@@ -21,6 +21,7 @@ import '../features/pedigree/pedigree.dart';
 import '../features/public_site/public_site.dart';
 import '../features/push/push.dart';
 import '../features/shell/home_overview.dart';
+import '../features/stud/stud.dart';
 import '../features/tasks/tasks.dart';
 import '../features/weight/weight_batch_page.dart';
 
@@ -297,6 +298,7 @@ class HomeShell extends StatefulWidget {
     required this.publicSiteRepository,
     required this.miniprogramRepository,
     required this.assistantRepository,
+    required this.studRepository,
     this.todayWidgetPublisher,
   });
 
@@ -317,6 +319,7 @@ class HomeShell extends StatefulWidget {
   final PublicSiteRepository publicSiteRepository;
   final MiniprogramRepository miniprogramRepository;
   final AssistantRepository assistantRepository;
+  final StudRepository studRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -733,6 +736,17 @@ class _HomeShellState extends State<HomeShell> {
             ),
           );
         },
+        onOpenStud: () {
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => StudHubPage(
+                controller: StudController(
+                  repository: widget.studRepository,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     ];
     return Scaffold(
@@ -832,6 +846,7 @@ class _MinePage extends StatelessWidget {
     this.onOpenPublicSite,
     this.onOpenMiniprogram,
     this.onOpenAssistant,
+    this.onOpenStud,
   });
 
   final AppState state;
@@ -847,6 +862,7 @@ class _MinePage extends StatelessWidget {
   final VoidCallback? onOpenPublicSite;
   final VoidCallback? onOpenMiniprogram;
   final VoidCallback? onOpenAssistant;
+  final VoidCallback? onOpenStud;
 
   @override
   Widget build(BuildContext context) {
@@ -1023,6 +1039,19 @@ class _MinePage extends StatelessWidget {
               subtitle: const Text('结构化查询 · 不改数据'),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenAssistant,
+            ),
+          ),
+        ],
+        if (onOpenStud != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              key: const Key('mine-open-stud'),
+              leading: const Icon(Icons.swap_horiz_outlined),
+              title: const Text('跨舍借配'),
+              subtitle: const Text('种公挂牌 · 履约台账'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenStud,
             ),
           ),
         ],
