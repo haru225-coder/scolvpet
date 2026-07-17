@@ -14,6 +14,7 @@ import '../features/crm/crm.dart';
 import '../features/genetic/genetic.dart';
 import '../features/home_widget/home_widget.dart';
 import '../features/members/members.dart';
+import '../features/paywall/paywall.dart';
 import '../features/pedigree/pedigree.dart';
 import '../features/push/push.dart';
 import '../features/shell/home_overview.dart';
@@ -289,6 +290,7 @@ class HomeShell extends StatefulWidget {
     required this.accountingRepository,
     required this.geneticRepository,
     required this.pushRepository,
+    required this.paywallRepository,
     this.todayWidgetPublisher,
   });
 
@@ -305,6 +307,7 @@ class HomeShell extends StatefulWidget {
   final AccountingRepository accountingRepository;
   final GeneticRepository geneticRepository;
   final PushRepository pushRepository;
+  final PaywallRepository paywallRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -677,6 +680,17 @@ class _HomeShellState extends State<HomeShell> {
             ),
           );
         },
+        onOpenPaywall: () {
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => PaywallPage(
+                controller: PaywallController(
+                  repository: widget.paywallRepository,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     ];
     return Scaffold(
@@ -772,6 +786,7 @@ class _MinePage extends StatelessWidget {
     this.onOpenTodayWidget,
     this.onOpenGenetic,
     this.onOpenPush,
+    this.onOpenPaywall,
   });
 
   final AppState state;
@@ -783,6 +798,7 @@ class _MinePage extends StatelessWidget {
   final VoidCallback? onOpenTodayWidget;
   final VoidCallback? onOpenGenetic;
   final VoidCallback? onOpenPush;
+  final VoidCallback? onOpenPaywall;
 
   @override
   Widget build(BuildContext context) {
@@ -907,6 +923,19 @@ class _MinePage extends StatelessWidget {
               subtitle: const Text('设备令牌 · 测试推送'),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenPush,
+            ),
+          ),
+        ],
+        if (onOpenPaywall != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              key: const Key('mine-open-paywall'),
+              leading: const Icon(Icons.workspace_premium_outlined),
+              title: const Text('套餐与权益'),
+              subtitle: const Text('用量上限 · 沙箱升级'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenPaywall,
             ),
           ),
         ],

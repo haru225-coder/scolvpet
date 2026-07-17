@@ -210,9 +210,26 @@ func (s *Service) CurrentUsage(ctx context.Context, ownerID uuid.UUID) (Usage, e
 	if err != nil {
 		return Usage{}, err
 	}
+	planCode := "free"
+	enforcement := "soft"
+	// Prefer live plan.pro entitlement when present (T-P1-08).
+	if s.pool != nil {
+		var pro bool
+		err := s.pool.QueryRow(ctx, `
+			SELECT COALESCE(boolean_value, false)
+			FROM entitlement
+			WHERE owner_id=$1 AND entitlement_code='plan.pro' AND revoked_at IS NULL
+			  AND effective_at <= now()
+			  AND (expires_at IS NULL OR expires_at > now())
+			LIMIT 1
+		`, ownerID).Scan(&pro)
+		if err == nil && pro {
+			planCode = "pro"
+		}
+	}
 	return Usage{
 		Metrics: metrics, MeteringStatus: "current",
-		Entitlement: Entitlement{PlanCode: "free", Enforcement: "none", EffectiveAt: time.Now().UTC()},
+		Entitlement: Entitlement{PlanCode: planCode, Enforcement: enforcement, EffectiveAt: time.Now().UTC()},
 	}, nil
 }
 

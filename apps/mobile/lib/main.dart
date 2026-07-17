@@ -16,6 +16,7 @@ import 'features/crm/crm.dart';
 import 'features/genetic/genetic.dart';
 import 'features/home_widget/home_widget.dart';
 import 'features/members/members.dart';
+import 'features/paywall/paywall.dart';
 import 'features/pedigree/pedigree.dart';
 import 'features/push/push.dart';
 import 'features/tasks/tasks.dart';
@@ -62,6 +63,7 @@ Future<void> main() async {
   final accountingRepository = DefaultApiAccountingRepository(client: apiClient);
   final geneticRepository = DefaultApiGeneticRepository(client: apiClient);
   final pushRepository = DefaultApiPushRepository(client: apiClient);
+  final paywallRepository = DefaultApiPaywallRepository(client: apiClient);
   runApp(
     ScolvPetApp(
       state: state,
@@ -77,6 +79,7 @@ Future<void> main() async {
       accountingRepository: accountingRepository,
       geneticRepository: geneticRepository,
       pushRepository: pushRepository,
+      paywallRepository: paywallRepository,
       todayWidgetPublisher: todayWidgetPublisher,
     ),
   );
@@ -98,6 +101,7 @@ class ScolvPetApp extends StatefulWidget {
     required this.accountingRepository,
     required this.geneticRepository,
     required this.pushRepository,
+    required this.paywallRepository,
     this.todayWidgetPublisher,
   });
 
@@ -114,6 +118,7 @@ class ScolvPetApp extends StatefulWidget {
   final AccountingRepository accountingRepository;
   final GeneticRepository geneticRepository;
   final PushRepository pushRepository;
+  final PaywallRepository paywallRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -175,6 +180,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
               accountingRepository: widget.accountingRepository,
               geneticRepository: widget.geneticRepository,
               pushRepository: widget.pushRepository,
+              paywallRepository: widget.paywallRepository,
               todayWidgetPublisher: widget.todayWidgetPublisher,
             ),
           },
