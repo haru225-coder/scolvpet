@@ -4,6 +4,7 @@ import '../../core/app_state.dart';
 import '../i2/i2.dart';
 import '../tasks/tasks.dart';
 import '../weight/weight_alerts.dart';
+import 'today_care_queue.dart';
 
 /// Pure aggregation over the I2 domain snapshot for the home dashboard.
 class HomeOverviewMetrics {
@@ -188,8 +189,17 @@ class HomeOverviewPage extends StatelessWidget {
             ? (load.message ?? '加载失败')
             : null;
 
+        final careQueue = buildTodayCareQueue(
+          tasks: taskController?.listState.data ?? const <CareTaskItem>[],
+          metrics: metrics,
+          snapshot: snapshot,
+        );
+
         return RefreshIndicator(
-          onRefresh: () => controller.retry(),
+          onRefresh: () async {
+            await controller.retry();
+            await taskController?.refresh();
+          },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
@@ -234,6 +244,15 @@ class HomeOverviewPage extends StatelessWidget {
                 _StatGrid(
                   metrics: metrics,
                   openTaskCount: taskController?.openCount ?? 0,
+                ),
+                const SizedBox(height: 20),
+                _TodayCareQueueSection(
+                  items: careQueue,
+                  taskController: taskController,
+                  onOpenTasks: onOpenTasks,
+                  onOpenBatchWeight: onOpenBatchWeight,
+                  onOpenEnclosures: onOpenEnclosures,
+                  onOpenLitters: onOpenLitters,
                 ),
                 const SizedBox(height: 20),
                 _AttentionSection(
@@ -397,6 +416,138 @@ class _StatItem {
   final String label;
   final String value;
   final IconData icon;
+}
+
+class _TodayCareQueueSection extends StatelessWidget {
+  const _TodayCareQueueSection({
+    required this.items,
+    required this.onOpenLitters,
+    required this.onOpenEnclosures,
+    this.taskController,
+    this.onOpenTasks,
+    this.onOpenBatchWeight,
+  });
+
+  final List<TodayCareItem> items;
+  final TaskController? taskController;
+  final VoidCallback onOpenLitters;
+  final VoidCallback onOpenEnclosures;
+  final VoidCallback? onOpenTasks;
+  final VoidCallback? onOpenBatchWeight;
+
+  Future<void> _complete(BuildContext context, CareTaskItem task) async {
+    final tc = taskController;
+    if (tc == null) return;
+    final ok = await tc.complete(task);
+    if (!context.mounted) return;
+    final message = tc.lastMessage;
+    if (message != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
+    if (ok) {
+      // AnimatedBuilder on taskController will rebuild.
+    }
+  }
+
+  VoidCallback? _tapFor(TodayCareItem item) {
+    switch (item.kind) {
+      case TodayCareKind.overdueTask:
+      case TodayCareKind.dueTodayTask:
+        return onOpenTasks;
+      case TodayCareKind.weightAlert:
+        return onOpenBatchWeight ?? onOpenTasks;
+      case TodayCareKind.dirtyEnclosure:
+        return onOpenEnclosures;
+      case TodayCareKind.pendingWean:
+        return onOpenLitters;
+    }
+  }
+
+  IconData _iconFor(TodayCareKind kind) => switch (kind) {
+    TodayCareKind.overdueTask => Icons.warning_amber_rounded,
+    TodayCareKind.dueTodayTask => Icons.today_outlined,
+    TodayCareKind.weightAlert => Icons.monitor_weight_outlined,
+    TodayCareKind.dirtyEnclosure => Icons.cleaning_services_outlined,
+    TodayCareKind.pendingWean => Icons.child_care_outlined,
+  };
+
+  Color _colorFor(TodayCareKind kind) => switch (kind) {
+    TodayCareKind.overdueTask => const Color(0xffb6534a),
+    TodayCareKind.dueTodayTask => const Color(0xffc77852),
+    TodayCareKind.weightAlert => const Color(0xffb6534a),
+    TodayCareKind.dirtyEnclosure => const Color(0xff8a6d3b),
+    TodayCareKind.pendingWean => const Color(0xff5b8a72),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(
+              '今日护理',
+              key: Key('home-today-care-title'),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xff1f2928),
+              ),
+            ),
+            const Spacer(),
+            if (onOpenTasks != null)
+              TextButton(
+                key: const Key('home-today-care-all-tasks'),
+                onPressed: onOpenTasks,
+                child: const Text('全部任务'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (items.isEmpty)
+          const Card(
+            key: Key('home-today-care-empty'),
+            child: ListTile(
+              leading: Icon(Icons.spa_outlined, color: Color(0xff5b8a72)),
+              title: Text('今日护理队列为空'),
+              subtitle: Text('没有逾期任务、体重异常或待清洁笼盒'),
+            ),
+          )
+        else
+          for (final item in items)
+            Card(
+              key: Key('home-care-item-${item.id}'),
+              margin: const EdgeInsets.only(bottom: 8),
+              color: item.kind == TodayCareKind.overdueTask ||
+                      item.kind == TodayCareKind.weightAlert
+                  ? const Color(0xfffff5f3)
+                  : null,
+              child: ListTile(
+                leading: Icon(
+                  _iconFor(item.kind),
+                  color: _colorFor(item.kind),
+                ),
+                title: Text(
+                  item.title,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: Text(item.subtitle),
+                trailing: item.canComplete && taskController != null
+                    ? TextButton(
+                        key: Key('home-care-complete-${item.task!.id}'),
+                        onPressed: () => _complete(context, item.task!),
+                        child: const Text('完成'),
+                      )
+                    : const Icon(Icons.chevron_right),
+                onTap: _tapFor(item),
+              ),
+            ),
+      ],
+    );
+  }
 }
 
 class _AttentionSection extends StatelessWidget {
