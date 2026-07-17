@@ -7,6 +7,7 @@ import '../features/i6/data_center.dart';
 import '../features/breeding/breeding.dart';
 import '../features/litter/litter.dart';
 import '../features/shell/home_overview.dart';
+import '../features/tasks/tasks.dart';
 import '../features/weight/weight_batch_page.dart';
 
 const _accent = Color(0xffc77852);
@@ -269,12 +270,14 @@ class HomeShell extends StatefulWidget {
     required this.i2Controller,
     required this.breedingController,
     required this.litterBoardController,
+    required this.taskController,
   });
 
   final AppState state;
   final I2Controller i2Controller;
   final BreedingController breedingController;
   final LitterBoardController litterBoardController;
+  final TaskController taskController;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -288,6 +291,9 @@ class _HomeShellState extends State<HomeShell> {
     super.initState();
     widget.i2Controller.restore();
     widget.breedingController.refresh();
+    widget.taskController.initializeNotifications().then((_) {
+      return widget.taskController.refresh();
+    });
   }
 
   String? get _speciesRuleVersionId =>
@@ -456,6 +462,18 @@ class _HomeShellState extends State<HomeShell> {
     );
   }
 
+  void _openTasks() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => TaskListPage(
+          controller: widget.taskController,
+          canWrite: !widget.state.offline && widget.i2Controller.canWrite,
+          offline: widget.state.offline || widget.i2Controller.offline,
+        ),
+      ),
+    );
+  }
+
   void _goTab(int value) => setState(() => index = value);
 
   @override
@@ -464,11 +482,13 @@ class _HomeShellState extends State<HomeShell> {
       HomeOverviewPage(
         state: widget.state,
         controller: widget.i2Controller,
+        taskController: widget.taskController,
         onOpenHamsters: () => _goTab(1),
         onOpenEnclosures: () => _goTab(2),
         onOpenBreeding: () => _goTab(3),
         onOpenLitters: _openLitters,
         onOpenDataCenter: _openDataCenter,
+        onOpenTasks: _openTasks,
         onCreateHamster: () => _openHamsterEditor(),
         onOpenBatchWeight: _openBatchWeight,
       ),

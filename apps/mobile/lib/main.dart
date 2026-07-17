@@ -9,6 +9,7 @@ import 'data/i2_repository.dart';
 import 'features/breeding/breeding.dart';
 import 'features/i2/i2.dart';
 import 'features/litter/litter.dart';
+import 'features/tasks/tasks.dart';
 import 'ui/screens.dart';
 
 Future<void> main() async {
@@ -36,12 +37,17 @@ Future<void> main() async {
   final litterBoardController = LitterBoardController(
     repository: DefaultApiLitterBoardRepository(client: apiClient),
   );
+  final taskController = TaskController(
+    repository: DefaultApiTaskRepository(client: apiClient),
+    notifications: PluginLocalNotificationScheduler(),
+  );
   runApp(
     ScolvPetApp(
       state: state,
       i2Controller: i2Controller,
       breedingController: breedingController,
       litterBoardController: litterBoardController,
+      taskController: taskController,
     ),
   );
 }
@@ -53,12 +59,14 @@ class ScolvPetApp extends StatefulWidget {
     required this.i2Controller,
     required this.breedingController,
     required this.litterBoardController,
+    required this.taskController,
   });
 
   final AppState state;
   final I2Controller i2Controller;
   final BreedingController breedingController;
   final LitterBoardController litterBoardController;
+  final TaskController taskController;
 
   @override
   State<ScolvPetApp> createState() => _ScolvPetAppState();
@@ -73,6 +81,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
 
   @override
   void dispose() {
+    widget.taskController.dispose();
     widget.litterBoardController.dispose();
     widget.breedingController.dispose();
     widget.i2Controller.dispose();
@@ -109,6 +118,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
               i2Controller: widget.i2Controller,
               breedingController: widget.breedingController,
               litterBoardController: widget.litterBoardController,
+              taskController: widget.taskController,
             ),
           },
         );

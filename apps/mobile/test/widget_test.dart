@@ -10,6 +10,7 @@ import 'package:scolvpet_mobile/data/i2_repository.dart';
 import 'package:scolvpet_mobile/features/breeding/breeding.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/litter/litter.dart';
+import 'package:scolvpet_mobile/features/tasks/tasks.dart';
 import 'package:scolvpet_mobile/ui/screens.dart';
 import 'package:scolvpet_mobile/main.dart';
 
@@ -47,6 +48,10 @@ void main() {
       final litterBoardController = LitterBoardController(
         repository: MemoryLitterBoardRepository(),
       );
+      final taskController = TaskController(
+        repository: MemoryTaskRepository(),
+        notifications: MemoryLocalNotificationScheduler(),
+      );
 
       await tester.pumpWidget(
         ScolvPetApp(
@@ -54,6 +59,7 @@ void main() {
           i2Controller: i2Controller,
           breedingController: breedingController,
           litterBoardController: litterBoardController,
+          taskController: taskController,
         ),
       );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);

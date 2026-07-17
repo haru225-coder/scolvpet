@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
 import '../i2/i2.dart';
+import '../tasks/tasks.dart';
 import '../weight/weight_alerts.dart';
 
 /// Pure aggregation over the I2 domain snapshot for the home dashboard.
@@ -131,23 +132,31 @@ class HomeOverviewPage extends StatelessWidget {
     required this.onOpenLitters,
     required this.onOpenDataCenter,
     required this.onCreateHamster,
+    this.taskController,
+    this.onOpenTasks,
     this.onOpenBatchWeight,
   });
 
   final AppState state;
   final I2Controller controller;
+  final TaskController? taskController;
   final VoidCallback onOpenHamsters;
   final VoidCallback onOpenEnclosures;
   final VoidCallback onOpenBreeding;
   final VoidCallback onOpenLitters;
   final VoidCallback onOpenDataCenter;
   final VoidCallback onCreateHamster;
+  final VoidCallback? onOpenTasks;
   final VoidCallback? onOpenBatchWeight;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([state, controller]),
+      animation: Listenable.merge([
+        state,
+        controller,
+        if (taskController != null) taskController!,
+      ]),
       builder: (context, _) {
         final load = controller.snapshotState;
         // empty/error states may leave data == null; still render a zeroed dashboard.
@@ -221,11 +230,14 @@ class HomeOverviewPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 _AttentionSection(
                   metrics: metrics,
+                  openTaskCount: taskController?.openCount ?? 0,
+                  overdueTaskCount: taskController?.overdueCount ?? 0,
                   onOpenLitters: onOpenLitters,
                   onOpenEnclosures: onOpenEnclosures,
                   onOpenBreeding: onOpenBreeding,
                   onOpenHamsters: onOpenHamsters,
                   onOpenBatchWeight: onOpenBatchWeight,
+                  onOpenTasks: onOpenTasks,
                 ),
                 const SizedBox(height: 20),
                 const Text(
@@ -283,6 +295,13 @@ class HomeOverviewPage extends StatelessWidget {
                         icon: Icons.monitor_weight_outlined,
                         label: '批量称重',
                         onTap: onOpenBatchWeight!,
+                      ),
+                    if (onOpenTasks != null)
+                      _QuickChip(
+                        buttonKey: const Key('home-quick-tasks'),
+                        icon: Icons.task_alt,
+                        label: '任务',
+                        onTap: onOpenTasks!,
                       ),
                   ],
                 ),
@@ -370,19 +389,37 @@ class _AttentionSection extends StatelessWidget {
     required this.onOpenEnclosures,
     required this.onOpenBreeding,
     required this.onOpenHamsters,
+    this.openTaskCount = 0,
+    this.overdueTaskCount = 0,
     this.onOpenBatchWeight,
+    this.onOpenTasks,
   });
 
   final HomeOverviewMetrics metrics;
+  final int openTaskCount;
+  final int overdueTaskCount;
   final VoidCallback onOpenLitters;
   final VoidCallback onOpenEnclosures;
   final VoidCallback onOpenBreeding;
   final VoidCallback onOpenHamsters;
   final VoidCallback? onOpenBatchWeight;
+  final VoidCallback? onOpenTasks;
 
   @override
   Widget build(BuildContext context) {
     final rows = <Widget>[];
+    if (openTaskCount > 0) {
+      rows.add(
+        _AttentionTile(
+          title: '待办任务',
+          subtitle: overdueTaskCount > 0
+              ? '$openTaskCount 条待办 · $overdueTaskCount 条逾期'
+              : '$openTaskCount 条待办',
+          icon: Icons.task_alt,
+          onTap: onOpenTasks ?? onOpenHamsters,
+        ),
+      );
+    }
     if (metrics.pendingWeanOrSexCount > 0) {
       rows.add(
         _AttentionTile(
