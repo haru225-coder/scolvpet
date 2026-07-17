@@ -14,6 +14,7 @@ import '../features/crm/crm.dart';
 import '../features/genetic/genetic.dart';
 import '../features/home_widget/home_widget.dart';
 import '../features/members/members.dart';
+import '../features/miniprogram/miniprogram.dart';
 import '../features/paywall/paywall.dart';
 import '../features/pedigree/pedigree.dart';
 import '../features/public_site/public_site.dart';
@@ -293,6 +294,7 @@ class HomeShell extends StatefulWidget {
     required this.pushRepository,
     required this.paywallRepository,
     required this.publicSiteRepository,
+    required this.miniprogramRepository,
     this.todayWidgetPublisher,
   });
 
@@ -311,6 +313,7 @@ class HomeShell extends StatefulWidget {
   final PushRepository pushRepository;
   final PaywallRepository paywallRepository;
   final PublicSiteRepository publicSiteRepository;
+  final MiniprogramRepository miniprogramRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -705,6 +708,17 @@ class _HomeShellState extends State<HomeShell> {
             ),
           );
         },
+        onOpenMiniprogram: () {
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => MiniprogramHubPage(
+                controller: MiniprogramController(
+                  repository: widget.miniprogramRepository,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     ];
     return Scaffold(
@@ -802,6 +816,7 @@ class _MinePage extends StatelessWidget {
     this.onOpenPush,
     this.onOpenPaywall,
     this.onOpenPublicSite,
+    this.onOpenMiniprogram,
   });
 
   final AppState state;
@@ -815,6 +830,7 @@ class _MinePage extends StatelessWidget {
   final VoidCallback? onOpenPush;
   final VoidCallback? onOpenPaywall;
   final VoidCallback? onOpenPublicSite;
+  final VoidCallback? onOpenMiniprogram;
 
   @override
   Widget build(BuildContext context) {
@@ -965,6 +981,19 @@ class _MinePage extends StatelessWidget {
               subtitle: const Text('轻量展示 · 发布链接'),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenPublicSite,
+            ),
+          ),
+        ],
+        if (onOpenMiniprogram != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              key: const Key('mine-open-miniprogram'),
+              leading: const Icon(Icons.smartphone_outlined),
+              title: const Text('小程序轻发布'),
+              subtitle: const Text('审核链 · 版本发布'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenMiniprogram,
             ),
           ),
         ],

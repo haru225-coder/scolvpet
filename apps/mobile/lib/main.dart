@@ -16,6 +16,7 @@ import 'features/crm/crm.dart';
 import 'features/genetic/genetic.dart';
 import 'features/home_widget/home_widget.dart';
 import 'features/members/members.dart';
+import 'features/miniprogram/miniprogram.dart';
 import 'features/paywall/paywall.dart';
 import 'features/pedigree/pedigree.dart';
 import 'features/public_site/public_site.dart';
@@ -66,6 +67,7 @@ Future<void> main() async {
   final pushRepository = DefaultApiPushRepository(client: apiClient);
   final paywallRepository = DefaultApiPaywallRepository(client: apiClient);
   final publicSiteRepository = DefaultApiPublicSiteRepository(client: apiClient);
+  final miniprogramRepository = DefaultApiMiniprogramRepository(client: apiClient);
   runApp(
     ScolvPetApp(
       state: state,
@@ -83,6 +85,7 @@ Future<void> main() async {
       pushRepository: pushRepository,
       paywallRepository: paywallRepository,
       publicSiteRepository: publicSiteRepository,
+      miniprogramRepository: miniprogramRepository,
       todayWidgetPublisher: todayWidgetPublisher,
     ),
   );
@@ -106,6 +109,7 @@ class ScolvPetApp extends StatefulWidget {
     required this.pushRepository,
     required this.paywallRepository,
     required this.publicSiteRepository,
+    required this.miniprogramRepository,
     this.todayWidgetPublisher,
   });
 
@@ -124,6 +128,7 @@ class ScolvPetApp extends StatefulWidget {
   final PushRepository pushRepository;
   final PaywallRepository paywallRepository;
   final PublicSiteRepository publicSiteRepository;
+  final MiniprogramRepository miniprogramRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -187,6 +192,7 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
               pushRepository: widget.pushRepository,
               paywallRepository: widget.paywallRepository,
               publicSiteRepository: widget.publicSiteRepository,
+              miniprogramRepository: widget.miniprogramRepository,
               todayWidgetPublisher: widget.todayWidgetPublisher,
             ),
           },

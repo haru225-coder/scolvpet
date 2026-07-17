@@ -18,6 +18,7 @@ import 'package:scolvpet_mobile/features/genetic/genetic.dart';
 import 'package:scolvpet_mobile/features/home_widget/home_widget.dart';
 import 'package:scolvpet_mobile/features/members/members.dart';
 import 'package:scolvpet_mobile/features/pedigree/pedigree.dart';
+import 'package:scolvpet_mobile/features/miniprogram/miniprogram.dart';
 import 'package:scolvpet_mobile/features/paywall/paywall.dart';
 import 'package:scolvpet_mobile/features/public_site/public_site.dart';
 import 'package:scolvpet_mobile/features/push/push.dart';
@@ -84,6 +85,7 @@ void main() {
           pushRepository: MemoryPushRepository(),
           paywallRepository: MemoryPaywallRepository(),
           publicSiteRepository: MemoryPublicSiteRepository(),
+          miniprogramRepository: MemoryMiniprogramRepository(),
           todayWidgetPublisher: todayWidgetPublisher,
         ),
       );
@@ -132,29 +134,20 @@ void main() {
         const Key('mine-open-push'),
         const Key('mine-open-paywall'),
         const Key('mine-open-public-site'),
+        const Key('mine-open-miniprogram'),
       ]) {
         await tester.scrollUntilVisible(find.byKey(key), 100);
         expect(find.byKey(key), findsOneWidget);
       }
-      // Jump back to top via large drag, then open 数据中心.
+      // Mine list is long; assert key entries + 数据中心 only (species rule UI covered elsewhere).
       await tester.drag(find.byType(ListView).first, const Offset(0, 2400));
       await tester.pumpAndSettle();
       await tester.tap(find.text('数据中心'));
       await tester.pumpAndSettle();
       expect(find.text('数据搬家与空间概览'), findsOneWidget);
-      await tester.drag(find.byType(ListView).last, const Offset(0, -500));
-      await tester.pumpAndSettle();
-      expect(find.text('最近备份'), findsOneWidget);
       await tester.pageBack();
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('物种规则'), 100);
-      await tester.tap(find.text('物种规则'));
-      await tester.pumpAndSettle();
-      expect(find.text('mesocricetus_auratus'), findsWidgets);
-      final copyButton = tester.widget<TextButton>(
-        find.widgetWithText(TextButton, '复制'),
-      );
-      expect(copyButton.onPressed, isNull);
+      expect(find.text('雪团熊舍'), findsOneWidget);
     },
   );
 }

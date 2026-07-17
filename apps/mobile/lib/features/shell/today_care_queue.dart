@@ -54,7 +54,9 @@ List<TodayCareItem> buildTodayCareQueue({
   final items = <TodayCareItem>[];
 
   for (final task in tasks.where((t) => t.isOpen)) {
-    if (task.isOverdue) {
+    // Use [clock] so tests and queue build share the same reference time.
+    final overdue = task.scheduledAt.toUtc().isBefore(clock.toUtc());
+    if (overdue) {
       items.add(
         TodayCareItem(
           id: 'task-overdue-${task.id}',
