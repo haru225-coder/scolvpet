@@ -374,6 +374,25 @@ class I2MoveDraft {
   final String? reason;
 }
 
+/// Map stay purpose → enclosure state after move (T-P0-08).
+String enclosureStateForPurpose(String purpose, {required int occupantCount}) {
+  switch (purpose) {
+    case 'isolation':
+    case 'quarantine':
+      return 'isolation';
+    case 'pairing_temp':
+      return 'pairing_temp';
+    case 'gestation':
+      return 'gestation';
+    case 'dam_with_litter':
+      return 'dam_with_litter';
+    default:
+      if (occupantCount <= 0) return 'vacant';
+      if (occupantCount == 1) return 'occupied_single';
+      return 'occupied';
+  }
+}
+
 class I2WeightRecord {
   const I2WeightRecord({
     required this.id,

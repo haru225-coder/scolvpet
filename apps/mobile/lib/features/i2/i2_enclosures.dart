@@ -56,111 +56,66 @@ class EnclosureGridPage extends StatelessWidget {
                 }
                 return ListView(
                   padding: const EdgeInsets.all(16),
-                  children: racks.entries
-                      .map(
-                        (rack) => Card(
-                          child: ExpansionTile(
-                            initiallyExpanded: true,
-                            title: Text('笼架 ${rack.key}'),
-                            children: rack.value.entries
-                                .map(
-                                  (level) => Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      12,
-                                      0,
-                                      12,
-                                      12,
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '层位 ${level.key}',
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.labelLarge,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        GridView.builder(
-                                          shrinkWrap: true,
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          gridDelegate:
-                                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                                crossAxisCount: 2,
-                                                crossAxisSpacing: 8,
-                                                mainAxisSpacing: 8,
-                                                childAspectRatio: 1.45,
-                                              ),
-                                          itemCount: level.value.length,
-                                          itemBuilder: (context, index) {
-                                            final enclosure =
-                                                level.value[index];
-                                            return InkWell(
-                                              onTap: onOpenDetail == null
-                                                  ? null
-                                                  : () => onOpenDetail!(
-                                                      enclosure,
-                                                    ),
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              child: Ink(
-                                                decoration: BoxDecoration(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .surfaceContainerHighest,
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                                padding: const EdgeInsets.all(
-                                                  12,
-                                                ),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      enclosure.code,
-                                                      style: Theme.of(
-                                                        context,
-                                                      ).textTheme.titleMedium,
-                                                    ),
-                                                    const Spacer(),
-                                                    Text(
-                                                      i2EnclosureStateLabel(
-                                                        enclosure.state,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      enclosure.cleanlinessState ==
-                                                              'clean'
-                                                          ? '清洁正常'
-                                                          : '待清洁',
-                                                      style: TextStyle(
-                                                        color:
-                                                            enclosure
-                                                                    .cleanlinessState ==
-                                                                'clean'
-                                                            ? Colors.green
-                                                            : Colors.orange,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ],
-                                    ),
+                  children: [
+                    const _EnclosureLegend(),
+                    const SizedBox(height: 12),
+                    ...racks.entries.map(
+                      (rack) => Card(
+                        child: ExpansionTile(
+                          initiallyExpanded: true,
+                          title: Text('笼架 ${rack.key}'),
+                          children: rack.value.entries
+                              .map(
+                                (level) => Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    12,
+                                    0,
+                                    12,
+                                    12,
                                   ),
-                                )
-                                .toList(),
-                          ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '层位 ${level.key}',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.labelLarge,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      GridView.builder(
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        gridDelegate:
+                                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: 2,
+                                              crossAxisSpacing: 8,
+                                              mainAxisSpacing: 8,
+                                              childAspectRatio: 1.35,
+                                            ),
+                                        itemCount: level.value.length,
+                                        itemBuilder: (context, index) {
+                                          final enclosure = level.value[index];
+                                          return _EnclosureBoardTile(
+                                            enclosure: enclosure,
+                                            onTap: onOpenDetail == null
+                                                ? null
+                                                : () =>
+                                                      onOpenDetail!(enclosure),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
-                      )
-                      .toList(),
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -169,6 +124,121 @@ class EnclosureGridPage extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _EnclosureLegend extends StatelessWidget {
+  const _EnclosureLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    const tones = EnclosureBoardTone.values;
+    return Wrap(
+      spacing: 10,
+      runSpacing: 6,
+      children: [
+        for (final tone in tones)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: enclosureBoardColor(tone),
+                  border: Border.all(color: enclosureBoardAccent(tone)),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                enclosureBoardToneLabel(tone),
+                style: const TextStyle(fontSize: 11, color: Color(0xff6c7774)),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+class _EnclosureBoardTile extends StatelessWidget {
+  const _EnclosureBoardTile({required this.enclosure, this.onTap});
+
+  final I2Enclosure enclosure;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tone = enclosureBoardTone(enclosure);
+    final accent = enclosureBoardAccent(tone);
+    final occupants = enclosure.currentHamsterIds.length;
+    return InkWell(
+      key: Key('enclosure-tile-${enclosure.id}'),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Ink(
+        decoration: BoxDecoration(
+          color: enclosureBoardColor(tone),
+          borderRadius: BorderRadius.circular(12),
+          border: Border(left: BorderSide(color: accent, width: 4)),
+        ),
+        padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    enclosure.code,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                Icon(
+                  switch (tone) {
+                    EnclosureBoardTone.isolation => Icons.health_and_safety,
+                    EnclosureBoardTone.dirty => Icons.cleaning_services,
+                    EnclosureBoardTone.vacant => Icons.crop_square,
+                    _ => Icons.pets,
+                  },
+                  size: 16,
+                  color: accent,
+                ),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              i2EnclosureStateLabel(enclosure.state),
+              style: TextStyle(
+                color: accent,
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+              ),
+            ),
+            Text(
+              occupants == 0 ? '无人入住' : '在住 $occupants',
+              style: const TextStyle(fontSize: 12, color: Color(0xff6c7774)),
+            ),
+            Text(
+              enclosureBoardTone(enclosure) == EnclosureBoardTone.dirty ||
+                      enclosure.cleanlinessState.toLowerCase() != 'clean'
+                  ? '待清洁'
+                  : '清洁正常',
+              style: TextStyle(
+                fontSize: 11,
+                color:
+                    enclosureBoardTone(enclosure) == EnclosureBoardTone.dirty
+                    ? const Color(0xff8a6d3b)
+                    : const Color(0xff3d7a62),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class EnclosureDetailPage extends StatefulWidget {
@@ -362,6 +432,7 @@ class _MoveHamsterPageState extends State<MoveHamsterPage> {
   final _hamsterId = TextEditingController();
   final _reason = TextEditingController();
   String _purpose = 'single';
+  String? _selectedHamsterId;
 
   @override
   void dispose() {
@@ -371,64 +442,130 @@ class _MoveHamsterPageState extends State<MoveHamsterPage> {
   }
 
   Future<void> _save() async {
-    if (_hamsterId.text.trim().isEmpty) return;
+    final hamsterId = (_selectedHamsterId ?? _hamsterId.text).trim();
+    if (hamsterId.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请选择或填写仓鼠')));
+      return;
+    }
     await widget.controller.moveHamster(
       I2MoveDraft(
         enclosureId: widget.enclosureId,
-        hamsterId: _hamsterId.text.trim(),
+        hamsterId: hamsterId,
         purpose: _purpose,
         startedAt: DateTime.now(),
         reason: _reason.text.trim().isEmpty ? null : _reason.text.trim(),
       ),
       enclosureVersion: widget.enclosureVersion,
     );
-    if (mounted && widget.controller.actionState.status == I2AsyncStatus.data) {
+    if (!mounted) return;
+    if (widget.controller.actionState.status == I2AsyncStatus.data) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('移笼 / 入住已提交')));
       widget.onSaved?.call();
+    } else if (widget.controller.actionState.message != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.controller.actionState.message!)),
+      );
     }
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('入住 / 移笼 · A05')),
-    body: ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        TextField(
-          controller: _hamsterId,
-          decoration: const InputDecoration(
-            labelText: '仓鼠 ID *',
-            border: OutlineInputBorder(),
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: widget.controller,
+      builder: (context, _) {
+        final hamsters =
+            widget.controller.snapshotState.data?.hamsters ??
+            const <I2Hamster>[];
+        final active = hamsters
+            .where((h) => h.lifecycleStatus.toLowerCase() != 'archived')
+            .toList();
+        final busy =
+            widget.controller.actionState.status == I2AsyncStatus.loading;
+        return Scaffold(
+          appBar: AppBar(title: const Text('入住 / 移笼 · A05')),
+          body: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              const Text(
+                '将仓鼠移入本笼盒并写入 enclosure stay；原笼状态会在服务端/内存仓库中同步。',
+                style: TextStyle(color: Color(0xff6c7774), fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              if (active.isNotEmpty)
+                DropdownButtonFormField<String>(
+                  key: const Key('move-hamster-picker'),
+                  initialValue: _selectedHamsterId,
+                  decoration: const InputDecoration(
+                    labelText: '选择仓鼠 *',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    for (final h in active)
+                      DropdownMenuItem(
+                        value: h.id,
+                        child: Text(
+                          '${h.displayName}'
+                          '${h.currentEnclosureId == null ? '' : ' · 现 ${h.currentEnclosureId}'}',
+                        ),
+                      ),
+                  ],
+                  onChanged: widget.controller.canWrite && !busy
+                      ? (value) => setState(() {
+                          _selectedHamsterId = value;
+                          _hamsterId.text = value ?? '';
+                        })
+                      : null,
+                )
+              else
+                TextField(
+                  key: const Key('move-hamster-id'),
+                  controller: _hamsterId,
+                  decoration: const InputDecoration(
+                    labelText: '仓鼠 ID *',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                key: const Key('move-purpose'),
+                initialValue: _purpose,
+                decoration: const InputDecoration(labelText: '用途 / 入住类型'),
+                items: const [
+                  DropdownMenuItem(value: 'single', child: Text('单住')),
+                  DropdownMenuItem(value: 'pairing_temp', child: Text('临时配对')),
+                  DropdownMenuItem(value: 'gestation', child: Text('孕期')),
+                  DropdownMenuItem(value: 'isolation', child: Text('隔离')),
+                  DropdownMenuItem(value: 'dam_with_litter', child: Text('母带崽')),
+                ],
+                onChanged: widget.controller.canWrite && !busy
+                    ? (value) => setState(() => _purpose = value!)
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _reason,
+                decoration: const InputDecoration(
+                  labelText: '原因 / 备注',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 20),
+              I2WriteButton(
+                enabled: widget.controller.canWrite && !busy,
+                label: busy ? '提交中…' : '提交移笼 / 入住',
+                icon: Icons.swap_horiz,
+                onPressed: _save,
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 12),
-        DropdownButtonFormField<String>(
-          initialValue: _purpose,
-          decoration: const InputDecoration(labelText: '用途'),
-          items: const [
-            DropdownMenuItem(value: 'single', child: Text('单住')),
-            DropdownMenuItem(value: 'pairing_temp', child: Text('临时配对')),
-            DropdownMenuItem(value: 'gestation', child: Text('孕期')),
-            DropdownMenuItem(value: 'isolation', child: Text('隔离')),
-            DropdownMenuItem(value: 'dam_with_litter', child: Text('母带崽')),
-          ],
-          onChanged: widget.controller.canWrite
-              ? (value) => setState(() => _purpose = value!)
-              : null,
-        ),
-        TextField(
-          controller: _reason,
-          decoration: const InputDecoration(labelText: '原因 / 备注'),
-        ),
-        const SizedBox(height: 20),
-        I2WriteButton(
-          enabled: widget.controller.canWrite,
-          label: '提交入住',
-          icon: Icons.login,
-          onPressed: _save,
-        ),
-      ],
-    ),
-  );
+        );
+      },
+    );
+  }
 }
 
 class EnclosureCarePage extends StatefulWidget {

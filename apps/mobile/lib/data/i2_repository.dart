@@ -720,6 +720,7 @@ class MemoryI2Repository implements I2Repository {
 
   I2Snapshot _snapshot;
   final List<I2WeightRecord> _weights;
+  final List<I2EnclosureStay> _stays = <I2EnclosureStay>[];
   final bool failReads;
   final bool failWrites;
   final List<I2ImportRowResult> _rows = <I2ImportRowResult>[];
@@ -768,11 +769,14 @@ class MemoryI2Repository implements I2Repository {
   @override
   Future<I2EnclosureDetail> getEnclosureDetail(String enclosureId) async {
     _readGuard();
+    final stays =
+        _stays.where((s) => s.enclosureId == enclosureId).toList()
+          ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
     return I2EnclosureDetail(
       enclosure: _snapshot.enclosures.firstWhere(
         (value) => value.id == enclosureId,
       ),
-      stays: const <I2EnclosureStay>[],
+      stays: stays,
     );
   }
 
@@ -852,7 +856,111 @@ class MemoryI2Repository implements I2Repository {
   Future<I2EnclosureStay> moveHamster(
     I2MoveDraft draft, {
     int enclosureVersion = 1,
-  }) async => throw const I2RepositoryException('测试 repository 未实现入住写入');
+  }) async {
+    _writeGuard();
+    final encIndex = _snapshot.enclosures.indexWhere(
+      (e) => e.id == draft.enclosureId,
+    );
+    if (encIndex < 0) throw const I2RepositoryException('笼盒不存在');
+    final target = _snapshot.enclosures[encIndex];
+    if (target.version != enclosureVersion) {
+      throw const I2RepositoryException('笼盒版本冲突，请刷新后重试');
+    }
+    final hamIndex = _snapshot.hamsters.indexWhere(
+      (h) => h.id == draft.hamsterId,
+    );
+    if (hamIndex < 0) throw const I2RepositoryException('仓鼠不存在');
+
+    // Close open stays for this hamster elsewhere.
+    final now = draft.startedAt;
+    for (var i = 0; i < _stays.length; i++) {
+      final stay = _stays[i];
+      if (stay.hamsterId == draft.hamsterId && stay.endedAt == null) {
+        _stays[i] = I2EnclosureStay(
+          id: stay.id,
+          enclosureId: stay.enclosureId,
+          hamsterId: stay.hamsterId,
+          purpose: stay.purpose,
+          startedAt: stay.startedAt,
+          endedAt: now,
+          reason: draft.reason ?? '移笼关闭',
+          version: stay.version + 1,
+        );
+      }
+    }
+
+    // Remove hamster from any previous enclosure occupant list.
+    final enclosures = _snapshot.enclosures.map((e) {
+      final ids = e.currentHamsterIds
+          .where((id) => id != draft.hamsterId)
+          .toList();
+      if (ids.length == e.currentHamsterIds.length && e.id != target.id) {
+        return e;
+      }
+      final nextIds = e.id == target.id
+          ? {...ids, draft.hamsterId}.toList()
+          : ids;
+      final changed =
+          e.id == target.id || nextIds.length != e.currentHamsterIds.length;
+      return I2Enclosure(
+        id: e.id,
+        code: e.code,
+        rackCode: e.rackCode,
+        levelCode: e.levelCode,
+        state: e.id == target.id
+            ? enclosureStateForPurpose(
+                draft.purpose,
+                occupantCount: nextIds.length,
+              )
+            : (nextIds.isEmpty ? 'vacant' : e.state),
+        cleanlinessState: e.cleanlinessState,
+        capacity: e.capacity,
+        equipment: e.equipment,
+        lastCleanedAt: e.lastCleanedAt,
+        currentHamsterIds: nextIds,
+        version: changed ? e.version + 1 : e.version,
+      );
+    }).toList();
+
+    // Ensure target has correct occupants/state (map above handles it).
+    final stay = I2EnclosureStay(
+      id: 'stay-${_sequence++}',
+      enclosureId: draft.enclosureId,
+      hamsterId: draft.hamsterId,
+      purpose: draft.purpose,
+      startedAt: now,
+      endedAt: null,
+      reason: draft.reason,
+      version: 1,
+    );
+    _stays.insert(0, stay);
+
+    final oldHamster = _snapshot.hamsters[hamIndex];
+    final hamsters = [..._snapshot.hamsters];
+    hamsters[hamIndex] = I2Hamster(
+      id: oldHamster.id,
+      internalCode: oldHamster.internalCode,
+      name: oldHamster.name,
+      sex: oldHamster.sex,
+      varietyCode: oldHamster.varietyCode,
+      lifecycleStatus: oldHamster.lifecycleStatus,
+      breedingStatus: oldHamster.breedingStatus,
+      birthDate: oldHamster.birthDate,
+      currentEnclosureId: draft.enclosureId,
+      litterId: oldHamster.litterId,
+      notes: oldHamster.notes,
+      version: oldHamster.version + 1,
+    );
+
+    _snapshot = I2Snapshot(
+      hamsters: hamsters,
+      litters: _snapshot.litters,
+      enclosures: enclosures,
+      lastSyncedAt: DateTime.now(),
+      recentWeights: _snapshot.recentWeights,
+    );
+    return stay;
+  }
 
   @override
   Future<I2EnclosureStay> closeStay(
@@ -860,7 +968,80 @@ class MemoryI2Repository implements I2Repository {
     int version, {
     DateTime? endedAt,
     String? reason,
-  }) async => throw const I2RepositoryException('测试 repository 未实现入住关闭');
+  }) async {
+    _writeGuard();
+    final index = _stays.indexWhere((s) => s.id == stayId);
+    if (index < 0) throw const I2RepositoryException('入住记录不存在');
+    final stay = _stays[index];
+    if (stay.version != version) {
+      throw const I2RepositoryException('版本冲突，请刷新后重试');
+    }
+    final closed = I2EnclosureStay(
+      id: stay.id,
+      enclosureId: stay.enclosureId,
+      hamsterId: stay.hamsterId,
+      purpose: stay.purpose,
+      startedAt: stay.startedAt,
+      endedAt: endedAt ?? DateTime.now(),
+      reason: reason ?? stay.reason,
+      version: stay.version + 1,
+    );
+    _stays[index] = closed;
+
+    // Drop occupant from enclosure if this was the active stay.
+    final encIndex = _snapshot.enclosures.indexWhere(
+      (e) => e.id == stay.enclosureId,
+    );
+    if (encIndex >= 0) {
+      final e = _snapshot.enclosures[encIndex];
+      final ids = e.currentHamsterIds
+          .where((id) => id != stay.hamsterId)
+          .toList();
+      final enclosures = [..._snapshot.enclosures];
+      enclosures[encIndex] = I2Enclosure(
+        id: e.id,
+        code: e.code,
+        rackCode: e.rackCode,
+        levelCode: e.levelCode,
+        state: ids.isEmpty ? 'vacant' : e.state,
+        cleanlinessState: e.cleanlinessState,
+        capacity: e.capacity,
+        equipment: e.equipment,
+        lastCleanedAt: e.lastCleanedAt,
+        currentHamsterIds: ids,
+        version: e.version + 1,
+      );
+      final hamIndex = _snapshot.hamsters.indexWhere(
+        (h) => h.id == stay.hamsterId,
+      );
+      final hamsters = [..._snapshot.hamsters];
+      if (hamIndex >= 0) {
+        final h = hamsters[hamIndex];
+        hamsters[hamIndex] = I2Hamster(
+          id: h.id,
+          internalCode: h.internalCode,
+          name: h.name,
+          sex: h.sex,
+          varietyCode: h.varietyCode,
+          lifecycleStatus: h.lifecycleStatus,
+          breedingStatus: h.breedingStatus,
+          birthDate: h.birthDate,
+          currentEnclosureId: null,
+          litterId: h.litterId,
+          notes: h.notes,
+          version: h.version + 1,
+        );
+      }
+      _snapshot = I2Snapshot(
+        hamsters: hamsters,
+        litters: _snapshot.litters,
+        enclosures: enclosures,
+        lastSyncedAt: DateTime.now(),
+        recentWeights: _snapshot.recentWeights,
+      );
+    }
+    return closed;
+  }
 
   @override
   Future<I2Enclosure> cleanEnclosure(

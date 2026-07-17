@@ -6,7 +6,7 @@ T-P0-04,P0,weight_alerts,features/weight + optional i5core,/weight-records,S,doc
 T-P0-05,P0,tasks_local_notifications,features/tasks,"/tasks,/reminders",S,docs/13+impl,DONE,complete + flutter_local_notifications
 T-P0-06,P0,calendar_month,features/calendar,aggregate,I,docs/13+impl,DONE,month grid tasks+breeding+wean
 T-P0-07,P0,pedigree_viz,features/pedigree,/hamsters/{id}/pedigree,S,docs/13+impl,DONE,3-gen ancestor tree UI
-T-P0-08,P0,enclosure_board,features/i2 enclosures,/enclosures*,S,docs/13,PARTIAL,
+T-P0-08,P0,enclosure_board,features/i2 enclosures,/enclosures*,S,docs/13+impl,DONE,status colors + memory/API move stay
 T-P1-01,P1,rbac_members,api+db+flutter,,S,docs/13,DEFER,
 T-P1-02,P1,crm_handover,api+db+flutter,,S,docs/13,DEFER,
 T-P1-03,P1,contracts_receipts,api+flutter,,S,docs/13,DEFER,

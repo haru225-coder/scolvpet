@@ -166,14 +166,94 @@ String i2LifecycleLabel(String value) => switch (value) {
 
 String i2EnclosureStateLabel(String value) => switch (value) {
   'vacant' => '空置',
-  'occupied_single' => '单住',
+  'occupied' || 'occupied_single' => '在住',
   'pairing_temp' => '临时配对',
   'gestation' => '孕期',
   'dam_with_litter' => '母带崽',
   'isolation' => '隔离',
+  'quarantine' => '隔离检疫',
   'cleaning_due' => '待清洁',
-  'disabled' => '停用',
+  'disabled' || 'out_of_service' => '停用',
   _ => value,
+};
+
+/// Board visual tone for enclosure cards (T-P0-08).
+enum EnclosureBoardTone {
+  vacant,
+  occupied,
+  pairing,
+  gestation,
+  isolation,
+  dirty,
+  disabled,
+}
+
+EnclosureBoardTone enclosureBoardTone(I2Enclosure enclosure) {
+  final state = enclosure.state.toLowerCase();
+  final clean = enclosure.cleanlinessState.toLowerCase();
+  if (state == 'disabled' || state == 'out_of_service') {
+    return EnclosureBoardTone.disabled;
+  }
+  if (state == 'isolation' || state == 'quarantine') {
+    return EnclosureBoardTone.isolation;
+  }
+  if (state.contains('gestat') || state == 'dam_with_litter') {
+    return EnclosureBoardTone.gestation;
+  }
+  if (state.contains('pair')) {
+    return EnclosureBoardTone.pairing;
+  }
+  if (clean.contains('dirty') ||
+      clean.contains('soil') ||
+      clean == 'needs_clean' ||
+      clean == 'needs_cleaning' ||
+      state == 'cleaning_due') {
+    return EnclosureBoardTone.dirty;
+  }
+  if (state == 'vacant' ||
+      state == 'empty' ||
+      enclosure.currentHamsterIds.isEmpty) {
+    // Occupied state string but no residents still shows vacant-ish.
+    if (state.contains('occup') && enclosure.currentHamsterIds.isNotEmpty) {
+      return EnclosureBoardTone.occupied;
+    }
+    if (state == 'vacant' ||
+        state == 'empty' ||
+        enclosure.currentHamsterIds.isEmpty) {
+      return EnclosureBoardTone.vacant;
+    }
+  }
+  return EnclosureBoardTone.occupied;
+}
+
+Color enclosureBoardColor(EnclosureBoardTone tone) => switch (tone) {
+  EnclosureBoardTone.vacant => const Color(0xffe8eeec),
+  EnclosureBoardTone.occupied => const Color(0xffdce8e3),
+  EnclosureBoardTone.pairing => const Color(0xfffff0e0),
+  EnclosureBoardTone.gestation => const Color(0xfff3e6f0),
+  EnclosureBoardTone.isolation => const Color(0xffffe8e5),
+  EnclosureBoardTone.dirty => const Color(0xfffff4d6),
+  EnclosureBoardTone.disabled => const Color(0xffe5e5e5),
+};
+
+Color enclosureBoardAccent(EnclosureBoardTone tone) => switch (tone) {
+  EnclosureBoardTone.vacant => const Color(0xff6c7774),
+  EnclosureBoardTone.occupied => const Color(0xff3d7a62),
+  EnclosureBoardTone.pairing => const Color(0xffc77852),
+  EnclosureBoardTone.gestation => const Color(0xff9b5b8a),
+  EnclosureBoardTone.isolation => const Color(0xffb6534a),
+  EnclosureBoardTone.dirty => const Color(0xff8a6d3b),
+  EnclosureBoardTone.disabled => const Color(0xff8a8a8a),
+};
+
+String enclosureBoardToneLabel(EnclosureBoardTone tone) => switch (tone) {
+  EnclosureBoardTone.vacant => '空置',
+  EnclosureBoardTone.occupied => '在住',
+  EnclosureBoardTone.pairing => '配对',
+  EnclosureBoardTone.gestation => '孕期/带崽',
+  EnclosureBoardTone.isolation => '隔离',
+  EnclosureBoardTone.dirty => '待清洁',
+  EnclosureBoardTone.disabled => '停用',
 };
 
 String i2LitterStateLabel(String value) => switch (value) {
