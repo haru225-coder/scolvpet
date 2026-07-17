@@ -100,6 +100,7 @@ func (s *Server) Handler() http.Handler {
 	s.registerP1GeneticRoutes(mux)
 	s.registerP1PushRoutes(mux)
 	s.registerP1EntitlementRoutes(mux)
+	s.registerP2PublicSiteRoutes(mux)
 	return requestIDMiddleware(s.Logger, mux)
 }
 

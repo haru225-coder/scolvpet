@@ -16,6 +16,7 @@ import '../features/home_widget/home_widget.dart';
 import '../features/members/members.dart';
 import '../features/paywall/paywall.dart';
 import '../features/pedigree/pedigree.dart';
+import '../features/public_site/public_site.dart';
 import '../features/push/push.dart';
 import '../features/shell/home_overview.dart';
 import '../features/tasks/tasks.dart';
@@ -291,6 +292,7 @@ class HomeShell extends StatefulWidget {
     required this.geneticRepository,
     required this.pushRepository,
     required this.paywallRepository,
+    required this.publicSiteRepository,
     this.todayWidgetPublisher,
   });
 
@@ -308,6 +310,7 @@ class HomeShell extends StatefulWidget {
   final GeneticRepository geneticRepository;
   final PushRepository pushRepository;
   final PaywallRepository paywallRepository;
+  final PublicSiteRepository publicSiteRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -691,6 +694,17 @@ class _HomeShellState extends State<HomeShell> {
             ),
           );
         },
+        onOpenPublicSite: () {
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => PublicSiteEditorPage(
+                controller: PublicSiteController(
+                  repository: widget.publicSiteRepository,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     ];
     return Scaffold(
@@ -787,6 +801,7 @@ class _MinePage extends StatelessWidget {
     this.onOpenGenetic,
     this.onOpenPush,
     this.onOpenPaywall,
+    this.onOpenPublicSite,
   });
 
   final AppState state;
@@ -799,6 +814,7 @@ class _MinePage extends StatelessWidget {
   final VoidCallback? onOpenGenetic;
   final VoidCallback? onOpenPush;
   final VoidCallback? onOpenPaywall;
+  final VoidCallback? onOpenPublicSite;
 
   @override
   Widget build(BuildContext context) {
@@ -936,6 +952,19 @@ class _MinePage extends StatelessWidget {
               subtitle: const Text('用量上限 · 沙箱升级'),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenPaywall,
+            ),
+          ),
+        ],
+        if (onOpenPublicSite != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              key: const Key('mine-open-public-site'),
+              leading: const Icon(Icons.language_outlined),
+              title: const Text('公开主页'),
+              subtitle: const Text('轻量展示 · 发布链接'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenPublicSite,
             ),
           ),
         ],

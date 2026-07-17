@@ -19,6 +19,7 @@ import 'package:scolvpet_mobile/features/home_widget/home_widget.dart';
 import 'package:scolvpet_mobile/features/members/members.dart';
 import 'package:scolvpet_mobile/features/pedigree/pedigree.dart';
 import 'package:scolvpet_mobile/features/paywall/paywall.dart';
+import 'package:scolvpet_mobile/features/public_site/public_site.dart';
 import 'package:scolvpet_mobile/features/push/push.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
 import 'package:scolvpet_mobile/ui/screens.dart';
@@ -82,6 +83,7 @@ void main() {
           geneticRepository: MemoryGeneticRepository(),
           pushRepository: MemoryPushRepository(),
           paywallRepository: MemoryPaywallRepository(),
+          publicSiteRepository: MemoryPublicSiteRepository(),
           todayWidgetPublisher: todayWidgetPublisher,
         ),
       );
@@ -129,6 +131,7 @@ void main() {
         const Key('mine-open-genetic'),
         const Key('mine-open-push'),
         const Key('mine-open-paywall'),
+        const Key('mine-open-public-site'),
       ]) {
         await tester.scrollUntilVisible(find.byKey(key), 100);
         expect(find.byKey(key), findsOneWidget);
