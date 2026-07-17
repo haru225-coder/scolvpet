@@ -1,0 +1,221 @@
+// Domain models for the breeding plan wizard (T-P0-02).
+
+class BreedingPlan {
+  const BreedingPlan({
+    required this.id,
+    required this.sireId,
+    required this.damId,
+    required this.ruleVersionId,
+    required this.state,
+    required this.version,
+    this.name,
+    this.plannedPairingAt,
+    this.activePairingAttemptId,
+    this.litterId,
+    this.expectedBirthStart,
+    this.expectedBirthEnd,
+    this.actualBirthAt,
+    this.notes,
+  });
+
+  final String id;
+  final String sireId;
+  final String damId;
+  final String ruleVersionId;
+  final String state;
+  final int version;
+  final String? name;
+  final DateTime? plannedPairingAt;
+  final String? activePairingAttemptId;
+  final String? litterId;
+  final DateTime? expectedBirthStart;
+  final DateTime? expectedBirthEnd;
+  final DateTime? actualBirthAt;
+  final String? notes;
+
+  String get displayName {
+    final n = name?.trim();
+    if (n != null && n.isNotEmpty) return n;
+    return '计划 ${id.length > 8 ? id.substring(0, 8) : id}';
+  }
+
+  BreedingPlan copyWith({
+    String? state,
+    int? version,
+    String? name,
+    DateTime? plannedPairingAt,
+    String? activePairingAttemptId,
+    String? litterId,
+    DateTime? expectedBirthStart,
+    DateTime? expectedBirthEnd,
+    DateTime? actualBirthAt,
+    String? notes,
+  }) => BreedingPlan(
+    id: id,
+    sireId: sireId,
+    damId: damId,
+    ruleVersionId: ruleVersionId,
+    state: state ?? this.state,
+    version: version ?? this.version,
+    name: name ?? this.name,
+    plannedPairingAt: plannedPairingAt ?? this.plannedPairingAt,
+    activePairingAttemptId:
+        activePairingAttemptId ?? this.activePairingAttemptId,
+    litterId: litterId ?? this.litterId,
+    expectedBirthStart: expectedBirthStart ?? this.expectedBirthStart,
+    expectedBirthEnd: expectedBirthEnd ?? this.expectedBirthEnd,
+    actualBirthAt: actualBirthAt ?? this.actualBirthAt,
+    notes: notes ?? this.notes,
+  );
+
+  factory BreedingPlan.fromJson(Map<String, dynamic> json) => BreedingPlan(
+    id: json['id'] as String? ?? '',
+    sireId: json['sire_id'] as String? ?? '',
+    damId: json['dam_id'] as String? ?? '',
+    ruleVersionId: json['rule_version_id'] as String? ?? '',
+    state: json['state'] as String? ?? 'draft',
+    version: json['version'] as int? ?? 1,
+    name: json['name'] as String?,
+    plannedPairingAt: _dt(json['planned_pairing_at']),
+    activePairingAttemptId: json['active_pairing_attempt_id'] as String?,
+    litterId: json['litter_id'] as String?,
+    expectedBirthStart: _dt(json['expected_birth_start']),
+    expectedBirthEnd: _dt(json['expected_birth_end']),
+    actualBirthAt: _dt(json['actual_birth_at']),
+    notes: json['notes'] as String?,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'sire_id': sireId,
+    'dam_id': damId,
+    'rule_version_id': ruleVersionId,
+    'state': state,
+    'version': version,
+    'name': name,
+    'planned_pairing_at': plannedPairingAt?.toIso8601String(),
+    'active_pairing_attempt_id': activePairingAttemptId,
+    'litter_id': litterId,
+    'expected_birth_start': expectedBirthStart?.toIso8601String(),
+    'expected_birth_end': expectedBirthEnd?.toIso8601String(),
+    'actual_birth_at': actualBirthAt?.toIso8601String(),
+    'notes': notes,
+  };
+}
+
+class PairingAttempt {
+  const PairingAttempt({
+    required this.id,
+    required this.breedingPlanId,
+    required this.enclosureId,
+    required this.status,
+    required this.version,
+    this.startedAt,
+    this.separatedAt,
+    this.result,
+  });
+
+  final String id;
+  final String breedingPlanId;
+  final String enclosureId;
+  final String status;
+  final int version;
+  final DateTime? startedAt;
+  final DateTime? separatedAt;
+  final String? result;
+
+  factory PairingAttempt.fromJson(Map<String, dynamic> json) => PairingAttempt(
+    id: json['id'] as String? ?? '',
+    breedingPlanId: json['breeding_plan_id'] as String? ?? '',
+    enclosureId: json['enclosure_id'] as String? ?? '',
+    status: json['status'] as String? ?? 'active',
+    version: json['version'] as int? ?? 1,
+    startedAt: _dt(json['started_at']),
+    separatedAt: _dt(json['separated_at']),
+    result: json['result'] as String?,
+  );
+}
+
+class CreateBreedingPlanInput {
+  const CreateBreedingPlanInput({
+    required this.sireId,
+    required this.damId,
+    required this.ruleVersionId,
+    this.name,
+    this.notes,
+  });
+
+  final String sireId;
+  final String damId;
+  final String ruleVersionId;
+  final String? name;
+  final String? notes;
+}
+
+/// Ordered wizard steps for the main happy path.
+enum BreedingWizardStep {
+  draft,
+  pairReady,
+  pairing,
+  postPair,
+  gestation,
+  litterNursing,
+  other,
+}
+
+BreedingWizardStep wizardStepForState(String state) {
+  switch (state) {
+    case 'draft':
+      return BreedingWizardStep.draft;
+    case 'pair_ready':
+      return BreedingWizardStep.pairReady;
+    case 'pairing':
+      return BreedingWizardStep.pairing;
+    case 'post_pair':
+      return BreedingWizardStep.postPair;
+    case 'gestation':
+      return BreedingWizardStep.gestation;
+    case 'litter_nursing':
+    case 'weaning_due':
+    case 'sex_separation_due':
+    case 'individualizing':
+    case 'completed':
+      return BreedingWizardStep.litterNursing;
+    default:
+      return BreedingWizardStep.other;
+  }
+}
+
+String breedingStateLabel(String state) => switch (state) {
+  'draft' => '草稿',
+  'pair_ready' => '待配对',
+  'pairing' => '配对中',
+  'post_pair' => '已分笼',
+  'gestation' => '孕期观察',
+  'litter_nursing' => '带崽中',
+  'weaning_due' => '待断奶',
+  'sex_separation_due' => '待分性分笼',
+  'individualizing' => '个体化中',
+  'completed' => '已完成',
+  'no_litter_outcome' => '无活仔',
+  'hold' => '挂起',
+  'unsuccessful' => '未成功',
+  'cancelled' => '已取消',
+  _ => state,
+};
+
+/// Next primary action label for the happy path, or null if terminal/other.
+String? nextActionLabel(String state) => switch (state) {
+  'draft' => '发布计划',
+  'pair_ready' => '开始配对',
+  'pairing' => '确认分笼',
+  'post_pair' => '进入孕期',
+  'gestation' => '确认产仔',
+  _ => null,
+};
+
+DateTime? _dt(Object? value) {
+  if (value is DateTime) return value;
+  if (value is String && value.isNotEmpty) return DateTime.tryParse(value);
+  return null;
+}

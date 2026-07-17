@@ -7,6 +7,7 @@ import 'package:scolvpet_mobile/core/app_state.dart';
 import 'package:scolvpet_mobile/core/session_store.dart';
 import 'package:scolvpet_mobile/data/i1_repository.dart';
 import 'package:scolvpet_mobile/data/i2_repository.dart';
+import 'package:scolvpet_mobile/features/breeding/breeding.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/ui/screens.dart';
 import 'package:scolvpet_mobile/main.dart';
@@ -39,9 +40,16 @@ void main() {
         sessionStore: MemorySessionStore(snapshot: demoSnapshot, delayed: true),
       );
       final i2Controller = I2Controller(repository: MemoryI2Repository());
+      final breedingController = BreedingController(
+        repository: MemoryBreedingRepository(),
+      );
 
       await tester.pumpWidget(
-        ScolvPetApp(state: state, i2Controller: i2Controller),
+        ScolvPetApp(
+          state: state,
+          i2Controller: i2Controller,
+          breedingController: breedingController,
+        ),
       );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
@@ -68,6 +76,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      expect(find.text('繁育向导'), findsOneWidget);
       expect(find.text('窝次列表'), findsOneWidget);
       await tester.tap(
         find.descendant(

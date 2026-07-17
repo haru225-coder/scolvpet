@@ -1,6 +1,6 @@
 id,module,name,path,route,evidence_level,evidence_ref,status,notes
 T-P0-01,P0,nav_home_shell,"apps/mobile/lib/features/shell,home",,I,docs/13,MISSING,no migration; aggregate APIs
-T-P0-02,P0,breeding_wizard,apps/mobile/lib/features/breeding,/breeding-plans*,S,docs/13,PARTIAL,uses existing API
+T-P0-02,P0,breeding_wizard,apps/mobile/lib/features/breeding,/breeding-plans*,S,docs/13+impl,DONE,wizard draft→litter_nursing
 T-P0-03,P0,litter_board,apps/mobile/lib/features/litter,/litters*,S,docs/13,PARTIAL,wean sex individualize
 T-P0-04,P0,weight_alerts,features/weight + optional i5core,/weight-records,S,docs/13,PARTIAL,grams batch
 T-P0-05,P0,tasks_local_notifications,features/tasks,"/tasks,/reminders",S,docs/13,MISSING,plugin wire-up

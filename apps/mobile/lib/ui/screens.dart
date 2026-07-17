@@ -4,6 +4,7 @@ import 'package:scolvpet_api/scolvpet_api.dart';
 import '../core/app_state.dart';
 import '../features/i2/i2.dart';
 import '../features/i6/data_center.dart';
+import '../features/breeding/breeding.dart';
 import '../features/shell/home_overview.dart';
 
 const _accent = Color(0xffc77852);
@@ -260,10 +261,16 @@ class _SetupScreenState extends State<SetupScreen> {
 }
 
 class HomeShell extends StatefulWidget {
-  const HomeShell({super.key, required this.state, required this.i2Controller});
+  const HomeShell({
+    super.key,
+    required this.state,
+    required this.i2Controller,
+    required this.breedingController,
+  });
 
   final AppState state;
   final I2Controller i2Controller;
+  final BreedingController breedingController;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -276,6 +283,7 @@ class _HomeShellState extends State<HomeShell> {
   void initState() {
     super.initState();
     widget.i2Controller.restore();
+    widget.breedingController.refresh();
   }
 
   String? get _speciesRuleVersionId =>
@@ -451,9 +459,19 @@ class _HomeShellState extends State<HomeShell> {
         controller: widget.i2Controller,
         onOpenDetail: _openEnclosureDetail,
       ),
-      BreedingHubPage(
-        controller: widget.i2Controller,
-        onOpenLitters: _openLitters,
+      AnimatedBuilder(
+        animation: widget.i2Controller,
+        builder: (context, _) {
+          final snapshot = widget.i2Controller.snapshotState.data;
+          return BreedingHubPage(
+            controller: widget.breedingController,
+            hamsters: snapshot?.hamsters ?? const <I2Hamster>[],
+            enclosures: snapshot?.enclosures ?? const <I2Enclosure>[],
+            ruleVersionId: _speciesRuleVersionId,
+            onOpenLitters: _openLitters,
+            canWrite: !widget.state.offline && widget.i2Controller.canWrite,
+          );
+        },
       ),
       _MinePage(state: widget.state, onOpenDataCenter: _openDataCenter),
     ];
