@@ -13,7 +13,7 @@ T-P1-03,P1,contracts_receipts,api+db+flutter,"/contracts/*,/receipts/*",S,docs/1
 T-P1-04,P1,accounting,api+db+flutter,"/accounting/*",S,docs/13+impl,PARTIAL,categories+records+monthly summary; charts/PDF deferred
 T-P1-05,P1,widgets,mobile native+flutter,today-widget,S,docs/13+impl,PARTIAL,Android AppWidget+Dart sync+preview; iOS WidgetKit scaffold only
 T-P1-06,P1,genetics,api+db+flutter,"/genetic/*",S,docs/13+impl,PARTIAL,profiles+A/B/C Punnett simulate; full breed standards deferred
-T-P1-07,P1,push_server,infra,,I,docs/13,DEFER,
+T-P1-07,P1,push_server,api+db+flutter,"/push/*",S,docs/13+impl,PARTIAL,device registry+log sender+test enqueue; real APNs/FCM deferred
 T-P1-08,P1,paywall,entitlement+store,,S,docs/13,DEFER,
 T-P2-01,P2,public_site,web light,,W,docs/13,DEFER,
 T-P2-02,P2,miniprogram,platform,,W,docs/13,DEFER,

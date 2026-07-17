@@ -15,6 +15,7 @@ import '../features/genetic/genetic.dart';
 import '../features/home_widget/home_widget.dart';
 import '../features/members/members.dart';
 import '../features/pedigree/pedigree.dart';
+import '../features/push/push.dart';
 import '../features/shell/home_overview.dart';
 import '../features/tasks/tasks.dart';
 import '../features/weight/weight_batch_page.dart';
@@ -287,6 +288,7 @@ class HomeShell extends StatefulWidget {
     required this.contractsRepository,
     required this.accountingRepository,
     required this.geneticRepository,
+    required this.pushRepository,
     this.todayWidgetPublisher,
   });
 
@@ -302,6 +304,7 @@ class HomeShell extends StatefulWidget {
   final ContractsRepository contractsRepository;
   final AccountingRepository accountingRepository;
   final GeneticRepository geneticRepository;
+  final PushRepository pushRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -663,6 +666,17 @@ class _HomeShellState extends State<HomeShell> {
             ),
           );
         },
+        onOpenPush: () {
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => PushSettingsPage(
+                controller: PushController(
+                  repository: widget.pushRepository,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     ];
     return Scaffold(
@@ -757,6 +771,7 @@ class _MinePage extends StatelessWidget {
     this.onOpenAccounting,
     this.onOpenTodayWidget,
     this.onOpenGenetic,
+    this.onOpenPush,
   });
 
   final AppState state;
@@ -767,6 +782,7 @@ class _MinePage extends StatelessWidget {
   final VoidCallback? onOpenAccounting;
   final VoidCallback? onOpenTodayWidget;
   final VoidCallback? onOpenGenetic;
+  final VoidCallback? onOpenPush;
 
   @override
   Widget build(BuildContext context) {
@@ -878,6 +894,19 @@ class _MinePage extends StatelessWidget {
               subtitle: const Text('位点档案 · 配对概率'),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenGenetic,
+            ),
+          ),
+        ],
+        if (onOpenPush != null) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              key: const Key('mine-open-push'),
+              leading: const Icon(Icons.notifications_active_outlined),
+              title: const Text('服务端推送'),
+              subtitle: const Text('设备令牌 · 测试推送'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenPush,
             ),
           ),
         ],

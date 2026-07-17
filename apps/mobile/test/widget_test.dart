@@ -18,6 +18,7 @@ import 'package:scolvpet_mobile/features/genetic/genetic.dart';
 import 'package:scolvpet_mobile/features/home_widget/home_widget.dart';
 import 'package:scolvpet_mobile/features/members/members.dart';
 import 'package:scolvpet_mobile/features/pedigree/pedigree.dart';
+import 'package:scolvpet_mobile/features/push/push.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
 import 'package:scolvpet_mobile/ui/screens.dart';
 import 'package:scolvpet_mobile/main.dart';
@@ -78,6 +79,7 @@ void main() {
           contractsRepository: MemoryContractsRepository(),
           accountingRepository: MemoryAccountingRepository(),
           geneticRepository: MemoryGeneticRepository(),
+          pushRepository: MemoryPushRepository(),
           todayWidgetPublisher: todayWidgetPublisher,
         ),
       );
@@ -123,6 +125,7 @@ void main() {
         const Key('mine-open-accounting'),
         const Key('mine-open-today-widget'),
         const Key('mine-open-genetic'),
+        const Key('mine-open-push'),
       ]) {
         await tester.scrollUntilVisible(find.byKey(key), 100);
         expect(find.byKey(key), findsOneWidget);
