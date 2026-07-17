@@ -11,6 +11,7 @@ import 'package:scolvpet_mobile/features/breeding/breeding.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/litter/litter.dart';
 import 'package:scolvpet_mobile/features/health/health.dart';
+import 'package:scolvpet_mobile/features/contracts/contracts.dart';
 import 'package:scolvpet_mobile/features/crm/crm.dart';
 import 'package:scolvpet_mobile/features/members/members.dart';
 import 'package:scolvpet_mobile/features/pedigree/pedigree.dart';
@@ -69,6 +70,7 @@ void main() {
           healthRepository: MemoryHealthRepository(),
           memberRepository: MemoryMemberRepository(),
           crmRepository: MemoryCrmRepository(),
+          contractsRepository: MemoryContractsRepository(),
         ),
       );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -106,6 +108,11 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('雪团熊舍'), findsOneWidget);
+      expect(find.text('合同与回执'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('离线只读 · 联网后重新提交/再操作'),
+        120,
+      );
       expect(find.text('离线只读 · 联网后重新提交/再操作'), findsOneWidget);
       await tester.tap(find.text('数据中心'));
       await tester.pumpAndSettle();

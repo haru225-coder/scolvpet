@@ -9,7 +9,7 @@ T-P0-07,P0,pedigree_viz,features/pedigree,/hamsters/{id}/pedigree,S,docs/13+impl
 T-P0-08,P0,enclosure_board,features/i2 enclosures,/enclosures*,S,docs/13+impl,DONE,status colors + memory/API move stay
 T-P1-01,P1,rbac_members,api+db+flutter,/organization-members,S,docs/13+impl,PARTIAL,invite/list/role/revoke + client matrix
 T-P1-02,P1,crm_handover,api+db+flutter,/crm/*,S,docs/13+impl,PARTIAL,contacts+reservations+handover complete
-T-P1-03,P1,contracts_receipts,api+flutter,,S,docs/13,DEFER,
+T-P1-03,P1,contracts_receipts,api+db+flutter,"/contracts/*,/receipts/*",S,docs/13+impl,PARTIAL,templates+draft issue+text preview/share; PDF deferred
 T-P1-04,P1,accounting,api+flutter,,S,docs/13,DEFER,
 T-P1-05,P1,widgets,mobile native,,S,docs/13,DEFER,
 T-P1-06,P1,genetics,api+flutter,,S,docs/13,DEFER,
