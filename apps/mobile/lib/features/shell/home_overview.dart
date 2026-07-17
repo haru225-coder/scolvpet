@@ -35,12 +35,15 @@ class HomeOverviewMetrics {
   final String? organizationName;
   final List<WeightAlert> weightAlerts;
 
+  /// Base attention without open care tasks (tasks injected at page level).
   int get attentionCount =>
       pendingWeanOrSexCount +
       gestatingDamCount +
       dirtyEnclosureCount +
       draftCount +
       weightAlertCount;
+
+  int attentionWithTasks(int openTaskCount) => attentionCount + openTaskCount;
 
   factory HomeOverviewMetrics.fromSnapshot({
     required I2Snapshot? snapshot,
@@ -228,7 +231,10 @@ class HomeOverviewPage extends StatelessWidget {
                 const Center(child: CircularProgressIndicator()),
               ] else ...[
                 const SizedBox(height: 16),
-                _StatGrid(metrics: metrics),
+                _StatGrid(
+                  metrics: metrics,
+                  openTaskCount: taskController?.openCount ?? 0,
+                ),
                 const SizedBox(height: 20),
                 _AttentionSection(
                   metrics: metrics,
@@ -335,17 +341,19 @@ class HomeOverviewPage extends StatelessWidget {
 }
 
 class _StatGrid extends StatelessWidget {
-  const _StatGrid({required this.metrics});
+  const _StatGrid({required this.metrics, this.openTaskCount = 0});
 
   final HomeOverviewMetrics metrics;
+  final int openTaskCount;
 
   @override
   Widget build(BuildContext context) {
+    final attention = metrics.attentionWithTasks(openTaskCount);
     final items = [
       _StatItem('在养', '${metrics.hamsterCount}', Icons.pets_outlined),
       _StatItem('笼盒', '${metrics.enclosureCount}', Icons.grid_view_outlined),
       _StatItem('活跃窝次', '${metrics.activeLitterCount}', Icons.groups_outlined),
-      _StatItem('需关注', '${metrics.attentionCount}', Icons.priority_high),
+      _StatItem('需关注', '$attention', Icons.priority_high),
     ];
     Widget card(_StatItem item) => Expanded(
       child: Card(

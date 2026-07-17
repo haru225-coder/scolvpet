@@ -23,8 +23,11 @@ class HealthController extends ChangeNotifier {
 
   Future<void> loadForHamster(String id) async {
     hamsterId = id;
-    listState = const I2AsyncState.loading();
-    notifyListeners();
+    // Keep previous list visible while refreshing to avoid flicker.
+    if (listState.data == null) {
+      listState = const I2AsyncState.loading();
+      notifyListeners();
+    }
     try {
       final records = await repository.listRecords(hamsterId: id);
       listState = records.isEmpty

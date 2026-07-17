@@ -60,6 +60,23 @@ class CareTaskItem {
     return subjectIds.where((id) => !done.contains(id)).toList();
   }
 
+  /// Whether this task is about a given hamster (target or subject).
+  bool relatesToHamster(String hamsterId) {
+    if (hamsterId.isEmpty) return false;
+    if (targetType == 'hamster' && targetId == hamsterId) return true;
+    return subjectIds.contains(hamsterId);
+  }
+
+  static List<CareTaskItem> openForHamster(
+    Iterable<CareTaskItem> tasks,
+    String hamsterId,
+  ) {
+    return tasks
+        .where((t) => t.isOpen && t.relatesToHamster(hamsterId))
+        .toList()
+      ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+  }
+
   CareTaskItem copyWith({
     String? state,
     int? version,

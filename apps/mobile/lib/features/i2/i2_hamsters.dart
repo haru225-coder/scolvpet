@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../health/health_controller.dart';
+import '../health/health_models.dart';
+import '../tasks/task_controller.dart';
+import '../tasks/task_models.dart';
 import '../weight/weight_alerts.dart';
 import 'i2_controller.dart';
 import 'i2_models.dart';
@@ -203,6 +207,8 @@ class HamsterDetailPage extends StatefulWidget {
     this.onAddWeight,
     this.onOpenPedigree,
     this.onOpenHealth,
+    this.taskController,
+    this.healthController,
   });
 
   final I2Controller controller;
@@ -211,6 +217,8 @@ class HamsterDetailPage extends StatefulWidget {
   final VoidCallback? onAddWeight;
   final VoidCallback? onOpenPedigree;
   final VoidCallback? onOpenHealth;
+  final TaskController? taskController;
+  final HealthController? healthController;
 
   @override
   State<HamsterDetailPage> createState() => _HamsterDetailPageState();
@@ -221,171 +229,313 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
   void initState() {
     super.initState();
     widget.controller.loadHamsterDetail(widget.hamsterId);
+    widget.taskController?.refresh();
+    widget.healthController?.loadForHamster(widget.hamsterId);
+  }
+
+  Future<void> _completeTask(CareTaskItem task) async {
+    final tc = widget.taskController;
+    if (tc == null) return;
+    final ok = await tc.complete(task);
+    if (!mounted) return;
+    final message = tc.lastMessage;
+    if (message != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
+    if (ok) setState(() {});
   }
 
   @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: widget.controller,
-    builder: (context, _) => Scaffold(
-      appBar: AppBar(
-        title: const Text('仓鼠详情'),
-        actions: [
-          if (widget.onEdit != null)
-            IconButton(onPressed: widget.onEdit, icon: const Icon(Icons.edit)),
-        ],
-      ),
-      body: Column(
-        children: [
-          I2OfflineBanner(
-            offline: widget.controller.offline,
-            lastSyncLabel: widget.controller.lastSyncLabel,
-          ),
-          Expanded(
-            child: I2AsyncStateView<I2HamsterDetail>(
-              state: widget.controller.hamsterDetailState,
-              onRetry: () =>
-                  widget.controller.loadHamsterDetail(widget.hamsterId),
-              builder: (detail) => ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  Card(
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: CircleAvatar(
-                            child: Text(i2SexLabel(detail.hamster.sex)),
-                          ),
-                          title: Text(detail.hamster.displayName),
-                          subtitle: Text(
-                            i2LifecycleLabel(detail.hamster.lifecycleStatus),
-                          ),
+  Widget build(BuildContext context) {
+    final listenables = <Listenable>[widget.controller];
+    if (widget.taskController != null) {
+      listenables.add(widget.taskController!);
+    }
+    if (widget.healthController != null) {
+      listenables.add(widget.healthController!);
+    }
+    return AnimatedBuilder(
+      animation: Listenable.merge(listenables),
+      builder: (context, _) => Scaffold(
+        appBar: AppBar(
+          title: const Text('仓鼠详情'),
+          actions: [
+            if (widget.onEdit != null)
+              IconButton(
+                onPressed: widget.onEdit,
+                icon: const Icon(Icons.edit),
+              ),
+          ],
+        ),
+        body: Column(
+          children: [
+            I2OfflineBanner(
+              offline: widget.controller.offline,
+              lastSyncLabel: widget.controller.lastSyncLabel,
+            ),
+            Expanded(
+              child: I2AsyncStateView<I2HamsterDetail>(
+                state: widget.controller.hamsterDetailState,
+                onRetry: () =>
+                    widget.controller.loadHamsterDetail(widget.hamsterId),
+                builder: (detail) {
+                  final relatedTasks = CareTaskItem.openForHamster(
+                    widget.taskController?.listState.data ??
+                        const <CareTaskItem>[],
+                    widget.hamsterId,
+                  );
+                  final healthRecords =
+                      widget.healthController?.listState.data ??
+                      const <HealthRecordItem>[];
+                  final children = <Widget>[
+                      Card(
+                        child: Column(
+                          children: [
+                            ListTile(
+                              leading: CircleAvatar(
+                                child: Text(i2SexLabel(detail.hamster.sex)),
+                              ),
+                              title: Text(detail.hamster.displayName),
+                              subtitle: Text(
+                                i2LifecycleLabel(
+                                  detail.hamster.lifecycleStatus,
+                                ),
+                              ),
+                            ),
+                            I2InfoTile(
+                              label: '品系',
+                              value: detail.hamster.varietyCode ?? '—',
+                            ),
+                            I2InfoTile(
+                              label: '出生日期',
+                              value: i2DateLabel(detail.hamster.birthDate),
+                            ),
+                            I2InfoTile(
+                              label: '当前笼盒',
+                              value:
+                                  detail.hamster.currentEnclosureId ?? '未分配',
+                            ),
+                            I2InfoTile(
+                              label: '备注',
+                              value: detail.hamster.notes ?? '—',
+                            ),
+                          ],
                         ),
-                        I2InfoTile(
-                          label: '品系',
-                          value: detail.hamster.varietyCode ?? '—',
-                        ),
-                        I2InfoTile(
-                          label: '出生日期',
-                          value: i2DateLabel(detail.hamster.birthDate),
-                        ),
-                        I2InfoTile(
-                          label: '当前笼盒',
-                          value: detail.hamster.currentEnclosureId ?? '未分配',
-                        ),
-                        I2InfoTile(
-                          label: '备注',
-                          value: detail.hamster.notes ?? '—',
+                      ),
+                      if (widget.onOpenPedigree != null ||
+                          widget.onOpenHealth != null) ...[
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            if (widget.onOpenPedigree != null)
+                              OutlinedButton.icon(
+                                key: const Key('hamster-open-pedigree'),
+                                onPressed: widget.onOpenPedigree,
+                                icon: const Icon(Icons.account_tree_outlined),
+                                label: const Text('谱系'),
+                              ),
+                            if (widget.onOpenHealth != null)
+                              OutlinedButton.icon(
+                                key: const Key('hamster-open-health'),
+                                onPressed: widget.onOpenHealth,
+                                icon: const Icon(
+                                  Icons.health_and_safety_outlined,
+                                ),
+                                label: const Text('健康快捷记录'),
+                              ),
+                          ],
                         ),
                       ],
-                    ),
-                  ),
-                  if (widget.onOpenPedigree != null ||
-                      widget.onOpenHealth != null) ...[
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        if (widget.onOpenPedigree != null)
-                          OutlinedButton.icon(
-                            key: const Key('hamster-open-pedigree'),
-                            onPressed: widget.onOpenPedigree,
-                            icon: const Icon(Icons.account_tree_outlined),
-                            label: const Text('谱系'),
-                          ),
-                        if (widget.onOpenHealth != null)
-                          OutlinedButton.icon(
-                            key: const Key('hamster-open-health'),
-                            onPressed: widget.onOpenHealth,
-                            icon: const Icon(Icons.health_and_safety_outlined),
-                            label: const Text('健康快捷记录'),
-                          ),
+                      if (widget.taskController != null) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          '护理待办',
+                          key: const Key('hamster-care-tasks-title'),
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        if (relatedTasks.isEmpty)
+                          const Card(
+                            child: ListTile(
+                              leading: Icon(
+                                Icons.check_circle_outline,
+                                color: Colors.green,
+                              ),
+                              title: Text('暂无与此个体相关的待办'),
+                            ),
+                          )
+                        else
+                          for (final task in relatedTasks)
+                            Card(
+                              key: Key('hamster-care-task-${task.id}'),
+                              color: task.isOverdue
+                                  ? const Color(0xffffe8e5)
+                                  : null,
+                              child: ListTile(
+                                title: Text(task.displayTitle),
+                                subtitle: Text(
+                                  '${taskTypeLabel(task.taskType)} · '
+                                  '${task.isOverdue ? '已逾期 · ' : ''}'
+                                  '${i2DateTimeLabel(task.scheduledAt)}',
+                                ),
+                                trailing: widget.controller.canWrite
+                                    ? TextButton(
+                                        key: Key(
+                                          'hamster-complete-task-${task.id}',
+                                        ),
+                                        onPressed: () => _completeTask(task),
+                                        child: const Text('完成'),
+                                      )
+                                    : null,
+                              ),
+                            ),
                       ],
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                      if (widget.healthController != null) ...[
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '近期健康',
+                              key: const Key('hamster-health-title'),
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            if (widget.onOpenHealth != null)
+                              TextButton(
+                                onPressed: widget.onOpenHealth,
+                                child: const Text('全部'),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (healthRecords.isEmpty)
+                          const Text('暂无健康记录')
+                        else
+                          for (final record in healthRecords.take(3))
+                            ListTile(
+                              dense: true,
+                              key: Key(
+                                'hamster-health-preview-${record.id}',
+                              ),
+                              leading: const Icon(
+                                Icons.health_and_safety_outlined,
+                              ),
+                              title: Text(record.typeLabel),
+                              subtitle: Text(
+                                [
+                                  i2DateTimeLabel(record.observedAt),
+                                  if (record.notes != null &&
+                                      record.notes!.isNotEmpty)
+                                    record.notes!,
+                                ].join(' · '),
+                              ),
+                            ),
+                      ],
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '体重历史',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          if (widget.onAddWeight != null)
+                            I2WriteButton(
+                              enabled: widget.controller.canWrite,
+                              label: '录入',
+                              icon: Icons.monitor_weight_outlined,
+                              onPressed: widget.onAddWeight,
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      if (detail.weights.isEmpty)
+                        const Text('暂无体重记录')
+                      else
+                        ...detail.weights.map((weight) {
+                          final flags = evaluateWeightFlags(weight);
+                          final abnormal = flags.isNotEmpty;
+                          return ListTile(
+                            dense: true,
+                            tileColor: abnormal
+                                ? const Color(0xffffe8e5)
+                                : null,
+                            leading: Icon(
+                              Icons.monitor_weight_outlined,
+                              color: abnormal
+                                  ? const Color(0xffb6534a)
+                                  : null,
+                            ),
+                            title: Text(
+                              '${weight.weightG} g'
+                              '${abnormal ? ' · 异常' : ''}',
+                              style: TextStyle(
+                                color: abnormal
+                                    ? const Color(0xffb6534a)
+                                    : null,
+                                fontWeight: abnormal ? FontWeight.w700 : null,
+                              ),
+                            ),
+                            subtitle: Text(
+                              '${i2DateTimeLabel(weight.recordedAt)} · ${weight.source}'
+                              '${weight.measurementKind == 'individual' ? '' : ' · ${weight.measurementKind}'}'
+                              '${flags.isEmpty ? '' : ' · ${flags.join(', ')}'}',
+                            ),
+                            trailing: Text(
+                              weight.changeFromPreviousG == null
+                                  ? ''
+                                  : '${weight.changeFromPreviousG! >= 0 ? '+' : ''}${weight.changeFromPreviousG} g',
+                              style: TextStyle(
+                                color: (weight.changeFromPreviousG ?? 0) < 0
+                                    ? const Color(0xffb6534a)
+                                    : null,
+                              ),
+                            ),
+                          );
+                        }),
+                      const SizedBox(height: 16),
                       Text(
-                        '体重历史',
+                        '历史窝次',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      if (widget.onAddWeight != null)
-                        I2WriteButton(
-                          enabled: widget.controller.canWrite,
-                          label: '录入',
-                          icon: Icons.monitor_weight_outlined,
-                          onPressed: widget.onAddWeight,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  if (detail.weights.isEmpty)
-                    const Text('暂无体重记录')
-                  else
-                    ...detail.weights.map((weight) {
-                      final flags = evaluateWeightFlags(weight);
-                      final abnormal = flags.isNotEmpty;
-                      return ListTile(
-                        dense: true,
-                        tileColor: abnormal ? const Color(0xffffe8e5) : null,
-                        leading: Icon(
-                          Icons.monitor_weight_outlined,
-                          color: abnormal ? const Color(0xffb6534a) : null,
-                        ),
-                        title: Text(
-                          '${weight.weightG} g'
-                          '${abnormal ? ' · 异常' : ''}',
-                          style: TextStyle(
-                            color: abnormal ? const Color(0xffb6534a) : null,
-                            fontWeight: abnormal ? FontWeight.w700 : null,
+                      const SizedBox(height: 8),
+                      if (detail.litters.isEmpty)
+                        const Text('暂无关联窝次')
+                      else
+                        ...detail.litters.map(
+                          (litter) => Card(
+                            child: ListTile(
+                              title: Text(
+                                '${i2DateLabel(litter.bornAt)} · ${i2LitterStateLabel(litter.state)}',
+                              ),
+                              subtitle: Text(
+                                '初始 ${litter.initialAliveCount} 只 · 当前 ${litter.currentManagedCount} 只',
+                              ),
+                            ),
                           ),
                         ),
-                        subtitle: Text(
-                          '${i2DateTimeLabel(weight.recordedAt)} · ${weight.source}'
-                          '${weight.measurementKind == 'individual' ? '' : ' · ${weight.measurementKind}'}'
-                          '${flags.isEmpty ? '' : ' · ${flags.join(', ')}'}',
-                        ),
-                        trailing: Text(
-                          weight.changeFromPreviousG == null
-                              ? ''
-                              : '${weight.changeFromPreviousG! >= 0 ? '+' : ''}${weight.changeFromPreviousG} g',
-                          style: TextStyle(
-                            color:
-                                (weight.changeFromPreviousG ?? 0) < 0
-                                ? const Color(0xffb6534a)
-                                : null,
-                          ),
-                        ),
-                      );
-                    }),
-                  const SizedBox(height: 16),
-                  Text('历史窝次', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  if (detail.litters.isEmpty)
-                    const Text('暂无关联窝次')
-                  else
-                    ...detail.litters.map(
-                      (litter) => Card(
-                        child: ListTile(
-                          title: Text(
-                            '${i2DateLabel(litter.bornAt)} · ${i2LitterStateLabel(litter.state)}',
-                          ),
-                          subtitle: Text(
-                            '初始 ${litter.initialAliveCount} 只 · 当前 ${litter.currentManagedCount} 只',
-                          ),
-                        ),
-                      ),
+                  ];
+                  // SingleChildScrollView keeps all sections mounted (care/health
+                  // previews are short; avoids lazy ListView eliding offscreen keys).
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: children,
                     ),
-                ],
+                  );
+                },
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class LitterListPage extends StatelessWidget {

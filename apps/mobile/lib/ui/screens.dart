@@ -379,11 +379,17 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   Future<void> _openHamsterDetail(I2Hamster hamster) async {
+    final healthController = HealthController(
+      repository: widget.healthRepository,
+      taskRepository: widget.taskController.repository,
+    );
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
         builder: (detailContext) => HamsterDetailPage(
           controller: widget.i2Controller,
           hamsterId: hamster.id,
+          taskController: widget.taskController,
+          healthController: healthController,
           onEdit: () {
             final current =
                 widget.i2Controller.hamsterDetailState.data?.hamster ?? hamster;
@@ -412,22 +418,21 @@ class _HomeShellState extends State<HomeShell> {
             Navigator.of(detailContext).push<void>(
               MaterialPageRoute(
                 builder: (_) => HealthQuickPage(
-                  controller: HealthController(
-                    repository: widget.healthRepository,
-                    taskRepository: widget.taskController.repository,
-                  ),
+                  controller: healthController,
                   hamsterId: current.id,
                   hamsterLabel: current.displayName,
                   canWrite:
                       !widget.state.offline && widget.i2Controller.canWrite,
                 ),
               ),
-            );
+            ).then((_) => healthController.loadForHamster(current.id));
           },
         ),
       ),
     );
+    healthController.dispose();
     await widget.i2Controller.retry();
+    await widget.taskController.refresh();
   }
 
   Future<void> _openEnclosureAction(
