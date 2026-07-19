@@ -30,7 +30,7 @@ class RecoveryAction {
   });
 
   @JsonKey(
-    
+
     name: r'action',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class RecoveryAction {
 
 
   @JsonKey(
-    
+
     name: r'label',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class RecoveryAction {
 
 
   @JsonKey(
-    
+
     name: r'method',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class RecoveryAction {
 
 
   @JsonKey(
-    
+
     name: r'path',
     required: true,
     includeIfNull: false,
@@ -124,5 +124,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

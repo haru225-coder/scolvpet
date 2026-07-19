@@ -33,7 +33,7 @@ class ImportMappingRequestMappingsInner {
   });
 
   @JsonKey(
-    
+
     name: r'source_column',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class ImportMappingRequestMappingsInner {
 
 
   @JsonKey(
-    
+
     name: r'target_field',
     required: true,
     includeIfNull: false,
@@ -57,7 +57,7 @@ class ImportMappingRequestMappingsInner {
 
 
   @JsonKey(
-    
+
     name: r'empty_value_policy',
     required: true,
     includeIfNull: false,
@@ -69,7 +69,7 @@ class ImportMappingRequestMappingsInner {
 
 
   @JsonKey(
-    
+
     name: r'default_value',
     required: false,
     includeIfNull: false,
@@ -81,7 +81,7 @@ class ImportMappingRequestMappingsInner {
 
 
   @JsonKey(
-    
+
     name: r'format_hint',
     required: false,
     includeIfNull: false,
@@ -137,5 +137,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

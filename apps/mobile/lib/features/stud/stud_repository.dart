@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'stud_models.dart';
 
 abstract interface class StudRepository {
@@ -24,18 +25,11 @@ class StudRepositoryException implements Exception {
   String toString() => message;
 }
 
-String studErrorMessage(Object error) {
-  if (error is StudRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '借配请求失败';
-  }
-  return error.toString();
-}
+String studErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '借配请求失败',
+  mapLocal: (e) => e is StudRepositoryException ? e.message : null,
+);
 
 class MemoryStudRepository implements StudRepository {
   final List<StudListing> _listings = [];

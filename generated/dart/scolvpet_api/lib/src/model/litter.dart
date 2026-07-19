@@ -66,7 +66,7 @@ class Litter {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -78,7 +78,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'owner_id',
     required: true,
     includeIfNull: false,
@@ -90,7 +90,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'origin',
     required: true,
     includeIfNull: false,
@@ -102,7 +102,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -114,7 +114,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'breeding_plan_id',
     required: false,
     includeIfNull: false,
@@ -126,7 +126,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'sire_id',
     required: false,
     includeIfNull: false,
@@ -138,7 +138,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'dam_id',
     required: false,
     includeIfNull: false,
@@ -150,7 +150,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'born_at',
     required: false,
     includeIfNull: false,
@@ -163,7 +163,7 @@ class Litter {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'initial_alive_count',
     required: true,
     includeIfNull: false,
@@ -176,7 +176,7 @@ class Litter {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'initial_other_count',
     required: true,
     includeIfNull: false,
@@ -189,7 +189,7 @@ class Litter {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'current_managed_count',
     required: true,
     includeIfNull: false,
@@ -201,7 +201,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'state',
     required: true,
     includeIfNull: false,
@@ -213,7 +213,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'enclosure_id',
     required: false,
     includeIfNull: false,
@@ -225,7 +225,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'dam_condition',
     required: true,
     includeIfNull: false,
@@ -237,7 +237,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'weaned_at',
     required: false,
     includeIfNull: false,
@@ -249,7 +249,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'sex_separated_at',
     required: false,
     includeIfNull: false,
@@ -261,7 +261,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'reconciled_at',
     required: false,
     includeIfNull: false,
@@ -273,7 +273,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -286,7 +286,7 @@ class Litter {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -298,7 +298,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -310,7 +310,7 @@ class Litter {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -396,5 +396,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

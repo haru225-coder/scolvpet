@@ -41,7 +41,7 @@ class P1CRMApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CrmReservationResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CrmReservationResponse>> cancelCrmReservation({ 
+  Future<Response<CrmReservationResponse>> cancelCrmReservation({
     required String reservationId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -122,7 +122,7 @@ _responseData = rawData == null ? null : deserialize<CrmReservationResponse, Crm
   ///
   /// Returns a [Future] containing a [Response] with a [CrmHandoverResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CrmHandoverResponse>> completeCrmHandover({ 
+  Future<Response<CrmHandoverResponse>> completeCrmHandover({
     required String handoverId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -203,7 +203,7 @@ _responseData = rawData == null ? null : deserialize<CrmHandoverResponse, CrmHan
   ///
   /// Returns a [Future] containing a [Response] with a [CrmReservationResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CrmReservationResponse>> confirmCrmReservation({ 
+  Future<Response<CrmReservationResponse>> confirmCrmReservation({
     required String reservationId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -273,7 +273,7 @@ _responseData = rawData == null ? null : deserialize<CrmReservationResponse, Crm
   /// 需要 Bearer 令牌；当前熊舍成员可创建客户档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createCrmContactRequest] 
+  /// * [createCrmContactRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -284,7 +284,7 @@ _responseData = rawData == null ? null : deserialize<CrmReservationResponse, Crm
   ///
   /// Returns a [Future] containing a [Response] with a [CrmContactResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CrmContactResponse>> createCrmContact({ 
+  Future<Response<CrmContactResponse>> createCrmContact({
     required CreateCrmContactRequest createCrmContactRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -373,7 +373,7 @@ _responseData = rawData == null ? null : deserialize<CrmContactResponse, CrmCont
   /// 需要 Bearer 令牌；当前熊舍成员可创建交付记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createCrmHandoverRequest] 
+  /// * [createCrmHandoverRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -384,7 +384,7 @@ _responseData = rawData == null ? null : deserialize<CrmContactResponse, CrmCont
   ///
   /// Returns a [Future] containing a [Response] with a [CrmHandoverResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CrmHandoverResponse>> createCrmHandover({ 
+  Future<Response<CrmHandoverResponse>> createCrmHandover({
     required CreateCrmHandoverRequest createCrmHandoverRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -473,7 +473,7 @@ _responseData = rawData == null ? null : deserialize<CrmHandoverResponse, CrmHan
   /// 需要 Bearer 令牌；当前熊舍成员可创建预订记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createCrmReservationRequest] 
+  /// * [createCrmReservationRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -484,7 +484,7 @@ _responseData = rawData == null ? null : deserialize<CrmHandoverResponse, CrmHan
   ///
   /// Returns a [Future] containing a [Response] with a [CrmReservationResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CrmReservationResponse>> createCrmReservation({ 
+  Future<Response<CrmReservationResponse>> createCrmReservation({
     required CreateCrmReservationRequest createCrmReservationRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -582,7 +582,7 @@ _responseData = rawData == null ? null : deserialize<CrmReservationResponse, Crm
   ///
   /// Returns a [Future] containing a [Response] with a [CrmContactListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CrmContactListResponse>> listCrmContacts({ 
+  Future<Response<CrmContactListResponse>> listCrmContacts({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -658,7 +658,7 @@ _responseData = rawData == null ? null : deserialize<CrmContactListResponse, Crm
   ///
   /// Returns a [Future] containing a [Response] with a [CrmHandoverListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CrmHandoverListResponse>> listCrmHandovers({ 
+  Future<Response<CrmHandoverListResponse>> listCrmHandovers({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -734,7 +734,7 @@ _responseData = rawData == null ? null : deserialize<CrmHandoverListResponse, Cr
   ///
   /// Returns a [Future] containing a [Response] with a [CrmReservationListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CrmReservationListResponse>> listCrmReservations({ 
+  Future<Response<CrmReservationListResponse>> listCrmReservations({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,

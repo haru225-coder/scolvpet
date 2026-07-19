@@ -38,7 +38,7 @@ class EntitlementLimit {
   });
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -50,7 +50,7 @@ class EntitlementLimit {
 
 
   @JsonKey(
-    
+
     name: r'metric',
     required: true,
     includeIfNull: false,
@@ -62,7 +62,7 @@ class EntitlementLimit {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -74,7 +74,7 @@ class EntitlementLimit {
 
 
   @JsonKey(
-    
+
     name: r'limit',
     required: false,
     includeIfNull: false,
@@ -86,7 +86,7 @@ class EntitlementLimit {
 
 
   @JsonKey(
-    
+
     name: r'used',
     required: true,
     includeIfNull: false,
@@ -98,7 +98,7 @@ class EntitlementLimit {
 
 
   @JsonKey(
-    
+
     name: r'remaining',
     required: false,
     includeIfNull: false,
@@ -110,7 +110,7 @@ class EntitlementLimit {
 
 
   @JsonKey(
-    
+
     name: r'over',
     required: true,
     includeIfNull: false,
@@ -122,7 +122,7 @@ class EntitlementLimit {
 
 
   @JsonKey(
-    
+
     name: r'unit',
     required: true,
     includeIfNull: false,
@@ -167,4 +167,3 @@ class EntitlementLimit {
   }
 
 }
-

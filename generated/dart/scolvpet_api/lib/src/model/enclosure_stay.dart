@@ -40,7 +40,7 @@ class EnclosureStay {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class EnclosureStay {
 
 
   @JsonKey(
-    
+
     name: r'enclosure_id',
     required: true,
     includeIfNull: false,
@@ -64,7 +64,7 @@ class EnclosureStay {
 
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: true,
     includeIfNull: false,
@@ -76,7 +76,7 @@ class EnclosureStay {
 
 
   @JsonKey(
-    
+
     name: r'purpose',
     required: true,
     includeIfNull: false,
@@ -88,7 +88,7 @@ class EnclosureStay {
 
 
   @JsonKey(
-    
+
     name: r'pairing_attempt_id',
     required: false,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class EnclosureStay {
 
 
   @JsonKey(
-    
+
     name: r'started_at',
     required: true,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class EnclosureStay {
 
 
   @JsonKey(
-    
+
     name: r'ended_at',
     required: false,
     includeIfNull: false,
@@ -124,7 +124,7 @@ class EnclosureStay {
 
 
   @JsonKey(
-    
+
     name: r'reason',
     required: false,
     includeIfNull: false,
@@ -137,7 +137,7 @@ class EnclosureStay {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -205,5 +205,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

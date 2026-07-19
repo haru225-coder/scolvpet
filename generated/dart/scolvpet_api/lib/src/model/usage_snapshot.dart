@@ -33,7 +33,7 @@ class UsageSnapshot {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class UsageSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'period_start',
     required: true,
     includeIfNull: false,
@@ -57,7 +57,7 @@ class UsageSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'period_end',
     required: true,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class UsageSnapshot {
 
       /// 六项固定指标各出现一次
   @JsonKey(
-    
+
     name: r'metrics',
     required: true,
     includeIfNull: false,
@@ -82,7 +82,7 @@ class UsageSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -121,4 +121,3 @@ class UsageSnapshot {
   }
 
 }
-

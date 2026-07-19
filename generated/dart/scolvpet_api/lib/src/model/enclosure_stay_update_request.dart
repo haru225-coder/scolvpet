@@ -28,7 +28,7 @@ class EnclosureStayUpdateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'ended_at',
     required: false,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class EnclosureStayUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'reason',
     required: false,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class EnclosureStayUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'correction_reason',
     required: false,
     includeIfNull: false,
@@ -87,4 +87,3 @@ class EnclosureStayUpdateRequest {
   }
 
 }
-

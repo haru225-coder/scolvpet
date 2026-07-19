@@ -45,6 +45,7 @@ type crmReservation struct {
 	Notes       *string    `json:"notes,omitempty"`
 	Version     int        `json:"version"`
 	ContactName string     `json:"contact_name,omitempty"`
+	HamsterName *string    `json:"hamster_name,omitempty"`
 }
 
 type crmHandover struct {
@@ -58,6 +59,7 @@ type crmHandover struct {
 	Notes       *string    `json:"notes,omitempty"`
 	Version     int        `json:"version"`
 	ContactName string     `json:"contact_name,omitempty"`
+	HamsterName *string    `json:"hamster_name,omitempty"`
 }
 
 type createContactRequest struct {
@@ -165,9 +167,11 @@ func (s *Server) listCrmReservations(w http.ResponseWriter, r *http.Request) {
 	}
 	rows, err := s.Store.Pool.Query(r.Context(), `
 		SELECT r.id, r.contact_id, r.hamster_id, r.title, r.status::text, r.reserved_at, r.notes, r.version,
-			c.name
+			c.name,
+			CASE WHEN h.id IS NULL THEN NULL ELSE COALESCE(NULLIF(h.name,''), h.internal_code) END
 		FROM crm_reservation r
 		JOIN crm_contact c ON c.owner_id=r.owner_id AND c.id=r.contact_id
+		LEFT JOIN hamster h ON h.owner_id=r.owner_id AND h.id=r.hamster_id AND h.deleted_at IS NULL
 		WHERE r.owner_id=$1 AND r.status <> 'cancelled'
 		ORDER BY r.reserved_at DESC, r.id DESC
 		LIMIT 200
@@ -180,7 +184,7 @@ func (s *Server) listCrmReservations(w http.ResponseWriter, r *http.Request) {
 	items := make([]crmReservation, 0)
 	for rows.Next() {
 		var item crmReservation
-		if err := rows.Scan(&item.ID, &item.ContactID, &item.HamsterID, &item.Title, &item.Status, &item.ReservedAt, &item.Notes, &item.Version, &item.ContactName); err != nil {
+		if err := rows.Scan(&item.ID, &item.ContactID, &item.HamsterID, &item.Title, &item.Status, &item.ReservedAt, &item.Notes, &item.Version, &item.ContactName, &item.HamsterName); err != nil {
 			writeAPIError(w, r, err)
 			return
 		}
@@ -225,6 +229,10 @@ func (s *Server) createCrmReservation(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		hamsterID = &parsed
+		if err := s.ensureCrmHamsterOwned(r.Context(), ownerID, parsed); err != nil {
+			writeAPIError(w, r, err)
+			return
+		}
 	}
 	var id uuid.UUID
 	err = s.Store.Pool.QueryRow(r.Context(), `
@@ -296,9 +304,11 @@ func (s *Server) listCrmHandovers(w http.ResponseWriter, r *http.Request) {
 	}
 	rows, err := s.Store.Pool.Query(r.Context(), `
 		SELECT h.id, h.contact_id, h.reservation_id, h.hamster_id, h.status::text,
-			h.scheduled_at, h.completed_at, h.notes, h.version, c.name
+			h.scheduled_at, h.completed_at, h.notes, h.version, c.name,
+			CASE WHEN hamster.id IS NULL THEN NULL ELSE COALESCE(NULLIF(hamster.name,''), hamster.internal_code) END
 		FROM crm_handover h
 		JOIN crm_contact c ON c.owner_id=h.owner_id AND c.id=h.contact_id
+		LEFT JOIN hamster ON hamster.owner_id=h.owner_id AND hamster.id=h.hamster_id AND hamster.deleted_at IS NULL
 		WHERE h.owner_id=$1 AND h.status <> 'cancelled'
 		ORDER BY h.scheduled_at DESC, h.id DESC
 		LIMIT 200
@@ -311,7 +321,7 @@ func (s *Server) listCrmHandovers(w http.ResponseWriter, r *http.Request) {
 	items := make([]crmHandover, 0)
 	for rows.Next() {
 		var item crmHandover
-		if err := rows.Scan(&item.ID, &item.ContactID, &item.Reservation, &item.HamsterID, &item.Status, &item.ScheduledAt, &item.CompletedAt, &item.Notes, &item.Version, &item.ContactName); err != nil {
+		if err := rows.Scan(&item.ID, &item.ContactID, &item.Reservation, &item.HamsterID, &item.Status, &item.ScheduledAt, &item.CompletedAt, &item.Notes, &item.Version, &item.ContactName, &item.HamsterName); err != nil {
 			writeAPIError(w, r, err)
 			return
 		}
@@ -345,6 +355,7 @@ func (s *Server) createCrmHandover(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var reservationID *uuid.UUID
+	var hamsterID *uuid.UUID
 	if request.ReservationID != nil && strings.TrimSpace(*request.ReservationID) != "" {
 		parsed, parseErr := uuid.Parse(strings.TrimSpace(*request.ReservationID))
 		if parseErr != nil {
@@ -352,15 +363,34 @@ func (s *Server) createCrmHandover(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		reservationID = &parsed
+		reservation, reservationErr := s.getCrmReservation(r.Context(), ownerID, parsed)
+		if reservationErr != nil {
+			writeAPIError(w, r, reservationErr)
+			return
+		}
+		if reservation.ContactID != contactID {
+			writeAPIError(w, r, validationError("reservation_id", "预订不属于所选客户"))
+			return
+		}
+		if request.HamsterID == nil || strings.TrimSpace(*request.HamsterID) == "" {
+			hamsterID = reservation.HamsterID
+		}
 	}
-	var hamsterID *uuid.UUID
+	var parsedHamsterID *uuid.UUID
 	if request.HamsterID != nil && strings.TrimSpace(*request.HamsterID) != "" {
 		parsed, parseErr := uuid.Parse(strings.TrimSpace(*request.HamsterID))
 		if parseErr != nil {
 			writeAPIError(w, r, validationError("hamster_id", "仓鼠 ID 无效"))
 			return
 		}
-		hamsterID = &parsed
+		parsedHamsterID = &parsed
+		if err := s.ensureCrmHamsterOwned(r.Context(), ownerID, parsed); err != nil {
+			writeAPIError(w, r, err)
+			return
+		}
+	}
+	if parsedHamsterID != nil {
+		hamsterID = parsedHamsterID
 	}
 	scheduledAt := time.Now().UTC()
 	if request.ScheduledAt != nil && strings.TrimSpace(*request.ScheduledAt) != "" {
@@ -424,6 +454,17 @@ func (s *Server) completeCrmHandover(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, err)
 		return
 	}
+	if current.HamsterID != nil {
+		_, err = tx.Exec(r.Context(), `
+			UPDATE hamster
+			SET lifecycle_status='transferred', version=version+1, updated_at=now()
+			WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+		`, ownerID, *current.HamsterID)
+		if err != nil {
+			writeAPIError(w, r, err)
+			return
+		}
+	}
 	if current.Reservation != nil {
 		_, err = tx.Exec(r.Context(), `
 			UPDATE crm_reservation
@@ -471,11 +512,13 @@ func (s *Server) getCrmContact(ctx context.Context, ownerID, id uuid.UUID) (crmC
 func (s *Server) getCrmReservation(ctx context.Context, ownerID, id uuid.UUID) (crmReservation, error) {
 	var item crmReservation
 	err := s.Store.Pool.QueryRow(ctx, `
-		SELECT r.id, r.contact_id, r.hamster_id, r.title, r.status::text, r.reserved_at, r.notes, r.version, c.name
+		SELECT r.id, r.contact_id, r.hamster_id, r.title, r.status::text, r.reserved_at, r.notes, r.version, c.name,
+			CASE WHEN h.id IS NULL THEN NULL ELSE COALESCE(NULLIF(h.name,''), h.internal_code) END
 		FROM crm_reservation r
 		JOIN crm_contact c ON c.owner_id=r.owner_id AND c.id=r.contact_id
+		LEFT JOIN hamster h ON h.owner_id=r.owner_id AND h.id=r.hamster_id AND h.deleted_at IS NULL
 		WHERE r.owner_id=$1 AND r.id=$2
-	`, ownerID, id).Scan(&item.ID, &item.ContactID, &item.HamsterID, &item.Title, &item.Status, &item.ReservedAt, &item.Notes, &item.Version, &item.ContactName)
+	`, ownerID, id).Scan(&item.ID, &item.ContactID, &item.HamsterID, &item.Title, &item.Status, &item.ReservedAt, &item.Notes, &item.Version, &item.ContactName, &item.HamsterName)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return crmReservation{}, store.ErrNotFound
 	}
@@ -486,15 +529,33 @@ func (s *Server) getCrmHandover(ctx context.Context, ownerID, id uuid.UUID) (crm
 	var item crmHandover
 	err := s.Store.Pool.QueryRow(ctx, `
 		SELECT h.id, h.contact_id, h.reservation_id, h.hamster_id, h.status::text,
-			h.scheduled_at, h.completed_at, h.notes, h.version, c.name
+			h.scheduled_at, h.completed_at, h.notes, h.version, c.name,
+			CASE WHEN hamster.id IS NULL THEN NULL ELSE COALESCE(NULLIF(hamster.name,''), hamster.internal_code) END
 		FROM crm_handover h
 		JOIN crm_contact c ON c.owner_id=h.owner_id AND c.id=h.contact_id
+		LEFT JOIN hamster ON hamster.owner_id=h.owner_id AND hamster.id=h.hamster_id AND hamster.deleted_at IS NULL
 		WHERE h.owner_id=$1 AND h.id=$2
-	`, ownerID, id).Scan(&item.ID, &item.ContactID, &item.Reservation, &item.HamsterID, &item.Status, &item.ScheduledAt, &item.CompletedAt, &item.Notes, &item.Version, &item.ContactName)
+	`, ownerID, id).Scan(&item.ID, &item.ContactID, &item.Reservation, &item.HamsterID, &item.Status, &item.ScheduledAt, &item.CompletedAt, &item.Notes, &item.Version, &item.ContactName, &item.HamsterName)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return crmHandover{}, store.ErrNotFound
 	}
 	return item, err
+}
+
+func (s *Server) ensureCrmHamsterOwned(ctx context.Context, ownerID, hamsterID uuid.UUID) error {
+	var exists bool
+	if err := s.Store.Pool.QueryRow(ctx, `
+		SELECT EXISTS(
+			SELECT 1 FROM hamster
+			WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+		)
+	`, ownerID, hamsterID).Scan(&exists); err != nil {
+		return err
+	}
+	if !exists {
+		return validationError("hamster_id", "所选仓鼠不存在")
+	}
+	return nil
 }
 
 func emptyToNil(value *string) *string {

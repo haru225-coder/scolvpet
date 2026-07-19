@@ -34,7 +34,7 @@ class EnclosureStayCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: true,
     includeIfNull: false,
@@ -46,7 +46,7 @@ class EnclosureStayCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'purpose',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class EnclosureStayCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'pairing_attempt_id',
     required: false,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class EnclosureStayCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'started_at',
     required: true,
     includeIfNull: false,
@@ -82,7 +82,7 @@ class EnclosureStayCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'previous_stay_id',
     required: false,
     includeIfNull: false,
@@ -94,7 +94,7 @@ class EnclosureStayCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'reason',
     required: false,
     includeIfNull: false,
@@ -156,5 +156,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

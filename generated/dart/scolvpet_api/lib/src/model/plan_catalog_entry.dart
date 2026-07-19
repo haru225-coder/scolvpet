@@ -38,7 +38,7 @@ class PlanCatalogEntry {
   });
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -50,7 +50,7 @@ class PlanCatalogEntry {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -62,7 +62,7 @@ class PlanCatalogEntry {
 
 
   @JsonKey(
-    
+
     name: r'description',
     required: true,
     includeIfNull: false,
@@ -74,7 +74,7 @@ class PlanCatalogEntry {
 
 
   @JsonKey(
-    
+
     name: r'price_hint',
     required: true,
     includeIfNull: false,
@@ -86,7 +86,7 @@ class PlanCatalogEntry {
 
 
   @JsonKey(
-    
+
     name: r'features',
     required: true,
     includeIfNull: false,
@@ -98,7 +98,7 @@ class PlanCatalogEntry {
 
 
   @JsonKey(
-    
+
     name: r'limits',
     required: true,
     includeIfNull: false,
@@ -110,7 +110,7 @@ class PlanCatalogEntry {
 
 
   @JsonKey(
-    
+
     name: r'enforcement',
     required: true,
     includeIfNull: false,
@@ -122,7 +122,7 @@ class PlanCatalogEntry {
 
 
   @JsonKey(
-    
+
     name: r'highlight',
     required: false,
     includeIfNull: false,
@@ -200,5 +200,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

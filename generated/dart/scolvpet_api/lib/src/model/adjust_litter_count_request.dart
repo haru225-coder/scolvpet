@@ -34,7 +34,7 @@ class AdjustLitterCountRequest {
   });
 
   @JsonKey(
-    
+
     name: r'event_type',
     required: true,
     includeIfNull: false,
@@ -47,7 +47,7 @@ class AdjustLitterCountRequest {
 
       /// discovered 必须为正；death/transferred_out 必须为负；correction 非零
   @JsonKey(
-    
+
     name: r'delta',
     required: true,
     includeIfNull: false,
@@ -59,7 +59,7 @@ class AdjustLitterCountRequest {
 
 
   @JsonKey(
-    
+
     name: r'occurred_at',
     required: true,
     includeIfNull: false,
@@ -71,7 +71,7 @@ class AdjustLitterCountRequest {
 
 
   @JsonKey(
-    
+
     name: r'reason',
     required: true,
     includeIfNull: false,
@@ -83,7 +83,7 @@ class AdjustLitterCountRequest {
 
 
   @JsonKey(
-    
+
     name: r'new_temporary_codes',
     required: false,
     includeIfNull: false,
@@ -95,7 +95,7 @@ class AdjustLitterCountRequest {
 
 
   @JsonKey(
-    
+
     name: r'affected_pup_identity_ids',
     required: false,
     includeIfNull: false,
@@ -155,5 +155,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

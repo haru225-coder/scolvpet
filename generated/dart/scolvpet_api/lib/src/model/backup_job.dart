@@ -66,7 +66,7 @@ class BackupJob {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -78,7 +78,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'job_type',
     required: true,
     includeIfNull: false,
@@ -90,7 +90,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -104,7 +104,7 @@ class BackupJob {
           // minimum: 0
           // maximum: 100
   @JsonKey(
-    
+
     name: r'progress_percent',
     required: true,
     includeIfNull: false,
@@ -116,7 +116,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'current_step',
     required: false,
     includeIfNull: false,
@@ -128,7 +128,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'error',
     required: false,
     includeIfNull: false,
@@ -140,7 +140,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'retryable',
     required: true,
     includeIfNull: false,
@@ -165,7 +165,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'result',
     required: false,
     includeIfNull: false,
@@ -177,7 +177,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: false,
     includeIfNull: false,
@@ -190,7 +190,7 @@ class BackupJob {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -202,7 +202,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -214,7 +214,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -226,7 +226,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'includes_structured_data',
     required: true,
     includeIfNull: false,
@@ -238,7 +238,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'includes_media_manifest',
     required: true,
     includeIfNull: false,
@@ -250,7 +250,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'includes_checksums',
     required: true,
     includeIfNull: false,
@@ -263,7 +263,7 @@ class BackupJob {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'size_bytes',
     required: false,
     includeIfNull: false,
@@ -275,7 +275,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'sha256',
     required: false,
     includeIfNull: false,
@@ -287,7 +287,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'integrity_status',
     required: true,
     includeIfNull: false,
@@ -299,7 +299,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'restore_readiness',
     required: true,
     includeIfNull: false,
@@ -311,7 +311,7 @@ class BackupJob {
 
 
   @JsonKey(
-    
+
     name: r'verified_at',
     required: false,
     includeIfNull: false,
@@ -483,5 +483,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -1,16 +1,18 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../ui/theme/ios_theme.dart';
+import '../../ui/widgets/bear_brand.dart';
+import '../../ui/widgets/ios_widgets.dart';
+import '../i2/i2_models.dart';
 import '../i2/i2_widgets.dart';
 import 'member_controller.dart';
 import 'member_models.dart';
 import 'rbac.dart';
 
 class MemberListPage extends StatefulWidget {
-  const MemberListPage({
-    super.key,
-    required this.controller,
-  });
+  const MemberListPage({super.key, required this.controller});
 
   final MemberController controller;
 
@@ -36,9 +38,7 @@ class _MemberListPageState extends State<MemberListPage> {
     if (!mounted) return;
     final message = widget.controller.lastMessage;
     if (message != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      showIosMessage(context, message);
     }
     if (ok) setState(() {});
   }
@@ -56,7 +56,10 @@ class _MemberListPageState extends State<MemberListPage> {
                 key: Key('member-role-option-$r'),
                 title: Text(memberRoleLabel(r)),
                 trailing: member.role == r
-                    ? const Icon(Icons.check, color: Color(0xffc77852))
+                    ? Icon(
+                        CupertinoIcons.checkmark_alt,
+                        color: ScolvPalette.of(context).accent,
+                      )
                     : null,
                 onTap: () => Navigator.pop(context, r),
               ),
@@ -69,41 +72,127 @@ class _MemberListPageState extends State<MemberListPage> {
     if (!mounted) return;
     final message = widget.controller.lastMessage;
     if (message != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      showIosMessage(context, message);
     }
     if (ok) setState(() {});
   }
 
   Future<void> _revoke(OrganizationMember member) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showIosAlert(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('撤销成员'),
-        content: Text('确认撤销 ${member.title}（${memberRoleLabel(member.role)}）？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('撤销'),
-          ),
-        ],
-      ),
+      title: '撤销成员',
+      message: '确认撤销 ${member.title}（${memberRoleLabel(member.role)}）？',
+      cancelLabel: '取消',
+      confirmLabel: '撤销',
+      destructive: true,
     );
     if (confirmed != true || !mounted) return;
     final ok = await widget.controller.revoke(member);
     if (!mounted) return;
     final message = widget.controller.lastMessage;
     if (message != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      showIosMessage(context, message);
     }
     if (ok) setState(() {});
+  }
+
+  Future<void> _showMemberDetails(OrganizationMember member) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        final palette = ScolvPalette.of(context);
+        final statusColor = _memberStatusColor(member.status);
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    _MemberAvatar(member: member, size: 48),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            member.title,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            member.phone,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: palette.secondaryLabel),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IosStatusBadge(
+                      label: memberStatusLabel(member.status),
+                      color: statusColor,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  memberRoleLabel(member.role),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: palette.accent,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  memberRoleDescription(member.role),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: palette.secondaryLabel,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final label in memberRolePermissionLabels(member.role))
+                      IosStatusBadge(label: label, color: palette.accent),
+                  ],
+                ),
+                if (!member.isOwner && widget.controller.canManage) ...[
+                  const SizedBox(height: 22),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _changeRole(member);
+                    },
+                    icon: const Icon(
+                      CupertinoIcons.person_crop_circle_badge_checkmark,
+                    ),
+                    label: const Text('修改角色'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _revoke(member);
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: IosColors.systemRed,
+                    ),
+                    child: const Text('撤销成员'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -111,6 +200,16 @@ class _MemberListPageState extends State<MemberListPage> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (context, _) {
+        final members =
+            widget.controller.listState.data ?? const <OrganizationMember>[];
+        final activeCount = members
+            .where((member) => member.status == 'active')
+            .length;
+        final invitedCount = members
+            .where((member) => member.status == 'invited')
+            .length;
+        final busy =
+            widget.controller.actionState.status == I2AsyncStatus.loading;
         return Scaffold(
           appBar: AppBar(
             title: const Text('成员与权限'),
@@ -118,98 +217,115 @@ class _MemberListPageState extends State<MemberListPage> {
               IconButton(
                 key: const Key('member-refresh'),
                 onPressed: widget.controller.refresh,
-                icon: const Icon(Icons.refresh),
+                icon: const Icon(CupertinoIcons.arrow_clockwise),
               ),
             ],
           ),
           floatingActionButton: widget.controller.canManage
               ? FloatingActionButton.extended(
                   key: const Key('member-invite'),
-                  onPressed: _invite,
-                  icon: const Icon(Icons.person_add_alt_1),
+                  onPressed: busy ? null : _invite,
+                  backgroundColor: ScolvPalette.of(context).accent,
+                  foregroundColor: ScolvPalette.of(context).groupedBackground,
+                  elevation: 0,
+                  icon: const Icon(CupertinoIcons.person_badge_plus),
                   label: const Text('邀请成员'),
                 )
               : null,
           body: Column(
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-                child: Text(
-                  '舍主可邀请繁育员、饲养员、客服与只读访客。数据范围仍按熊舍 owner 隔离；'
-                  '角色控制写入口（繁育 / 日常护理 / 只读）。',
-                  style: TextStyle(color: Color(0xff6c7774), fontSize: 13),
-                ),
+              IosModuleIntro(
+                icon: CupertinoIcons.person_2_fill,
+                title: '团队协作',
+                description: widget.controller.canManage
+                    ? '邀请伙伴加入当前熊舍，并按实际职责分配可操作范围。'
+                    : '你当前以${memberRoleLabel(widget.controller.currentRole)}身份加入，写入口会按权限显示。',
+                metrics: [
+                  IosModuleMetric(label: '成员', value: '${members.length}'),
+                  IosModuleMetric(
+                    label: '已加入',
+                    value: '$activeCount',
+                    color: IosColors.systemGreen,
+                  ),
+                  IosModuleMetric(
+                    label: '待接受',
+                    value: '$invitedCount',
+                    color: IosColors.systemOrange,
+                  ),
+                ],
               ),
               Expanded(
                 child: I2AsyncStateView<List<OrganizationMember>>(
                   state: widget.controller.listState,
                   onRetry: widget.controller.refresh,
+                  emptyBuilder: (context) => Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: BearEmptyCard(
+                        title: '还没有团队成员',
+                        subtitle: '邀请第一位伙伴后，可以按繁育、饲养、客服或只读职责分工。',
+                        illustration: BearAssets.onboardingSetup,
+                        actionLabel: widget.controller.canManage
+                            ? '邀请成员'
+                            : null,
+                        onAction: widget.controller.canManage ? _invite : null,
+                      ),
+                    ),
+                  ),
                   builder: (members) {
-                    if (members.isEmpty) {
-                      return const I2StateMessage(
-                        icon: Icons.group_outlined,
-                        message: '暂无成员',
-                      );
-                    }
-                    return ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
-                      itemCount: members.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final member = members[index];
-                        return Card(
-                          key: Key('member-card-${member.id}'),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: member.isOwner
-                                  ? const Color(0xffc77852)
-                                  : const Color(0xffdce5e3),
-                              child: Text(
-                                memberRoleLabel(member.role).substring(0, 1),
-                                style: TextStyle(
-                                  color: member.isOwner
-                                      ? Colors.white
-                                      : const Color(0xff1f2928),
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              member.title,
-                              style: const TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                            subtitle: Text(
-                              '${memberRoleLabel(member.role)} · '
-                              '${memberStatusLabel(member.status)}\n'
-                              '手机 ${member.phone}',
-                            ),
-                            isThreeLine: true,
-                            trailing: member.isOwner ||
-                                    !widget.controller.canManage
-                                ? null
-                                : PopupMenuButton<String>(
-                                    key: Key('member-menu-${member.id}'),
-                                    onSelected: (value) {
-                                      if (value == 'role') {
-                                        _changeRole(member);
-                                      } else if (value == 'revoke') {
-                                        _revoke(member);
-                                      }
-                                    },
-                                    itemBuilder: (context) => const [
-                                      PopupMenuItem(
-                                        value: 'role',
-                                        child: Text('修改角色'),
-                                      ),
-                                      PopupMenuItem(
-                                        value: 'revoke',
-                                        child: Text('撤销'),
+                    return ListView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(0, 12, 0, 88),
+                      children: [
+                        IosGroupedSection(
+                          children: [
+                            for (final member in members)
+                              IosListTile(
+                                key: Key('member-card-${member.id}'),
+                                leading: _MemberAvatar(member: member),
+                                title: member.title,
+                                subtitle:
+                                    '${memberRoleLabel(member.role)}\n${memberRoleDescription(member.role)}',
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IosStatusBadge(
+                                      label: memberStatusLabel(member.status),
+                                      color: _memberStatusColor(member.status),
+                                    ),
+                                    if (!member.isOwner &&
+                                        widget.controller.canManage) ...[
+                                      const SizedBox(width: 4),
+                                      PopupMenuButton<String>(
+                                        key: Key('member-menu-${member.id}'),
+                                        enabled: !busy,
+                                        onSelected: (value) {
+                                          if (value == 'role') {
+                                            _changeRole(member);
+                                          } else if (value == 'revoke') {
+                                            _revoke(member);
+                                          }
+                                        },
+                                        itemBuilder: (context) => const [
+                                          PopupMenuItem(
+                                            value: 'role',
+                                            child: Text('修改角色'),
+                                          ),
+                                          PopupMenuItem(
+                                            value: 'revoke',
+                                            child: Text('撤销'),
+                                          ),
+                                        ],
                                       ),
                                     ],
-                                  ),
-                          ),
-                        );
-                      },
+                                  ],
+                                ),
+                                onTap: () => _showMemberDetails(member),
+                                showChevron: false,
+                              ),
+                          ],
+                        ),
+                      ],
                     );
                   },
                 ),
@@ -258,6 +374,7 @@ class _InviteSheetState extends State<_InviteSheet> {
           TextField(
             key: const Key('member-invite-phone'),
             controller: _phone,
+            textInputAction: TextInputAction.next,
             keyboardType: TextInputType.phone,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: const InputDecoration(
@@ -269,27 +386,44 @@ class _InviteSheetState extends State<_InviteSheet> {
           TextField(
             key: const Key('member-invite-name'),
             controller: _name,
+            textInputAction: TextInputAction.done,
             decoration: const InputDecoration(
               labelText: '显示名（可选）',
               border: OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
+          IosPickerField<String>(
             key: const Key('member-invite-role'),
-            initialValue: _role,
-            decoration: const InputDecoration(
-              labelText: '角色',
-              border: OutlineInputBorder(),
-            ),
+            label: '角色',
+            selected: _role,
             items: [
               for (final r in inviteableRoles)
-                DropdownMenuItem(
-                  value: r,
-                  child: Text(memberRoleLabel(r)),
+                IosPickerItem(value: r, label: memberRoleLabel(r)),
+            ],
+            onSelected: (value) {
+              if (value != null) setState(() => _role = value);
+            },
+          ),
+          const SizedBox(height: 8),
+          Text(
+            memberRoleDescription(_role),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: ScolvPalette.of(context).secondaryLabel,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final label in memberRolePermissionLabels(_role))
+                IosStatusBadge(
+                  label: label,
+                  color: ScolvPalette.of(context).accent,
                 ),
             ],
-            onChanged: (value) => setState(() => _role = value!),
           ),
           const SizedBox(height: 16),
           FilledButton(
@@ -297,9 +431,7 @@ class _InviteSheetState extends State<_InviteSheet> {
             onPressed: () {
               final phone = _phone.text.trim();
               if (phone.length < 6) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('请输入有效手机号')),
-                );
+                showIosMessage(context, '请输入有效手机号');
                 return;
               }
               Navigator.pop(
@@ -320,3 +452,43 @@ class _InviteSheetState extends State<_InviteSheet> {
     );
   }
 }
+
+class _MemberAvatar extends StatelessWidget {
+  const _MemberAvatar({required this.member, this.size = 36});
+
+  final OrganizationMember member;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = ScolvPalette.of(context);
+    final color = member.isOwner ? palette.accent : palette.secondaryLabel;
+    final label = memberRoleLabel(member.role);
+    final initial = label.isEmpty ? '?' : label.substring(0, 1);
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: member.isOwner ? 0.95 : 0.12),
+        borderRadius: BorderRadius.circular(size * 0.28),
+        border: Border.all(color: color.withValues(alpha: 0.24)),
+      ),
+      child: Text(
+        initial,
+        style: TextStyle(
+          color: member.isOwner ? palette.groupedBackground : palette.label,
+          fontWeight: FontWeight.w700,
+          fontSize: size * 0.38,
+        ),
+      ),
+    );
+  }
+}
+
+Color _memberStatusColor(String status) => switch (status) {
+  'active' => IosColors.systemGreen,
+  'invited' => IosColors.systemOrange,
+  'revoked' => IosColors.systemRed,
+  _ => IosColors.systemGray,
+};

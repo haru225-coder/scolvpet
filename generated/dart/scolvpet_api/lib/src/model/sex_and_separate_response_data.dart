@@ -40,7 +40,7 @@ class SexAndSeparateResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class SexAndSeparateResponseData {
 
 
   @JsonKey(
-    
+
     name: r'litter_state',
     required: true,
     includeIfNull: false,
@@ -64,7 +64,7 @@ class SexAndSeparateResponseData {
 
 
   @JsonKey(
-    
+
     name: r'separated_at',
     required: true,
     includeIfNull: false,
@@ -77,7 +77,7 @@ class SexAndSeparateResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'processed_count',
     required: true,
     includeIfNull: false,
@@ -90,7 +90,7 @@ class SexAndSeparateResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'uncertain_count',
     required: true,
     includeIfNull: false,
@@ -102,7 +102,7 @@ class SexAndSeparateResponseData {
 
 
   @JsonKey(
-    
+
     name: r'item_results',
     required: true,
     includeIfNull: false,
@@ -114,7 +114,7 @@ class SexAndSeparateResponseData {
 
 
   @JsonKey(
-    
+
     name: r'created_task_ids',
     required: true,
     includeIfNull: false,
@@ -127,7 +127,7 @@ class SexAndSeparateResponseData {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -172,4 +172,3 @@ class SexAndSeparateResponseData {
   }
 
 }
-

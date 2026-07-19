@@ -50,7 +50,7 @@ class SpeciesRuleVersionCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'source_template_id',
     required: false,
     includeIfNull: false,
@@ -62,7 +62,7 @@ class SpeciesRuleVersionCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'species_code',
     required: true,
     includeIfNull: false,
@@ -74,7 +74,7 @@ class SpeciesRuleVersionCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'variety_scope',
     required: false,
     includeIfNull: false,
@@ -87,7 +87,7 @@ class SpeciesRuleVersionCreateRequest {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'gestation_min_days',
     required: true,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class SpeciesRuleVersionCreateRequest {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'gestation_max_days',
     required: true,
     includeIfNull: false,
@@ -113,7 +113,7 @@ class SpeciesRuleVersionCreateRequest {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'pairing_max_minutes',
     required: false,
     includeIfNull: false,
@@ -126,7 +126,7 @@ class SpeciesRuleVersionCreateRequest {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'weaning_target_days',
     required: true,
     includeIfNull: false,
@@ -139,7 +139,7 @@ class SpeciesRuleVersionCreateRequest {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'sexing_target_days',
     required: true,
     includeIfNull: false,
@@ -152,7 +152,7 @@ class SpeciesRuleVersionCreateRequest {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'separation_target_days',
     required: true,
     includeIfNull: false,
@@ -165,7 +165,7 @@ class SpeciesRuleVersionCreateRequest {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'post_breeding_rest_days',
     required: false,
     includeIfNull: false,
@@ -178,7 +178,7 @@ class SpeciesRuleVersionCreateRequest {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'profile_creation_deadline_days',
     required: false,
     includeIfNull: false,
@@ -190,7 +190,7 @@ class SpeciesRuleVersionCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'weight_reference',
     required: false,
     includeIfNull: false,
@@ -202,7 +202,7 @@ class SpeciesRuleVersionCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'source_note',
     required: true,
     includeIfNull: false,
@@ -214,7 +214,7 @@ class SpeciesRuleVersionCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'effective_at',
     required: true,
     includeIfNull: false,
@@ -271,4 +271,3 @@ class SpeciesRuleVersionCreateRequest {
   }
 
 }
-

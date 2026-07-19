@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/contracts/contracts.dart';
+import 'package:scolvpet_mobile/features/contracts/document_pdf.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('MemoryContractsRepository template → contract → issue', () async {
     final repo = MemoryContractsRepository();
     final tpl = await repo.createTemplate(
@@ -44,6 +47,30 @@ void main() {
     expect(doc.bodyFilled, contains('小李'));
   });
 
+  test('buildDocumentPdf returns a non-empty PDF document', () async {
+    final bytes = await buildDocumentPdf(
+      DocDocument(
+        id: 'doc-1',
+        templateId: 'tpl-1',
+        kind: 'contract',
+        contactId: 'contact-1',
+        handoverId: 'handover-1',
+        title: '雪球交接协议',
+        bodyFilled: '客户：阿花\n交接个体：雪球\n双方确认交付信息无误。',
+        currency: 'CNY',
+        status: 'draft',
+        issuedAt: null,
+        notes: '随附粮食与饲养说明',
+        version: 1,
+        contactName: '阿花',
+      ),
+    );
+
+    expect(bytes, isNotEmpty);
+    expect(bytes.length, greaterThan(1000));
+    expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+  });
+
   testWidgets('ContractsHubPage creates template and shows it', (tester) async {
     final controller = ContractsController(
       repository: MemoryContractsRepository(),
@@ -65,5 +92,24 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('交接协议'), findsWidgets);
+  });
+
+  testWidgets('ContractsHubPage keeps previews readable but hides writes', (
+    tester,
+  ) async {
+    final controller = ContractsController(
+      repository: MemoryContractsRepository(),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ContractsHubPage(controller: controller, canWrite: false),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('合同与回执'), findsOneWidget);
+    expect(find.textContaining('当前角色可查看、复制和输出单据'), findsOneWidget);
+    expect(find.byKey(const Key('doc-fab')), findsNothing);
+    expect(find.byKey(const Key('doc-refresh')), findsOneWidget);
   });
 }

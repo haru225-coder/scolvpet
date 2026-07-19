@@ -47,7 +47,7 @@ Method | HTTP request | Description
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP2Api();
-final AssistantAskRequest assistantAskRequest = ; // AssistantAskRequest | 
+final AssistantAskRequest assistantAskRequest = ; // AssistantAskRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -62,8 +62,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **assistantAskRequest** | [**AssistantAskRequest**](AssistantAskRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **assistantAskRequest** | [**AssistantAskRequest**](AssistantAskRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -132,7 +132,7 @@ import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP2Api();
 final String releaseId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 版本 ID
-final AuditMiniprogramReleaseRequest auditMiniprogramReleaseRequest = ; // AuditMiniprogramReleaseRequest | 
+final AuditMiniprogramReleaseRequest auditMiniprogramReleaseRequest = ; // AuditMiniprogramReleaseRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -147,9 +147,9 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **releaseId** | **String**| 版本 ID | 
- **auditMiniprogramReleaseRequest** | [**AuditMiniprogramReleaseRequest**](AuditMiniprogramReleaseRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **releaseId** | **String**| 版本 ID |
+ **auditMiniprogramReleaseRequest** | [**AuditMiniprogramReleaseRequest**](AuditMiniprogramReleaseRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -193,8 +193,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **dealId** | **String**| 借配单 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **dealId** | **String**| 借配单 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -238,8 +238,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **dealId** | **String**| 借配单 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **dealId** | **String**| 借配单 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -283,8 +283,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **dealId** | **String**| 借配单 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **dealId** | **String**| 借配单 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -313,7 +313,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP2Api();
-final CreateMiniprogramReleaseRequest createMiniprogramReleaseRequest = ; // CreateMiniprogramReleaseRequest | 
+final CreateMiniprogramReleaseRequest createMiniprogramReleaseRequest = ; // CreateMiniprogramReleaseRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -328,8 +328,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createMiniprogramReleaseRequest** | [**CreateMiniprogramReleaseRequest**](CreateMiniprogramReleaseRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createMiniprogramReleaseRequest** | [**CreateMiniprogramReleaseRequest**](CreateMiniprogramReleaseRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -358,7 +358,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP2Api();
-final CreateStudDealRequest createStudDealRequest = ; // CreateStudDealRequest | 
+final CreateStudDealRequest createStudDealRequest = ; // CreateStudDealRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -373,8 +373,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createStudDealRequest** | [**CreateStudDealRequest**](CreateStudDealRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createStudDealRequest** | [**CreateStudDealRequest**](CreateStudDealRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -403,7 +403,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP2Api();
-final CreateStudListingRequest createStudListingRequest = ; // CreateStudListingRequest | 
+final CreateStudListingRequest createStudListingRequest = ; // CreateStudListingRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -418,8 +418,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createStudListingRequest** | [**CreateStudListingRequest**](CreateStudListingRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createStudListingRequest** | [**CreateStudListingRequest**](CreateStudListingRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -526,7 +526,7 @@ This endpoint does not need any parameter.
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP2Api();
-final String slug = slug_example; // String | 
+final String slug = slug_example; // String |
 
 try {
     final response = api.getPublicSiteBySlug(slug);
@@ -540,7 +540,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **slug** | **String**|  | 
+ **slug** | **String**|  |
 
 ### Return type
 
@@ -661,7 +661,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **mine** | **String**| 仅查看自己的挂牌时传 1 | [optional] 
+ **mine** | **String**| 仅查看自己的挂牌时传 1 | [optional]
 
 ### Return type
 
@@ -705,8 +705,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **releaseId** | **String**| 版本 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **releaseId** | **String**| 版本 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -749,7 +749,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -793,8 +793,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **releaseId** | **String**| 版本 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **releaseId** | **String**| 版本 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -838,8 +838,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **dealId** | **String**| 借配单 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **dealId** | **String**| 借配单 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -883,8 +883,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **releaseId** | **String**| 版本 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **releaseId** | **String**| 版本 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -927,7 +927,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -971,8 +971,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **listingId** | **String**| 挂牌 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **listingId** | **String**| 挂牌 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -1001,7 +1001,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP2Api();
-final UpsertMiniprogramConfigRequest upsertMiniprogramConfigRequest = ; // UpsertMiniprogramConfigRequest | 
+final UpsertMiniprogramConfigRequest upsertMiniprogramConfigRequest = ; // UpsertMiniprogramConfigRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -1016,8 +1016,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **upsertMiniprogramConfigRequest** | [**UpsertMiniprogramConfigRequest**](UpsertMiniprogramConfigRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **upsertMiniprogramConfigRequest** | [**UpsertMiniprogramConfigRequest**](UpsertMiniprogramConfigRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -1046,7 +1046,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP2Api();
-final UpsertPublicSiteRequest upsertPublicSiteRequest = ; // UpsertPublicSiteRequest | 
+final UpsertPublicSiteRequest upsertPublicSiteRequest = ; // UpsertPublicSiteRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -1061,8 +1061,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **upsertPublicSiteRequest** | [**UpsertPublicSiteRequest**](UpsertPublicSiteRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **upsertPublicSiteRequest** | [**UpsertPublicSiteRequest**](UpsertPublicSiteRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -1078,4 +1078,3 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

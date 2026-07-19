@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:scolvpet_api/scolvpet_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +20,8 @@ abstract interface class I2Repository {
   Future<List<I2CleaningRecord>> listCleaningHistory(String enclosureId);
 
   Future<I2Hamster> createHamster(I2HamsterDraft draft);
+
+  Future<I2Enclosure> createEnclosure(I2EnclosureDraft draft);
 
   Future<List<I2Hamster>> createHamsters(List<I2HamsterDraft> drafts);
 
@@ -71,6 +75,24 @@ abstract interface class I2Repository {
   Future<List<I2ImportRowResult>> listImportRows(String jobId);
 }
 
+class I2AvatarUpload {
+  const I2AvatarUpload({
+    required this.bytes,
+    required this.fileName,
+    required this.contentType,
+  });
+
+  final Uint8List bytes;
+  final String fileName;
+  final String contentType;
+}
+
+abstract interface class I2AvatarRepository {
+  Future<I2Hamster> uploadAvatar(I2Hamster hamster, I2AvatarUpload upload);
+
+  Future<I2Hamster> removeAvatar(I2Hamster hamster);
+}
+
 abstract interface class I2LocalStore {
   Future<I2Snapshot?> readSnapshot();
 
@@ -119,10 +141,18 @@ class SharedPreferencesI2LocalStore implements I2LocalStore {
     final raw = preferences.getString(snapshotKey);
     if (raw == null || raw.isEmpty) return null;
     try {
-      return I2Snapshot.fromJson(
-        Map<String, dynamic>.from(jsonDecode(raw) as Map),
-      );
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) {
+        await preferences.remove(snapshotKey);
+        return null;
+      }
+      return I2Snapshot.fromJson(Map<String, dynamic>.from(decoded));
     } on Object {
+      try {
+        await preferences.remove(snapshotKey);
+      } on Object {
+        // Returning null still prevents a bad cache from blocking restore.
+      }
       return null;
     }
   }
@@ -137,18 +167,32 @@ class SharedPreferencesI2LocalStore implements I2LocalStore {
     final raw = preferences.getString(draftsKey);
     if (raw == null || raw.isEmpty) return const <I2Draft>[];
     try {
-      final values = (jsonDecode(raw) as List).whereType<Map>();
-      return values
-          .map(
-            (value) => I2Draft(
-              id: value['id'] as String? ?? '',
-              kind: value['kind'] as String? ?? 'unknown',
-              payload: Map<String, dynamic>.from(value['payload'] as Map),
-            ),
-          )
-          .where((draft) => draft.id.isNotEmpty)
-          .toList();
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) {
+        await preferences.remove(draftsKey);
+        return const <I2Draft>[];
+      }
+      final drafts = <I2Draft>[];
+      for (final value in decoded) {
+        if (value is! Map) continue;
+        final id = value['id'];
+        final payload = value['payload'];
+        if (id is! String || id.isEmpty || payload is! Map) continue;
+        drafts.add(
+          I2Draft(
+            id: id,
+            kind: value['kind'] is String ? value['kind'] as String : 'unknown',
+            payload: Map<String, dynamic>.from(payload),
+          ),
+        );
+      }
+      return drafts;
     } on Object {
+      try {
+        await preferences.remove(draftsKey);
+      } on Object {
+        // Returning an empty list is the safe fallback for invalid drafts.
+      }
       return const <I2Draft>[];
     }
   }
@@ -217,7 +261,7 @@ abstract interface class I2CleaningHistoryGateway {
 }
 
 /// 生产实现只依赖 DefaultApi 和 ApiClient，不让页面直接接触生成模型。
-class DefaultApiI2Repository implements I2Repository {
+class DefaultApiI2Repository implements I2Repository, I2AvatarRepository {
   DefaultApiI2Repository({required this.client, this.cleaningHistoryGateway});
 
   final ApiClient client;
@@ -242,10 +286,13 @@ class DefaultApiI2Repository implements I2Repository {
         (results[2] as Response<EnclosureListResponse>).data!;
     final weightResponse =
         (results[3] as Response<WeightRecordListResponse>).data!;
+    final hamsters = await Future.wait(
+      hamsterResponse.data.map(
+        (value) => _resolveAvatar(I2Hamster.fromJson(value.toJson())),
+      ),
+    );
     return I2Snapshot(
-      hamsters: hamsterResponse.data
-          .map((value) => I2Hamster.fromJson(value.toJson()))
-          .toList(),
+      hamsters: hamsters,
       litters: litterResponse.data
           .map((value) => I2Litter.fromJson(value.toJson()))
           .toList(),
@@ -267,7 +314,9 @@ class DefaultApiI2Repository implements I2Repository {
       limit: 100,
     );
     final littersResponse = await api.listLitters(limit: 100);
-    final hamster = I2Hamster.fromJson(hamsterResponse.data!.data.toJson());
+    final hamster = await _resolveAvatar(
+      I2Hamster.fromJson(hamsterResponse.data!.data.toJson()),
+    );
     final litters = littersResponse.data!.data
         .where((value) => value.sireId == hamsterId || value.damId == hamsterId)
         .map((value) => I2Litter.fromJson(value.toJson()))
@@ -327,6 +376,21 @@ class DefaultApiI2Repository implements I2Repository {
       ),
     );
     return I2Hamster.fromJson(response.data!.data.toJson());
+  }
+
+  @override
+  Future<I2Enclosure> createEnclosure(I2EnclosureDraft draft) async {
+    final response = await api.createEnclosure(
+      idempotencyKey: _key(),
+      enclosureCreateRequest: EnclosureCreateRequest(
+        code: draft.code,
+        rackCode: draft.rackCode,
+        levelCode: draft.levelCode,
+        capacity: draft.capacity,
+        equipment: draft.equipment.isEmpty ? null : draft.equipment,
+      ),
+    );
+    return I2Enclosure.fromJson(response.data!.data.toJson());
   }
 
   @override
@@ -390,9 +454,115 @@ class DefaultApiI2Repository implements I2Repository {
         sexConfidence: update.sexConfidence,
         birthDate: update.birthDate,
         notes: update.notes,
+        coverMediaId: update.coverMediaId,
       ),
     );
     return I2Hamster.fromJson(response.data!.data.toJson());
+  }
+
+  @override
+  Future<I2Hamster> uploadAvatar(
+    I2Hamster hamster,
+    I2AvatarUpload upload,
+  ) async {
+    final contentType = MediaUploadPresignRequestContentTypeEnum.values
+        .where((value) => value.value == upload.contentType)
+        .firstOrNull;
+    if (contentType == null || !upload.contentType.startsWith('image/')) {
+      throw const I2RepositoryException('请选择 JPG、PNG 或 WebP 图片');
+    }
+    if (upload.bytes.isEmpty || upload.bytes.length > 20 * 1024 * 1024) {
+      throw const I2RepositoryException('头像文件需小于 20 MB');
+    }
+    final digest = sha256.convert(upload.bytes).toString();
+    final sessionResponse = await api.presignMediaUpload(
+      idempotencyKey: _key(),
+      mediaUploadPresignRequest: MediaUploadPresignRequest(
+        fileName: upload.fileName,
+        contentType: contentType,
+        sizeBytes: upload.bytes.length,
+        sha256: digest,
+        purpose: MediaUploadPresignRequestPurposeEnum.hamsterProfile,
+      ),
+    );
+    final session = sessionResponse.data!.data;
+    final uploaded = await Dio().put<Object>(
+      session.uploadUrl,
+      data: Stream.fromIterable(<List<int>>[upload.bytes]),
+      options: Options(
+        headers: <String, Object>{
+          ...session.headers,
+          Headers.contentLengthHeader: upload.bytes.length,
+          Headers.contentTypeHeader: upload.contentType,
+        },
+        responseType: ResponseType.plain,
+      ),
+    );
+    final etag = uploaded.headers.value('etag')?.trim();
+    if (etag == null || etag.isEmpty) {
+      throw const I2RepositoryException('图片已上传，但对象存储未返回校验标识');
+    }
+    final completed = await api.completeMediaUpload(
+      uploadId: session.id,
+      idempotencyKey: _key(),
+      ifMatch: _etag(session.version),
+      mediaUploadCompleteRequest: MediaUploadCompleteRequest(
+        objectEtag: etag,
+        sizeBytes: upload.bytes.length,
+        sha256: digest,
+        timezone: DateTime.now().timeZoneName,
+      ),
+    );
+    final media = completed.data!.data.media;
+    final updated = await updateHamster(
+      hamster.id,
+      hamster.version,
+      I2HamsterUpdate(coverMediaId: media.id),
+    );
+    return _resolveAvatar(updated);
+  }
+
+  @override
+  Future<I2Hamster> removeAvatar(I2Hamster hamster) async {
+    final response = await client.dio.patch<Map<String, dynamic>>(
+      '/hamsters/${hamster.id}',
+      data: const <String, Object?>{'cover_media_id': null},
+      options: Options(
+        headers: <String, String>{
+          'Idempotency-Key': _key(),
+          'If-Match': _etag(hamster.version),
+        },
+      ),
+    );
+    final raw = response.data?['data'];
+    if (raw is! Map) throw const I2RepositoryException('头像删除响应为空');
+    return I2Hamster.fromJson(Map<String, dynamic>.from(raw));
+  }
+
+  Future<I2Hamster> _resolveAvatar(I2Hamster hamster) async {
+    final mediaId = hamster.coverMediaId;
+    if (mediaId == null || mediaId.isEmpty) return hamster;
+    try {
+      final response = await api.getMediaAsset(mediaId: mediaId);
+      final media = response.data!.data;
+      String? url;
+      for (final variant in media.variants) {
+        if (variant.status.value == 'ready' &&
+            (variant.kind.value == 'thumbnail' ||
+                variant.kind.value == 'preview') &&
+            variant.url != null) {
+          url = variant.url;
+          break;
+        }
+      }
+      url ??= media.originalUrl;
+      return I2Hamster.fromJson(<String, dynamic>{
+        ...hamster.toJson(),
+        'avatar_url': url,
+      });
+    } on Object {
+      return hamster;
+    }
   }
 
   @override
@@ -752,9 +922,8 @@ class MemoryI2Repository implements I2Repository {
     final hamster = _snapshot.hamsters.firstWhere(
       (value) => value.id == hamsterId,
     );
-    final weights =
-        _weights.where((w) => w.hamsterId == hamsterId).toList()
-          ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
+    final weights = _weights.where((w) => w.hamsterId == hamsterId).toList()
+      ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
     return I2HamsterDetail(
       hamster: hamster,
       litters: _snapshot.litters
@@ -769,9 +938,8 @@ class MemoryI2Repository implements I2Repository {
   @override
   Future<I2EnclosureDetail> getEnclosureDetail(String enclosureId) async {
     _readGuard();
-    final stays =
-        _stays.where((s) => s.enclosureId == enclosureId).toList()
-          ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+    final stays = _stays.where((s) => s.enclosureId == enclosureId).toList()
+      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
     return I2EnclosureDetail(
       enclosure: _snapshot.enclosures.firstWhere(
         (value) => value.id == enclosureId,
@@ -810,6 +978,32 @@ class MemoryI2Repository implements I2Repository {
       lastSyncedAt: DateTime.now(),
     );
     return hamster;
+  }
+
+  @override
+  Future<I2Enclosure> createEnclosure(I2EnclosureDraft draft) async {
+    _writeGuard();
+    final enclosure = I2Enclosure(
+      id: 'memory-enclosure-${_sequence++}',
+      code: draft.code,
+      rackCode: draft.rackCode,
+      levelCode: draft.levelCode,
+      state: 'vacant',
+      cleanlinessState: 'clean',
+      capacity: draft.capacity,
+      equipment: draft.equipment,
+      lastCleanedAt: null,
+      currentHamsterIds: const <String>[],
+      version: 1,
+    );
+    _snapshot = I2Snapshot(
+      hamsters: _snapshot.hamsters,
+      litters: _snapshot.litters,
+      enclosures: [..._snapshot.enclosures, enclosure],
+      lastSyncedAt: DateTime.now(),
+      recentWeights: _snapshot.recentWeights,
+    );
+    return enclosure;
   }
 
   @override
@@ -1063,9 +1257,8 @@ class MemoryI2Repository implements I2Repository {
     final hamsterId = draft.hamsterId;
     I2WeightRecord? previous;
     if (hamsterId != null) {
-      final history =
-          _weights.where((w) => w.hamsterId == hamsterId).toList()
-            ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
+      final history = _weights.where((w) => w.hamsterId == hamsterId).toList()
+        ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
       if (history.isNotEmpty) previous = history.first;
     }
     final record = buildWeightRecord(
@@ -1080,9 +1273,8 @@ class MemoryI2Repository implements I2Repository {
   @override
   Future<List<I2WeightRecord>> listWeights(String hamsterId) async {
     _readGuard();
-    final values =
-        _weights.where((w) => w.hamsterId == hamsterId).toList()
-          ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
+    final values = _weights.where((w) => w.hamsterId == hamsterId).toList()
+      ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
     return values;
   }
 

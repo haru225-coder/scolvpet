@@ -38,7 +38,7 @@ class CreateAccountingRecordRequest {
   });
 
   @JsonKey(
-    
+
     name: r'category_id',
     required: false,
     includeIfNull: false,
@@ -50,7 +50,7 @@ class CreateAccountingRecordRequest {
 
 
   @JsonKey(
-    
+
     name: r'entry_type',
     required: true,
     includeIfNull: false,
@@ -63,7 +63,7 @@ class CreateAccountingRecordRequest {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'amount_cents',
     required: true,
     includeIfNull: false,
@@ -87,7 +87,7 @@ class CreateAccountingRecordRequest {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -99,7 +99,7 @@ class CreateAccountingRecordRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -111,7 +111,7 @@ class CreateAccountingRecordRequest {
 
 
   @JsonKey(
-    
+
     name: r'contact_id',
     required: false,
     includeIfNull: false,
@@ -123,7 +123,7 @@ class CreateAccountingRecordRequest {
 
 
   @JsonKey(
-    
+
     name: r'occurred_at',
     required: false,
     includeIfNull: false,
@@ -183,5 +183,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

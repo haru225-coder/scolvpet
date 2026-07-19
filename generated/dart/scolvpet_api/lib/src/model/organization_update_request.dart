@@ -28,7 +28,7 @@ class OrganizationUpdateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'name',
     required: false,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class OrganizationUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'mode',
     required: false,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class OrganizationUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: false,
     includeIfNull: false,
@@ -102,5 +102,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

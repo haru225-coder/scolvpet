@@ -79,7 +79,7 @@ class ImportJob {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -91,7 +91,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'job_type',
     required: true,
     includeIfNull: false,
@@ -103,7 +103,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -117,7 +117,7 @@ class ImportJob {
           // minimum: 0
           // maximum: 100
   @JsonKey(
-    
+
     name: r'progress_percent',
     required: true,
     includeIfNull: false,
@@ -129,7 +129,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'current_step',
     required: false,
     includeIfNull: false,
@@ -141,7 +141,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'error',
     required: false,
     includeIfNull: false,
@@ -153,7 +153,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'retryable',
     required: true,
     includeIfNull: false,
@@ -178,7 +178,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'result',
     required: false,
     includeIfNull: false,
@@ -190,7 +190,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: false,
     includeIfNull: false,
@@ -203,7 +203,7 @@ class ImportJob {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -215,7 +215,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -227,7 +227,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -239,7 +239,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'template_type',
     required: true,
     includeIfNull: false,
@@ -251,7 +251,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'phase',
     required: true,
     includeIfNull: false,
@@ -263,7 +263,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'source_encoding',
     required: false,
     includeIfNull: false,
@@ -275,7 +275,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'source_columns',
     required: true,
     includeIfNull: false,
@@ -287,7 +287,7 @@ class ImportJob {
 
 
   @JsonKey(
-    
+
     name: r'mapping',
     required: true,
     includeIfNull: false,
@@ -300,7 +300,7 @@ class ImportJob {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'preflight_version',
     required: false,
     includeIfNull: false,
@@ -313,7 +313,7 @@ class ImportJob {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'total_rows',
     required: true,
     includeIfNull: false,
@@ -326,7 +326,7 @@ class ImportJob {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'valid_rows',
     required: true,
     includeIfNull: false,
@@ -339,7 +339,7 @@ class ImportJob {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'warning_rows',
     required: true,
     includeIfNull: false,
@@ -352,7 +352,7 @@ class ImportJob {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'invalid_rows',
     required: true,
     includeIfNull: false,
@@ -365,7 +365,7 @@ class ImportJob {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'imported_rows',
     required: true,
     includeIfNull: false,
@@ -378,7 +378,7 @@ class ImportJob {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'historical_litters_to_create',
     required: true,
     includeIfNull: false,
@@ -391,7 +391,7 @@ class ImportJob {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'relationship_assertions_to_create',
     required: true,
     includeIfNull: false,
@@ -404,7 +404,7 @@ class ImportJob {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'blocking_issue_count',
     required: true,
     includeIfNull: false,
@@ -534,5 +534,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

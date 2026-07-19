@@ -91,7 +91,7 @@ func (s *Server) getOwnerPublicSite(w http.ResponseWriter, r *http.Request) {
 				ShowStats:     true,
 				ShowContact:   true,
 				Published:     false,
-				PublicURLPath: "/v1/public/sites/" + slug,
+				PublicURLPath: "/p/" + slug,
 			},
 			"meta": responseMeta(r),
 		})
@@ -292,11 +292,11 @@ func (s *Server) getPublicSiteBySlug(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	view := publicSiteView{
-		Slug:       item.Slug,
-		Title:      item.Title,
-		Tagline:    item.Tagline,
-		About:      item.About,
-		ThemeColor: item.ThemeColor,
+		Slug:         item.Slug,
+		Title:        item.Title,
+		Tagline:      item.Tagline,
+		About:        item.About,
+		ThemeColor:   item.ThemeColor,
 		Organization: orgName,
 		PublishedAt:  item.PublishedAt,
 	}
@@ -331,7 +331,7 @@ func (s *Server) getPublicSiteByOwner(ctx context.Context, ownerID uuid.UUID) (p
 	if err != nil {
 		return publicSite{}, err
 	}
-	item.PublicURLPath = "/v1/public/sites/" + item.Slug
+	item.PublicURLPath = "/p/" + item.Slug
 	return item, nil
 }
 

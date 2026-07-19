@@ -39,7 +39,7 @@ class HamsterUpdateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'internal_code',
     required: false,
     includeIfNull: false,
@@ -51,7 +51,7 @@ class HamsterUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: false,
     includeIfNull: false,
@@ -63,7 +63,7 @@ class HamsterUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'variety_code',
     required: false,
     includeIfNull: false,
@@ -75,7 +75,7 @@ class HamsterUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'sex',
     required: false,
     includeIfNull: false,
@@ -89,7 +89,7 @@ class HamsterUpdateRequest {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'sex_confidence',
     required: false,
     includeIfNull: false,
@@ -101,7 +101,7 @@ class HamsterUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'birth_date',
     required: false,
     includeIfNull: false,
@@ -113,7 +113,7 @@ class HamsterUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'cover_media_id',
     required: false,
     includeIfNull: false,
@@ -125,7 +125,7 @@ class HamsterUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -170,4 +170,3 @@ class HamsterUpdateRequest {
   }
 
 }
-

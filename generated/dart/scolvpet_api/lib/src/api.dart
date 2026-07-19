@@ -8,9 +8,12 @@ import 'package:scolvpet_api/src/auth/basic_auth.dart';
 import 'package:scolvpet_api/src/auth/bearer_auth.dart';
 import 'package:scolvpet_api/src/auth/oauth.dart';
 import 'package:scolvpet_api/src/api/default_api.dart';
+import 'package:scolvpet_api/src/api/genetic_api.dart';
+import 'package:scolvpet_api/src/api/growth_api.dart';
 import 'package:scolvpet_api/src/api/p1_api.dart';
 import 'package:scolvpet_api/src/api/p1_crm_api.dart';
 import 'package:scolvpet_api/src/api/p2_api.dart';
+import 'package:scolvpet_api/src/api/public_growth_api.dart';
 
 class ScolvpetApi {
   static const String basePath = r'https://api.scolvpet.cn/v1';
@@ -20,7 +23,7 @@ class ScolvpetApi {
     Dio? dio,
     String? basePathOverride,
     List<Interceptor>? interceptors,
-  })  : 
+  })  :
         this.dio = dio ??
             Dio(BaseOptions(
               baseUrl: basePathOverride ?? basePath,
@@ -109,6 +112,18 @@ class ScolvpetApi {
     return DefaultApi(dio);
   }
 
+  /// Get GeneticApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  GeneticApi getGeneticApi() {
+    return GeneticApi(dio);
+  }
+
+  /// Get GrowthApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  GrowthApi getGrowthApi() {
+    return GrowthApi(dio);
+  }
+
   /// Get P1Api instance, base route and serializer can be overridden by a given but be careful,
   /// by doing that all interceptors will not be executed
   P1Api getP1Api() {
@@ -125,5 +140,11 @@ class ScolvpetApi {
   /// by doing that all interceptors will not be executed
   P2Api getP2Api() {
     return P2Api(dio);
+  }
+
+  /// Get PublicGrowthApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  PublicGrowthApi getPublicGrowthApi() {
+    return PublicGrowthApi(dio);
   }
 }

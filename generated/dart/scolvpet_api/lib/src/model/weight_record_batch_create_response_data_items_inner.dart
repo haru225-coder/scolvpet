@@ -35,7 +35,7 @@ class WeightRecordBatchCreateResponseDataItemsInner {
   });
 
   @JsonKey(
-    
+
     name: r'client_item_id',
     required: true,
     includeIfNull: false,
@@ -47,7 +47,7 @@ class WeightRecordBatchCreateResponseDataItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -59,7 +59,7 @@ class WeightRecordBatchCreateResponseDataItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'resource',
     required: false,
     includeIfNull: false,
@@ -71,7 +71,7 @@ class WeightRecordBatchCreateResponseDataItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'generated_task_id',
     required: false,
     includeIfNull: false,
@@ -83,7 +83,7 @@ class WeightRecordBatchCreateResponseDataItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'error',
     required: false,
     includeIfNull: false,
@@ -122,4 +122,3 @@ class WeightRecordBatchCreateResponseDataItemsInner {
   }
 
 }
-

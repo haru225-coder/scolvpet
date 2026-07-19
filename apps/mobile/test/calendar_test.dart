@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/data/i2_repository.dart';
@@ -6,6 +8,30 @@ import 'package:scolvpet_mobile/features/calendar/calendar.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/i2/i2_models.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
+
+class _FailingTaskRepository extends MemoryTaskRepository {
+  @override
+  Future<List<CareTaskItem>> listTasks({String? state}) {
+    throw const TaskRepositoryException('任务服务暂时不可用');
+  }
+}
+
+class _FailingBreedingRepository extends MemoryBreedingRepository {
+  @override
+  Future<List<BreedingPlan>> listPlans() {
+    throw const BreedingRepositoryException('繁育服务暂时不可用');
+  }
+}
+
+class _DelayedTaskListRepository extends MemoryTaskRepository {
+  final gate = Completer<void>();
+
+  @override
+  Future<List<CareTaskItem>> listTasks({String? state}) async {
+    await gate.future;
+    return super.listTasks(state: state);
+  }
+}
 
 void main() {
   test('calendarKindForTaskType maps weaning/cleaning/weight', () {
@@ -81,10 +107,7 @@ void main() {
       weaningDayOffset: 21,
     );
 
-    expect(
-      events.any((e) => e.kind == CalendarEventKind.cleaning),
-      isTrue,
-    );
+    expect(events.any((e) => e.kind == CalendarEventKind.cleaning), isTrue);
     expect(
       events.any((e) => e.kind == CalendarEventKind.expectedBirth),
       isTrue,
@@ -177,5 +200,131 @@ void main() {
     await tester.tap(find.byKey(const Key('calendar-day-22')));
     await tester.pumpAndSettle();
     expect(find.textContaining('断奶'), findsWidgets);
+  });
+
+  testWidgets('CalendarMonthPage reports partial source failure', (
+    tester,
+  ) async {
+    final taskController = TaskController(
+      repository: _FailingTaskRepository(),
+      notifications: MemoryLocalNotificationScheduler(),
+    );
+    final breedingController = BreedingController(
+      repository: MemoryBreedingRepository(),
+    );
+    final i2 = I2Controller(repository: MemoryI2Repository());
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CalendarMonthPage(
+          taskController: taskController,
+          breedingController: breedingController,
+          i2Controller: i2,
+          initialMonth: DateTime(2026, 7, 12),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('calendar-source-notice')), findsOneWidget);
+    expect(find.textContaining('任务未载入'), findsWidgets);
+    expect(find.textContaining('任务尚未载入'), findsOneWidget);
+  });
+
+  testWidgets('CalendarMonthPage shows a full error when every source fails', (
+    tester,
+  ) async {
+    final taskController = TaskController(
+      repository: _FailingTaskRepository(),
+      notifications: MemoryLocalNotificationScheduler(),
+    );
+    final breedingController = BreedingController(
+      repository: _FailingBreedingRepository(),
+    );
+    final i2 = I2Controller(repository: MemoryI2Repository(failReads: true));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CalendarMonthPage(
+          taskController: taskController,
+          breedingController: breedingController,
+          i2Controller: i2,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('calendar-all-sources-error')), findsOneWidget);
+    expect(find.textContaining('均未载入'), findsOneWidget);
+  });
+
+  testWidgets('CalendarMonthPage disables refresh while sources are loading', (
+    tester,
+  ) async {
+    final delayed = _DelayedTaskListRepository();
+    final taskController = TaskController(
+      repository: delayed,
+      notifications: MemoryLocalNotificationScheduler(),
+    );
+    final breedingController = BreedingController(
+      repository: MemoryBreedingRepository(),
+    );
+    final i2 = I2Controller(repository: MemoryI2Repository());
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CalendarMonthPage(
+          taskController: taskController,
+          breedingController: breedingController,
+          i2Controller: i2,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<IconButton>(find.byKey(const Key('calendar-refresh')))
+          .onPressed,
+      isNull,
+    );
+    expect(find.byKey(const Key('calendar-source-notice')), findsOneWidget);
+
+    delayed.gate.complete();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('CalendarMonthPage is safe at 320pt and 1.3x text', (
+    tester,
+  ) async {
+    final taskController = TaskController(
+      repository: MemoryTaskRepository(),
+      notifications: MemoryLocalNotificationScheduler(),
+    );
+    final breedingController = BreedingController(
+      repository: MemoryBreedingRepository(),
+    );
+    final i2 = I2Controller(repository: MemoryI2Repository());
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(320, 640),
+            textScaler: TextScaler.linear(1.3),
+          ),
+          child: CalendarMonthPage(
+            taskController: taskController,
+            breedingController: breedingController,
+            i2Controller: i2,
+            initialMonth: DateTime(2026, 7, 1),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('calendar-day-31')), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

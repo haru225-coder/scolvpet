@@ -26,7 +26,7 @@ class EntitlementCheckRequest {
   });
 
   @JsonKey(
-    
+
     name: r'feature',
     required: false,
     includeIfNull: false,
@@ -38,7 +38,7 @@ class EntitlementCheckRequest {
 
 
   @JsonKey(
-    
+
     name: r'metric',
     required: false,
     includeIfNull: false,
@@ -71,4 +71,3 @@ class EntitlementCheckRequest {
   }
 
 }
-

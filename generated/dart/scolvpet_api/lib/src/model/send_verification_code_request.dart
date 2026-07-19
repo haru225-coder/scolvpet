@@ -26,7 +26,7 @@ class SendVerificationCodeRequest {
   });
 
   @JsonKey(
-    
+
     name: r'phone',
     required: true,
     includeIfNull: false,
@@ -38,7 +38,7 @@ class SendVerificationCodeRequest {
 
 
   @JsonKey(
-    
+
     name: r'purpose',
     required: true,
     includeIfNull: false,
@@ -84,5 +84,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -32,7 +32,7 @@ class UpsertPushDeviceRequest {
   });
 
   @JsonKey(
-    
+
     name: r'platform',
     required: false,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class UpsertPushDeviceRequest {
 
 
   @JsonKey(
-    
+
     name: r'provider',
     required: false,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class UpsertPushDeviceRequest {
 
 
   @JsonKey(
-    
+
     name: r'token',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class UpsertPushDeviceRequest {
 
 
   @JsonKey(
-    
+
     name: r'device_name',
     required: false,
     includeIfNull: false,
@@ -80,7 +80,7 @@ class UpsertPushDeviceRequest {
 
 
   @JsonKey(
-    
+
     name: r'app_version',
     required: false,
     includeIfNull: false,
@@ -156,5 +156,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

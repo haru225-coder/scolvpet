@@ -19,6 +19,10 @@ abstract class _$SessionResponseDataCWProxy {
 
   SessionResponseData currentOrganization(Organization currentOrganization);
 
+  SessionResponseData memberRole(SessionResponseDataMemberRoleEnum memberRole);
+
+  SessionResponseData capabilities(List<String> capabilities);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `SessionResponseData(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -32,6 +36,8 @@ abstract class _$SessionResponseDataCWProxy {
     String refreshToken,
     Account account,
     Organization currentOrganization,
+    SessionResponseDataMemberRoleEnum memberRole,
+    List<String> capabilities,
   });
 }
 
@@ -65,6 +71,15 @@ class _$SessionResponseDataCWProxyImpl implements _$SessionResponseDataCWProxy {
       this(currentOrganization: currentOrganization);
 
   @override
+  SessionResponseData memberRole(
+    SessionResponseDataMemberRoleEnum memberRole,
+  ) => this(memberRole: memberRole);
+
+  @override
+  SessionResponseData capabilities(List<String> capabilities) =>
+      this(capabilities: capabilities);
+
+  @override
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `SessionResponseData(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -78,6 +93,8 @@ class _$SessionResponseDataCWProxyImpl implements _$SessionResponseDataCWProxy {
     Object? refreshToken = const $CopyWithPlaceholder(),
     Object? account = const $CopyWithPlaceholder(),
     Object? currentOrganization = const $CopyWithPlaceholder(),
+    Object? memberRole = const $CopyWithPlaceholder(),
+    Object? capabilities = const $CopyWithPlaceholder(),
   }) {
     return SessionResponseData(
       tokenType: tokenType == const $CopyWithPlaceholder()
@@ -104,6 +121,14 @@ class _$SessionResponseDataCWProxyImpl implements _$SessionResponseDataCWProxy {
           ? _value.currentOrganization
           // ignore: cast_nullable_to_non_nullable
           : currentOrganization as Organization,
+      memberRole: memberRole == const $CopyWithPlaceholder()
+          ? _value.memberRole
+          // ignore: cast_nullable_to_non_nullable
+          : memberRole as SessionResponseDataMemberRoleEnum,
+      capabilities: capabilities == const $CopyWithPlaceholder()
+          ? _value.capabilities
+          // ignore: cast_nullable_to_non_nullable
+          : capabilities as List<String>,
     );
   }
 }
@@ -133,6 +158,8 @@ SessionResponseData _$SessionResponseDataFromJson(Map<String, dynamic> json) =>
             'refresh_token',
             'account',
             'current_organization',
+            'member_role',
+            'capabilities',
           ],
         );
         final val = SessionResponseData(
@@ -154,6 +181,14 @@ SessionResponseData _$SessionResponseDataFromJson(Map<String, dynamic> json) =>
             'current_organization',
             (v) => Organization.fromJson(v as Map<String, dynamic>),
           ),
+          memberRole: $checkedConvert(
+            'member_role',
+            (v) => $enumDecode(_$SessionResponseDataMemberRoleEnumEnumMap, v),
+          ),
+          capabilities: $checkedConvert(
+            'capabilities',
+            (v) => (v as List<dynamic>).map((e) => e as String).toList(),
+          ),
         );
         return val;
       },
@@ -163,6 +198,7 @@ SessionResponseData _$SessionResponseDataFromJson(Map<String, dynamic> json) =>
         'expiresInSeconds': 'expires_in_seconds',
         'refreshToken': 'refresh_token',
         'currentOrganization': 'current_organization',
+        'memberRole': 'member_role',
       },
     );
 
@@ -175,8 +211,19 @@ Map<String, dynamic> _$SessionResponseDataToJson(
   'refresh_token': instance.refreshToken,
   'account': instance.account.toJson(),
   'current_organization': instance.currentOrganization.toJson(),
+  'member_role':
+      _$SessionResponseDataMemberRoleEnumEnumMap[instance.memberRole]!,
+  'capabilities': instance.capabilities,
 };
 
 const _$SessionResponseDataTokenTypeEnumEnumMap = {
   SessionResponseDataTokenTypeEnum.bearer: 'Bearer',
+};
+
+const _$SessionResponseDataMemberRoleEnumEnumMap = {
+  SessionResponseDataMemberRoleEnum.owner: 'owner',
+  SessionResponseDataMemberRoleEnum.breeder: 'breeder',
+  SessionResponseDataMemberRoleEnum.caretaker: 'caretaker',
+  SessionResponseDataMemberRoleEnum.staff: 'staff',
+  SessionResponseDataMemberRoleEnum.viewer: 'viewer',
 };

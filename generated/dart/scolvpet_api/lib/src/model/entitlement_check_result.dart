@@ -38,7 +38,7 @@ class EntitlementCheckResult {
   });
 
   @JsonKey(
-    
+
     name: r'allowed',
     required: true,
     includeIfNull: false,
@@ -50,7 +50,7 @@ class EntitlementCheckResult {
 
 
   @JsonKey(
-    
+
     name: r'enforcement',
     required: true,
     includeIfNull: false,
@@ -62,7 +62,7 @@ class EntitlementCheckResult {
 
 
   @JsonKey(
-    
+
     name: r'plan_code',
     required: true,
     includeIfNull: false,
@@ -74,7 +74,7 @@ class EntitlementCheckResult {
 
 
   @JsonKey(
-    
+
     name: r'reason',
     required: false,
     includeIfNull: false,
@@ -86,7 +86,7 @@ class EntitlementCheckResult {
 
 
   @JsonKey(
-    
+
     name: r'feature',
     required: false,
     includeIfNull: false,
@@ -98,7 +98,7 @@ class EntitlementCheckResult {
 
 
   @JsonKey(
-    
+
     name: r'metric',
     required: false,
     includeIfNull: false,
@@ -110,7 +110,7 @@ class EntitlementCheckResult {
 
 
   @JsonKey(
-    
+
     name: r'used',
     required: false,
     includeIfNull: false,
@@ -122,7 +122,7 @@ class EntitlementCheckResult {
 
 
   @JsonKey(
-    
+
     name: r'limit',
     required: false,
     includeIfNull: false,
@@ -167,4 +167,3 @@ class EntitlementCheckResult {
   }
 
 }
-

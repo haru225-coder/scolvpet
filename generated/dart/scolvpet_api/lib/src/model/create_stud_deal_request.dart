@@ -40,7 +40,7 @@ class CreateStudDealRequest {
   });
 
   @JsonKey(
-    
+
     name: r'listing_id',
     required: false,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class CreateStudDealRequest {
 
 
   @JsonKey(
-    
+
     name: r'side',
     required: true,
     includeIfNull: false,
@@ -64,7 +64,7 @@ class CreateStudDealRequest {
 
 
   @JsonKey(
-    
+
     name: r'my_hamster_label',
     required: false,
     includeIfNull: false,
@@ -76,7 +76,7 @@ class CreateStudDealRequest {
 
 
   @JsonKey(
-    
+
     name: r'partner_cattery_name',
     required: true,
     includeIfNull: false,
@@ -88,7 +88,7 @@ class CreateStudDealRequest {
 
 
   @JsonKey(
-    
+
     name: r'partner_contact',
     required: false,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class CreateStudDealRequest {
 
 
   @JsonKey(
-    
+
     name: r'partner_animal_label',
     required: false,
     includeIfNull: false,
@@ -113,7 +113,7 @@ class CreateStudDealRequest {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'fee_cents',
     required: false,
     includeIfNull: false,
@@ -137,7 +137,7 @@ class CreateStudDealRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -199,5 +199,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

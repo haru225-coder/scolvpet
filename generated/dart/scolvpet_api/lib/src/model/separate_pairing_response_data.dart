@@ -33,7 +33,7 @@ class SeparatePairingResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'pairing_attempt',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class SeparatePairingResponseData {
 
 
   @JsonKey(
-    
+
     name: r'breeding_plan',
     required: true,
     includeIfNull: false,
@@ -57,7 +57,7 @@ class SeparatePairingResponseData {
 
 
   @JsonKey(
-    
+
     name: r'created_stays',
     required: true,
     includeIfNull: false,
@@ -69,7 +69,7 @@ class SeparatePairingResponseData {
 
 
   @JsonKey(
-    
+
     name: r'created_task_ids',
     required: true,
     includeIfNull: false,
@@ -106,4 +106,3 @@ class SeparatePairingResponseData {
   }
 
 }
-

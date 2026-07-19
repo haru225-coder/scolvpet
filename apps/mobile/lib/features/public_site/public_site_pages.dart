@@ -1,6 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
+import '../../ui/theme/ios_theme.dart';
+import '../../ui/widgets/ios_widgets.dart';
+import '../i2/i2_models.dart';
 import '../i2/i2_widgets.dart';
 import 'public_site_controller.dart';
 import 'public_site_models.dart';
@@ -61,9 +66,7 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
     if (!mounted) return;
     final message = widget.controller.lastMessage;
     if (message != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      showIosMessage(context, message);
     }
     if (ok) setState(() {});
   }
@@ -83,12 +86,31 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
     showContact: _showContact,
   );
 
+  String _publicUrl(PublicSite site) {
+    return site.publicUrl();
+  }
+
+  Future<void> _sharePublicSite(PublicSite site) async {
+    final url = _publicUrl(site);
+    try {
+      await Share.share('${site.title}\n$url', subject: site.title);
+    } on Object {
+      if (!mounted) return;
+      await Clipboard.setData(ClipboardData(text: url));
+      if (mounted) showIosMessage(context, '系统分享不可用，公开链接已复制');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (context, _) {
         final site = widget.controller.siteState.data;
+        final publicSite = site;
+        final publicUrl = publicSite == null ? null : _publicUrl(publicSite);
+        final busy =
+            widget.controller.actionState.status == I2AsyncStatus.loading;
         if (site != null) _seedFrom(site);
         return Scaffold(
           appBar: AppBar(
@@ -100,7 +122,7 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
                   _seeded = false;
                   widget.controller.refresh();
                 },
-                icon: const Icon(Icons.refresh),
+                icon: const Icon(CupertinoIcons.arrow_clockwise),
               ),
             ],
           ),
@@ -108,50 +130,59 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
               Text(
-                '轻量主页：标题、简介、联系方式与公开统计。不做可视化装修编辑器。',
+                '公开主页用于生成一个可访问链接：发布后复制链接，再粘贴到微信、抖音或小红书。当前不会自动代发到社交平台。',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 12),
               if (site != null)
-                Card(
-                  child: ListTile(
-                    leading: Icon(
-                      site.published
-                          ? Icons.public
-                          : Icons.public_off_outlined,
-                      color: site.published ? Colors.green : null,
+                IosGroupedSection(
+                  margin: EdgeInsets.zero,
+                  children: [
+                    IosListTile(
+                      leading: Icon(
+                        site.published
+                            ? CupertinoIcons.globe
+                            : CupertinoIcons.lock,
+                        color: site.published ? Colors.green : null,
+                      ),
+                      title: site.statusLabel,
+                      subtitle: site.published
+                          ? _publicUrl(site)
+                          : '发布后可访问 ${_publicUrl(site)}',
+                      trailing: IconButton(
+                        tooltip: '复制公开链接',
+                        onPressed: !site.published || busy
+                            ? null
+                            : () async {
+                                await Clipboard.setData(
+                                  ClipboardData(text: publicUrl!),
+                                );
+                                if (!context.mounted) return;
+                                showIosMessage(context, '公开链接已复制');
+                              },
+                        icon: const Icon(CupertinoIcons.doc_on_doc),
+                      ),
                     ),
-                    title: Text(site.statusLabel),
-                    subtitle: Text(
-                      site.publicUrlPath ?? '/v1/public/sites/${site.slug}',
-                    ),
-                    trailing: IconButton(
-                      tooltip: '复制路径',
-                      onPressed: () async {
-                        final path =
-                            site.publicUrlPath ??
-                            '/v1/public/sites/${site.slug}';
-                        await Clipboard.setData(ClipboardData(text: path));
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('公开路径已复制')),
-                        );
-                      },
-                      icon: const Icon(Icons.copy_all_outlined),
-                    ),
-                  ),
+                  ],
                 ),
+              const SizedBox(height: 12),
+              const IosBanner(
+                icon: CupertinoIcons.link,
+                color: IosColors.systemTeal,
+                text: '保存只是保存草稿；点击“发布”后，公开链接才会对外可访问。',
+              ),
               const SizedBox(height: 12),
               TextField(
                 key: const Key('public-site-slug'),
                 controller: _slugCtrl,
+                textInputAction: TextInputAction.next,
                 decoration: const InputDecoration(
-                  labelText: '访问路径 slug',
+                  labelText: '公开主页地址',
                   hintText: 'my-cattery',
                   border: OutlineInputBorder(),
-                  helperText: '小写字母、数字、连字符',
+                  helperText: '链接格式：p.scolv.com/p/自定义地址',
                 ),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[a-z0-9-]')),
@@ -161,6 +192,7 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
               TextField(
                 key: const Key('public-site-title'),
                 controller: _titleCtrl,
+                textInputAction: TextInputAction.next,
                 decoration: const InputDecoration(
                   labelText: '主页标题',
                   border: OutlineInputBorder(),
@@ -170,6 +202,7 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
               TextField(
                 key: const Key('public-site-tagline'),
                 controller: _taglineCtrl,
+                textInputAction: TextInputAction.next,
                 decoration: const InputDecoration(
                   labelText: '一句话介绍',
                   border: OutlineInputBorder(),
@@ -180,6 +213,7 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
                 key: const Key('public-site-about'),
                 controller: _aboutCtrl,
                 maxLines: 4,
+                textInputAction: TextInputAction.newline,
                 decoration: const InputDecoration(
                   labelText: '关于熊舍',
                   border: OutlineInputBorder(),
@@ -188,6 +222,7 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
               const SizedBox(height: 12),
               TextField(
                 controller: _wechatCtrl,
+                textInputAction: TextInputAction.next,
                 decoration: const InputDecoration(
                   labelText: '微信号',
                   border: OutlineInputBorder(),
@@ -196,29 +231,61 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
               const SizedBox(height: 12),
               TextField(
                 controller: _phoneCtrl,
+                textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
                   labelText: '联系电话',
                   border: OutlineInputBorder(),
                 ),
               ),
-              SwitchListTile(
+              IosListTile(
                 key: const Key('public-site-show-stats'),
-                title: const Text('公开显示统计'),
-                value: _showStats,
-                onChanged: (v) => setState(() => _showStats = v),
+                title: '公开显示统计',
+                trailing: CupertinoSwitch(
+                  value: _showStats,
+                  onChanged: (v) => setState(() => _showStats = v),
+                ),
+                showChevron: false,
               ),
-              SwitchListTile(
+              IosListTile(
                 key: const Key('public-site-show-contact'),
-                title: const Text('公开显示联系方式'),
-                value: _showContact,
-                onChanged: (v) => setState(() => _showContact = v),
+                title: '公开显示联系方式',
+                trailing: CupertinoSwitch(
+                  value: _showContact,
+                  onChanged: (v) => setState(() => _showContact = v),
+                ),
+                showChevron: false,
               ),
               const SizedBox(height: 8),
               FilledButton.icon(
                 key: const Key('public-site-save'),
-                onPressed: () => _snack(() => widget.controller.save(_draft())),
-                icon: const Icon(Icons.save_outlined),
+                onPressed: busy
+                    ? null
+                    : () => _snack(() => widget.controller.save(_draft())),
+                icon: const Icon(CupertinoIcons.checkmark_circle_fill),
                 label: const Text('保存'),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                key: const Key('public-site-copy-link'),
+                onPressed:
+                    publicUrl == null || publicSite?.published != true || busy
+                    ? null
+                    : () async {
+                        await Clipboard.setData(ClipboardData(text: publicUrl));
+                        if (!context.mounted) return;
+                        showIosMessage(context, '公开链接已复制');
+                      },
+                icon: const Icon(CupertinoIcons.doc_on_doc),
+                label: const Text('复制公开链接'),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                key: const Key('public-site-share'),
+                onPressed: publicSite == null || !publicSite.published || busy
+                    ? null
+                    : () => _sharePublicSite(publicSite),
+                icon: const Icon(CupertinoIcons.share),
+                label: const Text('打开系统分享'),
               ),
               const SizedBox(height: 8),
               Row(
@@ -226,9 +293,10 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
                   Expanded(
                     child: OutlinedButton.icon(
                       key: const Key('public-site-publish'),
-                      onPressed: () =>
-                          _snack(() => widget.controller.publish()),
-                      icon: const Icon(Icons.publish_outlined),
+                      onPressed: busy || publicSite?.published == true
+                          ? null
+                          : () => _snack(() => widget.controller.publish()),
+                      icon: const Icon(CupertinoIcons.arrow_up_circle_fill),
                       label: const Text('发布'),
                     ),
                   ),
@@ -236,9 +304,10 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
                   Expanded(
                     child: OutlinedButton.icon(
                       key: const Key('public-site-unpublish'),
-                      onPressed: () =>
-                          _snack(() => widget.controller.unpublish()),
-                      icon: const Icon(Icons.visibility_off_outlined),
+                      onPressed: busy || publicSite?.published != true
+                          ? null
+                          : () => _snack(() => widget.controller.unpublish()),
+                      icon: const Icon(CupertinoIcons.eye_slash),
                       label: const Text('取消发布'),
                     ),
                   ),
@@ -247,21 +316,22 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 key: const Key('public-site-preview'),
-                onPressed: () async {
-                  final slug = _slugCtrl.text.trim().toLowerCase();
-                  if (slug.isEmpty) return;
-                  // Ensure saved state for memory/API consistency when possible.
-                  await widget.controller.loadPublicPreview(slug);
-                  if (!context.mounted) return;
-                  await Navigator.of(context).push<void>(
-                    MaterialPageRoute(
-                      builder: (_) => PublicSitePreviewPage(
-                        controller: widget.controller,
-                      ),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.preview_outlined),
+                onPressed: publicSite?.published != true || busy
+                    ? null
+                    : () async {
+                        final slug = _slugCtrl.text.trim().toLowerCase();
+                        if (slug.isEmpty) return;
+                        await widget.controller.loadPublicPreview(slug);
+                        if (!context.mounted) return;
+                        await Navigator.of(context).push<void>(
+                          iosPageRoute(
+                            builder: (_) => PublicSitePreviewPage(
+                              controller: widget.controller,
+                            ),
+                          ),
+                        );
+                      },
+                icon: const Icon(CupertinoIcons.eye),
                 label: const Text('预览公开效果'),
               ),
             ],
@@ -291,12 +361,18 @@ class PublicSitePreviewPage extends StatelessWidget {
               if (slug != null) controller.loadPublicPreview(slug);
             },
             builder: (view) {
+              final p = ScolvPalette.of(context);
               final theme = _parseColor(view.themeColor);
               return ListView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                 children: [
-                  Card(
-                    color: theme,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: theme,
+                      borderRadius: BorderRadius.circular(
+                        IosMetrics.continuousRadius,
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
@@ -324,7 +400,13 @@ class PublicSitePreviewPage extends StatelessWidget {
                   ),
                   if (view.about != null && view.about!.isNotEmpty) ...[
                     const SizedBox(height: 12),
-                    Card(
+                    Container(
+                      decoration: BoxDecoration(
+                        color: p.secondaryGroupedBackground,
+                        borderRadius: BorderRadius.circular(
+                          IosMetrics.continuousRadius,
+                        ),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Text(view.about!),
@@ -349,18 +431,19 @@ class PublicSitePreviewPage extends StatelessWidget {
                   if (view.contactWechat != null ||
                       view.contactPhone != null) ...[
                     const SizedBox(height: 12),
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.contact_phone_outlined),
-                        title: Text(
-                          [
+                    IosGroupedSection(
+                      margin: EdgeInsets.zero,
+                      children: [
+                        IosListTile(
+                          leading: const Icon(CupertinoIcons.phone),
+                          title: [
                             if (view.contactWechat != null)
                               '微信 ${view.contactWechat}',
                             if (view.contactPhone != null)
                               '电话 ${view.contactPhone}',
                           ].join(' · '),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ],

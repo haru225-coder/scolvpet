@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { randomUUID } from 'node:crypto';
 import { URL } from 'node:url';
 
 const port = Number(process.env.WEB_PORT || 3000);
@@ -28,31 +29,143 @@ const FIELD_LABELS = {
 };
 const SEX_LABELS = { male: '公', female: '母', unknown: '未知' };
 
-export function renderShell(title, body) {
+export function renderShell(title, body, options = {}) {
+  const description = options.description || '查看熊舍公开资料，并向熊舍提交咨询。';
   return `<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="${escapeHtml(description)}">
+    <meta name="robots" content="index,follow,max-image-preview:large">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="${escapeHtml(title)}">
+    <meta property="og:description" content="${escapeHtml(description)}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#f3f0ec" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#111415" media="(prefers-color-scheme: dark)">
     <title>${escapeHtml(title)}</title>
     <style>
-      :root { color-scheme: light; font-family: Inter, -apple-system, BlinkMacSystemFont, "Noto Sans SC", sans-serif; color: #1f2928; background: #f7f5ef; }
+      :root {
+        color-scheme: light dark;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Noto Sans SC", sans-serif;
+        --page: #f3f0ec;
+        --page-glow: #f8e8de;
+        --surface: #fffdfa;
+        --surface-muted: #f4f1ed;
+        --text: #292522;
+        --muted: #6f6862;
+        --quiet: #8b837c;
+        --line: #d9d2cc;
+        --accent: #ad5e3d;
+        --accent-strong: #874329;
+        --accent-soft: #f5dfd2;
+        --success-soft: #e3efe8;
+        --success-text: #2f6550;
+        --danger: #a23d36;
+        --shadow: rgba(76, 54, 43, .13);
+        --radius: 18px;
+      }
       * { box-sizing: border-box; }
-      body { margin: 0; min-height: 100vh; padding: 24px; display: grid; place-items: center; background: radial-gradient(circle at top left, #f8efe4 0, #eceae4 48%, #e2e8e4 100%); }
-      main { width: min(720px, 100%); padding: clamp(28px, 7vw, 56px); background: rgba(255, 255, 255, .94); border: 1px solid #c8cecb; border-radius: 20px; box-shadow: 0 20px 60px rgba(31, 41, 40, .12); }
-      h1 { margin: 0 0 12px; font-size: clamp(28px, 6vw, 44px); line-height: 1.15; letter-spacing: -.03em; }
-      h2 { margin: 36px 0 14px; font-size: 18px; }
-      p { margin: 0; color: #6c7774; line-height: 1.7; }
-      .eyebrow { margin-bottom: 16px; color: #9f5737; font-size: 12px; font-weight: 700; letter-spacing: .08em; }
-      .subject-type { display: inline-flex; margin-top: 8px; padding: 6px 10px; color: #35635c; background: #e4f0eb; border-radius: 999px; font-size: 13px; font-weight: 700; }
+      html { background: var(--page); }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        padding: clamp(12px, 3vw, 32px);
+        color: var(--text);
+        background:
+          radial-gradient(circle at 8% 0%, var(--page-glow), transparent 36rem),
+          var(--page);
+      }
+      main {
+        width: min(980px, 100%);
+        min-height: calc(100dvh - clamp(24px, 6vw, 64px));
+        margin: 0 auto;
+        padding: clamp(24px, 6vw, 64px);
+        background: color-mix(in srgb, var(--surface) 96%, transparent);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: 0 24px 72px var(--shadow);
+      }
+      h1 { max-width: 16ch; margin: 0; font-size: clamp(34px, 7vw, 62px); line-height: 1.03; letter-spacing: -.045em; }
+      h2 { margin: 48px 0 16px; font-size: clamp(20px, 3vw, 26px); letter-spacing: -.02em; }
+      h3 { letter-spacing: -.015em; }
+      p { margin: 0; color: var(--muted); line-height: 1.72; }
+      a { color: var(--accent-strong); }
+      .brand-line { margin-bottom: 18px; color: var(--accent-strong); font-size: 14px; font-weight: 720; }
+      .site-header { display: grid; gap: 16px; max-width: 720px; }
+      .site-lead { max-width: 58ch; font-size: clamp(16px, 2.2vw, 20px); }
+      .subject-type { display: inline-flex; width: fit-content; margin-top: 16px; padding: 7px 11px; color: var(--success-text); background: var(--success-soft); border-radius: 999px; font-size: 13px; font-weight: 720; }
       .subject-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 0; }
-      .subject-field { margin: 0; padding: 14px 16px; background: #f7f8f5; border-radius: 12px; }
-      .subject-field dt { color: #7b8581; font-size: 12px; }
-      .subject-field dd { margin: 5px 0 0; color: #263532; line-height: 1.5; overflow-wrap: anywhere; }
+      .subject-field { margin: 0; padding: 16px; background: var(--surface-muted); border-radius: 14px; }
+      .subject-field dt { color: var(--quiet); font-size: 12px; }
+      .subject-field dd { margin: 5px 0 0; color: var(--text); line-height: 1.5; overflow-wrap: anywhere; }
       .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-      .media-grid img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 14px; background: #edf0ed; }
-      .muted { color: #8a9490; font-size: 14px; }
-      @media (max-width: 480px) { body { padding: 12px; } main { border-radius: 16px; } }
+      .media-grid img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 14px; background: var(--surface-muted); }
+      .muted { color: var(--quiet); font-size: 14px; }
+      .about { max-width: 64ch; }
+      .contact-row { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 18px; color: var(--muted); font-size: 14px; }
+      .growth-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; align-items: start; }
+      .growth-card { overflow: hidden; background: var(--surface-muted); border: 1px solid var(--line); border-radius: var(--radius); }
+      .growth-card__media { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--accent-soft); }
+      .growth-card__media-empty { display: grid; width: 100%; aspect-ratio: 4 / 3; place-items: center; padding: 24px; color: var(--accent-strong); background: var(--accent-soft); font-size: 14px; font-weight: 680; text-align: center; }
+      .growth-card__body { padding: 18px; }
+      .growth-card h3 { margin: 0 0 8px; font-size: 19px; }
+      .growth-card p { margin-top: 6px; }
+      .traits { margin-top: 10px; color: var(--accent-strong); font-size: 13px; font-weight: 650; }
+      .campaign { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; margin-top: 28px; padding: 18px; color: var(--accent-strong); background: var(--accent-soft); border-radius: var(--radius); }
+      .campaign span { color: var(--muted); font-size: 13px; }
+      .answer { margin-bottom: 16px; padding: 18px; background: var(--surface-muted); border-left: 4px solid var(--accent); border-radius: 0 14px 14px 0; }
+      .answer strong { color: var(--accent-strong); }
+      .recommendations { display: grid; gap: 8px; margin-top: 12px; }
+      .form-panel { padding: clamp(18px, 4vw, 28px); background: var(--surface-muted); border-radius: var(--radius); }
+      .form-error { margin: 0 0 12px; padding: 12px 14px; color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); border-radius: 12px; }
+      form { display: grid; gap: 10px; }
+      label { color: var(--text); font-size: 13px; font-weight: 650; }
+      .helper { margin: -4px 0 4px; color: var(--quiet); font-size: 12px; }
+      input, textarea { width: 100%; padding: 12px 13px; color: var(--text); border: 1px solid var(--line); border-radius: 12px; font: inherit; background: var(--surface); }
+      input::placeholder, textarea::placeholder { color: var(--quiet); opacity: 1; }
+      textarea { min-height: 90px; resize: vertical; }
+      button { width: fit-content; margin-top: 6px; padding: 12px 18px; border: 0; border-radius: 999px; color: #fffaf6; background: var(--accent-strong); font: inherit; font-weight: 720; cursor: pointer; }
+      button:active { transform: scale(.98); }
+      :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 72%, transparent); outline-offset: 3px; }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page: #111415;
+          --page-glow: #34241e;
+          --surface: #191c1d;
+          --surface-muted: #222627;
+          --text: #f3ece6;
+          --muted: #bbb2aa;
+          --quiet: #958b84;
+          --line: #3c4142;
+          --accent: #d4926a;
+          --accent-strong: #efb18a;
+          --accent-soft: #3b2922;
+          --success-soft: #20362d;
+          --success-text: #a8d4be;
+          --danger: #f09a92;
+          --shadow: rgba(3, 5, 5, .42);
+        }
+        button { color: #28170f; background: #efb18a; }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        main { animation: page-enter .42s cubic-bezier(.16, 1, .3, 1) both; }
+        button { transition: transform .16s ease, filter .16s ease; }
+        button:hover { filter: brightness(1.05); }
+        @keyframes page-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      }
+      @media (max-width: 640px) {
+        body { padding: 10px; }
+        main { min-height: calc(100dvh - 20px); padding: 24px 18px; border-radius: 16px; }
+        h1 { max-width: none; }
+        .campaign { grid-template-columns: 1fr; }
+        .growth-grid { grid-template-columns: 1fr; }
+        button { width: 100%; }
+      }
     </style>
   </head>
   <body><main>${body}</main></body>
@@ -66,7 +179,8 @@ export function renderShareBoundary() {
 export function renderInvalidShare() {
   return renderShell(
     '分享链接已失效',
-    '<div class="eyebrow">WEB-01 · 公开分享</div><h1>分享链接已失效</h1><p>该公开分享可能已被撤销、已过期，或当前暂时无法读取。请向分享者索取新的链接。</p>',
+    '<div class="brand-line">熊舍管家公开分享</div><h1>分享链接已失效</h1><p class="site-lead">该公开分享可能已撤销、已过期，或当前暂时不可读取。请向分享者索取新的链接。</p>',
+    { description: '这个熊舍管家公开分享链接当前不可用。' },
   );
 }
 
@@ -79,17 +193,132 @@ export function renderPublicShare(data) {
 
   return renderShell(
     title,
-    `<div class="eyebrow">WEB-01 · 公开分享</div>
-     <h1>${escapeHtml(title)}</h1>
+    `<div class="brand-line">熊舍管家公开分享</div>
+     <div class="site-header"><h1>${escapeHtml(title)}</h1>
      <div class="subject-type">${escapeHtml(subjectType)}</div>
+     </div>
      <section aria-labelledby="subject-heading"><h2 id="subject-heading">主题对象</h2>${fields}</section>
      <section aria-labelledby="media-heading"><h2 id="media-heading">媒体</h2>${media}</section>`,
+    { description: `${title}的公开资料与媒体。` },
+  );
+}
+
+export function renderGrowthBoundary() {
+  return renderShell(
+    '公开主页暂时不可用',
+    '<div class="brand-line">熊舍公开主页</div><h1>公开主页暂时不可用</h1><p class="site-lead">这个链接可能尚未发布，或当前暂时不可读取。请向熊舍索取新的链接。</p>',
+    { description: '这个熊舍公开主页当前不可用。' },
+  );
+}
+
+export function renderNotFound() {
+  return renderShell(
+    '页面不存在',
+    '<div class="brand-line">熊舍管家公开页</div><h1>这里没有可访问的页面</h1><p class="site-lead">请检查链接是否完整，或返回熊舍发送给你的公开主页。</p>',
+    { description: '请求的熊舍管家公开页面不存在。' },
+  );
+}
+
+export function renderPublicGrowthPage(catalog, state = {}) {
+  const site = isRecord(catalog?.site) ? catalog.site : {};
+  const hamsters = Array.isArray(catalog?.hamsters) ? catalog.hamsters : [];
+  const campaign = isRecord(catalog?.campaign) ? catalog.campaign : null;
+  const slug = typeof site.slug === 'string' ? site.slug : '';
+  const campaignCode = typeof state.campaignCode === 'string' ? state.campaignCode : campaign?.campaign_code || '';
+  const hamsterCards = hamsters.length
+    ? hamsters.map((item, index) => renderGrowthHamsterCard(item, { slug, index })).join('')
+    : '<p class="muted">当前暂无公开且接受咨询的仓鼠。</p>';
+  const recommendations = Array.isArray(state.recommendations) ? state.recommendations : [];
+  const recommendationHtml = recommendations.length
+    ? `<div class="recommendations">${recommendations.map((item) => `<div class="subject-field"><strong>${escapeHtml(item.public_name || '公开仓鼠')}</strong><p>${escapeHtml(item.reason || item.summary || '当前资料已公开并接受咨询。')}</p></div>`).join('')}</div>`
+    : '';
+  const answerHtml = state.answer
+    ? `<div class="answer" role="status"><strong>AI 顾问</strong><p>${escapeHtml(state.answer)}</p>${recommendationHtml}</div>`
+    : '';
+  const leadMessage = state.leadSuccess
+    ? '<div class="answer" role="status"><strong>已收到你的联系方式</strong><p>熊舍会根据你的咨询尽快联系你。</p></div>'
+    : '';
+  const consultError = state.form === 'consult' && state.error
+    ? `<p class="form-error" role="alert">${escapeHtml(state.error)}</p>`
+    : '';
+  const leadError = state.form === 'lead' && state.error
+    ? `<p class="form-error" role="alert">${escapeHtml(state.error)}</p>`
+    : '';
+  const consultValues = isRecord(state.consultValues) ? state.consultValues : {};
+  const leadValues = isRecord(state.leadValues) ? state.leadValues : {};
+  const consultationToken = state.sessionToken || state.consultationToken || '';
+  const interestID = state.interestedHamsterId || '';
+  const contacts = [
+    site.contact_wechat ? `微信 ${site.contact_wechat}` : '',
+    site.contact_phone ? `电话 ${site.contact_phone}` : '',
+  ].filter(Boolean);
+  return renderShell(
+    site.title || '熊舍公开主页',
+    `<header class="site-header">
+       <div class="brand-line">${escapeHtml(site.organization_name || '熊舍公开主页')}</div>
+       <h1>${escapeHtml(site.title || '熊舍公开主页')}</h1>
+       ${site.tagline ? `<p class="site-lead">${escapeHtml(site.tagline)}</p>` : ''}
+       ${site.about ? `<p class="about">${escapeHtml(site.about)}</p>` : ''}
+       ${contacts.length ? `<div class="contact-row">${contacts.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>` : ''}
+     </header>
+     ${campaign ? `<div class="campaign"><strong>${escapeHtml(campaign.title || '本次内容')}</strong><span>${escapeHtml(platformLabel(campaign.platform))}</span></div>` : ''}
+     <section aria-labelledby="catalog-heading"><h2 id="catalog-heading">公开仓鼠</h2><div class="growth-grid">${hamsterCards}</div></section>
+     <section aria-labelledby="consult-heading"><h2 id="consult-heading">问问 AI 顾问</h2>${answerHtml}
+       <div class="form-panel">${consultError}
+       <form method="post" action="/p/${encodeURIComponent(slug)}/consult">
+         <input type="hidden" name="campaign_code" value="${escapeHtml(campaignCode)}">
+         <input type="hidden" name="session_token" value="${escapeHtml(state.sessionToken || '')}">
+         <input type="hidden" name="interested_hamster_id" value="${escapeHtml(interestID)}">
+         <label for="message">你想了解什么</label>
+         <textarea id="message" name="message" maxlength="2000" required placeholder="例如：新手适合哪只？">${escapeHtml(consultValues.message || '')}</textarea>
+         <button type="submit">获取建议</button>
+       </form></div>
+     </section>
+     <section aria-labelledby="lead-heading"><h2 id="lead-heading">留下联系方式</h2>${leadMessage}
+       <div class="form-panel">${leadError}
+       <form method="post" action="/p/${encodeURIComponent(slug)}/lead">
+         <input type="hidden" name="campaign_code" value="${escapeHtml(campaignCode)}">
+         <input type="hidden" name="consultation_token" value="${escapeHtml(consultationToken)}">
+         <input type="hidden" name="interested_hamster_id" value="${escapeHtml(interestID)}">
+         <label for="lead-name">怎么称呼</label><input id="lead-name" name="name" maxlength="120" autocomplete="name" required value="${escapeHtml(leadValues.name || '')}">
+         <label for="lead-phone">手机号</label><input id="lead-phone" name="phone" maxlength="32" inputmode="tel" autocomplete="tel" value="${escapeHtml(leadValues.phone || '')}">
+         <label for="lead-wechat">微信</label><input id="lead-wechat" name="wechat" maxlength="64" autocomplete="off" value="${escapeHtml(leadValues.wechat || '')}">
+         <p class="helper">手机号和微信至少填写一项。</p>
+         <label for="lead-intent">补充说明</label><textarea id="lead-intent" name="intent_summary" maxlength="2000">${escapeHtml(leadValues.intent_summary || '')}</textarea>
+         <button type="submit">提交联系方式</button>
+       </form></div>
+     </section>`,
+    {
+      description: site.tagline || site.about || `查看${site.title || '熊舍'}的公开仓鼠资料并提交咨询。`,
+    },
   );
 }
 
 export function createServer(options = {}) {
   const apiBaseUrl = options.apiBaseUrl ?? process.env.WEB_API_BASE_URL;
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
+  const flashes = new Map();
+
+  const rememberFlash = (slug, state) => {
+    const now = Date.now();
+    for (const [key, value] of flashes) {
+      if (value.expiresAt <= now) flashes.delete(key);
+    }
+    while (flashes.size >= 256) flashes.delete(flashes.keys().next().value);
+    const id = randomUUID();
+    flashes.set(id, { slug, state, expiresAt: now + 5 * 60 * 1000 });
+    return id;
+  };
+
+  const readFlash = (id, slug) => {
+    if (!id) return null;
+    const flash = flashes.get(id);
+    if (!flash || flash.slug !== slug || flash.expiresAt <= Date.now()) {
+      flashes.delete(id);
+      return null;
+    }
+    return flash.state;
+  };
 
   return http.createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
@@ -115,8 +344,60 @@ export function createServer(options = {}) {
       }
     }
 
-    response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-    response.end('Not Found');
+    const growthPath = url.pathname.match(/^\/p\/([^/]+)$/);
+    const growthAction = url.pathname.match(/^\/p\/([^/]+)\/(consult|lead)$/);
+    const growthMedia = url.pathname.match(/^\/p\/([^/]+)\/media\/([^/]+)$/);
+    if (growthMedia && request.method === 'GET') {
+      const slug = decodePathPart(growthMedia[1]);
+      const mediaId = decodePathPart(growthMedia[2]);
+      const media = await fetchPublicGrowthMedia({ apiBaseUrl, fetchImpl, slug, mediaId });
+      if (!media) return sendText(response, 404, '图片不存在或已停止公开');
+      return sendBinary(response, 200, media.body, media.contentType, media.etag);
+    }
+    if (growthPath && request.method === 'GET') {
+      const slug = decodePathPart(growthPath[1]);
+      try {
+        const campaignCode = url.searchParams.get('campaign') || '';
+        const catalog = await fetchPublicGrowthCatalog({ apiBaseUrl, fetchImpl, slug, campaignCode });
+        const flash = readFlash(url.searchParams.get('result'), slug);
+        return catalog
+          ? sendHtml(response, 200, renderPublicGrowthPage(catalog, { campaignCode, ...flash }))
+          : sendHtml(response, 404, renderGrowthBoundary());
+      } catch {
+        return sendHtml(response, 404, renderGrowthBoundary());
+      }
+    }
+    if (growthAction && request.method === 'POST') {
+      const slug = decodePathPart(growthAction[1]);
+      const form = await readFormBody(request);
+      if (!form) return sendHtml(response, 413, renderGrowthBoundary());
+      const campaignCode = form.campaign_code || '';
+      const endpoint = growthAction[2] === 'consult' ? 'consult' : 'leads';
+      let catalog = null;
+      try { catalog = await fetchPublicGrowthCatalog({ apiBaseUrl, fetchImpl, slug, campaignCode }); } catch { /* friendly boundary below */ }
+      if (!catalog) return sendHtml(response, 404, renderGrowthBoundary());
+      const result = await proxyPublicGrowthAction({ apiBaseUrl, fetchImpl, slug, endpoint, form });
+      if (!result.ok && (result.status === 400 || result.status === 422)) {
+        const state = endpoint === 'consult'
+          ? { campaignCode, form: 'consult', error: publicFormError(result, '请检查咨询内容后再提交。'), consultValues: form, sessionToken: form.session_token, interestedHamsterId: form.interested_hamster_id }
+          : { campaignCode, form: 'lead', error: publicFormError(result, '请检查联系方式后再提交。'), leadValues: form, consultationToken: form.consultation_token, interestedHamsterId: form.interested_hamster_id };
+        return sendHtml(response, result.status, renderPublicGrowthPage(catalog, state));
+      }
+      if (!result.ok) {
+        return sendHtml(response, result.status === 404 ? 404 : 502, renderGrowthBoundary());
+      }
+      const data = result.data?.data || {};
+      const state = endpoint === 'consult'
+        ? { campaignCode, answer: data.answer, recommendations: data.recommendations, sessionToken: data.session_token, interestedHamsterId: data.recommendations?.[0]?.hamster_id }
+        : { campaignCode, leadSuccess: true, consultationToken: form.consultation_token };
+      const resultId = rememberFlash(slug, state);
+      const query = new URLSearchParams();
+      if (campaignCode) query.set('campaign', campaignCode);
+      query.set('result', resultId);
+      return sendRedirect(response, `/p/${encodeURIComponent(slug)}?${query}`);
+    }
+
+    return sendHtml(response, 404, renderNotFound());
   });
 }
 
@@ -156,6 +437,140 @@ export function buildPublicShareUrl(apiBaseUrl, token) {
   base.search = '';
   base.hash = '';
   return base.toString();
+}
+
+export function buildPublicGrowthCatalogUrl(apiBaseUrl, slug, campaignCode = '') {
+  const base = new URL(String(apiBaseUrl));
+  const basePath = base.pathname.replace(/\/+$/, '');
+  base.pathname = `${basePath}/v1/public/sites/${encodeURIComponent(slug)}/catalog`;
+  base.search = campaignCode ? `?campaign=${encodeURIComponent(campaignCode)}` : '';
+  base.hash = '';
+  return base.toString();
+}
+
+export function buildPublicGrowthMediaUrl(apiBaseUrl, slug, mediaId) {
+  const base = new URL(String(apiBaseUrl));
+  const basePath = base.pathname.replace(/\/+$/, '');
+  base.pathname = `${basePath}/v1/public/sites/${encodeURIComponent(slug)}/media/${encodeURIComponent(mediaId)}`;
+  base.search = '';
+  base.hash = '';
+  return base.toString();
+}
+
+export async function fetchPublicGrowthCatalog({ apiBaseUrl, fetchImpl = globalThis.fetch, slug, campaignCode = '' }) {
+  if (!apiBaseUrl || typeof fetchImpl !== 'function') return null;
+  const response = await fetchImpl(buildPublicGrowthCatalogUrl(apiBaseUrl, slug, campaignCode), { headers: { Accept: 'application/json' } });
+  if (!response || response.status !== 200) return null;
+  const payload = await response.json();
+  const data = payload?.data;
+  if (!isRecord(data) || !isRecord(data.site) || !Array.isArray(data.hamsters)) return null;
+  return data;
+}
+
+export async function fetchPublicGrowthMedia({ apiBaseUrl, fetchImpl = globalThis.fetch, slug, mediaId }) {
+  if (!apiBaseUrl || typeof fetchImpl !== 'function' || !slug || !mediaId) return null;
+  try {
+    const response = await fetchImpl(buildPublicGrowthMediaUrl(apiBaseUrl, slug, mediaId), {
+      headers: { Accept: 'image/avif,image/webp,image/*,*/*;q=0.8' },
+    });
+    const contentType = response?.headers?.get?.('content-type') || '';
+    if (!response || response.status !== 200 || !contentType.startsWith('image/') || typeof response.arrayBuffer !== 'function') {
+      return null;
+    }
+    return {
+      body: Buffer.from(await response.arrayBuffer()),
+      contentType,
+      etag: response.headers?.get?.('etag') || '',
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function proxyPublicGrowthAction({ apiBaseUrl, fetchImpl = globalThis.fetch, slug, endpoint, form }) {
+  if (!apiBaseUrl || typeof fetchImpl !== 'function') return { ok: false, status: 503, data: null };
+  const base = new URL(String(apiBaseUrl));
+  const basePath = base.pathname.replace(/\/+$/, '');
+  base.pathname = `${basePath}/v1/public/sites/${encodeURIComponent(slug)}/${endpoint}`;
+  base.search = '';
+  base.hash = '';
+  const body = endpoint === 'consult'
+    ? { message: form.message || '', session_token: form.session_token || '', campaign_code: form.campaign_code || '', interested_hamster_id: form.interested_hamster_id || '', landing_path: `/p/${slug}` }
+    : { name: form.name || '', phone: form.phone || '', wechat: form.wechat || '', campaign_code: form.campaign_code || '', consultation_token: form.consultation_token || '', interested_hamster_id: form.interested_hamster_id || '', intent_summary: form.intent_summary || '', landing_path: `/p/${slug}` };
+  try {
+    const response = await fetchImpl(base.toString(), {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Idempotency-Key': `web-${randomUUID()}`,
+      },
+      body: JSON.stringify(body),
+    });
+    let data = null;
+    try { data = await response.json(); } catch { /* friendly boundary below */ }
+    return { ok: response.status === 200 || response.status === 201, status: response.status, data };
+  } catch {
+    return { ok: false, status: 503, data: null };
+  }
+}
+
+function renderGrowthHamsterCard(item, { slug, index }) {
+  const traits = Array.isArray(item.traits) ? item.traits.filter(Boolean).join(' · ') : '';
+  const facts = [item.variety, SEX_LABELS[item.sex] || item.sex, item.birth_date].filter(Boolean).join(' · ');
+  const title = item.public_name || '公开仓鼠';
+  const mediaUrl = publicGrowthMediaUrl(item.media, slug);
+  const media = mediaUrl
+    ? `<img class="growth-card__media" src="${escapeHtml(mediaUrl)}" alt="${escapeHtml(`${title}的公开照片`)}" width="720" height="540" loading="${index === 0 ? 'eager' : 'lazy'}"${index === 0 ? ' fetchpriority="high"' : ''}>`
+    : `<div class="growth-card__media-empty" role="img" aria-label="${escapeHtml(`${title}暂无公开照片`)}"><span>暂无公开照片</span></div>`;
+  return `<article class="growth-card">${media}<div class="growth-card__body"><h3>${escapeHtml(title)}</h3>${facts ? `<p>${escapeHtml(facts)}</p>` : ''}${item.summary ? `<p>${escapeHtml(item.summary)}</p>` : ''}${traits ? `<div class="traits">${escapeHtml(traits)}</div>` : ''}</div></article>`;
+}
+
+function publicGrowthMediaUrl(media, slug) {
+  if (!Array.isArray(media)) return null;
+  const preferred = [...media].sort((left, right) => mediaKindPriority(left?.kind) - mediaKindPriority(right?.kind));
+  for (const item of preferred) {
+    if (!isRecord(item) || (item.status && item.status !== 'ready')) continue;
+    const absolute = safeMediaUrl(item.url);
+    if (absolute) return absolute;
+    const id = typeof item.id === 'string' ? item.id : '';
+    if (id && slug) return `/p/${encodeURIComponent(slug)}/media/${encodeURIComponent(id)}`;
+  }
+  return null;
+}
+
+function mediaKindPriority(kind) {
+  return kind === 'cover' ? 0 : kind === 'thumbnail' ? 1 : kind === 'preview' ? 2 : 3;
+}
+
+function platformLabel(value) {
+  return value === 'wechat_channels'
+    ? '视频号'
+    : value === 'douyin'
+      ? '抖音'
+      : value === 'xiaohongshu'
+        ? '小红书'
+        : value || '公开活动';
+}
+
+function publicFormError(result, fallback) {
+  const message = result?.data?.error?.message;
+  return typeof message === 'string' && message.trim() && message.length <= 240
+    ? message.trim()
+    : fallback;
+}
+
+function decodePathPart(value) {
+  try { return decodeURIComponent(value); } catch { return ''; }
+}
+
+async function readFormBody(request) {
+  let raw = '';
+  for await (const chunk of request) {
+    raw += chunk;
+    if (raw.length > 65536) return null;
+  }
+  return Object.fromEntries(new URLSearchParams(raw));
 }
 
 function renderSubjectFields(display) {
@@ -255,6 +670,32 @@ function sendHtml(response, status, html) {
     'Content-Type': 'text/html; charset=utf-8',
   });
   response.end(html);
+}
+
+function sendRedirect(response, location) {
+  response.writeHead(303, {
+    'Cache-Control': 'no-store',
+    Location: location,
+  });
+  response.end();
+}
+
+function sendText(response, status, value) {
+  response.writeHead(status, {
+    'Cache-Control': 'no-store',
+    'Content-Type': 'text/plain; charset=utf-8',
+  });
+  response.end(value);
+}
+
+function sendBinary(response, status, value, contentType, etag = '') {
+  const headers = {
+    'Cache-Control': 'public, no-store, max-age=0',
+    'Content-Type': contentType,
+  };
+  if (etag) headers.ETag = etag;
+  response.writeHead(status, headers);
+  response.end(value);
 }
 
 function sendJson(response, status, value) {

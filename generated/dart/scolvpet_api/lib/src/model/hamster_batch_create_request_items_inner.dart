@@ -27,7 +27,7 @@ class HamsterBatchCreateRequestItemsInner {
   });
 
   @JsonKey(
-    
+
     name: r'client_item_id',
     required: true,
     includeIfNull: false,
@@ -39,7 +39,7 @@ class HamsterBatchCreateRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'hamster',
     required: true,
     includeIfNull: false,
@@ -72,4 +72,3 @@ class HamsterBatchCreateRequestItemsInner {
   }
 
 }
-

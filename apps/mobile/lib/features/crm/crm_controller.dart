@@ -17,7 +17,11 @@ class CrmController extends ChangeNotifier {
   String? lastMessage;
 
   Future<void> refreshAll() async {
-    await Future.wait([refreshContacts(), refreshReservations(), refreshHandovers()]);
+    await Future.wait([
+      refreshContacts(),
+      refreshReservations(),
+      refreshHandovers(),
+    ]);
   }
 
   Future<void> refreshContacts() async {
@@ -95,7 +99,11 @@ class CrmController extends ChangeNotifier {
   Future<bool> completeHandover(CrmHandover item) => _run(() async {
     await repository.completeHandover(item.id, item.version);
     lastMessage = '交付已完成';
-    await Future.wait([refreshHandovers(), refreshReservations(), refreshContacts()]);
+    await Future.wait([
+      refreshHandovers(),
+      refreshReservations(),
+      refreshContacts(),
+    ]);
   });
 
   Future<bool> _run(Future<void> Function() body) async {

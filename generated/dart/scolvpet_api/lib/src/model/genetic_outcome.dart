@@ -34,7 +34,7 @@ class GeneticOutcome {
   });
 
   @JsonKey(
-    
+
     name: r'genotype_key',
     required: true,
     includeIfNull: false,
@@ -46,7 +46,7 @@ class GeneticOutcome {
 
 
   @JsonKey(
-    
+
     name: r'genotype',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class GeneticOutcome {
 
 
   @JsonKey(
-    
+
     name: r'phenotype_label',
     required: true,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class GeneticOutcome {
 
 
   @JsonKey(
-    
+
     name: r'phenotype',
     required: true,
     includeIfNull: false,
@@ -84,7 +84,7 @@ class GeneticOutcome {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'probability',
     required: true,
     includeIfNull: false,
@@ -97,7 +97,7 @@ class GeneticOutcome {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'count_weight',
     required: true,
     includeIfNull: false,
@@ -138,4 +138,3 @@ class GeneticOutcome {
   }
 
 }
-

@@ -10,7 +10,10 @@ void main() {
     expect(wizardStepForState('pairing'), BreedingWizardStep.pairing);
     expect(wizardStepForState('post_pair'), BreedingWizardStep.postPair);
     expect(wizardStepForState('gestation'), BreedingWizardStep.gestation);
-    expect(wizardStepForState('litter_nursing'), BreedingWizardStep.litterNursing);
+    expect(
+      wizardStepForState('litter_nursing'),
+      BreedingWizardStep.litterNursing,
+    );
     expect(nextActionLabel('draft'), '发布计划');
     expect(nextActionLabel('gestation'), '确认产仔');
     expect(nextActionLabel('litter_nursing'), isNull);
@@ -185,6 +188,10 @@ void main() {
     expect(find.text('发布计划'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('breeding-next-plan-seed')));
+    await tester.pumpAndSettle();
+    // Publishing draft opens the pairing enclosure picker.
+    expect(find.text('选择配对笼盒'), findsOneWidget);
+    await tester.tap(find.text('确认'));
     await tester.pumpAndSettle();
     expect(find.text('开始配对'), findsOneWidget);
     expect(controller.selected?.state, 'pair_ready');

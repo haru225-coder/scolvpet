@@ -28,7 +28,7 @@ class LitterResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'litter',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class LitterResponseData {
 
 
   @JsonKey(
-    
+
     name: r'reconciliation',
     required: true,
     includeIfNull: false,
@@ -73,4 +73,3 @@ class LitterResponseData {
   }
 
 }
-

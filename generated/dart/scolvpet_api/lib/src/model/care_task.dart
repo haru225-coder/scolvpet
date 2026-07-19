@@ -54,7 +54,7 @@ class CareTask {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class CareTask {
 
 
   @JsonKey(
-    
+
     name: r'task_type',
     required: true,
     includeIfNull: false,
@@ -78,7 +78,7 @@ class CareTask {
 
 
   @JsonKey(
-    
+
     name: r'target_type',
     required: true,
     includeIfNull: false,
@@ -90,7 +90,7 @@ class CareTask {
 
 
   @JsonKey(
-    
+
     name: r'target_id',
     required: true,
     includeIfNull: false,
@@ -102,7 +102,7 @@ class CareTask {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: false,
     includeIfNull: false,
@@ -114,7 +114,7 @@ class CareTask {
 
 
   @JsonKey(
-    
+
     name: r'scheduled_at',
     required: true,
     includeIfNull: false,
@@ -126,7 +126,7 @@ class CareTask {
 
 
   @JsonKey(
-    
+
     name: r'priority',
     required: true,
     includeIfNull: false,
@@ -138,7 +138,7 @@ class CareTask {
 
 
   @JsonKey(
-    
+
     name: r'state',
     required: true,
     includeIfNull: false,
@@ -150,7 +150,7 @@ class CareTask {
 
 
   @JsonKey(
-    
+
     name: r'subject_ids',
     required: false,
     includeIfNull: false,
@@ -162,7 +162,7 @@ class CareTask {
 
 
   @JsonKey(
-    
+
     name: r'completed_subject_ids',
     required: false,
     includeIfNull: false,
@@ -175,7 +175,7 @@ class CareTask {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'stage_total',
     required: true,
     includeIfNull: false,
@@ -188,7 +188,7 @@ class CareTask {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'stage_done',
     required: true,
     includeIfNull: false,
@@ -200,7 +200,7 @@ class CareTask {
 
 
   @JsonKey(
-    
+
     name: r'source_event_id',
     required: false,
     includeIfNull: false,
@@ -212,7 +212,7 @@ class CareTask {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -225,7 +225,7 @@ class CareTask {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -351,5 +351,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -33,10 +33,14 @@ class SessionResponseData {
     required  this.account,
 
     required  this.currentOrganization,
+
+    required  this.memberRole,
+
+    required  this.capabilities,
   });
 
   @JsonKey(
-    
+
     name: r'token_type',
     required: true,
     includeIfNull: false,
@@ -48,7 +52,7 @@ class SessionResponseData {
 
 
   @JsonKey(
-    
+
     name: r'access_token',
     required: true,
     includeIfNull: false,
@@ -61,7 +65,7 @@ class SessionResponseData {
 
           // minimum: 60
   @JsonKey(
-    
+
     name: r'expires_in_seconds',
     required: true,
     includeIfNull: false,
@@ -73,7 +77,7 @@ class SessionResponseData {
 
 
   @JsonKey(
-    
+
     name: r'refresh_token',
     required: true,
     includeIfNull: false,
@@ -85,7 +89,7 @@ class SessionResponseData {
 
 
   @JsonKey(
-    
+
     name: r'account',
     required: true,
     includeIfNull: false,
@@ -97,7 +101,7 @@ class SessionResponseData {
 
 
   @JsonKey(
-    
+
     name: r'current_organization',
     required: true,
     includeIfNull: false,
@@ -105,6 +109,30 @@ class SessionResponseData {
 
 
   final Organization currentOrganization;
+
+
+
+  @JsonKey(
+
+    name: r'member_role',
+    required: true,
+    includeIfNull: false,
+  )
+
+
+  final SessionResponseDataMemberRoleEnum memberRole;
+
+
+
+  @JsonKey(
+
+    name: r'capabilities',
+    required: true,
+    includeIfNull: false,
+  )
+
+
+  final List<String> capabilities;
 
 
 
@@ -117,7 +145,9 @@ class SessionResponseData {
       other.expiresInSeconds == expiresInSeconds &&
       other.refreshToken == refreshToken &&
       other.account == account &&
-      other.currentOrganization == currentOrganization;
+      other.currentOrganization == currentOrganization &&
+      other.memberRole == memberRole &&
+      other.capabilities == capabilities;
 
     @override
     int get hashCode =>
@@ -126,7 +156,9 @@ class SessionResponseData {
         expiresInSeconds.hashCode +
         refreshToken.hashCode +
         account.hashCode +
-        currentOrganization.hashCode;
+        currentOrganization.hashCode +
+        memberRole.hashCode +
+        capabilities.hashCode;
 
   factory SessionResponseData.fromJson(Map<String, dynamic> json) => _$SessionResponseDataFromJson(json);
 
@@ -153,3 +185,23 @@ String toString() => value;
 }
 
 
+
+enum SessionResponseDataMemberRoleEnum {
+@JsonValue(r'owner')
+owner(r'owner'),
+@JsonValue(r'breeder')
+breeder(r'breeder'),
+@JsonValue(r'caretaker')
+caretaker(r'caretaker'),
+@JsonValue(r'staff')
+staff(r'staff'),
+@JsonValue(r'viewer')
+viewer(r'viewer');
+
+const SessionResponseDataMemberRoleEnum(this.value);
+
+final String value;
+
+@override
+String toString() => value;
+}

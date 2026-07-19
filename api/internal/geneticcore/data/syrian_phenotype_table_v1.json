@@ -1,0 +1,1574 @@
+{
+  "id": "syrian_phenotype_table_v1",
+  "title": "金丝熊后代推算整理表（双重核验版）",
+  "version": "2026-07-double-verified",
+  "source_file": "金丝熊后代推算整理表_双重核验版.xlsx",
+  "authority": "core",
+  "notes": [
+    "概率为理论遗传概率；实际单胎数量有限，不保证按比例精确出现。",
+    "空白表示原资料未列出该后代表型，按 0 处理（不出现在 outcomes 中）。",
+    "A×B 与 B×A 视为相同组合；查询时会对亲本做无序规范化。",
+    "校正1：肉桂波利×火波利 采用 /32。",
+    "校正2：黄波利×火波利 的黑黄波利采用 3/32。"
+  ],
+  "series": [
+    {
+      "code": "poly",
+      "name": "波利系列",
+      "phenotypes": [
+        "火波利",
+        "肉桂波利",
+        "蜜波利",
+        "鸽灰波利",
+        "黄波利",
+        "黑波利",
+        "黑蜜波利",
+        "黑黄波利"
+      ]
+    },
+    {
+      "code": "chocolate",
+      "name": "巧克力色系",
+      "phenotypes": [
+        "巧克力",
+        "巧克力显斑",
+        "巧克力色",
+        "巧显斑",
+        "携巧鸽灰",
+        "携巧黑显斑",
+        "携巧黑熊",
+        "普通鸽灰",
+        "普通黑显斑",
+        "普通黑熊",
+        "香槟色",
+        "鸽灰",
+        "黑显斑",
+        "黑熊"
+      ]
+    }
+  ],
+  "crosses": [
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "蜜波利",
+      "parent_b": "蜜波利",
+      "outcomes": [
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.75,
+          "fraction": "3/4"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "肉桂波利",
+      "parent_b": "蜜波利",
+      "outcomes": [
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "蜜波利",
+      "parent_b": "黑蜜波利",
+      "outcomes": [
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.5,
+          "fraction": "1/2"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.5,
+          "fraction": "1/2"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "蜜波利",
+      "parent_b": "鸽灰波利",
+      "outcomes": [
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "蜜波利",
+      "parent_b": "黄波利",
+      "outcomes": [
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "蜜波利",
+      "parent_b": "黑黄波利",
+      "outcomes": [
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "火波利",
+      "parent_b": "蜜波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "蜜波利",
+      "parent_b": "黑波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "肉桂波利",
+      "parent_b": "肉桂波利",
+      "outcomes": [
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.5625,
+          "fraction": "9/16"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "肉桂波利",
+      "parent_b": "黑蜜波利",
+      "outcomes": [
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "肉桂波利",
+      "parent_b": "鸽灰波利",
+      "outcomes": [
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "肉桂波利",
+      "parent_b": "黄波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "肉桂波利",
+      "parent_b": "黑黄波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "火波利",
+      "parent_b": "肉桂波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.28125,
+          "fraction": "9/32",
+          "note": "按火波利页对称项校正为 /32"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.28125,
+          "fraction": "9/32",
+          "note": "按火波利页对称项校正为 /32"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.09375,
+          "fraction": "3/32",
+          "note": "按火波利页对称项校正为 /32"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.09375,
+          "fraction": "3/32",
+          "note": "按火波利页对称项校正为 /32"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.09375,
+          "fraction": "3/32",
+          "note": "按火波利页对称项校正为 /32"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.09375,
+          "fraction": "3/32",
+          "note": "按火波利页对称项校正为 /32"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.03125,
+          "fraction": "1/32",
+          "note": "按火波利页对称项校正为 /32"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.03125,
+          "fraction": "1/32",
+          "note": "按火波利页对称项校正为 /32"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "肉桂波利",
+      "parent_b": "黑波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "黑蜜波利",
+      "parent_b": "黑蜜波利",
+      "outcomes": [
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 1.0,
+          "fraction": "1"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "鸽灰波利",
+      "parent_b": "黑蜜波利",
+      "outcomes": [
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.5,
+          "fraction": "1/2"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.5,
+          "fraction": "1/2"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "黄波利",
+      "parent_b": "黑蜜波利",
+      "outcomes": [
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "黑蜜波利",
+      "parent_b": "黑黄波利",
+      "outcomes": [
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.5,
+          "fraction": "1/2"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.5,
+          "fraction": "1/2"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "火波利",
+      "parent_b": "黑蜜波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "黑波利",
+      "parent_b": "黑蜜波利",
+      "outcomes": [
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "鸽灰波利",
+      "parent_b": "鸽灰波利",
+      "outcomes": [
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.75,
+          "fraction": "3/4"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "鸽灰波利",
+      "parent_b": "黄波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "鸽灰波利",
+      "parent_b": "黑黄波利",
+      "outcomes": [
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "火波利",
+      "parent_b": "鸽灰波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "鸽灰波利",
+      "parent_b": "黑波利",
+      "outcomes": [
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "黄波利",
+      "parent_b": "黄波利",
+      "outcomes": [
+        {
+          "phenotype": "黄波利",
+          "probability": 0.5625,
+          "fraction": "9/16"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "黄波利",
+      "parent_b": "黑黄波利",
+      "outcomes": [
+        {
+          "phenotype": "黄波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "火波利",
+      "parent_b": "黄波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.28125,
+          "fraction": "9/32",
+          "note": "按黄波利页对称项校正黑黄波利为 3/32"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.28125,
+          "fraction": "9/32",
+          "note": "按黄波利页对称项校正黑黄波利为 3/32"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.09375,
+          "fraction": "3/32",
+          "note": "按黄波利页对称项校正黑黄波利为 3/32"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.09375,
+          "fraction": "3/32",
+          "note": "按黄波利页对称项校正黑黄波利为 3/32"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.09375,
+          "fraction": "3/32",
+          "note": "按黄波利页对称项校正黑黄波利为 3/32"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.09375,
+          "fraction": "3/32",
+          "note": "按黄波利页对称项校正黑黄波利为 3/32"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.03125,
+          "fraction": "1/32",
+          "note": "按黄波利页对称项校正黑黄波利为 3/32"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.03125,
+          "fraction": "1/32",
+          "note": "按黄波利页对称项校正黑黄波利为 3/32"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "黄波利",
+      "parent_b": "黑波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "黑黄波利",
+      "parent_b": "黑黄波利",
+      "outcomes": [
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.75,
+          "fraction": "3/4"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "火波利",
+      "parent_b": "黑黄波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "黑波利",
+      "parent_b": "黑黄波利",
+      "outcomes": [
+        {
+          "phenotype": "黑波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.375,
+          "fraction": "3/8"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.125,
+          "fraction": "1/8"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "火波利",
+      "parent_b": "火波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.421875,
+          "fraction": "27/64"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.140625,
+          "fraction": "9/64"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.140625,
+          "fraction": "9/64"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.140625,
+          "fraction": "9/64"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.046875,
+          "fraction": "3/64"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.046875,
+          "fraction": "3/64"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.046875,
+          "fraction": "3/64"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.015625,
+          "fraction": "1/64"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "火波利",
+      "parent_b": "黑波利",
+      "outcomes": [
+        {
+          "phenotype": "火波利",
+          "probability": 0.28125,
+          "fraction": "9/32"
+        },
+        {
+          "phenotype": "黑波利",
+          "probability": 0.28125,
+          "fraction": "9/32"
+        },
+        {
+          "phenotype": "肉桂波利",
+          "probability": 0.09375,
+          "fraction": "3/32"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.09375,
+          "fraction": "3/32"
+        },
+        {
+          "phenotype": "黄波利",
+          "probability": 0.09375,
+          "fraction": "3/32"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.09375,
+          "fraction": "3/32"
+        },
+        {
+          "phenotype": "蜜波利",
+          "probability": 0.03125,
+          "fraction": "1/32"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.03125,
+          "fraction": "1/32"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "poly",
+      "series_name": "波利系列",
+      "parent_a": "黑波利",
+      "parent_b": "黑波利",
+      "outcomes": [
+        {
+          "phenotype": "黑波利",
+          "probability": 0.5625,
+          "fraction": "9/16"
+        },
+        {
+          "phenotype": "鸽灰波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黑黄波利",
+          "probability": 0.1875,
+          "fraction": "3/16"
+        },
+        {
+          "phenotype": "黑蜜波利",
+          "probability": 0.0625,
+          "fraction": "1/16"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "巧克力",
+      "parent_b": "普通黑熊",
+      "outcomes": [
+        {
+          "phenotype": "黑熊",
+          "probability": 1.0,
+          "fraction": "1"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "携巧黑熊",
+      "parent_b": "携巧黑熊",
+      "outcomes": [
+        {
+          "phenotype": "黑熊",
+          "probability": 0.75,
+          "fraction": "3/4"
+        },
+        {
+          "phenotype": "巧克力",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "巧克力",
+      "parent_b": "携巧黑熊",
+      "outcomes": [
+        {
+          "phenotype": "巧克力",
+          "probability": 0.5,
+          "fraction": "1/2"
+        },
+        {
+          "phenotype": "黑熊",
+          "probability": 0.5,
+          "fraction": "1/2"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "巧克力",
+      "parent_b": "巧克力",
+      "outcomes": [
+        {
+          "phenotype": "巧克力",
+          "probability": 0.75,
+          "fraction": "3/4"
+        },
+        {
+          "phenotype": "香槟色",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "巧克力",
+      "parent_b": "普通黑显斑",
+      "outcomes": [
+        {
+          "phenotype": "黑显斑",
+          "probability": 0.5,
+          "fraction": "1/2"
+        },
+        {
+          "phenotype": "黑熊",
+          "probability": 0.5,
+          "fraction": "1/2"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "巧克力",
+      "parent_b": "携巧黑显斑",
+      "outcomes": [
+        {
+          "phenotype": "巧克力",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "巧克力显斑",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑显斑",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑熊",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "巧克力",
+      "parent_b": "巧显斑",
+      "outcomes": [
+        {
+          "phenotype": "巧克力",
+          "probability": 0.5,
+          "fraction": "1/2"
+        },
+        {
+          "phenotype": "巧克力显斑",
+          "probability": 0.5,
+          "fraction": "1/2"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "巧克力",
+      "parent_b": "普通鸽灰",
+      "outcomes": [
+        {
+          "phenotype": "鸽灰",
+          "probability": 0.5,
+          "fraction": "1/2"
+        },
+        {
+          "phenotype": "黑熊",
+          "probability": 0.5,
+          "fraction": "1/2"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "巧克力",
+      "parent_b": "携巧鸽灰",
+      "outcomes": [
+        {
+          "phenotype": "巧克力",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "香槟色",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "鸽灰",
+          "probability": 0.25,
+          "fraction": "1/4"
+        },
+        {
+          "phenotype": "黑熊",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "携巧鸽灰",
+      "parent_b": "携巧鸽灰",
+      "outcomes": [
+        {
+          "phenotype": "鸽灰",
+          "probability": 0.75,
+          "fraction": "3/4"
+        },
+        {
+          "phenotype": "香槟色",
+          "probability": 0.25,
+          "fraction": "1/4"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "携巧鸽灰",
+      "parent_b": "香槟色",
+      "outcomes": [
+        {
+          "phenotype": "香槟色",
+          "probability": 0.5,
+          "fraction": "1/2"
+        },
+        {
+          "phenotype": "鸽灰",
+          "probability": 0.5,
+          "fraction": "1/2"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "香槟色",
+      "parent_b": "香槟色",
+      "outcomes": [
+        {
+          "phenotype": "香槟色",
+          "probability": 1.0,
+          "fraction": "1"
+        }
+      ],
+      "probability_sum": 1.0
+    },
+    {
+      "series": "chocolate",
+      "series_name": "巧克力色系",
+      "parent_a": "巧克力色",
+      "parent_b": "香槟色",
+      "outcomes": [
+        {
+          "phenotype": "巧克力",
+          "probability": 0.5,
+          "fraction": "1/2"
+        },
+        {
+          "phenotype": "香槟色",
+          "probability": 0.5,
+          "fraction": "1/2"
+        }
+      ],
+      "probability_sum": 1.0
+    }
+  ]
+}

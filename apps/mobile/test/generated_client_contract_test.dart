@@ -36,6 +36,8 @@ void main() {
             'created_at': '2026-07-16T00:00:00Z',
             'updated_at': '2026-07-16T00:00:00Z',
           },
+          'member_role': 'owner',
+          'capabilities': ['org.manage', 'hamster.write', 'breeding.write'],
         },
         'meta': {
           'request_id': 'req_i1',
@@ -45,6 +47,8 @@ void main() {
       });
       expect(session.data.accessToken, 'at_i1');
       expect(session.data.currentOrganization.name, '雪团熊舍');
+      expect(session.data.memberRole.value, 'owner');
+      expect(session.data.capabilities, contains('hamster.write'));
     },
   );
 
@@ -93,9 +97,13 @@ void main() {
         ValidateStatus? validateStatus,
         ProgressCallback? onSendProgress,
         ProgressCallback? onReceiveProgress,
-      }) typed = api.getPublicShareMedia;
+      })
+      typed = api.getPublicShareMedia;
       expect(typed, isNotNull);
-      expect(ScolvpetApi().getDefaultApi().getPublicShareMedia, isA<Function>());
+      expect(
+        ScolvpetApi().getDefaultApi().getPublicShareMedia,
+        isA<Function>(),
+      );
     },
   );
 }

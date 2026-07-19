@@ -24,7 +24,7 @@ class RevokeShareRequest {
   });
 
   @JsonKey(
-    
+
     name: r'reason',
     required: true,
     includeIfNull: false,
@@ -55,4 +55,3 @@ class RevokeShareRequest {
   }
 
 }
-

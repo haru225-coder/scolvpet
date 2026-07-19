@@ -27,7 +27,7 @@ class MediaCoverRequest {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'time_offset_seconds',
     required: false,
     includeIfNull: false,
@@ -39,7 +39,7 @@ class MediaCoverRequest {
 
 
   @JsonKey(
-    
+
     name: r'media_variant_id',
     required: false,
     includeIfNull: false,
@@ -72,4 +72,3 @@ class MediaCoverRequest {
   }
 
 }
-

@@ -19,6 +19,7 @@ import 'package:scolvpet_mobile/features/home_widget/home_widget.dart';
 import 'package:scolvpet_mobile/features/members/members.dart';
 import 'package:scolvpet_mobile/features/pedigree/pedigree.dart';
 import 'package:scolvpet_mobile/features/assistant/assistant.dart';
+import 'package:scolvpet_mobile/features/growth/growth.dart';
 import 'package:scolvpet_mobile/features/miniprogram/miniprogram.dart';
 import 'package:scolvpet_mobile/features/paywall/paywall.dart';
 import 'package:scolvpet_mobile/features/public_site/public_site.dart';
@@ -26,6 +27,7 @@ import 'package:scolvpet_mobile/features/push/push.dart';
 import 'package:scolvpet_mobile/features/stud/stud.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
 import 'package:scolvpet_mobile/ui/screens.dart';
+import 'package:scolvpet_mobile/ui/theme/ios_theme.dart';
 import 'package:scolvpet_mobile/main.dart';
 
 void main() {
@@ -51,6 +53,8 @@ void main() {
   testWidgets(
     'ScolvPetApp renders initialization, five navigation tabs and cached shell',
     (tester) async {
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
+      addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
       final state = AppState(
         repository: FakeRepository(offline: true),
         sessionStore: MemorySessionStore(snapshot: demoSnapshot, delayed: true),
@@ -90,6 +94,7 @@ void main() {
           miniprogramRepository: MemoryMiniprogramRepository(),
           assistantRepository: MemoryAssistantRepository(),
           studRepository: MemoryStudRepository(),
+          growthRepository: MemoryGrowthRepository(),
           todayWidgetPublisher: todayWidgetPublisher,
         ),
       );
@@ -99,7 +104,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(HomeShell), findsOneWidget);
-      for (final label in ['今日', '仓鼠', '笼舍', '繁育', '我的']) {
+      final shellContext = tester.element(find.byType(HomeShell));
+      expect(Theme.of(shellContext).brightness, Brightness.light);
+      expect(ScolvPalette.of(shellContext).accent, ScolvPalette.light.accent);
+      for (final label in ['今日', '仓鼠', '管家', '繁育', '我的']) {
         expect(
           find.descendant(
             of: find.byType(NavigationBar),
@@ -110,6 +118,15 @@ void main() {
       }
       expect(find.text('快捷操作'), findsOneWidget);
       expect(find.text('在养'), findsOneWidget);
+      expect(
+        find.byKey(const Key('home-quick-create-hamster')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('home-quick-enclosures')), findsOneWidget);
+      final moreToggle = find.byKey(const Key('home-quick-more-toggle'));
+      await tester.ensureVisible(moreToggle);
+      await tester.tap(moreToggle);
+      await tester.pumpAndSettle();
       expect(find.byKey(const Key('home-quick-litters')), findsOneWidget);
       await tester.tap(
         find.descendant(
@@ -119,7 +136,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('繁育向导'), findsOneWidget);
-      expect(find.text('窝次列表'), findsOneWidget);
+      expect(find.text('窝次看板'), findsOneWidget);
       await tester.tap(
         find.descendant(
           of: find.byType(NavigationBar),
@@ -127,7 +144,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('雪团熊舍'), findsOneWidget);
+      expect(find.textContaining('雪团熊舍'), findsOneWidget);
       // Mine ListView is lazy — scroll each entry into view.
       for (final key in [
         const Key('mine-open-crm'),
@@ -135,25 +152,51 @@ void main() {
         const Key('mine-open-accounting'),
         const Key('mine-open-today-widget'),
         const Key('mine-open-genetic'),
-        const Key('mine-open-push'),
         const Key('mine-open-paywall'),
         const Key('mine-open-public-site'),
-        const Key('mine-open-miniprogram'),
         const Key('mine-open-assistant'),
         const Key('mine-open-stud'),
       ]) {
         await tester.scrollUntilVisible(find.byKey(key), 100);
         expect(find.byKey(key), findsOneWidget);
       }
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('mine-open-genetic')),
+        -100,
+      );
+      expect(find.byKey(const Key('mine-open-push')), findsNothing);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('mine-open-public-site')),
+        100,
+      );
+      expect(find.byKey(const Key('mine-open-miniprogram')), findsNothing);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('mine-open-assistant')),
+        100,
+      );
+      await tester.tap(find.byKey(const Key('mine-open-assistant')));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        2,
+      );
+      expect(find.byKey(const Key('assistant-read-only-note')), findsOneWidget);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text('我的'),
+        ),
+      );
+      await tester.pumpAndSettle();
       // Mine list is long; assert key entries + 数据中心 only (species rule UI covered elsewhere).
       await tester.drag(find.byType(ListView).first, const Offset(0, 2400));
       await tester.pumpAndSettle();
       await tester.tap(find.text('数据中心'));
       await tester.pumpAndSettle();
-      expect(find.text('数据搬家与空间概览'), findsOneWidget);
+      expect(find.text('数据中心'), findsOneWidget);
       await tester.pageBack();
       await tester.pumpAndSettle();
-      expect(find.text('雪团熊舍'), findsOneWidget);
+      expect(find.textContaining('雪团熊舍'), findsOneWidget);
     },
   );
 }

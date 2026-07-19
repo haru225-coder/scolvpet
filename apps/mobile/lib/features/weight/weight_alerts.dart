@@ -41,7 +41,7 @@ class WeightAlert {
       final change = record.changeFromPreviousG;
       return change == null
           ? '掉重'
-          : '掉重 ${change.toStringAsFixed(1)} g';
+          : '掉重 ${change.abs().toStringAsFixed(1)} g';
     }
     if (flags.contains('below_min_weight')) {
       return '低于阈值 ${record.weightG} g';
@@ -52,9 +52,25 @@ class WeightAlert {
     if (flags.contains('outside_reference')) {
       return '偏离参考区间';
     }
-    return flags.join(',');
+    return flags.isEmpty ? '体重正常' : weightAlertFlagLabel(flags.first);
   }
 }
+
+String weightAlertFlagLabel(String flag) => switch (flag) {
+  'drop_from_previous' => '较上次掉重',
+  'below_min_weight' => '低于体重阈值',
+  'below_birth_weight' => '低于出生重',
+  'outside_reference' => '偏离参考区间',
+  _ => '体重需关注',
+};
+
+String weightSourceLabel(String source) => switch (source) {
+  'manual' => '手动录入',
+  'import' || 'csv_import' => '批量导入',
+  'device' || 'scale' => '设备同步',
+  'system' => '系统生成',
+  _ => '来源待确认',
+};
 
 /// Evaluate alert flags for a single weight record.
 List<String> evaluateWeightFlags(

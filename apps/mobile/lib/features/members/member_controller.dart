@@ -95,10 +95,7 @@ class MemberController extends ChangeNotifier {
     lastMessage = null;
     notifyListeners();
     try {
-      await repository.revoke(
-        memberId: member.id,
-        version: member.version,
-      );
+      await repository.revoke(memberId: member.id, version: member.version);
       actionState = const I2AsyncState.data(null);
       lastMessage = '已撤销成员';
       await refresh();

@@ -38,7 +38,7 @@ class MiniprogramConfig {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: false,
     includeIfNull: false,
@@ -50,7 +50,7 @@ class MiniprogramConfig {
 
 
   @JsonKey(
-    
+
     name: r'display_name',
     required: true,
     includeIfNull: false,
@@ -62,7 +62,7 @@ class MiniprogramConfig {
 
 
   @JsonKey(
-    
+
     name: r'app_id',
     required: false,
     includeIfNull: false,
@@ -74,7 +74,7 @@ class MiniprogramConfig {
 
 
   @JsonKey(
-    
+
     name: r'bound_public_slug',
     required: false,
     includeIfNull: false,
@@ -86,7 +86,7 @@ class MiniprogramConfig {
 
 
   @JsonKey(
-    
+
     name: r'enabled',
     required: true,
     includeIfNull: false,
@@ -99,7 +99,7 @@ class MiniprogramConfig {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: false,
     includeIfNull: false,
@@ -111,7 +111,7 @@ class MiniprogramConfig {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: false,
     includeIfNull: false,
@@ -123,7 +123,7 @@ class MiniprogramConfig {
 
 
   @JsonKey(
-    
+
     name: r'pipeline_note',
     required: true,
     includeIfNull: false,
@@ -168,4 +168,3 @@ class MiniprogramConfig {
   }
 
 }
-

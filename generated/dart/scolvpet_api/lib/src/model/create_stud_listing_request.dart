@@ -34,7 +34,7 @@ class CreateStudListingRequest {
   });
 
   @JsonKey(
-    
+
     name: r'sire_label',
     required: true,
     includeIfNull: false,
@@ -46,7 +46,7 @@ class CreateStudListingRequest {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: false,
     includeIfNull: false,
@@ -59,7 +59,7 @@ class CreateStudListingRequest {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'fee_cents',
     required: false,
     includeIfNull: false,
@@ -83,7 +83,7 @@ class CreateStudListingRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -136,4 +136,3 @@ class CreateStudListingRequest {
   }
 
 }
-

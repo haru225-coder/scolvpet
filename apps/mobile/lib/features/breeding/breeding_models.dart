@@ -36,7 +36,9 @@ class BreedingPlan {
   String get displayName {
     final n = name?.trim();
     if (n != null && n.isNotEmpty) return n;
-    return '计划 ${id.length > 8 ? id.substring(0, 8) : id}';
+    final date = plannedPairingAt;
+    if (date != null) return '${date.month}月${date.day}日的配对计划';
+    return '新的配对计划';
   }
 
   BreedingPlan copyWith({
@@ -201,7 +203,7 @@ String breedingStateLabel(String state) => switch (state) {
   'hold' => '挂起',
   'unsuccessful' => '未成功',
   'cancelled' => '已取消',
-  _ => state,
+  _ => '状态待更新',
 };
 
 /// Next primary action label for the happy path, or null if terminal/other.

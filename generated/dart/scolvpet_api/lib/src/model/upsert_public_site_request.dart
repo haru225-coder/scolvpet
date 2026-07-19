@@ -40,7 +40,7 @@ class UpsertPublicSiteRequest {
   });
 
   @JsonKey(
-    
+
     name: r'slug',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class UpsertPublicSiteRequest {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -64,7 +64,7 @@ class UpsertPublicSiteRequest {
 
 
   @JsonKey(
-    
+
     name: r'tagline',
     required: false,
     includeIfNull: false,
@@ -76,7 +76,7 @@ class UpsertPublicSiteRequest {
 
 
   @JsonKey(
-    
+
     name: r'about',
     required: false,
     includeIfNull: false,
@@ -88,7 +88,7 @@ class UpsertPublicSiteRequest {
 
 
   @JsonKey(
-    
+
     name: r'contact_wechat',
     required: false,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class UpsertPublicSiteRequest {
 
 
   @JsonKey(
-    
+
     name: r'contact_phone',
     required: false,
     includeIfNull: false,
@@ -183,4 +183,3 @@ class UpsertPublicSiteRequest {
   }
 
 }
-

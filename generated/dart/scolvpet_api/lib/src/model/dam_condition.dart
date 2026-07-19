@@ -28,7 +28,7 @@ class DamCondition {
   });
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class DamCondition {
 
 
   @JsonKey(
-    
+
     name: r'structured_checks',
     required: false,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class DamCondition {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -106,5 +106,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -36,7 +36,7 @@ class GeneticLocus {
   });
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -48,7 +48,7 @@ class GeneticLocus {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: true,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class GeneticLocus {
 
 
   @JsonKey(
-    
+
     name: r'dominant_allele',
     required: true,
     includeIfNull: false,
@@ -72,7 +72,7 @@ class GeneticLocus {
 
 
   @JsonKey(
-    
+
     name: r'recessive_allele',
     required: true,
     includeIfNull: false,
@@ -84,7 +84,7 @@ class GeneticLocus {
 
 
   @JsonKey(
-    
+
     name: r'dominant_label',
     required: true,
     includeIfNull: false,
@@ -96,7 +96,7 @@ class GeneticLocus {
 
 
   @JsonKey(
-    
+
     name: r'recessive_label',
     required: true,
     includeIfNull: false,
@@ -108,7 +108,7 @@ class GeneticLocus {
 
 
   @JsonKey(
-    
+
     name: r'description',
     required: false,
     includeIfNull: false,
@@ -151,4 +151,3 @@ class GeneticLocus {
   }
 
 }
-

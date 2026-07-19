@@ -70,5 +70,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

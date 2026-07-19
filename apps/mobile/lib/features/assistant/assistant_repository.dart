@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'assistant_models.dart';
 
 abstract interface class AssistantRepository {
@@ -16,18 +17,11 @@ class AssistantRepositoryException implements Exception {
   String toString() => message;
 }
 
-String assistantErrorMessage(Object error) {
-  if (error is AssistantRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '助手请求失败';
-  }
-  return error.toString();
-}
+String assistantErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '助手请求失败',
+  mapLocal: (e) => e is AssistantRepositoryException ? e.message : null,
+);
 
 class MemoryAssistantRepository implements AssistantRepository {
   MemoryAssistantRepository({this.snapshot = const AssistantSnapshot()});
@@ -88,11 +82,12 @@ class DefaultApiAssistantRepository implements AssistantRepository {
   Future<AssistantAnswer> ask(String question, {bool preferLlm = false}) async {
     final response = await client.dio.post<Map<String, dynamic>>(
       '/assistant/ask',
-      data: {
-        'question': question,
-        'prefer_llm': preferLlm,
-      },
+      data: {'question': question, 'prefer_llm': preferLlm},
+      // Agent 需要读取业务快照并等待模型生成结构化操作；单独放宽这条
+      // 请求的接收窗口，避免通用 API client 的 12 秒窗口提前取消请求。
       options: Options(
+        receiveTimeout: const Duration(seconds: 35),
+        sendTimeout: const Duration(seconds: 10),
         headers: {'Idempotency-Key': 'ask-${_uuid.v4()}'},
       ),
     );

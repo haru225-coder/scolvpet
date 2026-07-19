@@ -17,6 +17,8 @@ import 'features/genetic/genetic.dart';
 import 'features/home_widget/home_widget.dart';
 import 'features/members/members.dart';
 import 'features/assistant/assistant.dart';
+import 'features/growth/growth.dart';
+import 'features/i6/data_center.dart';
 import 'features/miniprogram/miniprogram.dart';
 import 'features/paywall/paywall.dart';
 import 'features/pedigree/pedigree.dart';
@@ -25,6 +27,8 @@ import 'features/push/push.dart';
 import 'features/stud/stud.dart';
 import 'features/tasks/tasks.dart';
 import 'ui/screens.dart';
+import 'ui/theme/ios_theme.dart';
+import 'ui/widgets/ios_widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +36,7 @@ Future<void> main() async {
   final apiClient = ApiClient(
     baseUrl: const String.fromEnvironment(
       'API_BASE_URL',
-      defaultValue: 'http://127.0.0.1:8080',
+      defaultValue: 'https://p.scolv.com:8443',
     ),
     sessionStore: sessionStore,
   );
@@ -40,10 +44,20 @@ Future<void> main() async {
     repository: ApiI1Repository(client: apiClient, sessionStore: sessionStore),
     sessionStore: sessionStore,
   );
-  final preferences = await SharedPreferences.getInstance();
+  SharedPreferences? preferences;
+  try {
+    preferences = await SharedPreferences.getInstance().timeout(
+      const Duration(seconds: 3),
+    );
+  } on Object {
+    // Storage is an enhancement for offline restore; it must not block the
+    // first Flutter frame when an iOS plugin is unavailable or slow to start.
+  }
   final i2Controller = I2Controller(
     repository: DefaultApiI2Repository(client: apiClient),
-    localStore: SharedPreferencesI2LocalStore(preferences: preferences),
+    localStore: preferences == null
+        ? null
+        : SharedPreferencesI2LocalStore(preferences: preferences),
   );
   final taskRepository = DefaultApiTaskRepository(client: apiClient);
   final todayWidgetPublisher = SharedPreferencesTodayWidgetPublisher();
@@ -64,14 +78,24 @@ Future<void> main() async {
   final memberRepository = DefaultApiMemberRepository(client: apiClient);
   final crmRepository = DefaultApiCrmRepository(client: apiClient);
   final contractsRepository = DefaultApiContractsRepository(client: apiClient);
-  final accountingRepository = DefaultApiAccountingRepository(client: apiClient);
+  final accountingRepository = DefaultApiAccountingRepository(
+    client: apiClient,
+  );
   final geneticRepository = DefaultApiGeneticRepository(client: apiClient);
   final pushRepository = DefaultApiPushRepository(client: apiClient);
   final paywallRepository = DefaultApiPaywallRepository(client: apiClient);
-  final publicSiteRepository = DefaultApiPublicSiteRepository(client: apiClient);
-  final miniprogramRepository = DefaultApiMiniprogramRepository(client: apiClient);
+  final publicSiteRepository = DefaultApiPublicSiteRepository(
+    client: apiClient,
+  );
+  final miniprogramRepository = DefaultApiMiniprogramRepository(
+    client: apiClient,
+  );
   final assistantRepository = DefaultApiAssistantRepository(client: apiClient);
+  final dataCenterRepository = DefaultApiDataCenterRepository(
+    client: apiClient,
+  );
   final studRepository = DefaultApiStudRepository(client: apiClient);
+  final growthRepository = DefaultApiGrowthRepository(client: apiClient);
   runApp(
     ScolvPetApp(
       state: state,
@@ -91,7 +115,9 @@ Future<void> main() async {
       publicSiteRepository: publicSiteRepository,
       miniprogramRepository: miniprogramRepository,
       assistantRepository: assistantRepository,
+      dataCenterRepository: dataCenterRepository,
       studRepository: studRepository,
+      growthRepository: growthRepository,
       todayWidgetPublisher: todayWidgetPublisher,
     ),
   );
@@ -117,7 +143,9 @@ class ScolvPetApp extends StatefulWidget {
     required this.publicSiteRepository,
     required this.miniprogramRepository,
     required this.assistantRepository,
+    this.dataCenterRepository,
     required this.studRepository,
+    required this.growthRepository,
     this.todayWidgetPublisher,
   });
 
@@ -138,7 +166,9 @@ class ScolvPetApp extends StatefulWidget {
   final PublicSiteRepository publicSiteRepository;
   final MiniprogramRepository miniprogramRepository;
   final AssistantRepository assistantRepository;
+  final DataCenterRepository? dataCenterRepository;
   final StudRepository studRepository;
+  final GrowthRepository growthRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
   @override
@@ -170,17 +200,12 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: '熊舍管家',
-          theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xffc77852),
-            ),
-            scaffoldBackgroundColor: const Color(0xfff7f5ef),
-            cardTheme: const CardThemeData(
-              margin: EdgeInsets.zero,
-              elevation: 0,
-            ),
-          ),
+          theme: buildIosTheme(Brightness.light),
+          darkTheme: buildIosTheme(Brightness.dark),
+          themeMode: ThemeMode.system,
+          scrollBehavior: const IosScrollBehavior(),
+          builder: (context, child) =>
+              KeyboardDismissOnTap(child: child ?? const SizedBox.shrink()),
           home: switch (widget.state.phase) {
             AppPhase.restoring => const LoadingScreen(),
             AppPhase.login => LoginScreen(state: widget.state),
@@ -204,6 +229,8 @@ class _ScolvPetAppState extends State<ScolvPetApp> {
               publicSiteRepository: widget.publicSiteRepository,
               miniprogramRepository: widget.miniprogramRepository,
               assistantRepository: widget.assistantRepository,
+              dataCenterRepository: widget.dataCenterRepository,
+              growthRepository: widget.growthRepository,
               studRepository: widget.studRepository,
               todayWidgetPublisher: widget.todayWidgetPublisher,
             ),

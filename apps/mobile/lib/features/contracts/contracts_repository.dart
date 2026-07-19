@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'contracts_models.dart';
 
 abstract interface class ContractsRepository {
@@ -21,18 +22,11 @@ class ContractsRepositoryException implements Exception {
   String toString() => message;
 }
 
-String contractsErrorMessage(Object error) {
-  if (error is ContractsRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '合同/回执请求失败';
-  }
-  return error.toString();
-}
+String contractsErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '合同/回执请求失败',
+  mapLocal: (e) => e is ContractsRepositoryException ? e.message : null,
+);
 
 String fillTemplate(String body, Map<String, String> vars) {
   var out = body;
@@ -44,9 +38,9 @@ String fillTemplate(String body, Map<String, String> vars) {
 
 String defaultTemplateBody(String kind) {
   if (kind == 'receipt') {
-    return '回执\n\n客户：{{contact_name}}\n项目：{{title}}\n金额：{{amount}}\n日期：{{date}}\n备注：{{notes}}\n\n已确认收款。';
+    return starterReceiptTemplates.first.bodyText;
   }
-  return '交接协议\n\n客户：{{contact_name}}\n项目：{{title}}\n个体：{{hamster_name}}\n日期：{{date}}\n\n双方确认交付事项。\n备注：{{notes}}';
+  return starterContractTemplates.first.bodyText;
 }
 
 class MemoryContractsRepository implements ContractsRepository {
@@ -59,7 +53,10 @@ class MemoryContractsRepository implements ContractsRepository {
       _templates.where((t) => t.kind == kind).toList();
 
   @override
-  Future<DocTemplate> createTemplate(String kind, DocTemplateDraft draft) async {
+  Future<DocTemplate> createTemplate(
+    String kind,
+    DocTemplateDraft draft,
+  ) async {
     final name = draft.name.trim();
     if (name.isEmpty) {
       throw const ContractsRepositoryException('模板名称必填');
@@ -121,13 +118,15 @@ class MemoryContractsRepository implements ContractsRepository {
       throw const ContractsRepositoryException('金额不能为负');
     }
     final title = draft.title.trim().isEmpty ? tpl.name : draft.title.trim();
-    final currency = draft.currency.trim().isEmpty ? 'CNY' : draft.currency.trim();
+    final currency = draft.currency.trim().isEmpty
+        ? 'CNY'
+        : draft.currency.trim();
     final amountYuan = (draft.amountCents / 100).toStringAsFixed(2);
     final today = DateTime.now().toIso8601String().substring(0, 10);
     final filled = fillTemplate(tpl.bodyText, {
       'contact_name': draft.contactName?.trim() ?? '',
       'title': title,
-      'hamster_name': '',
+      'hamster_name': draft.hamsterName?.trim() ?? '',
       'amount': '$amountYuan $currency',
       'date': today,
       'notes': draft.notes?.trim() ?? '',
@@ -137,6 +136,7 @@ class MemoryContractsRepository implements ContractsRepository {
       templateId: tpl.id,
       kind: 'receipt',
       contactId: draft.contactId,
+      handoverId: draft.handoverId,
       title: title,
       bodyFilled: filled,
       amountCents: draft.amountCents,
@@ -272,11 +272,13 @@ class DefaultApiContractsRepository implements ContractsRepository {
       data: {
         'template_id': draft.templateId,
         if (draft.contactId != null) 'contact_id': draft.contactId,
+        if (draft.handoverId != null) 'handover_id': draft.handoverId,
         if (draft.title.trim().isNotEmpty) 'title': draft.title,
         'amount_cents': draft.amountCents,
         'currency': draft.currency,
         if (draft.notes != null) 'notes': draft.notes,
         if (draft.contactName != null) 'contact_name': draft.contactName,
+        if (draft.hamsterName != null) 'hamster_name': draft.hamsterName,
       },
       options: Options(headers: {'Idempotency-Key': _key()}),
     );
@@ -288,10 +290,7 @@ class DefaultApiContractsRepository implements ContractsRepository {
     final response = await client.dio.post<Map<String, dynamic>>(
       '${_base(kind)}/$id/issue',
       options: Options(
-        headers: {
-          'Idempotency-Key': _key(),
-          'If-Match': '"$version"',
-        },
+        headers: {'Idempotency-Key': _key(), 'If-Match': '"$version"'},
       ),
     );
     return DocDocument.fromJson(_data(response));

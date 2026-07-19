@@ -48,7 +48,7 @@ class PushMessage {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class PushMessage {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -72,7 +72,7 @@ class PushMessage {
 
 
   @JsonKey(
-    
+
     name: r'body',
     required: true,
     includeIfNull: false,
@@ -84,7 +84,7 @@ class PushMessage {
 
 
   @JsonKey(
-    
+
     name: r'data',
     required: true,
     includeIfNull: false,
@@ -96,7 +96,7 @@ class PushMessage {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -108,7 +108,7 @@ class PushMessage {
 
 
   @JsonKey(
-    
+
     name: r'target_device_id',
     required: false,
     includeIfNull: false,
@@ -120,7 +120,7 @@ class PushMessage {
 
 
   @JsonKey(
-    
+
     name: r'provider',
     required: true,
     includeIfNull: false,
@@ -132,7 +132,7 @@ class PushMessage {
 
 
   @JsonKey(
-    
+
     name: r'provider_message_id',
     required: false,
     includeIfNull: false,
@@ -145,7 +145,7 @@ class PushMessage {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'attempt_count',
     required: true,
     includeIfNull: false,
@@ -157,7 +157,7 @@ class PushMessage {
 
 
   @JsonKey(
-    
+
     name: r'last_error',
     required: false,
     includeIfNull: false,
@@ -169,7 +169,7 @@ class PushMessage {
 
 
   @JsonKey(
-    
+
     name: r'sent_at',
     required: false,
     includeIfNull: false,
@@ -182,7 +182,7 @@ class PushMessage {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -194,7 +194,7 @@ class PushMessage {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -268,5 +268,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

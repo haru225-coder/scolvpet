@@ -30,7 +30,7 @@ class CompleteTaskResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'task',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class CompleteTaskResponseData {
 
 
   @JsonKey(
-    
+
     name: r'item_results',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class CompleteTaskResponseData {
 
 
   @JsonKey(
-    
+
     name: r'auto_closed',
     required: true,
     includeIfNull: false,
@@ -89,4 +89,3 @@ class CompleteTaskResponseData {
   }
 
 }
-

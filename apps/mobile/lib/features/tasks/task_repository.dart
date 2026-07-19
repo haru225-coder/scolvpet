@@ -1,8 +1,8 @@
-import 'package:dio/dio.dart';
 import 'package:scolvpet_api/scolvpet_api.dart' as api;
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'task_models.dart';
 
 abstract interface class TaskRepository {
@@ -24,18 +24,11 @@ class TaskRepositoryException implements Exception {
   String toString() => message;
 }
 
-String taskRepositoryErrorMessage(Object error) {
-  if (error is TaskRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '网络请求失败，请稍后重试';
-  }
-  return error.toString();
-}
+String taskRepositoryErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '网络请求失败，请稍后重试',
+  mapLocal: (e) => e is TaskRepositoryException ? e.message : null,
+);
 
 class MemoryTaskRepository implements TaskRepository {
   MemoryTaskRepository({List<CareTaskItem>? seed}) : _tasks = [...?seed];

@@ -56,7 +56,7 @@ class Enclosure {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'owner_id',
     required: true,
     includeIfNull: false,
@@ -80,7 +80,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -92,7 +92,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'rack_code',
     required: false,
     includeIfNull: false,
@@ -104,7 +104,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'level_code',
     required: false,
     includeIfNull: false,
@@ -116,7 +116,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'dimensions',
     required: false,
     includeIfNull: false,
@@ -128,7 +128,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'state',
     required: true,
     includeIfNull: false,
@@ -140,7 +140,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'cleanliness_state',
     required: true,
     includeIfNull: false,
@@ -165,7 +165,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'equipment',
     required: false,
     includeIfNull: false,
@@ -177,7 +177,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'last_cleaned_at',
     required: false,
     includeIfNull: false,
@@ -189,7 +189,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'current_stays',
     required: false,
     includeIfNull: false,
@@ -202,7 +202,7 @@ class Enclosure {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -214,7 +214,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -226,7 +226,7 @@ class Enclosure {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -285,4 +285,3 @@ class Enclosure {
   }
 
 }
-

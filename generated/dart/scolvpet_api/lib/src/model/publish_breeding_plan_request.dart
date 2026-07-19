@@ -30,7 +30,7 @@ class PublishBreedingPlanRequest {
   });
 
   @JsonKey(
-    
+
     name: r'planned_pairing_at',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class PublishBreedingPlanRequest {
 
 
   @JsonKey(
-    
+
     name: r'pairing_enclosure_id',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class PublishBreedingPlanRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class PublishBreedingPlanRequest {
 
 
   @JsonKey(
-    
+
     name: r'kinship_override_reason',
     required: false,
     includeIfNull: false,
@@ -103,4 +103,3 @@ class PublishBreedingPlanRequest {
   }
 
 }
-

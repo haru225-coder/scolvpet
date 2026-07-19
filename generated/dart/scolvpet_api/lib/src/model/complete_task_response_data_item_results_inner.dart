@@ -32,7 +32,7 @@ class CompleteTaskResponseDataItemResultsInner {
   });
 
   @JsonKey(
-    
+
     name: r'subject_id',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class CompleteTaskResponseDataItemResultsInner {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class CompleteTaskResponseDataItemResultsInner {
 
 
   @JsonKey(
-    
+
     name: r'completion_record_id',
     required: false,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class CompleteTaskResponseDataItemResultsInner {
 
 
   @JsonKey(
-    
+
     name: r'error',
     required: false,
     includeIfNull: false,
@@ -105,4 +105,3 @@ class CompleteTaskResponseDataItemResultsInner {
   }
 
 }
-

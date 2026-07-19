@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 enum I2AsyncStatus { idle, loading, data, empty, error, conflict }
@@ -17,8 +18,12 @@ class I2AsyncState<T> {
   const I2AsyncState.data(T value)
     : this._(status: I2AsyncStatus.data, data: value);
 
-  const I2AsyncState.empty({String? message})
-    : this._(status: I2AsyncStatus.empty, message: message, retryable: true);
+  const I2AsyncState.empty({String? message, bool retryable = false})
+    : this._(
+        status: I2AsyncStatus.empty,
+        message: message,
+        retryable: retryable,
+      );
 
   const I2AsyncState.error(String value, {bool retryable = true})
     : this._(status: I2AsyncStatus.error, message: value, retryable: retryable);
@@ -46,6 +51,9 @@ class I2Hamster {
     required this.birthDate,
     required this.currentEnclosureId,
     required this.litterId,
+    this.coverMediaId,
+    this.avatarUrl,
+    this.avatarBytes,
     required this.notes,
     required this.version,
   });
@@ -60,6 +68,9 @@ class I2Hamster {
   final DateTime? birthDate;
   final String? currentEnclosureId;
   final String? litterId;
+  final String? coverMediaId;
+  final String? avatarUrl;
+  final Uint8List? avatarBytes;
   final String? notes;
   final int version;
 
@@ -67,20 +78,63 @@ class I2Hamster {
       ? internalCode
       : '$name · $internalCode';
 
-  factory I2Hamster.fromJson(Map<String, dynamic> json) => I2Hamster(
-    id: json['id'] as String? ?? '',
-    internalCode: json['internal_code'] as String? ?? '',
-    name: json['name'] as String?,
-    sex: json['sex'] as String? ?? 'unknown',
-    varietyCode: json['variety_code'] as String?,
-    lifecycleStatus: json['lifecycle_status'] as String? ?? 'active',
-    breedingStatus: json['breeding_status'] as String? ?? 'candidate',
-    birthDate: _date(json['birth_date']),
-    currentEnclosureId: json['current_enclosure_id'] as String?,
-    litterId: json['litter_id'] as String?,
-    notes: json['notes'] as String?,
-    version: json['version'] as int? ?? 1,
-  );
+  /// Core-table phenotype label (from variety_code `series|label` or bare label).
+  String? get corePhenotypeLabel {
+    final raw = varietyCode?.trim();
+    if (raw == null || raw.isEmpty) return null;
+    final sep = raw.indexOf('|');
+    if (sep > 0 && sep < raw.length - 1) return raw.substring(sep + 1);
+    return raw;
+  }
+
+  /// Core-table series code when encoded as `series|label`.
+  String? get coreSeriesCode {
+    final raw = varietyCode?.trim();
+    if (raw == null || raw.isEmpty) return null;
+    final sep = raw.indexOf('|');
+    if (sep > 0) return raw.substring(0, sep);
+    return null;
+  }
+
+  bool get hasCorePhenotype =>
+      corePhenotypeLabel != null && corePhenotypeLabel!.isNotEmpty;
+
+  factory I2Hamster.fromJson(Map<String, dynamic> json) {
+    // Prefer structured phenotype.label when present (API authority path).
+    String? variety = json['variety_code'] as String?;
+    final phenotype = json['phenotype'];
+    if (phenotype is Map) {
+      final series = phenotype['series']?.toString().trim();
+      final label = phenotype['label']?.toString().trim();
+      if (series != null &&
+          series.isNotEmpty &&
+          label != null &&
+          label.isNotEmpty) {
+        variety = '$series|$label';
+      } else if ((variety == null || variety.isEmpty) &&
+          label != null &&
+          label.isNotEmpty) {
+        variety = label;
+      }
+    }
+    return I2Hamster(
+      id: json['id'] as String? ?? '',
+      internalCode: json['internal_code'] as String? ?? '',
+      name: json['name'] as String?,
+      sex: json['sex'] as String? ?? 'unknown',
+      varietyCode: variety,
+      lifecycleStatus: json['lifecycle_status'] as String? ?? 'active',
+      breedingStatus: json['breeding_status'] as String? ?? 'candidate',
+      birthDate: _date(json['birth_date']),
+      currentEnclosureId: json['current_enclosure_id'] as String?,
+      litterId: json['litter_id'] as String?,
+      coverMediaId: json['cover_media_id'] as String?,
+      avatarUrl: json['avatar_url'] as String?,
+      avatarBytes: _bytes(json['avatar_bytes']),
+      notes: json['notes'] as String?,
+      version: json['version'] as int? ?? 1,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -93,10 +147,17 @@ class I2Hamster {
     'birth_date': birthDate?.toIso8601String(),
     'current_enclosure_id': currentEnclosureId,
     'litter_id': litterId,
+    'cover_media_id': coverMediaId,
+    'avatar_url': avatarUrl,
+    'avatar_bytes': avatarBytes == null ? null : base64Encode(avatarBytes!),
     'notes': notes,
     'version': version,
   };
 }
+
+/// Encode core phenotype into variety_code for API transport.
+String encodeCoreVarietyCode(String series, String label) =>
+    '${series.trim()}|${label.trim()}';
 
 class I2HamsterDraft {
   const I2HamsterDraft({
@@ -154,6 +215,7 @@ class I2HamsterUpdate {
     this.lifecycleStatus,
     this.breedingStatus,
     this.notes,
+    this.coverMediaId,
   });
 
   final String? internalCode;
@@ -165,6 +227,7 @@ class I2HamsterUpdate {
   final String? lifecycleStatus;
   final String? breedingStatus;
   final String? notes;
+  final String? coverMediaId;
 }
 
 class I2Litter {
@@ -301,6 +364,22 @@ class I2Enclosure {
     'current_stays': currentHamsterIds.map((id) => {'hamster_id': id}).toList(),
     'version': version,
   };
+}
+
+class I2EnclosureDraft {
+  const I2EnclosureDraft({
+    required this.code,
+    this.rackCode,
+    this.levelCode,
+    this.capacity = 1,
+    this.equipment = const <String>[],
+  });
+
+  final String code;
+  final String? rackCode;
+  final String? levelCode;
+  final int capacity;
+  final List<String> equipment;
 }
 
 class I2EnclosureStay {
@@ -480,6 +559,34 @@ class I2WeightDraft {
   final num weightG;
   final DateTime recordedAt;
   final String? notes;
+}
+
+class I2WeightBatchFailure {
+  const I2WeightBatchFailure({
+    required this.hamsterId,
+    required this.message,
+  });
+
+  final String? hamsterId;
+  final String message;
+}
+
+class I2WeightBatchResult {
+  const I2WeightBatchResult({
+    required this.totalCount,
+    required this.successfulHamsterIds,
+    required this.failures,
+  });
+
+  final int totalCount;
+  final List<String> successfulHamsterIds;
+  final List<I2WeightBatchFailure> failures;
+
+  int get successCount => successfulHamsterIds.length;
+  int get failureCount => failures.length;
+  bool get isCompleteSuccess => successCount == totalCount && failures.isEmpty;
+  bool get isCompleteFailure => successCount == 0 && failures.isNotEmpty;
+  bool get isPartialSuccess => successCount > 0 && failures.isNotEmpty;
 }
 
 class I2CleaningRecord {
@@ -737,4 +844,14 @@ DateTime? _date(Object? value) {
   if (value is DateTime) return value;
   if (value is String) return DateTime.tryParse(value);
   return null;
+}
+
+Uint8List? _bytes(Object? value) {
+  if (value is Uint8List) return value;
+  if (value is! String || value.isEmpty) return null;
+  try {
+    return base64Decode(value);
+  } on FormatException {
+    return null;
+  }
 }

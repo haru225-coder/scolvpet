@@ -28,7 +28,7 @@ class CompleteBreedingPlanRequest {
   });
 
   @JsonKey(
-    
+
     name: r'completed_at',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class CompleteBreedingPlanRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class CompleteBreedingPlanRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -87,4 +87,3 @@ class CompleteBreedingPlanRequest {
   }
 
 }
-

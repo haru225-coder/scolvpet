@@ -40,7 +40,7 @@ class Organization {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -53,7 +53,7 @@ class Organization {
 
       /// 由认证上下文确定
   @JsonKey(
-    
+
     name: r'owner_id',
     required: true,
     includeIfNull: false,
@@ -65,7 +65,7 @@ class Organization {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: true,
     includeIfNull: false,
@@ -77,7 +77,7 @@ class Organization {
 
 
   @JsonKey(
-    
+
     name: r'mode',
     required: true,
     includeIfNull: false,
@@ -101,7 +101,7 @@ class Organization {
 
 
   @JsonKey(
-    
+
     name: r'weight_unit',
     required: true,
     includeIfNull: false,
@@ -114,7 +114,7 @@ class Organization {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -126,7 +126,7 @@ class Organization {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -138,7 +138,7 @@ class Organization {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -214,5 +214,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

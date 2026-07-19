@@ -31,7 +31,7 @@ class PairingAttemptListResponse {
   });
 
   @JsonKey(
-    
+
     name: r'data',
     required: true,
     includeIfNull: false,
@@ -43,7 +43,7 @@ class PairingAttemptListResponse {
 
 
   @JsonKey(
-    
+
     name: r'page',
     required: true,
     includeIfNull: false,
@@ -55,7 +55,7 @@ class PairingAttemptListResponse {
 
 
   @JsonKey(
-    
+
     name: r'meta',
     required: true,
     includeIfNull: false,
@@ -90,4 +90,3 @@ class PairingAttemptListResponse {
   }
 
 }
-

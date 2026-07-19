@@ -72,11 +72,13 @@ type createContractRequest struct {
 type createReceiptRequest struct {
 	TemplateID  string  `json:"template_id"`
 	ContactID   *string `json:"contact_id"`
+	HandoverID  *string `json:"handover_id"`
 	Title       string  `json:"title"`
 	AmountCents int64   `json:"amount_cents"`
 	Currency    string  `json:"currency"`
 	Notes       *string `json:"notes"`
 	ContactName *string `json:"contact_name"`
+	HamsterName *string `json:"hamster_name"`
 }
 
 func (s *Server) listContractTemplates(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +131,23 @@ func (s *Server) createContract(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, validationError("handover_id", "交付单 ID 无效"))
 		return
 	}
+	hamsterName := stringOrEmpty(request.HamsterName)
 	if handoverID != nil {
+		context, contextErr := s.getDocHandoverContext(r.Context(), ownerID, *handoverID)
+		if contextErr != nil {
+			writeAPIError(w, r, contextErr)
+			return
+		}
+		if contactID == nil {
+			contact := context.ContactID
+			contactID = &contact
+		}
+		if contactName == "" {
+			contactName = context.ContactName
+		}
+		if hamsterName == "" {
+			hamsterName = context.HamsterName
+		}
 		if err := s.ensureHandoverOwned(r.Context(), ownerID, *handoverID); err != nil {
 			writeAPIError(w, r, err)
 			return
@@ -138,10 +156,6 @@ func (s *Server) createContract(w http.ResponseWriter, r *http.Request) {
 	title := strings.TrimSpace(request.Title)
 	if title == "" {
 		title = tpl.Name
-	}
-	hamsterName := ""
-	if request.HamsterName != nil {
-		hamsterName = strings.TrimSpace(*request.HamsterName)
 	}
 	filled := fillDocTemplate(tpl.Body, map[string]string{
 		"contact_name": contactName,
@@ -217,6 +231,29 @@ func (s *Server) createReceipt(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, err)
 		return
 	}
+	handoverID, err := parseOptionalUUID(request.HandoverID)
+	if err != nil {
+		writeAPIError(w, r, validationError("handover_id", "交付单 ID 无效"))
+		return
+	}
+	hamsterName := stringOrEmpty(request.HamsterName)
+	if handoverID != nil {
+		context, contextErr := s.getDocHandoverContext(r.Context(), ownerID, *handoverID)
+		if contextErr != nil {
+			writeAPIError(w, r, contextErr)
+			return
+		}
+		if contactID == nil {
+			contact := context.ContactID
+			contactID = &contact
+		}
+		if contactName == "" {
+			contactName = context.ContactName
+		}
+		if hamsterName == "" {
+			hamsterName = context.HamsterName
+		}
+	}
 	title := strings.TrimSpace(request.Title)
 	if title == "" {
 		title = tpl.Name
@@ -225,7 +262,7 @@ func (s *Server) createReceipt(w http.ResponseWriter, r *http.Request) {
 	filled := fillDocTemplate(tpl.Body, map[string]string{
 		"contact_name": contactName,
 		"title":        title,
-		"hamster_name": "",
+		"hamster_name": hamsterName,
 		"amount":       amountYuan + " " + currency,
 		"date":         time.Now().In(time.Local).Format("2006-01-02"),
 		"notes":        stringOrEmpty(request.Notes),
@@ -239,11 +276,11 @@ func (s *Server) createReceipt(w http.ResponseWriter, r *http.Request) {
 	var id uuid.UUID
 	err = s.Store.Pool.QueryRow(r.Context(), `
 		INSERT INTO doc_document (
-			owner_id, organization_id, template_id, kind, contact_id,
+			owner_id, organization_id, template_id, kind, contact_id, handover_id,
 			title, body_filled, amount_cents, currency, notes
-		) VALUES ($1,$2,$3,'receipt',$4,$5,$6,$7,$8,$9)
+		) VALUES ($1,$2,$3,'receipt',$4,$5,$6,$7,$8,$9,$10)
 		RETURNING id
-	`, ownerID, orgID, templateID, contactID, title, filled, amount, currency, emptyToNil(request.Notes)).Scan(&id)
+	`, ownerID, orgID, templateID, contactID, handoverID, title, filled, amount, currency, emptyToNil(request.Notes)).Scan(&id)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
@@ -490,6 +527,32 @@ func (s *Server) ensureHandoverOwned(ctx context.Context, ownerID, handoverID uu
 	return nil
 }
 
+type docHandoverContext struct {
+	ContactID   uuid.UUID
+	ContactName string
+	HamsterName string
+}
+
+func (s *Server) getDocHandoverContext(ctx context.Context, ownerID, handoverID uuid.UUID) (docHandoverContext, error) {
+	var value docHandoverContext
+	err := s.Store.Pool.QueryRow(ctx, `
+		SELECT h.contact_id, c.name,
+			COALESCE(NULLIF(hamster.name,''), hamster.internal_code, '')
+		FROM crm_handover h
+		JOIN crm_contact c ON c.owner_id=h.owner_id AND c.id=h.contact_id
+		LEFT JOIN hamster ON hamster.owner_id=h.owner_id AND hamster.id=h.hamster_id AND hamster.deleted_at IS NULL
+		WHERE h.owner_id=$1 AND h.id=$2
+	`, ownerID, handoverID).Scan(
+		&value.ContactID,
+		&value.ContactName,
+		&value.HamsterName,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return docHandoverContext{}, validationError("handover_id", "交付单不存在")
+	}
+	return value, err
+}
+
 func fillDocTemplate(body string, vars map[string]string) string {
 	out := body
 	for key, value := range vars {
@@ -500,9 +563,9 @@ func fillDocTemplate(body string, vars map[string]string) string {
 
 func defaultDocTemplateBody(kind string) string {
 	if kind == "receipt" {
-		return "回执\n\n客户：{{contact_name}}\n项目：{{title}}\n金额：{{amount}}\n日期：{{date}}\n备注：{{notes}}\n\n已确认收款。"
+		return "订金收款回执\n\n客户：{{contact_name}}\n收款项目：{{title}}\n关联个体：{{hamster_name}}\n收款金额：{{amount}}\n收款日期：{{date}}\n\n现确认收到以上款项。本回执用于记录本次收款，后续交付内容以双方确认的预订和交接记录为准。\n\n备注：{{notes}}\n\n经办确认：________________\n客户确认：________________"
 	}
-	return "交接协议\n\n客户：{{contact_name}}\n项目：{{title}}\n个体：{{hamster_name}}\n日期：{{date}}\n\n双方确认交付事项。\n备注：{{notes}}"
+	return "仓鼠交接协议\n\n客户：{{contact_name}}\n交接事项：{{title}}\n交接个体：{{hamster_name}}\n交接日期：{{date}}\n\n一、熊舍已向客户说明该个体的基础档案、近期观察、日常饮食与饲养注意事项。\n二、客户已核对交接个体，并确认收到双方约定的随附用品和资料。\n三、交接后的环境、饮食和作息调整应循序渐进；如出现异常，应及时联系熊舍并寻求专业兽医意见。\n四、双方确认本协议记录的信息真实、完整，未填写事项以双方另行确认的记录为准。\n\n补充约定：{{notes}}\n\n熊舍确认：________________\n客户确认：________________"
 }
 
 func stringOrEmpty(value *string) string {

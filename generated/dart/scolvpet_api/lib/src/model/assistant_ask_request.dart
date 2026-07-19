@@ -26,7 +26,7 @@ class AssistantAskRequest {
   });
 
   @JsonKey(
-    
+
     name: r'question',
     required: true,
     includeIfNull: false,
@@ -71,4 +71,3 @@ class AssistantAskRequest {
   }
 
 }
-

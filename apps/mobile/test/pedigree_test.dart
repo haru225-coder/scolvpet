@@ -39,6 +39,8 @@ void main() {
     final repo = MemoryPedigreeRepository()..seedThreeGenerationTree();
     final controller = PedigreeController(repository: repo);
 
+    await tester.binding.setSurfaceSize(const Size(400, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MaterialApp(
         home: PedigreePage(

@@ -39,7 +39,7 @@ class PedigreeGraphResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'root_hamster_id',
     required: true,
     includeIfNull: false,
@@ -51,7 +51,7 @@ class PedigreeGraphResponseData {
 
 
   @JsonKey(
-    
+
     name: r'nodes',
     required: true,
     includeIfNull: false,
@@ -63,7 +63,7 @@ class PedigreeGraphResponseData {
 
 
   @JsonKey(
-    
+
     name: r'parentages',
     required: true,
     includeIfNull: false,
@@ -75,7 +75,7 @@ class PedigreeGraphResponseData {
 
 
   @JsonKey(
-    
+
     name: r'litter_parents',
     required: true,
     includeIfNull: false,
@@ -87,7 +87,7 @@ class PedigreeGraphResponseData {
 
 
   @JsonKey(
-    
+
     name: r'litter_members',
     required: true,
     includeIfNull: false,
@@ -99,7 +99,7 @@ class PedigreeGraphResponseData {
 
 
   @JsonKey(
-    
+
     name: r'common_ancestors',
     required: true,
     includeIfNull: false,
@@ -140,4 +140,3 @@ class PedigreeGraphResponseData {
   }
 
 }
-

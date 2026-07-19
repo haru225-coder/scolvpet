@@ -34,7 +34,7 @@ class WeightRecordBatchCreateResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'transaction_status',
     required: true,
     includeIfNull: false,
@@ -47,7 +47,7 @@ class WeightRecordBatchCreateResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'succeeded_count',
     required: true,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class WeightRecordBatchCreateResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'failed_count',
     required: true,
     includeIfNull: false,
@@ -73,7 +73,7 @@ class WeightRecordBatchCreateResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'alert_count',
     required: true,
     includeIfNull: false,
@@ -85,7 +85,7 @@ class WeightRecordBatchCreateResponseData {
 
 
   @JsonKey(
-    
+
     name: r'items',
     required: true,
     includeIfNull: false,
@@ -124,4 +124,3 @@ class WeightRecordBatchCreateResponseData {
   }
 
 }
-

@@ -8,13 +8,11 @@ import 'package:scolvpet_api/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**code** | **String** |  | [optional] 
-**rackCode** | **String** |  | [optional] 
-**levelCode** | **String** |  | [optional] 
-**dimensions** | [**EnclosureDimensions**](EnclosureDimensions.md) |  | [optional] 
-**capacity** | **int** |  | [optional] 
-**equipment** | **List&lt;String&gt;** |  | [optional] 
+**code** | **String** |  | [optional]
+**rackCode** | **String** |  | [optional]
+**levelCode** | **String** |  | [optional]
+**dimensions** | [**EnclosureDimensions**](EnclosureDimensions.md) |  | [optional]
+**capacity** | **int** |  | [optional]
+**equipment** | **List&lt;String&gt;** |  | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

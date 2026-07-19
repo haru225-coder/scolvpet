@@ -50,7 +50,7 @@ class Document {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -62,7 +62,7 @@ class Document {
 
 
   @JsonKey(
-    
+
     name: r'template_id',
     required: true,
     includeIfNull: false,
@@ -74,7 +74,7 @@ class Document {
 
 
   @JsonKey(
-    
+
     name: r'kind',
     required: true,
     includeIfNull: false,
@@ -86,7 +86,7 @@ class Document {
 
 
   @JsonKey(
-    
+
     name: r'contact_id',
     required: false,
     includeIfNull: false,
@@ -98,7 +98,7 @@ class Document {
 
 
   @JsonKey(
-    
+
     name: r'handover_id',
     required: false,
     includeIfNull: false,
@@ -110,7 +110,7 @@ class Document {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -122,7 +122,7 @@ class Document {
 
 
   @JsonKey(
-    
+
     name: r'body_filled',
     required: true,
     includeIfNull: false,
@@ -135,7 +135,7 @@ class Document {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'amount_cents',
     required: false,
     includeIfNull: false,
@@ -147,7 +147,7 @@ class Document {
 
 
   @JsonKey(
-    
+
     name: r'currency',
     required: true,
     includeIfNull: false,
@@ -159,7 +159,7 @@ class Document {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -171,7 +171,7 @@ class Document {
 
 
   @JsonKey(
-    
+
     name: r'issued_at',
     required: false,
     includeIfNull: false,
@@ -183,7 +183,7 @@ class Document {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -196,7 +196,7 @@ class Document {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -208,7 +208,7 @@ class Document {
 
 
   @JsonKey(
-    
+
     name: r'contact_name',
     required: false,
     includeIfNull: false,
@@ -298,5 +298,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

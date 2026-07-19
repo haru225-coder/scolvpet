@@ -1,6 +1,8 @@
 SHELL := /bin/bash
 
 -include .env
+# LLM 出站（Grok2API）；make 配方默认不 export 变量，这里显式导出给 api-run/smoke。
+export AI_API_KEY AI_BASE_URL AI_MODEL XAI_API_KEY XAI_BASE_URL XAI_MODEL
 
 OPENAPI_GENERATOR_VERSION := 7.23.0
 DATABASE_URL ?= postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable

@@ -28,7 +28,7 @@ class StartPairingResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'breeding_plan',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class StartPairingResponseData {
 
 
   @JsonKey(
-    
+
     name: r'pairing_attempt',
     required: true,
     includeIfNull: false,
@@ -73,4 +73,3 @@ class StartPairingResponseData {
   }
 
 }
-

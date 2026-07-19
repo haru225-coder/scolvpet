@@ -31,7 +31,7 @@ class ImportCommitRequestApprovedUpdatesInner {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'row_number',
     required: true,
     includeIfNull: false,
@@ -43,7 +43,7 @@ class ImportCommitRequestApprovedUpdatesInner {
 
 
   @JsonKey(
-    
+
     name: r'resource_id',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class ImportCommitRequestApprovedUpdatesInner {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'expected_version',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class ImportCommitRequestApprovedUpdatesInner {
 
 
   @JsonKey(
-    
+
     name: r'fields',
     required: true,
     includeIfNull: false,
@@ -105,4 +105,3 @@ class ImportCommitRequestApprovedUpdatesInner {
   }
 
 }
-

@@ -42,7 +42,7 @@ class PublicSiteView {
   });
 
   @JsonKey(
-    
+
     name: r'slug',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class PublicSiteView {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class PublicSiteView {
 
 
   @JsonKey(
-    
+
     name: r'tagline',
     required: false,
     includeIfNull: false,
@@ -78,7 +78,7 @@ class PublicSiteView {
 
 
   @JsonKey(
-    
+
     name: r'about',
     required: false,
     includeIfNull: false,
@@ -90,7 +90,7 @@ class PublicSiteView {
 
 
   @JsonKey(
-    
+
     name: r'theme_color',
     required: true,
     includeIfNull: false,
@@ -102,7 +102,7 @@ class PublicSiteView {
 
 
   @JsonKey(
-    
+
     name: r'contact_wechat',
     required: false,
     includeIfNull: false,
@@ -114,7 +114,7 @@ class PublicSiteView {
 
 
   @JsonKey(
-    
+
     name: r'contact_phone',
     required: false,
     includeIfNull: false,
@@ -126,7 +126,7 @@ class PublicSiteView {
 
 
   @JsonKey(
-    
+
     name: r'stats',
     required: false,
     includeIfNull: false,
@@ -138,7 +138,7 @@ class PublicSiteView {
 
 
   @JsonKey(
-    
+
     name: r'organization_name',
     required: false,
     includeIfNull: false,
@@ -150,7 +150,7 @@ class PublicSiteView {
 
 
   @JsonKey(
-    
+
     name: r'published_at',
     required: false,
     includeIfNull: false,
@@ -199,4 +199,3 @@ class PublicSiteView {
   }
 
 }
-

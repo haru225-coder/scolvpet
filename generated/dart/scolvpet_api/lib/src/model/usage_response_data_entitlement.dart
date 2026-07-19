@@ -30,7 +30,7 @@ class UsageResponseDataEntitlement {
   });
 
   @JsonKey(
-    
+
     name: r'plan_code',
     required: true,
     includeIfNull: false,
@@ -43,7 +43,7 @@ class UsageResponseDataEntitlement {
 
       /// MVP 只读计量，不启用付费墙或超量阻断
   @JsonKey(
-    
+
     name: r'enforcement',
     required: true,
     includeIfNull: false,
@@ -55,7 +55,7 @@ class UsageResponseDataEntitlement {
 
 
   @JsonKey(
-    
+
     name: r'effective_at',
     required: true,
     includeIfNull: false,
@@ -67,7 +67,7 @@ class UsageResponseDataEntitlement {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: false,
     includeIfNull: false,
@@ -118,5 +118,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

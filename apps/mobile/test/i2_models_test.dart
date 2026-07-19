@@ -17,6 +17,52 @@ void main() {
     ]);
   });
 
+  test('CSV parser rejects empty content and header-only files', () {
+    expect(
+      () => I2CsvParser.parse('   '),
+      throwsA(
+        isA<I2CsvParseException>().having(
+          (error) => error.message,
+          'message',
+          contains('内容为空'),
+        ),
+      ),
+    );
+    expect(
+      () => I2CsvParser.parse('internal_code,name\n'),
+      throwsA(
+        isA<I2CsvParseException>().having(
+          (error) => error.message,
+          'message',
+          contains('只有表头'),
+        ),
+      ),
+    );
+  });
+
+  test('CSV parser reports unclosed quotes and mismatched columns', () {
+    expect(
+      () => I2CsvParser.parse('internal_code,name\nH-001,"雪团'),
+      throwsA(
+        isA<I2CsvParseException>().having(
+          (error) => error.message,
+          'message',
+          contains('引号未闭合'),
+        ),
+      ),
+    );
+    expect(
+      () => I2CsvParser.parse('internal_code,name\nH-001,雪团,多余'),
+      throwsA(
+        isA<I2CsvParseException>().having(
+          (error) => error.message,
+          'message',
+          contains('表头有 2 列'),
+        ),
+      ),
+    );
+  });
+
   test(
     'snapshot keeps historical litter origin/code and litter weight link',
     () {

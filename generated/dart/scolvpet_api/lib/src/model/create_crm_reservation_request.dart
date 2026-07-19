@@ -30,7 +30,7 @@ class CreateCrmReservationRequest {
   });
 
   @JsonKey(
-    
+
     name: r'contact_id',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class CreateCrmReservationRequest {
 
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: false,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class CreateCrmReservationRequest {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: false,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class CreateCrmReservationRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -103,4 +103,3 @@ class CreateCrmReservationRequest {
   }
 
 }
-

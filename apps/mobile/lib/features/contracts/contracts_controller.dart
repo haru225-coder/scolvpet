@@ -9,21 +9,54 @@ class ContractsController extends ChangeNotifier {
 
   final ContractsRepository repository;
 
-  I2AsyncState<List<DocTemplate>> contractTemplates =
-      const I2AsyncState.idle();
+  I2AsyncState<List<DocTemplate>> contractTemplates = const I2AsyncState.idle();
   I2AsyncState<List<DocTemplate>> receiptTemplates = const I2AsyncState.idle();
   I2AsyncState<List<DocDocument>> contracts = const I2AsyncState.idle();
   I2AsyncState<List<DocDocument>> receipts = const I2AsyncState.idle();
   I2AsyncState<void> actionState = const I2AsyncState.idle();
   String? lastMessage;
+  bool _installingStarterTemplates = false;
 
-  Future<void> refreshAll() async {
+  Future<void> refreshAll({bool installStarterTemplates = true}) async {
     await Future.wait([
       refreshContractTemplates(),
       refreshReceiptTemplates(),
       refreshContracts(),
       refreshReceipts(),
     ]);
+    if (installStarterTemplates) await _ensureStarterTemplates();
+  }
+
+  Future<void> _ensureStarterTemplates() async {
+    if (_installingStarterTemplates) return;
+    final contractsNow = contractTemplates.data ?? const <DocTemplate>[];
+    final receiptsNow = receiptTemplates.data ?? const <DocTemplate>[];
+    final missingContracts = starterContractTemplates
+        .where((draft) => !contractsNow.any((item) => item.name == draft.name))
+        .toList();
+    final missingReceipts = starterReceiptTemplates
+        .where((draft) => !receiptsNow.any((item) => item.name == draft.name))
+        .toList();
+    if (missingContracts.isEmpty && missingReceipts.isEmpty) return;
+
+    _installingStarterTemplates = true;
+    try {
+      for (final draft in missingContracts) {
+        await repository.createTemplate('contract', draft);
+      }
+      for (final draft in missingReceipts) {
+        await repository.createTemplate('receipt', draft);
+      }
+      await Future.wait([
+        refreshContractTemplates(),
+        refreshReceiptTemplates(),
+      ]);
+    } catch (error) {
+      lastMessage = contractsErrorMessage(error);
+    } finally {
+      _installingStarterTemplates = false;
+      notifyListeners();
+    }
   }
 
   Future<void> refreshContractTemplates() =>

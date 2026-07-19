@@ -36,7 +36,7 @@ class AdjustLitterCountResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'litter',
     required: true,
     includeIfNull: false,
@@ -48,7 +48,7 @@ class AdjustLitterCountResponseData {
 
 
   @JsonKey(
-    
+
     name: r'count_event',
     required: true,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class AdjustLitterCountResponseData {
 
 
   @JsonKey(
-    
+
     name: r'created_pup_identities',
     required: true,
     includeIfNull: false,
@@ -72,7 +72,7 @@ class AdjustLitterCountResponseData {
 
 
   @JsonKey(
-    
+
     name: r'closed_pup_identity_ids',
     required: true,
     includeIfNull: false,
@@ -84,7 +84,7 @@ class AdjustLitterCountResponseData {
 
 
   @JsonKey(
-    
+
     name: r'reconciliation',
     required: true,
     includeIfNull: false,
@@ -123,4 +123,3 @@ class AdjustLitterCountResponseData {
   }
 
 }
-

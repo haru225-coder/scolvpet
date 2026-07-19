@@ -55,7 +55,7 @@ class WeightRecord {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -67,7 +67,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: false,
     includeIfNull: false,
@@ -79,7 +79,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'pup_identity_id',
     required: false,
     includeIfNull: false,
@@ -91,7 +91,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: false,
     includeIfNull: false,
@@ -103,7 +103,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'measurement_kind',
     required: false,
     includeIfNull: false,
@@ -116,7 +116,7 @@ class WeightRecord {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'subject_count',
     required: false,
     includeIfNull: false,
@@ -130,7 +130,7 @@ class WeightRecord {
           // minimum: 0
           // maximum: 5000
   @JsonKey(
-    
+
     name: r'weight_g',
     required: true,
     includeIfNull: false,
@@ -142,7 +142,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'recorded_at',
     required: true,
     includeIfNull: false,
@@ -154,7 +154,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'source',
     required: true,
     includeIfNull: false,
@@ -166,7 +166,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'birth_weight_g',
     required: false,
     includeIfNull: false,
@@ -178,7 +178,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'previous_weight_g',
     required: false,
     includeIfNull: false,
@@ -190,7 +190,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'change_from_previous_g',
     required: false,
     includeIfNull: false,
@@ -202,7 +202,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'change_from_birth_g',
     required: false,
     includeIfNull: false,
@@ -214,7 +214,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'alert_flags',
     required: true,
     includeIfNull: false,
@@ -226,7 +226,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -238,7 +238,7 @@ class WeightRecord {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -352,5 +352,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

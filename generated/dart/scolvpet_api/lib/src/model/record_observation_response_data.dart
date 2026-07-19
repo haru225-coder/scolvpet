@@ -29,7 +29,7 @@ class RecordObservationResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'observation',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class RecordObservationResponseData {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'pairing_attempt_version',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class RecordObservationResponseData {
 
 
   @JsonKey(
-    
+
     name: r'baseline_candidate_at',
     required: false,
     includeIfNull: false,
@@ -89,4 +89,3 @@ class RecordObservationResponseData {
   }
 
 }
-

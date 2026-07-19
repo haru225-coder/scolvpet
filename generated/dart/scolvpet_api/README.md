@@ -195,6 +195,19 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**updateSpeciesRuleVersion**](doc/DefaultApi.md#updatespeciesruleversion) | **PATCH** /species-rule-versions/{rule_version_id} | 更新尚未冻结的规则版本
 [*DefaultApi*](doc/DefaultApi.md) | [**updateTask**](doc/DefaultApi.md#updatetask) | **PATCH** /tasks/{task_id} | 更新任务非状态字段
 [*DefaultApi*](doc/DefaultApi.md) | [**weanLitter**](doc/DefaultApi.md#weanlitter) | **POST** /litters/{litter_id}/wean | 完成断奶
+[*GeneticApi*](doc/GeneticApi.md) | [**compareGeneticActual**](doc/GeneticApi.md#comparegeneticactual) | **POST** /v1/genetic/compare-actual | Compare actual litter phenotype counts to core table expectation
+[*GeneticApi*](doc/GeneticApi.md) | [**listGeneticFeedbackSummary**](doc/GeneticApi.md#listgeneticfeedbacksummary) | **GET** /v1/genetic/feedback-summary | Summarize historical phenotype prediction feedback
+[*GeneticApi*](doc/GeneticApi.md) | [**listGeneticPhenotypeCatalog**](doc/GeneticApi.md#listgeneticphenotypecatalog) | **GET** /v1/genetic/phenotype-catalog | List phenotype series catalog from authority table
+[*GeneticApi*](doc/GeneticApi.md) | [**listGeneticTargetCrosses**](doc/GeneticApi.md#listgenetictargetcrosses) | **GET** /v1/genetic/target-crosses | Rank parent pairs that can produce a target phenotype
+[*GrowthApi*](doc/GrowthApi.md) | [**archiveGrowthCampaign**](doc/GrowthApi.md#archivegrowthcampaign) | **POST** /v1/growth/campaigns/{campaign_id}/archive | 归档获客活动
+[*GrowthApi*](doc/GrowthApi.md) | [**generateGrowthCampaign**](doc/GrowthApi.md#generategrowthcampaign) | **POST** /v1/growth/campaigns/generate | 生成并保存视频或直播脚本
+[*GrowthApi*](doc/GrowthApi.md) | [**getGrowthCampaign**](doc/GrowthApi.md#getgrowthcampaign) | **GET** /v1/growth/campaigns/{campaign_id} | 查看获客活动详情
+[*GrowthApi*](doc/GrowthApi.md) | [**listGrowthCampaigns**](doc/GrowthApi.md#listgrowthcampaigns) | **GET** /v1/growth/campaigns | 查看获客活动
+[*GrowthApi*](doc/GrowthApi.md) | [**listGrowthLeads**](doc/GrowthApi.md#listgrowthleads) | **GET** /v1/growth/leads | 查看获客线索及来源归因
+[*GrowthApi*](doc/GrowthApi.md) | [**listGrowthOpportunities**](doc/GrowthApi.md#listgrowthopportunities) | **GET** /v1/growth/opportunities | 查看 AI 内容机会
+[*GrowthApi*](doc/GrowthApi.md) | [**listGrowthPublicHamsters**](doc/GrowthApi.md#listgrowthpublichamsters) | **GET** /v1/growth/public-hamsters | 查看本舍仓鼠公开资料
+[*GrowthApi*](doc/GrowthApi.md) | [**publishGrowthCampaign**](doc/GrowthApi.md#publishgrowthcampaign) | **POST** /v1/growth/campaigns/{campaign_id}/publish | 发布获客活动
+[*GrowthApi*](doc/GrowthApi.md) | [**upsertGrowthPublicHamster**](doc/GrowthApi.md#upsertgrowthpublichamster) | **PUT** /v1/growth/public-hamsters/{hamster_id} | 保存仓鼠公开资料
 [*P1Api*](doc/P1Api.md) | [**checkEntitlement**](doc/P1Api.md#checkentitlement) | **POST** /v1/entitlements/check | 检查功能或指标权益
 [*P1Api*](doc/P1Api.md) | [**createAccountingCategory**](doc/P1Api.md#createaccountingcategory) | **POST** /v1/accounting/categories | 创建记账分类
 [*P1Api*](doc/P1Api.md) | [**createAccountingRecord**](doc/P1Api.md#createaccountingrecord) | **POST** /v1/accounting/records | 创建记账流水
@@ -260,6 +273,10 @@ Class | Method | HTTP request | Description
 [*P2Api*](doc/P2Api.md) | [**unpublishStudListing**](doc/P2Api.md#unpublishstudlisting) | **POST** /v1/stud/listings/{listing_id}/unpublish | 撤下种公挂牌
 [*P2Api*](doc/P2Api.md) | [**upsertMiniprogramConfig**](doc/P2Api.md#upsertminiprogramconfig) | **PUT** /v1/miniprogram/config | 保存小程序配置
 [*P2Api*](doc/P2Api.md) | [**upsertOwnerPublicSite**](doc/P2Api.md#upsertownerpublicsite) | **PUT** /v1/public-site | 保存熊舍公开主页
+[*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**consultPublicGrowthAdvisor**](doc/PublicGrowthApi.md#consultpublicgrowthadvisor) | **POST** /v1/public/sites/{slug}/consult | 向公开 AI 顾问咨询
+[*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**createPublicGrowthLead**](doc/PublicGrowthApi.md#createpublicgrowthlead) | **POST** /v1/public/sites/{slug}/leads | 提交公开咨询线索
+[*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**getPublicGrowthCatalog**](doc/PublicGrowthApi.md#getpublicgrowthcatalog) | **GET** /v1/public/sites/{slug}/catalog | 查看公开熊舍获客目录
+[*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**getPublicGrowthMedia**](doc/PublicGrowthApi.md#getpublicgrowthmedia) | **GET** /v1/public/sites/{slug}/media/{media_id} | 读取公开仓鼠封面图片
 
 
 ## Documentation For Models
@@ -398,6 +415,22 @@ Class | Method | HTTP request | Description
  - [GeneticSimulationRequest](doc/GeneticSimulationRequest.md)
  - [GeneticSimulationResponse](doc/GeneticSimulationResponse.md)
  - [GeneticSimulationResult](doc/GeneticSimulationResult.md)
+ - [GrowthCampaign](doc/GrowthCampaign.md)
+ - [GrowthCampaignGenerateRequest](doc/GrowthCampaignGenerateRequest.md)
+ - [GrowthCampaignListResponse](doc/GrowthCampaignListResponse.md)
+ - [GrowthCampaignResponse](doc/GrowthCampaignResponse.md)
+ - [GrowthLead](doc/GrowthLead.md)
+ - [GrowthLeadListResponse](doc/GrowthLeadListResponse.md)
+ - [GrowthOpportunity](doc/GrowthOpportunity.md)
+ - [GrowthOpportunityListResponse](doc/GrowthOpportunityListResponse.md)
+ - [GrowthPublicFact](doc/GrowthPublicFact.md)
+ - [GrowthPublicHamster](doc/GrowthPublicHamster.md)
+ - [GrowthPublicHamsterListResponse](doc/GrowthPublicHamsterListResponse.md)
+ - [GrowthPublicHamsterRequest](doc/GrowthPublicHamsterRequest.md)
+ - [GrowthPublicHamsterResponse](doc/GrowthPublicHamsterResponse.md)
+ - [GrowthPublicMedia](doc/GrowthPublicMedia.md)
+ - [GrowthScript](doc/GrowthScript.md)
+ - [GrowthScriptSection](doc/GrowthScriptSection.md)
  - [Hamster](doc/Hamster.md)
  - [HamsterBatchCreateRequest](doc/HamsterBatchCreateRequest.md)
  - [HamsterBatchCreateRequestItemsInner](doc/HamsterBatchCreateRequestItemsInner.md)
@@ -504,8 +537,16 @@ Class | Method | HTTP request | Description
  - [PedigreeParentageCreateRequest](doc/PedigreeParentageCreateRequest.md)
  - [PedigreeParentageListResponse](doc/PedigreeParentageListResponse.md)
  - [PedigreeParentageResponse](doc/PedigreeParentageResponse.md)
+ - [PhenotypeTableOutcome](doc/PhenotypeTableOutcome.md)
  - [PhoneCodeLoginRequest](doc/PhoneCodeLoginRequest.md)
  - [PlanCatalogEntry](doc/PlanCatalogEntry.md)
+ - [PublicGrowthCatalog](doc/PublicGrowthCatalog.md)
+ - [PublicGrowthCatalogResponse](doc/PublicGrowthCatalogResponse.md)
+ - [PublicGrowthConsultRequest](doc/PublicGrowthConsultRequest.md)
+ - [PublicGrowthConsultResponse](doc/PublicGrowthConsultResponse.md)
+ - [PublicGrowthConsultResponseData](doc/PublicGrowthConsultResponseData.md)
+ - [PublicGrowthLeadRequest](doc/PublicGrowthLeadRequest.md)
+ - [PublicGrowthLeadResponse](doc/PublicGrowthLeadResponse.md)
  - [PublicShareResponse](doc/PublicShareResponse.md)
  - [PublicShareResponseData](doc/PublicShareResponseData.md)
  - [PublicSite](doc/PublicSite.md)
@@ -622,6 +663,3 @@ Authentication schemes defined for the API:
 
 
 ## Author
-
-
-

@@ -62,7 +62,7 @@ class ExportJob {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -74,7 +74,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'job_type',
     required: true,
     includeIfNull: false,
@@ -86,7 +86,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class ExportJob {
           // minimum: 0
           // maximum: 100
   @JsonKey(
-    
+
     name: r'progress_percent',
     required: true,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'current_step',
     required: false,
     includeIfNull: false,
@@ -124,7 +124,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'error',
     required: false,
     includeIfNull: false,
@@ -136,7 +136,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'retryable',
     required: true,
     includeIfNull: false,
@@ -161,7 +161,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'result',
     required: false,
     includeIfNull: false,
@@ -173,7 +173,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: false,
     includeIfNull: false,
@@ -186,7 +186,7 @@ class ExportJob {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -198,7 +198,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -210,7 +210,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -222,7 +222,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'datasets',
     required: true,
     includeIfNull: false,
@@ -234,7 +234,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'export_format',
     required: true,
     includeIfNull: false,
@@ -246,7 +246,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'snapshot_at',
     required: true,
     includeIfNull: false,
@@ -258,7 +258,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'file_name',
     required: false,
     includeIfNull: false,
@@ -271,7 +271,7 @@ class ExportJob {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'size_bytes',
     required: false,
     includeIfNull: false,
@@ -283,7 +283,7 @@ class ExportJob {
 
 
   @JsonKey(
-    
+
     name: r'sha256',
     required: false,
     includeIfNull: false,
@@ -415,5 +415,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -35,7 +35,7 @@ class ImportRowResult {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'row_number',
     required: true,
     includeIfNull: false,
@@ -47,7 +47,7 @@ class ImportRowResult {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -59,7 +59,7 @@ class ImportRowResult {
 
 
   @JsonKey(
-    
+
     name: r'mapped_values',
     required: true,
     includeIfNull: false,
@@ -71,7 +71,7 @@ class ImportRowResult {
 
 
   @JsonKey(
-    
+
     name: r'resource_id',
     required: false,
     includeIfNull: false,
@@ -83,7 +83,7 @@ class ImportRowResult {
 
 
   @JsonKey(
-    
+
     name: r'issues',
     required: true,
     includeIfNull: false,
@@ -122,4 +122,3 @@ class ImportRowResult {
   }
 
 }
-

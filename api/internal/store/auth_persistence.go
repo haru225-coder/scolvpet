@@ -42,7 +42,13 @@ func (s *Store) VerifyVerificationChallenge(ctx context.Context, id uuid.UUID, p
 		WHERE id=$1
 		FOR UPDATE
 	`, id).Scan(&storedPhone, &storedHash, &attempts, &expiresAt, &consumedAt)
-	if errors.Is(err, pgx.ErrNoRows) || storedPhone != phone || consumedAt != nil || !now.Before(expiresAt) {
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return auth.ErrVerification
+		}
+		return err
+	}
+	if storedPhone != phone || consumedAt != nil || !now.Before(expiresAt) {
 		return auth.ErrVerification
 	}
 	if attempts >= 5 {
@@ -93,11 +99,14 @@ func (s *Store) LookupRefreshSession(ctx context.Context, tokenHash string, now 
 		FROM auth_refresh_session
 		WHERE token_sha256=$1
 	`, tokenHash).Scan(&ownerID, &expiresAt, &revokedAt)
-	if errors.Is(err, pgx.ErrNoRows) || revokedAt != nil || !now.Before(expiresAt) {
-		return uuid.Nil, auth.ErrInvalidRefresh
-	}
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return uuid.Nil, auth.ErrInvalidRefresh
+		}
 		return uuid.Nil, err
+	}
+	if revokedAt != nil || !now.Before(expiresAt) {
+		return uuid.Nil, auth.ErrInvalidRefresh
 	}
 	return ownerID, nil
 }

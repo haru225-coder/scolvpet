@@ -31,7 +31,7 @@ class IndividualizationEligibilityBlocker {
   });
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -43,7 +43,7 @@ class IndividualizationEligibilityBlocker {
 
 
   @JsonKey(
-    
+
     name: r'message',
     required: true,
     includeIfNull: false,
@@ -55,7 +55,7 @@ class IndividualizationEligibilityBlocker {
 
 
   @JsonKey(
-    
+
     name: r'pup_identity_ids',
     required: true,
     includeIfNull: false,
@@ -67,7 +67,7 @@ class IndividualizationEligibilityBlocker {
 
 
   @JsonKey(
-    
+
     name: r'recovery_actions',
     required: true,
     includeIfNull: false,
@@ -129,5 +129,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

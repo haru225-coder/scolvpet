@@ -29,6 +29,24 @@ class HealthRecordItem {
 
   String get typeLabel => healthTypeLabel(type);
 
+  String? get medicationPlan {
+    for (final key in const ['plan', 'name', 'regimen']) {
+      final value = medication[key]?.toString().trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
+  String get readableSummary {
+    final parts = <String>[
+      if (severity != null && severity!.isNotEmpty)
+        '严重度 ${healthSeverityLabel(severity)}',
+      if (medicationPlan != null) '方案 $medicationPlan',
+      if (notes != null && notes!.trim().isNotEmpty) notes!.trim(),
+    ];
+    return parts.isEmpty ? '暂无补充说明' : parts.join(' · ');
+  }
+
   factory HealthRecordItem.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic> mapOf(dynamic value) {
       if (value is Map<String, dynamic>) return value;
@@ -125,3 +143,7 @@ const healthQuickTypes = <String>[
   'follow_up',
   'isolation',
 ];
+
+bool healthTypeRequiresSeverity(String type) => type == 'anomaly';
+
+bool healthTypeRequiresMedicationPlan(String type) => type == 'medication';

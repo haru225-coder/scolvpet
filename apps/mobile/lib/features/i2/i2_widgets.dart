@@ -1,5 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../ui/theme/ios_theme.dart';
+import '../../ui/widgets/bear_brand.dart';
+import '../../ui/widgets/ios_widgets.dart';
 import 'i2_models.dart';
 
 class I2AsyncStateView<T> extends StatelessWidget {
@@ -20,7 +24,7 @@ class I2AsyncStateView<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (state.status) {
       case I2AsyncStatus.loading:
-        return const Center(child: CircularProgressIndicator());
+        return const IosLoading(showSkeleton: true);
       case I2AsyncStatus.data:
         return state.data == null
             ? const SizedBox.shrink()
@@ -28,25 +32,25 @@ class I2AsyncStateView<T> extends StatelessWidget {
       case I2AsyncStatus.empty:
         return emptyBuilder?.call(context) ??
             I2StateMessage(
-              icon: Icons.inbox_outlined,
+              icon: CupertinoIcons.tray,
               message: state.message ?? '暂无数据',
               onRetry: state.retryable ? onRetry : null,
             );
       case I2AsyncStatus.conflict:
         return I2StateMessage(
-          icon: Icons.warning_amber_rounded,
+          icon: CupertinoIcons.exclamationmark_triangle,
           message: state.message ?? '数据存在冲突，请刷新后重试',
           actionLabel: '重新检查',
           onRetry: onRetry,
-          tone: Colors.orange,
+          tone: IosColors.systemOrange,
         );
       case I2AsyncStatus.error:
         return I2StateMessage(
-          icon: Icons.cloud_off_outlined,
+          icon: CupertinoIcons.cloud,
           message: state.message ?? '请求未完成，请稍后重试',
           actionLabel: '重试',
           onRetry: state.retryable ? onRetry : null,
-          tone: Colors.redAccent,
+          tone: IosColors.systemRed,
         );
       case I2AsyncStatus.idle:
         return const SizedBox.shrink();
@@ -62,6 +66,8 @@ class I2StateMessage extends StatelessWidget {
     this.actionLabel,
     this.onRetry,
     this.tone,
+    this.illustration,
+    this.mood = BearMood.sleepy,
   });
 
   final IconData icon;
@@ -69,28 +75,42 @@ class I2StateMessage extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onRetry;
   final Color? tone;
+  final String? illustration;
+  final BearMood mood;
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 42, color: tone ?? Colors.grey),
-          const SizedBox(height: 12),
-          Text(message, textAlign: TextAlign.center),
-          if (onRetry != null) ...[
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: onRetry,
-              child: Text(actionLabel ?? '重试'),
-            ),
-          ],
-        ],
+  Widget build(BuildContext context) {
+    final color = tone ?? ScolvPalette.of(context).secondaryLabel;
+    final isError =
+        tone == IosColors.systemRed || tone == IosColors.systemOrange;
+    if (!isError) {
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: BearEmptyCard(
+            title: message,
+            subtitle: onRetry == null ? '新建或同步记录后会显示在这里' : '刷新后会再次检查',
+            mood: mood,
+            illustration: illustration ?? BearAssets.emptyList,
+            actionLabel: onRetry == null ? null : (actionLabel ?? '重试'),
+            onAction: onRetry,
+          ),
+        ),
+      );
+    }
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: IosBanner(
+          icon: icon,
+          text: message,
+          color: color,
+          actionLabel: onRetry == null ? null : (actionLabel ?? '重试'),
+          onAction: onRetry,
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class I2OfflineBanner extends StatelessWidget {
@@ -102,14 +122,15 @@ class I2OfflineBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!offline) return const SizedBox.shrink();
-    return MaterialBanner(
-      leading: const Icon(Icons.offline_bolt_outlined),
-      content: Text(
-        lastSyncLabel == null
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: IosBanner(
+        icon: CupertinoIcons.cloud,
+        color: IosColors.systemOrange,
+        text: lastSyncLabel == null
             ? '离线只读 · 联网后重新提交/再操作'
             : '离线只读 · 最近同步 $lastSyncLabel',
       ),
-      actions: const [SizedBox.shrink()],
     );
   }
 }
@@ -121,18 +142,20 @@ class I2WriteButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.icon,
+    this.disabledLabel,
   });
 
   final bool enabled;
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
+  final String? disabledLabel;
 
   @override
-  Widget build(BuildContext context) => FilledButton.icon(
+  Widget build(BuildContext context) => IosPrimaryButton(
+    label: enabled ? label : (disabledLabel ?? '$label（暂不可用）'),
+    icon: icon ?? CupertinoIcons.pencil,
     onPressed: enabled ? onPressed : null,
-    icon: Icon(icon ?? Icons.edit_outlined),
-    label: Text(enabled ? label : '$label（联网后可用）'),
   );
 }
 
@@ -143,10 +166,28 @@ class I2InfoTile extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) => ListTile(
-    dense: true,
-    title: Text(label, style: Theme.of(context).textTheme.labelMedium),
-    subtitle: Text(value.isEmpty ? '—' : value),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 96,
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: ScolvPalette.of(context).secondaryLabel,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value.isEmpty ? '—' : value,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -161,7 +202,7 @@ String i2LifecycleLabel(String value) => switch (value) {
   'transferred' => '已转出',
   'retired' => '已退役',
   'deceased' => '已离世',
-  _ => value,
+  _ => '状态待更新',
 };
 
 String i2EnclosureStateLabel(String value) => switch (value) {
@@ -174,7 +215,31 @@ String i2EnclosureStateLabel(String value) => switch (value) {
   'quarantine' => '隔离检疫',
   'cleaning_due' => '待清洁',
   'disabled' || 'out_of_service' => '停用',
-  _ => value,
+  _ => '状态待更新',
+};
+
+String i2CleanlinessLabel(String value) => switch (value) {
+  'clean' => '干净',
+  'dirty' || 'soiled' => '需要清洁',
+  'needs_clean' || 'needs_cleaning' => '待清洁',
+  'disinfecting' => '消毒中',
+  _ => '状态待更新',
+};
+
+String i2CleaningTypeLabel(String value) => switch (value) {
+  'full' => '全面清洁',
+  'partial' => '局部清洁',
+  'disinfection' => '消毒',
+  _ => '清洁记录',
+};
+
+String i2StayPurposeLabel(String value) => switch (value) {
+  'single' => '单住',
+  'pairing_temp' => '临时配对',
+  'gestation' => '孕期',
+  'isolation' || 'quarantine' => '隔离',
+  'dam_with_litter' => '母带崽',
+  _ => '入住',
 };
 
 /// Board visual tone for enclosure cards (T-P0-08).
@@ -213,7 +278,6 @@ EnclosureBoardTone enclosureBoardTone(I2Enclosure enclosure) {
   if (state == 'vacant' ||
       state == 'empty' ||
       enclosure.currentHamsterIds.isEmpty) {
-    // Occupied state string but no residents still shows vacant-ish.
     if (state.contains('occup') && enclosure.currentHamsterIds.isNotEmpty) {
       return EnclosureBoardTone.occupied;
     }
@@ -226,25 +290,31 @@ EnclosureBoardTone enclosureBoardTone(I2Enclosure enclosure) {
   return EnclosureBoardTone.occupied;
 }
 
-Color enclosureBoardColor(EnclosureBoardTone tone) => switch (tone) {
-  EnclosureBoardTone.vacant => const Color(0xffe8eeec),
-  EnclosureBoardTone.occupied => const Color(0xffdce8e3),
-  EnclosureBoardTone.pairing => const Color(0xfffff0e0),
-  EnclosureBoardTone.gestation => const Color(0xfff3e6f0),
-  EnclosureBoardTone.isolation => const Color(0xffffe8e5),
-  EnclosureBoardTone.dirty => const Color(0xfffff4d6),
-  EnclosureBoardTone.disabled => const Color(0xffe5e5e5),
-};
+Color enclosureBoardColor(BuildContext context, EnclosureBoardTone tone) {
+  final p = ScolvPalette.of(context);
+  return switch (tone) {
+    EnclosureBoardTone.vacant => p.secondaryGroupedBackground,
+    EnclosureBoardTone.occupied => const Color(0xffe8f8ef),
+    EnclosureBoardTone.pairing => p.accentSoft,
+    EnclosureBoardTone.gestation => const Color(0xfff3e8ff),
+    EnclosureBoardTone.isolation => const Color(0xffffe5e3),
+    EnclosureBoardTone.dirty => const Color(0xfffff6e0),
+    EnclosureBoardTone.disabled => p.tertiaryFill,
+  };
+}
 
-Color enclosureBoardAccent(EnclosureBoardTone tone) => switch (tone) {
-  EnclosureBoardTone.vacant => const Color(0xff6c7774),
-  EnclosureBoardTone.occupied => const Color(0xff3d7a62),
-  EnclosureBoardTone.pairing => const Color(0xffc77852),
-  EnclosureBoardTone.gestation => const Color(0xff9b5b8a),
-  EnclosureBoardTone.isolation => const Color(0xffb6534a),
-  EnclosureBoardTone.dirty => const Color(0xff8a6d3b),
-  EnclosureBoardTone.disabled => const Color(0xff8a8a8a),
-};
+Color enclosureBoardAccent(BuildContext context, EnclosureBoardTone tone) {
+  final p = ScolvPalette.of(context);
+  return switch (tone) {
+    EnclosureBoardTone.vacant => p.secondaryLabel,
+    EnclosureBoardTone.occupied => IosColors.systemGreen,
+    EnclosureBoardTone.pairing => p.accent,
+    EnclosureBoardTone.gestation => IosColors.systemPurple,
+    EnclosureBoardTone.isolation => IosColors.systemRed,
+    EnclosureBoardTone.dirty => IosColors.systemOrange,
+    EnclosureBoardTone.disabled => p.tertiaryLabel,
+  };
+}
 
 String enclosureBoardToneLabel(EnclosureBoardTone tone) => switch (tone) {
   EnclosureBoardTone.vacant => '空置',
@@ -264,7 +334,7 @@ String i2LitterStateLabel(String value) => switch (value) {
   'individualizing' => '待个体化',
   'closed' => '已关闭',
   'voided' => '已作废',
-  _ => value,
+  _ => '状态待更新',
 };
 
 String i2DateLabel(DateTime? value) {
@@ -277,6 +347,6 @@ String i2DateLabel(DateTime? value) {
 String i2DateTimeLabel(DateTime? value) {
   if (value == null) return '—';
   final local = value.toLocal();
-  return '${i2DateLabel(value)} ${local.hour.toString().padLeft(2, '0')}:​'
+  return '${i2DateLabel(value)} ${local.hour.toString().padLeft(2, '0')}:'
       '${local.minute.toString().padLeft(2, '0')}';
 }

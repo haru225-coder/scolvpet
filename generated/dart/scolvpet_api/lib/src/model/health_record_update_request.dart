@@ -35,7 +35,7 @@ class HealthRecordUpdateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'structured_checks',
     required: false,
     includeIfNull: false,
@@ -47,7 +47,7 @@ class HealthRecordUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'severity',
     required: false,
     includeIfNull: false,
@@ -59,7 +59,7 @@ class HealthRecordUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'medication',
     required: false,
     includeIfNull: false,
@@ -71,7 +71,7 @@ class HealthRecordUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'media_ids',
     required: false,
     includeIfNull: false,
@@ -83,7 +83,7 @@ class HealthRecordUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'follow_up_at',
     required: false,
     includeIfNull: false,
@@ -95,7 +95,7 @@ class HealthRecordUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -136,4 +136,3 @@ class HealthRecordUpdateRequest {
   }
 
 }
-

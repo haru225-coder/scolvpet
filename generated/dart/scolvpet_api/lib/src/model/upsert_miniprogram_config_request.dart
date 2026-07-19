@@ -30,7 +30,7 @@ class UpsertMiniprogramConfigRequest {
   });
 
   @JsonKey(
-    
+
     name: r'display_name',
     required: false,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class UpsertMiniprogramConfigRequest {
 
 
   @JsonKey(
-    
+
     name: r'app_id',
     required: false,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class UpsertMiniprogramConfigRequest {
 
 
   @JsonKey(
-    
+
     name: r'bound_public_slug',
     required: false,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class UpsertMiniprogramConfigRequest {
 
 
   @JsonKey(
-    
+
     name: r'enabled',
     required: false,
     includeIfNull: false,
@@ -103,4 +103,3 @@ class UpsertMiniprogramConfigRequest {
   }
 
 }
-

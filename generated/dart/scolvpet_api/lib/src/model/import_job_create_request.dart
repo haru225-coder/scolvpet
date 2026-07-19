@@ -33,7 +33,7 @@ class ImportJobCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'upload_id',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class ImportJobCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'template_type',
     required: true,
     includeIfNull: false,
@@ -57,7 +57,7 @@ class ImportJobCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'template_version',
     required: true,
     includeIfNull: false,
@@ -69,7 +69,7 @@ class ImportJobCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'source_encoding',
     required: false,
     includeIfNull: false,
@@ -137,5 +137,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

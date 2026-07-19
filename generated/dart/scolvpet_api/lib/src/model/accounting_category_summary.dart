@@ -32,7 +32,7 @@ class AccountingCategorySummary {
   });
 
   @JsonKey(
-    
+
     name: r'category_id',
     required: false,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class AccountingCategorySummary {
 
 
   @JsonKey(
-    
+
     name: r'category_name',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class AccountingCategorySummary {
 
 
   @JsonKey(
-    
+
     name: r'entry_type',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class AccountingCategorySummary {
 
 
   @JsonKey(
-    
+
     name: r'amount_cents',
     required: true,
     includeIfNull: false,
@@ -81,7 +81,7 @@ class AccountingCategorySummary {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'count',
     required: true,
     includeIfNull: false,
@@ -135,5 +135,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

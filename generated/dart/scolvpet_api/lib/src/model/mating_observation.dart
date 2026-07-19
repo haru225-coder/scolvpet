@@ -44,7 +44,7 @@ class MatingObservation {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class MatingObservation {
 
 
   @JsonKey(
-    
+
     name: r'pairing_attempt_id',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class MatingObservation {
 
 
   @JsonKey(
-    
+
     name: r'observed_at',
     required: true,
     includeIfNull: false,
@@ -80,7 +80,7 @@ class MatingObservation {
 
 
   @JsonKey(
-    
+
     name: r'type',
     required: true,
     includeIfNull: false,
@@ -93,7 +93,7 @@ class MatingObservation {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'duration_seconds',
     required: false,
     includeIfNull: false,
@@ -105,7 +105,7 @@ class MatingObservation {
 
 
   @JsonKey(
-    
+
     name: r'severity',
     required: false,
     includeIfNull: false,
@@ -119,7 +119,7 @@ class MatingObservation {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'confidence',
     required: false,
     includeIfNull: false,
@@ -131,7 +131,7 @@ class MatingObservation {
 
 
   @JsonKey(
-    
+
     name: r'media_ids',
     required: false,
     includeIfNull: false,
@@ -143,7 +143,7 @@ class MatingObservation {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -155,7 +155,7 @@ class MatingObservation {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -204,4 +204,3 @@ class MatingObservation {
   }
 
 }
-

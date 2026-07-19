@@ -60,7 +60,7 @@ class SpeciesRuleVersion {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -73,7 +73,7 @@ class SpeciesRuleVersion {
 
       /// 系统模板为 null，舍主副本由认证上下文填充
   @JsonKey(
-    
+
     name: r'owner_id',
     required: false,
     includeIfNull: false,
@@ -85,7 +85,7 @@ class SpeciesRuleVersion {
 
 
   @JsonKey(
-    
+
     name: r'scope',
     required: true,
     includeIfNull: false,
@@ -97,7 +97,7 @@ class SpeciesRuleVersion {
 
 
   @JsonKey(
-    
+
     name: r'source_template_id',
     required: false,
     includeIfNull: false,
@@ -109,7 +109,7 @@ class SpeciesRuleVersion {
 
 
   @JsonKey(
-    
+
     name: r'species_code',
     required: true,
     includeIfNull: false,
@@ -121,7 +121,7 @@ class SpeciesRuleVersion {
 
 
   @JsonKey(
-    
+
     name: r'variety_scope',
     required: false,
     includeIfNull: false,
@@ -134,7 +134,7 @@ class SpeciesRuleVersion {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'gestation_min_days',
     required: true,
     includeIfNull: false,
@@ -147,7 +147,7 @@ class SpeciesRuleVersion {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'gestation_max_days',
     required: true,
     includeIfNull: false,
@@ -160,7 +160,7 @@ class SpeciesRuleVersion {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'pairing_max_minutes',
     required: false,
     includeIfNull: false,
@@ -173,7 +173,7 @@ class SpeciesRuleVersion {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'weaning_target_days',
     required: true,
     includeIfNull: false,
@@ -186,7 +186,7 @@ class SpeciesRuleVersion {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'sexing_target_days',
     required: true,
     includeIfNull: false,
@@ -199,7 +199,7 @@ class SpeciesRuleVersion {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'separation_target_days',
     required: true,
     includeIfNull: false,
@@ -212,7 +212,7 @@ class SpeciesRuleVersion {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'post_breeding_rest_days',
     required: false,
     includeIfNull: false,
@@ -225,7 +225,7 @@ class SpeciesRuleVersion {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'profile_creation_deadline_days',
     required: false,
     includeIfNull: false,
@@ -237,7 +237,7 @@ class SpeciesRuleVersion {
 
 
   @JsonKey(
-    
+
     name: r'weight_reference',
     required: false,
     includeIfNull: false,
@@ -249,7 +249,7 @@ class SpeciesRuleVersion {
 
 
   @JsonKey(
-    
+
     name: r'source_note',
     required: true,
     includeIfNull: false,
@@ -262,7 +262,7 @@ class SpeciesRuleVersion {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -274,7 +274,7 @@ class SpeciesRuleVersion {
 
 
   @JsonKey(
-    
+
     name: r'effective_at',
     required: true,
     includeIfNull: false,
@@ -286,7 +286,7 @@ class SpeciesRuleVersion {
 
 
   @JsonKey(
-    
+
     name: r'frozen',
     required: true,
     includeIfNull: false,
@@ -368,5 +368,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -28,7 +28,7 @@ class PedigreeGraphResponseDataCommonAncestorsInner {
   });
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: true,
     includeIfNull: false,
@@ -41,7 +41,7 @@ class PedigreeGraphResponseDataCommonAncestorsInner {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'paths',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class PedigreeGraphResponseDataCommonAncestorsInner {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'minimum_generation',
     required: true,
     includeIfNull: false,
@@ -89,4 +89,3 @@ class PedigreeGraphResponseDataCommonAncestorsInner {
   }
 
 }
-

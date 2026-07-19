@@ -39,7 +39,7 @@ class AccountingSummary {
   });
 
   @JsonKey(
-    
+
     name: r'from',
     required: true,
     includeIfNull: false,
@@ -51,7 +51,7 @@ class AccountingSummary {
 
 
   @JsonKey(
-    
+
     name: r'to',
     required: true,
     includeIfNull: false,
@@ -63,7 +63,7 @@ class AccountingSummary {
 
 
   @JsonKey(
-    
+
     name: r'income_cents',
     required: true,
     includeIfNull: false,
@@ -75,7 +75,7 @@ class AccountingSummary {
 
 
   @JsonKey(
-    
+
     name: r'expense_cents',
     required: true,
     includeIfNull: false,
@@ -87,7 +87,7 @@ class AccountingSummary {
 
 
   @JsonKey(
-    
+
     name: r'net_cents',
     required: true,
     includeIfNull: false,
@@ -99,7 +99,7 @@ class AccountingSummary {
 
 
   @JsonKey(
-    
+
     name: r'currency',
     required: true,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class AccountingSummary {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'record_count',
     required: true,
     includeIfNull: false,
@@ -124,7 +124,7 @@ class AccountingSummary {
 
 
   @JsonKey(
-    
+
     name: r'by_category',
     required: true,
     includeIfNull: false,
@@ -169,4 +169,3 @@ class AccountingSummary {
   }
 
 }
-

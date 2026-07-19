@@ -26,7 +26,7 @@ class UpdateOrganizationMemberRequest {
   });
 
   @JsonKey(
-    
+
     name: r'role',
     required: false,
     includeIfNull: false,
@@ -38,7 +38,7 @@ class UpdateOrganizationMemberRequest {
 
 
   @JsonKey(
-    
+
     name: r'display_name',
     required: false,
     includeIfNull: false,
@@ -90,5 +90,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

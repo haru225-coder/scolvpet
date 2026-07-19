@@ -50,7 +50,7 @@ class HamsterCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'internal_code',
     required: true,
     includeIfNull: false,
@@ -62,7 +62,7 @@ class HamsterCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: false,
     includeIfNull: false,
@@ -74,7 +74,7 @@ class HamsterCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'species_rule_version_id',
     required: true,
     includeIfNull: false,
@@ -86,7 +86,7 @@ class HamsterCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'variety_code',
     required: false,
     includeIfNull: false,
@@ -98,7 +98,7 @@ class HamsterCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'sex',
     required: true,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class HamsterCreateRequest {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'sex_confidence',
     required: false,
     includeIfNull: false,
@@ -124,7 +124,7 @@ class HamsterCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'birth_date',
     required: false,
     includeIfNull: false,
@@ -136,7 +136,7 @@ class HamsterCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'source_type',
     required: true,
     includeIfNull: false,
@@ -148,7 +148,7 @@ class HamsterCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'cover_media_id',
     required: false,
     includeIfNull: false,
@@ -160,7 +160,7 @@ class HamsterCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -173,7 +173,7 @@ class HamsterCreateRequest {
 
       /// 创建时可附带父本断言，服务端写入 pedigree_parentage
   @JsonKey(
-    
+
     name: r'sire_id',
     required: false,
     includeIfNull: false,
@@ -186,7 +186,7 @@ class HamsterCreateRequest {
 
       /// 创建时可附带母本断言，服务端写入 pedigree_parentage
   @JsonKey(
-    
+
     name: r'dam_id',
     required: false,
     includeIfNull: false,
@@ -199,7 +199,7 @@ class HamsterCreateRequest {
 
       /// 外部或历史导入时关联窝次
   @JsonKey(
-    
+
     name: r'litter_id',
     required: false,
     includeIfNull: false,
@@ -254,4 +254,3 @@ class HamsterCreateRequest {
   }
 
 }
-

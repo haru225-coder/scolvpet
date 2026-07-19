@@ -31,7 +31,7 @@ class PhoneCodeLoginRequest {
   });
 
   @JsonKey(
-    
+
     name: r'phone',
     required: true,
     includeIfNull: false,
@@ -43,7 +43,7 @@ class PhoneCodeLoginRequest {
 
 
   @JsonKey(
-    
+
     name: r'verification_id',
     required: true,
     includeIfNull: false,
@@ -55,7 +55,7 @@ class PhoneCodeLoginRequest {
 
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -67,7 +67,7 @@ class PhoneCodeLoginRequest {
 
 
   @JsonKey(
-    
+
     name: r'device',
     required: true,
     includeIfNull: false,
@@ -104,4 +104,3 @@ class PhoneCodeLoginRequest {
   }
 
 }
-

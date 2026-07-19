@@ -39,7 +39,7 @@ class P2Api {
   /// 需要 Bearer 令牌；当前熊舍成员可查询本舍结构化数据；助手不修改业务数据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [assistantAskRequest] 
+  /// * [assistantAskRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -50,7 +50,7 @@ class P2Api {
   ///
   /// Returns a [Future] containing a [Response] with a [AssistantAnswerResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AssistantAnswerResponse>> askAssistant({ 
+  Future<Response<AssistantAnswerResponse>> askAssistant({
     required AssistantAskRequest assistantAskRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -148,7 +148,7 @@ _responseData = rawData == null ? null : deserialize<AssistantAnswerResponse, As
   ///
   /// Returns a [Future] containing a [Response] with a [AssistantCapabilitiesResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AssistantCapabilitiesResponse>> assistantCapabilities({ 
+  Future<Response<AssistantCapabilitiesResponse>> assistantCapabilities({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -216,7 +216,7 @@ _responseData = rawData == null ? null : deserialize<AssistantCapabilitiesRespon
   ///
   /// Parameters:
   /// * [releaseId] - 版本 ID
-  /// * [auditMiniprogramReleaseRequest] 
+  /// * [auditMiniprogramReleaseRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -227,7 +227,7 @@ _responseData = rawData == null ? null : deserialize<AssistantCapabilitiesRespon
   ///
   /// Returns a [Future] containing a [Response] with a [MiniprogramReleaseResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MiniprogramReleaseResponse>> auditMiniprogramRelease({ 
+  Future<Response<MiniprogramReleaseResponse>> auditMiniprogramRelease({
     required String releaseId,
     required AuditMiniprogramReleaseRequest auditMiniprogramReleaseRequest,
     String? idempotencyKey,
@@ -328,7 +328,7 @@ _responseData = rawData == null ? null : deserialize<MiniprogramReleaseResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [StudDealResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StudDealResponse>> cancelStudDeal({ 
+  Future<Response<StudDealResponse>> cancelStudDeal({
     required String dealId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -409,7 +409,7 @@ _responseData = rawData == null ? null : deserialize<StudDealResponse, StudDealR
   ///
   /// Returns a [Future] containing a [Response] with a [StudDealResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StudDealResponse>> completeStudDeal({ 
+  Future<Response<StudDealResponse>> completeStudDeal({
     required String dealId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -490,7 +490,7 @@ _responseData = rawData == null ? null : deserialize<StudDealResponse, StudDealR
   ///
   /// Returns a [Future] containing a [Response] with a [StudDealResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StudDealResponse>> confirmStudDeal({ 
+  Future<Response<StudDealResponse>> confirmStudDeal({
     required String dealId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -560,7 +560,7 @@ _responseData = rawData == null ? null : deserialize<StudDealResponse, StudDealR
   /// 需要 Bearer 令牌；当前熊舍成员可创建小程序草稿版本。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createMiniprogramReleaseRequest] 
+  /// * [createMiniprogramReleaseRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -571,7 +571,7 @@ _responseData = rawData == null ? null : deserialize<StudDealResponse, StudDealR
   ///
   /// Returns a [Future] containing a [Response] with a [MiniprogramReleaseResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MiniprogramReleaseResponse>> createMiniprogramRelease({ 
+  Future<Response<MiniprogramReleaseResponse>> createMiniprogramRelease({
     required CreateMiniprogramReleaseRequest createMiniprogramReleaseRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -660,7 +660,7 @@ _responseData = rawData == null ? null : deserialize<MiniprogramReleaseResponse,
   /// 需要 Bearer 令牌；当前熊舍成员可创建借配履约记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createStudDealRequest] 
+  /// * [createStudDealRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -671,7 +671,7 @@ _responseData = rawData == null ? null : deserialize<MiniprogramReleaseResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [StudDealResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StudDealResponse>> createStudDeal({ 
+  Future<Response<StudDealResponse>> createStudDeal({
     required CreateStudDealRequest createStudDealRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -760,7 +760,7 @@ _responseData = rawData == null ? null : deserialize<StudDealResponse, StudDealR
   /// 需要 Bearer 令牌；当前熊舍成员可创建本舍种公挂牌。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createStudListingRequest] 
+  /// * [createStudListingRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -771,7 +771,7 @@ _responseData = rawData == null ? null : deserialize<StudDealResponse, StudDealR
   ///
   /// Returns a [Future] containing a [Response] with a [StudListingResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StudListingResponse>> createStudListing({ 
+  Future<Response<StudListingResponse>> createStudListing({
     required CreateStudListingRequest createStudListingRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -869,7 +869,7 @@ _responseData = rawData == null ? null : deserialize<StudListingResponse, StudLi
   ///
   /// Returns a [Future] containing a [Response] with a [MiniprogramConfigResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MiniprogramConfigResponse>> getMiniprogramConfig({ 
+  Future<Response<MiniprogramConfigResponse>> getMiniprogramConfig({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -945,7 +945,7 @@ _responseData = rawData == null ? null : deserialize<MiniprogramConfigResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [PublicSiteResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PublicSiteResponse>> getOwnerPublicSite({ 
+  Future<Response<PublicSiteResponse>> getOwnerPublicSite({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1012,7 +1012,7 @@ _responseData = rawData == null ? null : deserialize<PublicSiteResponse, PublicS
   /// 匿名公开读取；仅返回 published&#x3D;true 的主页投影，未发布或不存在统一返回 404。
   ///
   /// Parameters:
-  /// * [slug] 
+  /// * [slug]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1022,7 +1022,7 @@ _responseData = rawData == null ? null : deserialize<PublicSiteResponse, PublicS
   ///
   /// Returns a [Future] containing a [Response] with a [PublicSiteViewResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PublicSiteViewResponse>> getPublicSiteBySlug({ 
+  Future<Response<PublicSiteViewResponse>> getPublicSiteBySlug({
     required String slug,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1093,7 +1093,7 @@ _responseData = rawData == null ? null : deserialize<PublicSiteViewResponse, Pub
   ///
   /// Returns a [Future] containing a [Response] with a [MiniprogramReleaseListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MiniprogramReleaseListResponse>> listMiniprogramReleases({ 
+  Future<Response<MiniprogramReleaseListResponse>> listMiniprogramReleases({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1169,7 +1169,7 @@ _responseData = rawData == null ? null : deserialize<MiniprogramReleaseListRespo
   ///
   /// Returns a [Future] containing a [Response] with a [StudDealListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StudDealListResponse>> listStudDeals({ 
+  Future<Response<StudDealListResponse>> listStudDeals({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1246,7 +1246,7 @@ _responseData = rawData == null ? null : deserialize<StudDealListResponse, StudD
   ///
   /// Returns a [Future] containing a [Response] with a [StudListingListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StudListingListResponse>> listStudListings({ 
+  Future<Response<StudListingListResponse>> listStudListings({
     String? mine,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1330,7 +1330,7 @@ _responseData = rawData == null ? null : deserialize<StudListingListResponse, St
   ///
   /// Returns a [Future] containing a [Response] with a [MiniprogramReleaseResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MiniprogramReleaseResponse>> publishMiniprogramRelease({ 
+  Future<Response<MiniprogramReleaseResponse>> publishMiniprogramRelease({
     required String releaseId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -1410,7 +1410,7 @@ _responseData = rawData == null ? null : deserialize<MiniprogramReleaseResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [PublicSiteResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PublicSiteResponse>> publishOwnerPublicSite({ 
+  Future<Response<PublicSiteResponse>> publishOwnerPublicSite({
     String? idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1490,7 +1490,7 @@ _responseData = rawData == null ? null : deserialize<PublicSiteResponse, PublicS
   ///
   /// Returns a [Future] containing a [Response] with a [MiniprogramReleaseResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MiniprogramReleaseResponse>> rollbackMiniprogramRelease({ 
+  Future<Response<MiniprogramReleaseResponse>> rollbackMiniprogramRelease({
     required String releaseId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -1571,7 +1571,7 @@ _responseData = rawData == null ? null : deserialize<MiniprogramReleaseResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [StudDealResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StudDealResponse>> startStudDeal({ 
+  Future<Response<StudDealResponse>> startStudDeal({
     required String dealId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -1652,7 +1652,7 @@ _responseData = rawData == null ? null : deserialize<StudDealResponse, StudDealR
   ///
   /// Returns a [Future] containing a [Response] with a [MiniprogramReleaseResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MiniprogramReleaseResponse>> submitMiniprogramRelease({ 
+  Future<Response<MiniprogramReleaseResponse>> submitMiniprogramRelease({
     required String releaseId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -1732,7 +1732,7 @@ _responseData = rawData == null ? null : deserialize<MiniprogramReleaseResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [PublicSiteResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PublicSiteResponse>> unpublishOwnerPublicSite({ 
+  Future<Response<PublicSiteResponse>> unpublishOwnerPublicSite({
     String? idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1812,7 +1812,7 @@ _responseData = rawData == null ? null : deserialize<PublicSiteResponse, PublicS
   ///
   /// Returns a [Future] containing a [Response] with a [StudListingResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StudListingResponse>> unpublishStudListing({ 
+  Future<Response<StudListingResponse>> unpublishStudListing({
     required String listingId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -1882,7 +1882,7 @@ _responseData = rawData == null ? null : deserialize<StudListingResponse, StudLi
   /// 需要 Bearer 令牌；当前熊舍成员可保存小程序配置。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [upsertMiniprogramConfigRequest] 
+  /// * [upsertMiniprogramConfigRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -1893,7 +1893,7 @@ _responseData = rawData == null ? null : deserialize<StudListingResponse, StudLi
   ///
   /// Returns a [Future] containing a [Response] with a [MiniprogramConfigResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MiniprogramConfigResponse>> upsertMiniprogramConfig({ 
+  Future<Response<MiniprogramConfigResponse>> upsertMiniprogramConfig({
     required UpsertMiniprogramConfigRequest upsertMiniprogramConfigRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -1982,7 +1982,7 @@ _responseData = rawData == null ? null : deserialize<MiniprogramConfigResponse, 
   /// 需要 Bearer 令牌；当前熊舍成员可保存本舍公开主页配置。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [upsertPublicSiteRequest] 
+  /// * [upsertPublicSiteRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -1993,7 +1993,7 @@ _responseData = rawData == null ? null : deserialize<MiniprogramConfigResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [PublicSiteResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PublicSiteResponse>> upsertOwnerPublicSite({ 
+  Future<Response<PublicSiteResponse>> upsertOwnerPublicSite({
     required UpsertPublicSiteRequest upsertPublicSiteRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,

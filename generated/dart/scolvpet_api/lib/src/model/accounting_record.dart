@@ -46,7 +46,7 @@ class AccountingRecord {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class AccountingRecord {
 
 
   @JsonKey(
-    
+
     name: r'category_id',
     required: false,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class AccountingRecord {
 
 
   @JsonKey(
-    
+
     name: r'entry_type',
     required: true,
     includeIfNull: false,
@@ -83,7 +83,7 @@ class AccountingRecord {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'amount_cents',
     required: true,
     includeIfNull: false,
@@ -95,7 +95,7 @@ class AccountingRecord {
 
 
   @JsonKey(
-    
+
     name: r'currency',
     required: true,
     includeIfNull: false,
@@ -107,7 +107,7 @@ class AccountingRecord {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -119,7 +119,7 @@ class AccountingRecord {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -131,7 +131,7 @@ class AccountingRecord {
 
 
   @JsonKey(
-    
+
     name: r'contact_id',
     required: false,
     includeIfNull: false,
@@ -143,7 +143,7 @@ class AccountingRecord {
 
 
   @JsonKey(
-    
+
     name: r'occurred_at',
     required: true,
     includeIfNull: false,
@@ -156,7 +156,7 @@ class AccountingRecord {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -168,7 +168,7 @@ class AccountingRecord {
 
 
   @JsonKey(
-    
+
     name: r'category_name',
     required: false,
     includeIfNull: false,
@@ -180,7 +180,7 @@ class AccountingRecord {
 
 
   @JsonKey(
-    
+
     name: r'contact_name',
     required: false,
     includeIfNull: false,
@@ -248,5 +248,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

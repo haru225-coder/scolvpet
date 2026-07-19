@@ -34,7 +34,7 @@ class LitterCountEvent {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -46,7 +46,7 @@ class LitterCountEvent {
 
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: true,
     includeIfNull: false,
@@ -59,7 +59,7 @@ class LitterCountEvent {
 
       /// confirm-birth 的 initial_alive 为正；discovered 为正；death/transferred_out 为负；correction 非零
   @JsonKey(
-    
+
     name: r'event_type',
     required: true,
     includeIfNull: false,
@@ -71,7 +71,7 @@ class LitterCountEvent {
 
 
   @JsonKey(
-    
+
     name: r'delta',
     required: true,
     includeIfNull: false,
@@ -83,7 +83,7 @@ class LitterCountEvent {
 
 
   @JsonKey(
-    
+
     name: r'occurred_at',
     required: true,
     includeIfNull: false,
@@ -95,7 +95,7 @@ class LitterCountEvent {
 
 
   @JsonKey(
-    
+
     name: r'reason',
     required: false,
     includeIfNull: false,
@@ -162,5 +162,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

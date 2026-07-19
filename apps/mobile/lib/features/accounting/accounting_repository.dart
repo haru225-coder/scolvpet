@@ -2,9 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'accounting_models.dart';
 
 abstract interface class AccountingRepository {
+  Future<List<AccountingContactOption>> listContacts();
+
   Future<List<AccountingCategory>> listCategories({String? entryType});
   Future<AccountingCategory> createCategory(AccountingCategoryDraft draft);
 
@@ -21,23 +24,24 @@ class AccountingRepositoryException implements Exception {
   String toString() => message;
 }
 
-String accountingErrorMessage(Object error) {
-  if (error is AccountingRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '财务请求失败';
-  }
-  return error.toString();
-}
+String accountingErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '财务请求失败',
+  mapLocal: (e) => e is AccountingRepositoryException ? e.message : null,
+);
 
 class MemoryAccountingRepository implements AccountingRepository {
+  MemoryAccountingRepository({List<AccountingContactOption>? contacts})
+    : _contacts = [...?contacts];
+
+  final List<AccountingContactOption> _contacts;
   final List<AccountingCategory> _categories = [];
   final List<AccountingRecord> _records = [];
   int _seq = 0;
+
+  @override
+  Future<List<AccountingContactOption>> listContacts() async =>
+      List<AccountingContactOption>.from(_contacts);
 
   @override
   Future<List<AccountingCategory>> listCategories({String? entryType}) async {
@@ -97,7 +101,13 @@ class MemoryAccountingRepository implements AccountingRepository {
         occurredAt: r.occurredAt,
         version: r.version,
         categoryName: cat?.name,
-        contactName: r.contactName,
+        contactName: _contacts
+            .cast<AccountingContactOption?>()
+            .firstWhere(
+              (contact) => contact?.id == r.contactId,
+              orElse: () => null,
+            )
+            ?.name,
       );
     }).toList();
     if (entryType != null) {
@@ -133,6 +143,17 @@ class MemoryAccountingRepository implements AccountingRepository {
       }
       categoryName = cat.name;
     }
+    String? contactName;
+    if (draft.contactId != null) {
+      final contact = _contacts.cast<AccountingContactOption?>().firstWhere(
+        (item) => item?.id == draft.contactId,
+        orElse: () => null,
+      );
+      if (contact == null) {
+        throw const AccountingRepositoryException('关联客户不存在');
+      }
+      contactName = contact.name;
+    }
     final item = AccountingRecord(
       id: 'arec-${_seq++}',
       categoryId: draft.categoryId,
@@ -142,9 +163,10 @@ class MemoryAccountingRepository implements AccountingRepository {
       title: title,
       notes: draft.notes,
       contactId: draft.contactId,
-      occurredAt: DateTime.now().toUtc(),
+      occurredAt: draft.occurredAt?.toUtc() ?? DateTime.now().toUtc(),
       version: 1,
       categoryName: categoryName,
+      contactName: contactName,
     );
     _records.insert(0, item);
     return item;
@@ -153,13 +175,14 @@ class MemoryAccountingRepository implements AccountingRepository {
   @override
   Future<AccountingSummary> getSummary({DateTime? from, DateTime? to}) async {
     final now = DateTime.now();
-    final rangeFrom =
-        from ?? DateTime(now.year, now.month, 1).toUtc();
+    final rangeFrom = from ?? DateTime(now.year, now.month, 1).toUtc();
     final rangeTo =
         to ??
-        DateTime(now.year, now.month + 1, 1)
-            .subtract(const Duration(microseconds: 1))
-            .toUtc();
+        DateTime(
+          now.year,
+          now.month + 1,
+          1,
+        ).subtract(const Duration(microseconds: 1)).toUtc();
     final inRange = _records.where((r) {
       return !r.occurredAt.isBefore(rangeFrom) &&
           !r.occurredAt.isAfter(rangeTo);
@@ -175,9 +198,7 @@ class MemoryAccountingRepository implements AccountingRepository {
       }
       final key = '${r.entryType}:${r.categoryId ?? 'none'}';
       final existing = map[key];
-      final name = r.categoryName?.isNotEmpty == true
-          ? r.categoryName!
-          : '未分类';
+      final name = r.categoryName?.isNotEmpty == true ? r.categoryName! : '未分类';
       if (existing == null) {
         map[key] = AccountingCategorySum(
           categoryId: r.categoryId,
@@ -238,12 +259,18 @@ class DefaultApiAccountingRepository implements AccountingRepository {
   }
 
   @override
+  Future<List<AccountingContactOption>> listContacts() async {
+    final response = await client.dio.get<Map<String, dynamic>>(
+      '/crm/contacts',
+    );
+    return _listData(response).map(AccountingContactOption.fromJson).toList();
+  }
+
+  @override
   Future<List<AccountingCategory>> listCategories({String? entryType}) async {
     final response = await client.dio.get<Map<String, dynamic>>(
       '/accounting/categories',
-      queryParameters: {
-        if (entryType != null) 'entry_type': entryType,
-      },
+      queryParameters: {if (entryType != null) 'entry_type': entryType},
     );
     return _listData(response).map(AccountingCategory.fromJson).toList();
   }
@@ -268,9 +295,7 @@ class DefaultApiAccountingRepository implements AccountingRepository {
   Future<List<AccountingRecord>> listRecords({String? entryType}) async {
     final response = await client.dio.get<Map<String, dynamic>>(
       '/accounting/records',
-      queryParameters: {
-        if (entryType != null) 'entry_type': entryType,
-      },
+      queryParameters: {if (entryType != null) 'entry_type': entryType},
     );
     return _listData(response).map(AccountingRecord.fromJson).toList();
   }
@@ -287,6 +312,8 @@ class DefaultApiAccountingRepository implements AccountingRepository {
         if (draft.categoryId != null) 'category_id': draft.categoryId,
         if (draft.notes != null) 'notes': draft.notes,
         if (draft.contactId != null) 'contact_id': draft.contactId,
+        if (draft.occurredAt != null)
+          'occurred_at': draft.occurredAt!.toUtc().toIso8601String(),
       },
       options: Options(headers: {'Idempotency-Key': _key()}),
     );

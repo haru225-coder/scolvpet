@@ -28,7 +28,7 @@ class CreateAccountingCategoryRequest {
   });
 
   @JsonKey(
-    
+
     name: r'entry_type',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class CreateAccountingCategoryRequest {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class CreateAccountingCategoryRequest {
 
 
   @JsonKey(
-    
+
     name: r'sort_order',
     required: false,
     includeIfNull: false,
@@ -102,5 +102,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

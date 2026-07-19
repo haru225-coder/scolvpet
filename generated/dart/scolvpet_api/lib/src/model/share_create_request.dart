@@ -33,7 +33,7 @@ class ShareCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'subject_type',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class ShareCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'subject_id',
     required: true,
     includeIfNull: false,
@@ -57,7 +57,7 @@ class ShareCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'fields',
     required: true,
     includeIfNull: false,
@@ -69,7 +69,7 @@ class ShareCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'media_ids',
     required: true,
     includeIfNull: false,
@@ -81,7 +81,7 @@ class ShareCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: false,
     includeIfNull: false,
@@ -135,5 +135,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

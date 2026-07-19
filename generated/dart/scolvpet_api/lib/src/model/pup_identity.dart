@@ -49,7 +49,7 @@ class PupIdentity {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -61,7 +61,7 @@ class PupIdentity {
 
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: true,
     includeIfNull: false,
@@ -73,7 +73,7 @@ class PupIdentity {
 
 
   @JsonKey(
-    
+
     name: r'temporary_code',
     required: true,
     includeIfNull: false,
@@ -85,7 +85,7 @@ class PupIdentity {
 
 
   @JsonKey(
-    
+
     name: r'sex',
     required: true,
     includeIfNull: false,
@@ -99,7 +99,7 @@ class PupIdentity {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'sex_confidence',
     required: false,
     includeIfNull: false,
@@ -111,7 +111,7 @@ class PupIdentity {
 
 
   @JsonKey(
-    
+
     name: r'phenotype_summary',
     required: false,
     includeIfNull: false,
@@ -123,7 +123,7 @@ class PupIdentity {
 
 
   @JsonKey(
-    
+
     name: r'destination',
     required: false,
     includeIfNull: false,
@@ -135,7 +135,7 @@ class PupIdentity {
 
 
   @JsonKey(
-    
+
     name: r'current_enclosure_id',
     required: false,
     includeIfNull: false,
@@ -147,7 +147,7 @@ class PupIdentity {
 
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: false,
     includeIfNull: false,
@@ -159,7 +159,7 @@ class PupIdentity {
 
 
   @JsonKey(
-    
+
     name: r'outcome_status',
     required: true,
     includeIfNull: false,
@@ -171,7 +171,7 @@ class PupIdentity {
 
 
   @JsonKey(
-    
+
     name: r'profile_status',
     required: true,
     includeIfNull: false,
@@ -184,7 +184,7 @@ class PupIdentity {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -256,5 +256,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -29,7 +29,7 @@ class PageInfo {
 
       /// 下一页游标；无下一页时为 null
   @JsonKey(
-    
+
     name: r'next_cursor',
     required: false,
     includeIfNull: false,
@@ -41,7 +41,7 @@ class PageInfo {
 
 
   @JsonKey(
-    
+
     name: r'has_more',
     required: true,
     includeIfNull: false,
@@ -55,7 +55,7 @@ class PageInfo {
       /// 本页项目数
           // minimum: 0
   @JsonKey(
-    
+
     name: r'count',
     required: false,
     includeIfNull: false,
@@ -90,4 +90,3 @@ class PageInfo {
   }
 
 }
-

@@ -31,7 +31,7 @@ class WeanLitterRequestItemsInner {
   });
 
   @JsonKey(
-    
+
     name: r'pup_identity_id',
     required: true,
     includeIfNull: false,
@@ -43,7 +43,7 @@ class WeanLitterRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'outcome_status',
     required: true,
     includeIfNull: false,
@@ -55,7 +55,7 @@ class WeanLitterRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'destination_enclosure_id',
     required: false,
     includeIfNull: false,
@@ -67,7 +67,7 @@ class WeanLitterRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -104,4 +104,3 @@ class WeanLitterRequestItemsInner {
   }
 
 }
-

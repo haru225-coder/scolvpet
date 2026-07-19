@@ -1,6 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/app_state.dart';
+import '../../ui/theme/ios_theme.dart';
+import '../../ui/widgets/bear_brand.dart';
+import '../../ui/widgets/bear_motion.dart';
+import '../../ui/widgets/ios_widgets.dart';
 import '../i2/i2.dart';
 import '../tasks/tasks.dart';
 import '../weight/weight_alerts.dart';
@@ -165,7 +170,6 @@ class HomeOverviewPage extends StatelessWidget {
       ]),
       builder: (context, _) {
         final load = controller.snapshotState;
-        // empty/error states may leave data == null; still render a zeroed dashboard.
         final snapshot =
             load.data ??
             (load.status == I2AsyncStatus.empty
@@ -188,6 +192,7 @@ class HomeOverviewPage extends StatelessWidget {
         final errorMessage = load.status == I2AsyncStatus.error
             ? (load.message ?? '加载失败')
             : null;
+        final hasUncachedError = errorMessage != null && snapshot == null;
 
         final careQueue = buildTodayCareQueue(
           tasks: taskController?.listState.data ?? const <CareTaskItem>[],
@@ -196,167 +201,220 @@ class HomeOverviewPage extends StatelessWidget {
         );
 
         return RefreshIndicator(
+          color: ScolvPalette.of(context).accent,
           onRefresh: () async {
             await controller.retry();
             await taskController?.refresh();
           },
           child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-              Text(
-                '今日',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xff1f2928),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                metrics.organizationName ?? '我的熊舍',
-                style: const TextStyle(color: Color(0xff6c7774)),
-              ),
-              if (metrics.offline) ...[
-                const SizedBox(height: 12),
-                const _HomeBanner(
-                  icon: Icons.cloud_off_outlined,
-                  text: '离线只读 · 显示缓存数据，联网后下拉刷新',
-                  color: Color(0xff8a6d3b),
-                ),
-              ],
-              if (errorMessage != null && snapshot == null) ...[
-                const SizedBox(height: 12),
-                _HomeBanner(
-                  icon: Icons.error_outline,
-                  text: errorMessage,
-                  color: Colors.redAccent,
-                  actionLabel: '重试',
-                  onAction: controller.retry,
-                ),
-              ],
-              if (loading) ...[
-                const SizedBox(height: 24),
-                const Center(child: CircularProgressIndicator()),
-              ] else ...[
-                const SizedBox(height: 16),
-                _StatGrid(
-                  metrics: metrics,
-                  openTaskCount: taskController?.openCount ?? 0,
-                ),
-                const SizedBox(height: 20),
-                _TodayCareQueueSection(
-                  items: careQueue,
-                  taskController: taskController,
-                  onOpenTasks: onOpenTasks,
-                  onOpenBatchWeight: onOpenBatchWeight,
-                  onOpenEnclosures: onOpenEnclosures,
-                  onOpenLitters: onOpenLitters,
-                ),
-                const SizedBox(height: 20),
-                _AttentionSection(
-                  metrics: metrics,
-                  openTaskCount: taskController?.openCount ?? 0,
-                  overdueTaskCount: taskController?.overdueCount ?? 0,
-                  onOpenLitters: onOpenLitters,
-                  onOpenEnclosures: onOpenEnclosures,
-                  onOpenBreeding: onOpenBreeding,
-                  onOpenHamsters: onOpenHamsters,
-                  onOpenBatchWeight: onOpenBatchWeight,
-                  onOpenTasks: onOpenTasks,
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  '快捷操作',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xff1f2928),
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            padding: const EdgeInsets.fromLTRB(
+              0,
+              8,
+              0,
+              IosMetrics.bottomSafePadding,
+            ),
+            child: BearPageEntrance(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: IosLargeTitle(
+                      '今日',
+                      subtitle: metrics.organizationName ?? '我的熊舍',
+                      trailing: _HomeStatusPill(
+                        offline: metrics.offline,
+                        failed: hasUncachedError,
+                        attention: metrics.attentionWithTasks(
+                          taskController?.openCount ?? 0,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _QuickChip(
-                      buttonKey: const Key('home-quick-create-hamster'),
-                      icon: Icons.pets,
-                      label: '新建仓鼠',
-                      onTap: onCreateHamster,
-                    ),
-                    _QuickChip(
-                      buttonKey: const Key('home-quick-enclosures'),
-                      icon: Icons.grid_view,
-                      label: '笼舍看板',
-                      onTap: onOpenEnclosures,
-                    ),
-                    _QuickChip(
-                      buttonKey: const Key('home-quick-litters'),
-                      icon: Icons.groups_outlined,
-                      label: '窝次',
-                      onTap: onOpenLitters,
-                    ),
-                    _QuickChip(
-                      buttonKey: const Key('home-quick-breeding'),
-                      icon: Icons.sync_alt,
-                      label: '繁育',
-                      onTap: onOpenBreeding,
-                    ),
-                    _QuickChip(
-                      buttonKey: const Key('home-quick-data-center'),
-                      icon: Icons.inventory_2_outlined,
-                      label: '数据中心',
-                      onTap: onOpenDataCenter,
-                    ),
-                    _QuickChip(
-                      buttonKey: const Key('home-quick-hamsters'),
-                      icon: Icons.list_alt,
-                      label: '仓鼠列表',
-                      onTap: onOpenHamsters,
-                    ),
-                    if (onOpenBatchWeight != null)
-                      _QuickChip(
-                        buttonKey: const Key('home-quick-batch-weight'),
-                        icon: Icons.monitor_weight_outlined,
-                        label: '批量称重',
-                        onTap: onOpenBatchWeight!,
+                  if (metrics.offline) ...[
+                    const SizedBox(height: 10),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: IosBanner(
+                        icon: CupertinoIcons.cloud,
+                        text: '离线只读 · 显示缓存数据，联网后下拉刷新',
+                        color: IosColors.systemOrange,
                       ),
-                    if (onOpenTasks != null)
-                      _QuickChip(
-                        buttonKey: const Key('home-quick-tasks'),
-                        icon: Icons.task_alt,
-                        label: '任务',
-                        onTap: onOpenTasks!,
-                      ),
-                    if (onOpenCalendar != null)
-                      _QuickChip(
-                        buttonKey: const Key('home-quick-calendar'),
-                        icon: Icons.calendar_month_outlined,
-                        label: '日历',
-                        onTap: onOpenCalendar!,
-                      ),
+                    ),
                   ],
-                ),
-                if (metrics.lastSyncLabel != null) ...[
-                  const SizedBox(height: 20),
-                  Text(
-                    '最近同步：${metrics.lastSyncLabel}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xff6c7774),
+                  if (errorMessage != null && snapshot != null) ...[
+                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: IosBanner(
+                        icon: CupertinoIcons.exclamationmark_circle,
+                        text: '同步失败，当前显示最近一次数据。$errorMessage',
+                        color: IosColors.systemRed,
+                        actionLabel: '重试',
+                        onAction: controller.retry,
+                      ),
                     ),
-                  ),
+                  ],
+                  if (loading) ...[
+                    const SizedBox(height: 48),
+                    const IosLoading(showSkeleton: true),
+                  ] else if (hasUncachedError) ...[
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _HomeUnavailableState(
+                        message: errorMessage,
+                        onRetry: controller.retry,
+                      ),
+                    ),
+                    const SizedBox(height: IosMetrics.sectionGap),
+                    _QuickActionsSection(
+                      onCreateHamster: onCreateHamster,
+                      onOpenEnclosures: onOpenEnclosures,
+                      onOpenLitters: onOpenLitters,
+                      onOpenBreeding: onOpenBreeding,
+                      onOpenDataCenter: onOpenDataCenter,
+                      onOpenHamsters: onOpenHamsters,
+                      onOpenBatchWeight: onOpenBatchWeight,
+                      onOpenTasks: onOpenTasks,
+                      onOpenCalendar: onOpenCalendar,
+                    ),
+                  ] else ...[
+                    const SizedBox(height: 14),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _StatGrid(
+                        metrics: metrics,
+                        openTaskCount: taskController?.openCount ?? 0,
+                      ),
+                    ),
+                    const SizedBox(height: IosMetrics.sectionGap),
+                    _TodayCareQueueSection(
+                      items: careQueue,
+                      taskController: taskController,
+                      onOpenTasks: onOpenTasks,
+                      onOpenBatchWeight: onOpenBatchWeight,
+                      onOpenEnclosures: onOpenEnclosures,
+                      onOpenLitters: onOpenLitters,
+                    ),
+                    const SizedBox(height: IosMetrics.sectionGap),
+                    _AttentionSection(
+                      metrics: metrics,
+                      openTaskCount: taskController?.openCount ?? 0,
+                      overdueTaskCount: taskController?.overdueCount ?? 0,
+                      onOpenLitters: onOpenLitters,
+                      onOpenEnclosures: onOpenEnclosures,
+                      onOpenBreeding: onOpenBreeding,
+                      onOpenHamsters: onOpenHamsters,
+                      onOpenBatchWeight: onOpenBatchWeight,
+                      onOpenTasks: onOpenTasks,
+                    ),
+                    const SizedBox(height: 12),
+                    _QuickActionsSection(
+                      onCreateHamster: onCreateHamster,
+                      onOpenEnclosures: onOpenEnclosures,
+                      onOpenLitters: onOpenLitters,
+                      onOpenBreeding: onOpenBreeding,
+                      onOpenDataCenter: onOpenDataCenter,
+                      onOpenHamsters: onOpenHamsters,
+                      onOpenBatchWeight: onOpenBatchWeight,
+                      onOpenTasks: onOpenTasks,
+                      onOpenCalendar: onOpenCalendar,
+                    ),
+                    if (metrics.lastSyncLabel != null) ...[
+                      const SizedBox(height: 18),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          '最近同步：${metrics.lastSyncLabel}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: ScolvPalette.of(context).tertiaryLabel,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ],
-              ],
-            ],
+              ),
             ),
           ),
         );
       },
     );
   }
+}
+
+class _HomeStatusPill extends StatelessWidget {
+  const _HomeStatusPill({
+    required this.offline,
+    required this.attention,
+    this.failed = false,
+  });
+
+  final bool offline;
+  final int attention;
+  final bool failed;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color color;
+    final String label;
+    if (failed) {
+      color = IosColors.systemRed;
+      label = '未同步';
+    } else if (offline) {
+      color = IosColors.systemOrange;
+      label = '离线';
+    } else if (attention > 0) {
+      color = IosColors.systemRed;
+      label = '关注 $attention';
+    } else {
+      color = IosColors.systemGreen;
+      label = '正常';
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(IosMetrics.pillRadius),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeUnavailableState extends StatelessWidget {
+  const _HomeUnavailableState({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => IosGroupedSection(
+    children: [
+      IosListTile(
+        leading: const IosGlyph(
+          icon: CupertinoIcons.exclamationmark_circle,
+          color: IosColors.systemRed,
+        ),
+        title: '今日数据暂时不可用',
+        subtitle: message,
+        trailing: TextButton(onPressed: onRetry, child: const Text('重试')),
+        showChevron: false,
+      ),
+    ],
+  );
 }
 
 class _StatGrid extends StatelessWidget {
@@ -367,55 +425,153 @@ class _StatGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
     final attention = metrics.attentionWithTasks(openTaskCount);
-    final items = [
-      _StatItem('在养', '${metrics.hamsterCount}', Icons.pets_outlined),
-      _StatItem('笼盒', '${metrics.enclosureCount}', Icons.grid_view_outlined),
-      _StatItem('活跃窝次', '${metrics.activeLitterCount}', Icons.groups_outlined),
-      _StatItem('需关注', '$attention', Icons.priority_high),
-    ];
-    Widget card(_StatItem item) => Expanded(
-      child: Card(
-        color: const Color(0xffdce5e3),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final hasAttention = attention > 0;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: p.secondaryGroupedBackground,
+        borderRadius: BorderRadius.circular(IosMetrics.largeRadius),
+        border: Border.all(color: p.separator),
+      ),
+      child: Column(
+        children: [
+          Row(
             children: [
-              Icon(item.icon, color: const Color(0xffc77852), size: 22),
-              const SizedBox(height: 12),
-              Text(
-                item.value,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xff1f2928),
+              const BearIconTile(
+                asset: BearAssets.icHamster,
+                size: 44,
+                padding: 7,
+                selected: true,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '在养',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: p.secondaryLabel,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${metrics.hamsterCount}',
+                          style: Theme.of(context).textTheme.headlineLarge
+                              ?.copyWith(
+                                color: p.label,
+                                height: 1,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 6, bottom: 2),
+                          child: Text(
+                            '只仓鼠',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: p.secondaryLabel),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              Text(
-                item.label,
-                style: const TextStyle(color: Color(0xff6c7774)),
+              _HomeStatusPill(offline: metrics.offline, attention: attention),
+            ],
+          ),
+          const SizedBox(height: 16),
+          IosHairline(color: p.separator),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _MiniMetric(
+                  label: '笼盒',
+                  value: '${metrics.enclosureCount}',
+                ),
+              ),
+              _MetricDivider(color: p.separator),
+              Expanded(
+                child: _MiniMetric(
+                  label: '活跃窝次',
+                  value: '${metrics.activeLitterCount}',
+                ),
+              ),
+              _MetricDivider(color: p.separator),
+              Expanded(
+                child: _MiniMetric(
+                  label: '需关注',
+                  value: '$attention',
+                  alert: hasAttention,
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
+  }
+}
+
+class _MiniMetric extends StatelessWidget {
+  const _MiniMetric({
+    required this.label,
+    required this.value,
+    this.alert = false,
+  });
+
+  final String label;
+  final String value;
+  final bool alert;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [card(items[0]), const SizedBox(width: 10), card(items[1])]),
-        const SizedBox(height: 10),
-        Row(children: [card(items[2]), const SizedBox(width: 10), card(items[3])]),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: p.secondaryLabel,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            color: alert ? IosColors.systemRed : p.label,
+            fontWeight: FontWeight.w700,
+            height: 1,
+          ),
+        ),
       ],
     );
   }
 }
 
-class _StatItem {
-  const _StatItem(this.label, this.value, this.icon);
-  final String label;
-  final String value;
-  final IconData icon;
+class _MetricDivider extends StatelessWidget {
+  const _MetricDivider({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: IosMetrics.hairline,
+    height: 38,
+    margin: const EdgeInsets.symmetric(horizontal: 12),
+    color: color,
+  );
 }
 
 class _TodayCareQueueSection extends StatelessWidget {
@@ -442,9 +598,7 @@ class _TodayCareQueueSection extends StatelessWidget {
     if (!context.mounted) return;
     final message = tc.lastMessage;
     if (message != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      showIosMessage(context, message);
     }
     if (ok) {
       // AnimatedBuilder on taskController will rebuild.
@@ -465,86 +619,79 @@ class _TodayCareQueueSection extends StatelessWidget {
     }
   }
 
-  IconData _iconFor(TodayCareKind kind) => switch (kind) {
-    TodayCareKind.overdueTask => Icons.warning_amber_rounded,
-    TodayCareKind.dueTodayTask => Icons.today_outlined,
-    TodayCareKind.weightAlert => Icons.monitor_weight_outlined,
-    TodayCareKind.dirtyEnclosure => Icons.cleaning_services_outlined,
-    TodayCareKind.pendingWean => Icons.child_care_outlined,
-  };
-
-  Color _colorFor(TodayCareKind kind) => switch (kind) {
-    TodayCareKind.overdueTask => const Color(0xffb6534a),
-    TodayCareKind.dueTodayTask => const Color(0xffc77852),
-    TodayCareKind.weightAlert => const Color(0xffb6534a),
-    TodayCareKind.dirtyEnclosure => const Color(0xff8a6d3b),
-    TodayCareKind.pendingWean => const Color(0xff5b8a72),
+  String _assetFor(TodayCareKind kind) => switch (kind) {
+    TodayCareKind.overdueTask => BearAssets.icTasks,
+    TodayCareKind.dueTodayTask => BearAssets.icCalendar,
+    TodayCareKind.weightAlert => BearAssets.icWeight,
+    TodayCareKind.dirtyEnclosure => BearAssets.icEnclosure,
+    TodayCareKind.pendingWean => BearAssets.icLitter,
   };
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            const Text(
-              '今日护理',
-              key: Key('home-today-care-title'),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff1f2928),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '今日护理',
+                  key: const Key('home-today-care-title'),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: ScolvPalette.of(context).secondaryLabel,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.08,
+                  ),
+                ),
               ),
-            ),
-            const Spacer(),
-            if (onOpenTasks != null)
-              TextButton(
-                key: const Key('home-today-care-all-tasks'),
-                onPressed: onOpenTasks,
-                child: const Text('全部任务'),
-              ),
-          ],
+              if (onOpenTasks != null)
+                TextButton(
+                  key: const Key('home-today-care-all-tasks'),
+                  onPressed: onOpenTasks,
+                  child: const Text('全部任务'),
+                ),
+            ],
+          ),
         ),
-        const SizedBox(height: 10),
         if (items.isEmpty)
-          const Card(
+          const BearEmptyCard(
             key: Key('home-today-care-empty'),
-            child: ListTile(
-              leading: Icon(Icons.spa_outlined, color: Color(0xff5b8a72)),
-              title: Text('今日护理队列为空'),
-              subtitle: Text('没有逾期任务、体重异常或待清洁笼盒'),
-            ),
+            title: '今天没有待办',
+            subtitle: '小仓鼠都乖乖的，熊舍状态良好',
+            mood: BearMood.happy,
+            illustration: BearAssets.emptyCare,
           )
         else
-          for (final item in items)
-            Card(
-              key: Key('home-care-item-${item.id}'),
-              margin: const EdgeInsets.only(bottom: 8),
-              color: item.kind == TodayCareKind.overdueTask ||
-                      item.kind == TodayCareKind.weightAlert
-                  ? const Color(0xfffff5f3)
-                  : null,
-              child: ListTile(
-                leading: Icon(
-                  _iconFor(item.kind),
-                  color: _colorFor(item.kind),
+          IosGroupedSection(
+            children: [
+              for (final item in items)
+                IosListTile(
+                  key: Key('home-care-item-${item.id}'),
+                  leading: BearIconTile(
+                    asset: _assetFor(item.kind),
+                    size: 32,
+                    padding: 4,
+                    selected:
+                        item.kind == TodayCareKind.overdueTask ||
+                        item.kind == TodayCareKind.weightAlert,
+                  ),
+                  title: item.title,
+                  subtitle: item.subtitle,
+                  trailing: item.canComplete && taskController != null
+                      ? TextButton(
+                          key: Key('home-care-complete-${item.task!.id}'),
+                          onPressed: () => _complete(context, item.task!),
+                          child: const Text('完成'),
+                        )
+                      : null,
+                  onTap: _tapFor(item),
                 ),
-                title: Text(
-                  item.title,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: Text(item.subtitle),
-                trailing: item.canComplete && taskController != null
-                    ? TextButton(
-                        key: Key('home-care-complete-${item.task!.id}'),
-                        onPressed: () => _complete(context, item.task!),
-                        child: const Text('完成'),
-                      )
-                    : const Icon(Icons.chevron_right),
-                onTap: _tapFor(item),
-              ),
-            ),
+            ],
+          ),
       ],
     );
   }
@@ -578,52 +725,53 @@ class _AttentionSection extends StatelessWidget {
     final rows = <Widget>[];
     if (openTaskCount > 0) {
       rows.add(
-        _AttentionTile(
+        _AttentionRow(
           title: '待办任务',
           subtitle: overdueTaskCount > 0
               ? '$openTaskCount 条待办 · $overdueTaskCount 条逾期'
               : '$openTaskCount 条待办',
-          icon: Icons.task_alt,
+          asset: BearAssets.icTasks,
+          alert: overdueTaskCount > 0,
           onTap: onOpenTasks ?? onOpenHamsters,
         ),
       );
     }
     if (metrics.pendingWeanOrSexCount > 0) {
       rows.add(
-        _AttentionTile(
+        _AttentionRow(
           title: '待断奶/分性窝次',
           subtitle: '${metrics.pendingWeanOrSexCount} 窝需跟进',
-          icon: Icons.child_care_outlined,
+          asset: BearAssets.icLitter,
           onTap: onOpenLitters,
         ),
       );
     }
     if (metrics.gestatingDamCount > 0) {
       rows.add(
-        _AttentionTile(
+        _AttentionRow(
           title: '孕期观察',
           subtitle: '${metrics.gestatingDamCount} 只疑似孕期个体',
-          icon: Icons.favorite_outline,
+          asset: BearAssets.icBreeding,
           onTap: onOpenBreeding,
         ),
       );
     }
     if (metrics.dirtyEnclosureCount > 0) {
       rows.add(
-        _AttentionTile(
+        _AttentionRow(
           title: '待清洁笼盒',
           subtitle: '${metrics.dirtyEnclosureCount} 个笼盒清洁状态异常',
-          icon: Icons.cleaning_services_outlined,
+          asset: BearAssets.icEnclosure,
           onTap: onOpenEnclosures,
         ),
       );
     }
     if (metrics.draftCount > 0) {
       rows.add(
-        _AttentionTile(
+        _AttentionRow(
           title: '本地草稿',
           subtitle: '${metrics.draftCount} 条离线草稿待提交',
-          icon: Icons.edit_note,
+          asset: BearAssets.icData,
           onTap: onOpenHamsters,
         ),
       );
@@ -634,66 +782,202 @@ class _AttentionSection extends StatelessWidget {
           .map((a) => a.summary)
           .join('；');
       rows.add(
-        _AttentionTile(
+        _AttentionRow(
           title: '体重异常',
           subtitle: '${metrics.weightAlertCount} 只 · $sample',
-          icon: Icons.monitor_weight_outlined,
+          asset: BearAssets.icWeight,
+          alert: true,
           onTap: onOpenBatchWeight ?? onOpenHamsters,
         ),
       );
     }
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          '需要关注',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Color(0xff1f2928),
-          ),
-        ),
-        const SizedBox(height: 10),
+        const IosSectionHeader('需要关注'),
         if (rows.isEmpty)
-          const Card(
-            child: ListTile(
-              leading: Icon(Icons.check_circle_outline, color: Colors.green),
-              title: Text('暂无紧急事项'),
-              subtitle: Text('窝次、孕期与笼盒状态看起来正常'),
-            ),
+          const BearEmptyCard(
+            title: '一切正常',
+            subtitle: '窝次、孕期与笼盒都安好，可以去喝口水啦',
+            mood: BearMood.sleepy,
+            illustration: BearAssets.emptyAttention,
           )
         else
-          ...rows,
+          IosGroupedSection(children: rows),
       ],
     );
   }
 }
 
-class _AttentionTile extends StatelessWidget {
-  const _AttentionTile({
+class _AttentionRow extends StatelessWidget {
+  const _AttentionRow({
     required this.title,
     required this.subtitle,
-    required this.icon,
+    required this.asset,
     required this.onTap,
+    this.alert = false,
   });
 
   final String title;
   final String subtitle;
-  final IconData icon;
+  final String asset;
   final VoidCallback onTap;
+  final bool alert;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(icon, color: const Color(0xffc77852)),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
+    return IosListTile(
+      leading: BearIconTile(
+        asset: asset,
+        size: 32,
+        padding: 4,
+        selected: alert,
       ),
+      title: title,
+      subtitle: subtitle,
+      onTap: onTap,
+    );
+  }
+}
+
+class _QuickActionsSection extends StatefulWidget {
+  const _QuickActionsSection({
+    required this.onCreateHamster,
+    required this.onOpenEnclosures,
+    required this.onOpenLitters,
+    required this.onOpenBreeding,
+    required this.onOpenDataCenter,
+    required this.onOpenHamsters,
+    this.onOpenBatchWeight,
+    this.onOpenTasks,
+    this.onOpenCalendar,
+  });
+
+  final VoidCallback onCreateHamster;
+  final VoidCallback onOpenEnclosures;
+  final VoidCallback onOpenLitters;
+  final VoidCallback onOpenBreeding;
+  final VoidCallback onOpenDataCenter;
+  final VoidCallback onOpenHamsters;
+  final VoidCallback? onOpenBatchWeight;
+  final VoidCallback? onOpenTasks;
+  final VoidCallback? onOpenCalendar;
+
+  @override
+  State<_QuickActionsSection> createState() => _QuickActionsSectionState();
+}
+
+class _QuickActionsSectionState extends State<_QuickActionsSection> {
+  bool _showMore = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const IosSectionHeader('快捷操作'),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: _QuickChip(
+                  buttonKey: const Key('home-quick-create-hamster'),
+                  asset: BearAssets.icHamster,
+                  label: '新建仓鼠',
+                  onTap: widget.onCreateHamster,
+                ),
+              ),
+              const SizedBox(height: 10),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final columns = constraints.maxWidth < 360 ? 3 : 4;
+                  final width =
+                      (constraints.maxWidth - 8 * (columns - 1)) / columns;
+                  return Wrap(
+                    spacing: 8,
+                    runSpacing: 10,
+                    children: [
+                      if (widget.onOpenBatchWeight != null)
+                        _QuickActionTile(
+                          buttonKey: const Key('home-quick-batch-weight'),
+                          asset: BearAssets.icWeight,
+                          label: '批量称重',
+                          onTap: widget.onOpenBatchWeight!,
+                          width: width,
+                        ),
+                      if (widget.onOpenTasks != null)
+                        _QuickActionTile(
+                          buttonKey: const Key('home-quick-tasks'),
+                          asset: BearAssets.icTasks,
+                          label: '任务',
+                          onTap: widget.onOpenTasks!,
+                          width: width,
+                        ),
+                      _QuickActionTile(
+                        buttonKey: const Key('home-quick-enclosures'),
+                        asset: BearAssets.icEnclosure,
+                        label: '笼舍',
+                        onTap: widget.onOpenEnclosures,
+                        width: width,
+                      ),
+                      if (_showMore) ...[
+                        _QuickActionTile(
+                          buttonKey: const Key('home-quick-litters'),
+                          asset: BearAssets.icLitter,
+                          label: '窝次',
+                          onTap: widget.onOpenLitters,
+                          width: width,
+                        ),
+                        _QuickActionTile(
+                          buttonKey: const Key('home-quick-breeding'),
+                          asset: BearAssets.icBreeding,
+                          label: '繁育',
+                          onTap: widget.onOpenBreeding,
+                          width: width,
+                        ),
+                        _QuickActionTile(
+                          buttonKey: const Key('home-quick-data-center'),
+                          asset: BearAssets.icData,
+                          label: '数据中心',
+                          onTap: widget.onOpenDataCenter,
+                          width: width,
+                        ),
+                        _QuickActionTile(
+                          buttonKey: const Key('home-quick-hamsters'),
+                          asset: BearAssets.icHamster,
+                          label: '仓鼠列表',
+                          onTap: widget.onOpenHamsters,
+                          width: width,
+                        ),
+                        if (widget.onOpenCalendar != null)
+                          _QuickActionTile(
+                            buttonKey: const Key('home-quick-calendar'),
+                            asset: BearAssets.icCalendar,
+                            label: '日历',
+                            onTap: widget.onOpenCalendar!,
+                            width: width,
+                          ),
+                      ],
+                      _QuickActionTile(
+                        buttonKey: const Key('home-quick-more-toggle'),
+                        icon: _showMore
+                            ? CupertinoIcons.chevron_up
+                            : CupertinoIcons.ellipsis,
+                        label: _showMore ? '收起' : '更多',
+                        onTap: () => setState(() => _showMore = !_showMore),
+                        width: width,
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -701,64 +985,102 @@ class _AttentionTile extends StatelessWidget {
 class _QuickChip extends StatelessWidget {
   const _QuickChip({
     this.buttonKey,
-    required this.icon,
+    required this.asset,
     required this.label,
     required this.onTap,
   });
 
   final Key? buttonKey;
-  final IconData icon;
+  final String asset;
   final String label;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 4, bottom: 4),
-      child: OutlinedButton.icon(
-        key: buttonKey,
-        onPressed: onTap,
-        icon: Icon(icon, size: 18),
-        label: Text(label),
+    final p = ScolvPalette.of(context);
+    return FilledButton(
+      key: buttonKey,
+      onPressed: onTap,
+      style: FilledButton.styleFrom(
+        backgroundColor: p.accent,
+        foregroundColor: p.groupedBackground,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+        minimumSize: const Size(0, 50),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+        ),
+        textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: p.groupedBackground,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(asset, width: 24, height: 24, fit: BoxFit.contain),
+          const SizedBox(width: 10),
+          Text(label),
+        ],
       ),
     );
   }
 }
 
-class _HomeBanner extends StatelessWidget {
-  const _HomeBanner({
-    required this.icon,
-    required this.text,
-    required this.color,
-    this.actionLabel,
-    this.onAction,
-  });
+class _QuickActionTile extends StatelessWidget {
+  const _QuickActionTile({
+    this.buttonKey,
+    this.asset,
+    this.icon,
+    required this.label,
+    required this.onTap,
+    required this.width,
+  }) : assert((asset == null) != (icon == null));
 
-  final IconData icon;
-  final String text;
-  final Color color;
-  final String? actionLabel;
-  final VoidCallback? onAction;
+  final Key? buttonKey;
+  final String? asset;
+  final IconData? icon;
+  final String label;
+  final VoidCallback onTap;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: color.withValues(alpha: 0.12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Icon(icon, color: color),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(text, style: TextStyle(color: color, height: 1.3)),
-            ),
-            if (actionLabel != null && onAction != null)
-              TextButton(onPressed: onAction, child: Text(actionLabel!)),
-          ],
+    final p = ScolvPalette.of(context);
+    return SizedBox(
+      width: width,
+      child: IosPressable(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+        child: Padding(
+          key: buttonKey,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            children: [
+              if (icon != null)
+                BearGlyphTile(
+                  icon: icon!,
+                  semanticLabel: label,
+                  size: 42,
+                  padding: 9,
+                )
+              else
+                BearIconTile(asset: asset!, size: 42, padding: 7),
+              const SizedBox(height: 7),
+              Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: p.label,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-

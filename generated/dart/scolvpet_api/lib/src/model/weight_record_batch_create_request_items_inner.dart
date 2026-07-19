@@ -27,7 +27,7 @@ class WeightRecordBatchCreateRequestItemsInner {
   });
 
   @JsonKey(
-    
+
     name: r'client_item_id',
     required: true,
     includeIfNull: false,
@@ -39,7 +39,7 @@ class WeightRecordBatchCreateRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'record',
     required: true,
     includeIfNull: false,
@@ -72,4 +72,3 @@ class WeightRecordBatchCreateRequestItemsInner {
   }
 
 }
-

@@ -3,6 +3,7 @@ import 'package:scolvpet_api/scolvpet_api.dart' as api;
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'litter_board_models.dart';
 
 abstract interface class LitterBoardRepository {
@@ -19,14 +20,14 @@ abstract interface class LitterBoardRepository {
   Future<LitterBoard> sexAndSeparate({
     required String litterId,
     required int version,
-    required String maleEnclosureId,
-    required String femaleEnclosureId,
+    required List<LitterPupSeparation> assignments,
     DateTime? separatedAt,
   });
 
   Future<LitterBoard> individualize({
     required String litterId,
     required int version,
+    required List<LitterPupProfileDraft> profiles,
     DateTime? individualizedAt,
   });
 }
@@ -123,8 +124,7 @@ class MemoryLitterBoardRepository implements LitterBoardRepository {
   Future<LitterBoard> sexAndSeparate({
     required String litterId,
     required int version,
-    required String maleEnclosureId,
-    required String femaleEnclosureId,
+    required List<LitterPupSeparation> assignments,
     DateTime? separatedAt,
   }) async {
     final litter = _require(litterId);
@@ -134,17 +134,46 @@ class MemoryLitterBoardRepository implements LitterBoardRepository {
     if (nextLitterAction(litter.state) != LitterBoardAction.sexAndSeparate) {
       throw LitterBoardRepositoryException('当前状态 ${litter.state} 不能分性分笼');
     }
-    var male = true;
+    final aliveIds = litter.alivePups.map((p) => p.id).toSet();
+    final assignmentIds = assignments.map((a) => a.pupIdentityId).toSet();
+    if (assignments.length != assignmentIds.length ||
+        aliveIds.length != assignmentIds.length ||
+        !aliveIds.containsAll(assignmentIds)) {
+      throw const LitterBoardRepositoryException('请为每只存活幼崽完成一次分性与分笼');
+    }
+    final confirmedSexesByEnclosure = <String, Set<String>>{};
+    for (final assignment in assignments) {
+      if (assignment.destinationEnclosureId.trim().isEmpty) {
+        throw const LitterBoardRepositoryException('每只幼崽都需要选择目标笼盒');
+      }
+      if (assignment.sex != 'male' &&
+          assignment.sex != 'female' &&
+          assignment.sex != 'unknown') {
+        throw const LitterBoardRepositoryException('幼崽性别选项无效');
+      }
+      if (assignment.sex != 'unknown') {
+        confirmedSexesByEnclosure
+            .putIfAbsent(
+              assignment.destinationEnclosureId,
+              () => <String>{},
+            )
+            .add(assignment.sex);
+      }
+    }
+    if (confirmedSexesByEnclosure.values.any((sexes) => sexes.length > 1)) {
+      throw const LitterBoardRepositoryException('同一笼盒不能混合已确认的公母幼崽');
+    }
+    final byPup = {
+      for (final assignment in assignments)
+        assignment.pupIdentityId: assignment,
+    };
     final pups = litter.pups.map((p) {
       if (!p.isAlive) return p;
-      final sex = male ? 'male' : 'female';
-      male = !male;
+      final assignment = byPup[p.id]!;
       return p.copyWith(
-        sex: sex,
-        sexAssigned: true,
-        destinationEnclosureId: sex == 'male'
-            ? maleEnclosureId
-            : femaleEnclosureId,
+        sex: assignment.sex,
+        sexAssigned: assignment.sex != 'unknown',
+        destinationEnclosureId: assignment.destinationEnclosureId,
       );
     }).toList();
     final next = litter.copyWith(
@@ -160,6 +189,7 @@ class MemoryLitterBoardRepository implements LitterBoardRepository {
   Future<LitterBoard> individualize({
     required String litterId,
     required int version,
+    required List<LitterPupProfileDraft> profiles,
     DateTime? individualizedAt,
   }) async {
     final litter = _require(litterId);
@@ -175,11 +205,29 @@ class MemoryLitterBoardRepository implements LitterBoardRepository {
     if (incomplete) {
       throw const LitterBoardRepositoryException('仍有幼崽未断奶或未分性');
     }
+    final aliveIds = litter.alivePups.map((p) => p.id).toSet();
+    final profileIds = profiles.map((p) => p.pupIdentityId).toSet();
+    if (profiles.length != profileIds.length ||
+        aliveIds.length != profileIds.length ||
+        !aliveIds.containsAll(profileIds)) {
+      throw const LitterBoardRepositoryException('请为每只存活幼崽填写建档编号');
+    }
+    final codes = profiles.map((p) => p.internalCode.trim()).toList();
+    if (codes.any((code) => code.isEmpty)) {
+      throw const LitterBoardRepositoryException('建档编号不能为空');
+    }
+    if (codes.toSet().length != codes.length) {
+      throw const LitterBoardRepositoryException('同一窝内的建档编号不能重复');
+    }
+    final profilesByPup = {
+      for (final profile in profiles) profile.pupIdentityId: profile,
+    };
     final pups = litter.pups.map((p) {
       if (!p.isAlive) return p;
+      final profile = profilesByPup[p.id]!;
       return p.copyWith(
         individualized: true,
-        hamsterId: 'hamster-from-${p.id}',
+        hamsterId: 'hamster-${profile.internalCode.trim()}',
       );
     }).toList();
     final next = litter.copyWith(
@@ -219,14 +267,14 @@ class DefaultApiLitterBoardRepository implements LitterBoardRepository {
     );
   }
 
-  LitterPup _mapPup(api.PupIdentity pup) {
+  LitterPup _mapPup(api.PupIdentity pup, {required bool litterWeaned}) {
     final sex = pup.sex.value;
     return LitterPup(
       id: pup.id,
       temporaryCode: pup.temporaryCode,
       outcomeStatus: pup.outcomeStatus.value,
       sex: sex,
-      weaned: false,
+      weaned: litterWeaned,
       sexAssigned: sex != 'unknown',
       individualized: pup.hamsterId != null,
       hamsterId: pup.hamsterId,
@@ -234,22 +282,32 @@ class DefaultApiLitterBoardRepository implements LitterBoardRepository {
     );
   }
 
-  Future<List<LitterPup>> _loadPups(String litterId) async {
-    final response = await _api.listPupIdentities(litterId: litterId, limit: 100);
+  Future<List<LitterPup>> _loadPupsForLitter(api.Litter litter) async {
+    final response = await _api.listPupIdentities(
+      litterId: litter.id,
+      limit: 100,
+    );
     final data = response.data?.data ?? const <api.PupIdentity>[];
-    return data.map(_mapPup).toList();
+    final litterWeaned = litter.state.value != 'newborn' &&
+        litter.state.value != 'nursing' &&
+        litter.state.value != 'weaning_due';
+    return data
+        .map((pup) => _mapPup(pup, litterWeaned: litterWeaned))
+        .toList();
   }
 
   @override
   Future<List<LitterBoard>> listLitters() async {
     final response = await _api.listLitters(limit: 50);
     final litters = response.data?.data ?? const <api.Litter>[];
-    final boards = <LitterBoard>[];
-    for (final litter in litters) {
-      final pups = await _loadPups(litter.id);
-      boards.add(_mapLitter(litter, pups));
-    }
-    return boards;
+    // 每窝幼崽互不依赖，并行加载避免 50 窝时串行等待 50 次网络往返；
+    // Future.wait 保留输入顺序，列表排序和用户看到的顺序不变。
+    return Future.wait(
+      litters.map((litter) async {
+        final pups = await _loadPupsForLitter(litter);
+        return _mapLitter(litter, pups);
+      }),
+    );
   }
 
   @override
@@ -300,22 +358,19 @@ class DefaultApiLitterBoardRepository implements LitterBoardRepository {
   Future<LitterBoard> sexAndSeparate({
     required String litterId,
     required int version,
-    required String maleEnclosureId,
-    required String femaleEnclosureId,
+    required List<LitterPupSeparation> assignments,
     DateTime? separatedAt,
   }) async {
-    final board = await getLitter(litterId);
-    var male = true;
-    final items = board.alivePups.map((p) {
-      final sex = male ? api.Sex.male : api.Sex.female;
-      male = !male;
+    final items = assignments.map((assignment) {
+      final sex = api.Sex.values.firstWhere(
+        (value) => value.value == assignment.sex,
+        orElse: () => api.Sex.unknown,
+      );
       return api.SexAndSeparateRequestItemsInner(
-        pupIdentityId: p.id,
+        pupIdentityId: assignment.pupIdentityId,
         sex: sex,
-        destinationEnclosureId: sex == api.Sex.male
-            ? maleEnclosureId
-            : femaleEnclosureId,
-        requiresRecheck: false,
+        destinationEnclosureId: assignment.destinationEnclosureId,
+        requiresRecheck: assignment.requiresRecheck || sex == api.Sex.unknown,
       );
     }).toList();
     if (items.isEmpty) {
@@ -338,6 +393,7 @@ class DefaultApiLitterBoardRepository implements LitterBoardRepository {
   Future<LitterBoard> individualize({
     required String litterId,
     required int version,
+    required List<LitterPupProfileDraft> profiles,
     DateTime? individualizedAt,
   }) async {
     final eligibility = await _api.getLitterIndividualizationEligibility(
@@ -353,14 +409,24 @@ class DefaultApiLitterBoardRepository implements LitterBoardRepository {
     }
     final board = await getLitter(litterId);
     final eligibleIds = data.eligiblePupIdentityIds.toSet();
+    final profileByPup = {
+      for (final profile in profiles) profile.pupIdentityId: profile,
+    };
+    final missing = eligibleIds.where((id) => !profileByPup.containsKey(id));
+    if (missing.isNotEmpty || profileByPup.length != eligibleIds.length) {
+      throw const LitterBoardRepositoryException('请为每只可建档幼崽填写编号');
+    }
     final items = board.alivePups
         .where((p) => eligibleIds.contains(p.id))
-        .map(
-          (p) => api.IndividualizeLitterRequestItemsInner(
+        .map((p) {
+          final profile = profileByPup[p.id]!;
+          final name = profile.name?.trim();
+          return api.IndividualizeLitterRequestItemsInner(
             pupIdentityId: p.id,
-            internalCode: p.temporaryCode,
-          ),
-        )
+            internalCode: profile.internalCode.trim(),
+            name: name == null || name.isEmpty ? null : name,
+          );
+        })
         .toList();
     if (items.isEmpty) {
       throw const LitterBoardRepositoryException('没有可个体化的幼崽');
@@ -380,18 +446,12 @@ class DefaultApiLitterBoardRepository implements LitterBoardRepository {
   }
 }
 
-String litterBoardErrorMessage(Object error) {
-  if (error is LitterBoardRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final msg = (data['error'] as Map)['message'];
-      if (msg is String && msg.isNotEmpty) return msg;
-    }
-    if (error.type == DioExceptionType.connectionError) {
-      return '网络不可用，请稍后重试';
-    }
-    return '请求失败（${error.response?.statusCode ?? error.type.name}）';
-  }
-  return error.toString();
-}
+String litterBoardErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '请求失败',
+  mapLocal: (e) => e is LitterBoardRepositoryException ? e.message : null,
+  mapDio: (e) {
+    if (e.type == DioExceptionType.connectionError) return '网络不可用，请稍后重试';
+    return '请求失败（${e.response?.statusCode ?? e.type.name}）';
+  },
+);

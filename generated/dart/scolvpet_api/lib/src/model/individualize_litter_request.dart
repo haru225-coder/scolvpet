@@ -31,7 +31,7 @@ class IndividualizeLitterRequest {
   });
 
   @JsonKey(
-    
+
     name: r'individualized_at',
     required: true,
     includeIfNull: false,
@@ -43,7 +43,7 @@ class IndividualizeLitterRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class IndividualizeLitterRequest {
 
       /// 来自最新 individualization-eligibility 响应；仅作并发快照，不替代服务端重算
   @JsonKey(
-    
+
     name: r'eligible_set_token',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class IndividualizeLitterRequest {
 
 
   @JsonKey(
-    
+
     name: r'items',
     required: true,
     includeIfNull: false,
@@ -105,4 +105,3 @@ class IndividualizeLitterRequest {
   }
 
 }
-

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'crm_models.dart';
 
 abstract interface class CrmRepository {
@@ -25,18 +26,12 @@ class CrmRepositoryException implements Exception {
   String toString() => message;
 }
 
-String crmErrorMessage(Object error) {
-  if (error is CrmRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '客户/交付请求失败';
-  }
-  return error.toString();
-}
+String crmErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '客户/交付请求失败',
+  nonDioFallback: '客户记录暂时未完成，请稍后重试',
+  mapLocal: (e) => e is CrmRepositoryException ? e.message : null,
+);
 
 class MemoryCrmRepository implements CrmRepository {
   final List<CrmContact> _contacts = [];
@@ -67,26 +62,24 @@ class MemoryCrmRepository implements CrmRepository {
 
   @override
   Future<List<CrmReservation>> listReservations() async {
-    return _reservations
-        .where((r) => r.status != 'cancelled')
-        .map((r) {
-          final contact = _contacts.cast<CrmContact?>().firstWhere(
-            (c) => c?.id == r.contactId,
-            orElse: () => null,
-          );
-          return CrmReservation(
-            id: r.id,
-            contactId: r.contactId,
-            hamsterId: r.hamsterId,
-            title: r.title,
-            status: r.status,
-            reservedAt: r.reservedAt,
-            notes: r.notes,
-            version: r.version,
-            contactName: contact?.name,
-          );
-        })
-        .toList();
+    return _reservations.where((r) => r.status != 'cancelled').map((r) {
+      final contact = _contacts.cast<CrmContact?>().firstWhere(
+        (c) => c?.id == r.contactId,
+        orElse: () => null,
+      );
+      return CrmReservation(
+        id: r.id,
+        contactId: r.contactId,
+        hamsterId: r.hamsterId,
+        title: r.title,
+        status: r.status,
+        reservedAt: r.reservedAt,
+        notes: r.notes,
+        version: r.version,
+        contactName: contact?.name,
+        hamsterName: r.hamsterName,
+      );
+    }).toList();
   }
 
   @override
@@ -105,6 +98,7 @@ class MemoryCrmRepository implements CrmRepository {
       notes: draft.notes,
       version: 1,
       contactName: contact.name,
+      hamsterName: null,
     );
     _reservations.insert(0, item);
     return item;
@@ -144,6 +138,7 @@ class MemoryCrmRepository implements CrmRepository {
       notes: current.notes,
       version: current.version + 1,
       contactName: current.contactName,
+      hamsterName: current.hamsterName,
     );
     _reservations[index] = next;
     return next;
@@ -151,27 +146,25 @@ class MemoryCrmRepository implements CrmRepository {
 
   @override
   Future<List<CrmHandover>> listHandovers() async {
-    return _handovers
-        .where((h) => h.status != 'cancelled')
-        .map((h) {
-          final contact = _contacts.cast<CrmContact?>().firstWhere(
-            (c) => c?.id == h.contactId,
-            orElse: () => null,
-          );
-          return CrmHandover(
-            id: h.id,
-            contactId: h.contactId,
-            reservationId: h.reservationId,
-            hamsterId: h.hamsterId,
-            status: h.status,
-            scheduledAt: h.scheduledAt,
-            completedAt: h.completedAt,
-            notes: h.notes,
-            version: h.version,
-            contactName: contact?.name,
-          );
-        })
-        .toList();
+    return _handovers.where((h) => h.status != 'cancelled').map((h) {
+      final contact = _contacts.cast<CrmContact?>().firstWhere(
+        (c) => c?.id == h.contactId,
+        orElse: () => null,
+      );
+      return CrmHandover(
+        id: h.id,
+        contactId: h.contactId,
+        reservationId: h.reservationId,
+        hamsterId: h.hamsterId,
+        status: h.status,
+        scheduledAt: h.scheduledAt,
+        completedAt: h.completedAt,
+        notes: h.notes,
+        version: h.version,
+        contactName: contact?.name,
+        hamsterName: h.hamsterName,
+      );
+    }).toList();
   }
 
   @override
@@ -186,10 +179,11 @@ class MemoryCrmRepository implements CrmRepository {
       reservationId: draft.reservationId,
       hamsterId: draft.hamsterId,
       status: 'scheduled',
-      scheduledAt: DateTime.now().toUtc(),
+      scheduledAt: draft.scheduledAt?.toUtc() ?? DateTime.now().toUtc(),
       notes: draft.notes,
       version: 1,
       contactName: contact.name,
+      hamsterName: null,
     );
     _handovers.insert(0, item);
     return item;
@@ -217,6 +211,7 @@ class MemoryCrmRepository implements CrmRepository {
       notes: current.notes,
       version: current.version + 1,
       contactName: current.contactName,
+      hamsterName: current.hamsterName,
     );
     _handovers[index] = next;
     if (current.reservationId != null) {
@@ -260,10 +255,15 @@ class DefaultApiCrmRepository implements CrmRepository {
   final _uuid = const Uuid();
   String _key() => 'crm-${_uuid.v4()}';
 
-  List<Map<String, dynamic>> _listData(Response<Map<String, dynamic>> response) {
+  List<Map<String, dynamic>> _listData(
+    Response<Map<String, dynamic>> response,
+  ) {
     final data = response.data?['data'];
     if (data is! List) return const [];
-    return data.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+    return data
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
   }
 
   Map<String, dynamic> _data(Response<Map<String, dynamic>> response) {
@@ -274,7 +274,9 @@ class DefaultApiCrmRepository implements CrmRepository {
 
   @override
   Future<List<CrmContact>> listContacts() async {
-    final response = await client.dio.get<Map<String, dynamic>>('/crm/contacts');
+    final response = await client.dio.get<Map<String, dynamic>>(
+      '/crm/contacts',
+    );
     return _listData(response).map(CrmContact.fromJson).toList();
   }
 
@@ -356,6 +358,8 @@ class DefaultApiCrmRepository implements CrmRepository {
         if (draft.reservationId != null) 'reservation_id': draft.reservationId,
         if (draft.hamsterId != null) 'hamster_id': draft.hamsterId,
         if (draft.notes != null) 'notes': draft.notes,
+        if (draft.scheduledAt != null)
+          'scheduled_at': draft.scheduledAt!.toUtc().toIso8601String(),
       },
       options: Options(headers: {'Idempotency-Key': _key()}),
     );

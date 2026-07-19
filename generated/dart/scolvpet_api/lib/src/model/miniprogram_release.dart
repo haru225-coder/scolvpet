@@ -50,7 +50,7 @@ class MiniprogramRelease {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -62,7 +62,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'version_label',
     required: true,
     includeIfNull: false,
@@ -74,7 +74,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -86,7 +86,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -98,7 +98,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'summary',
     required: false,
     includeIfNull: false,
@@ -110,7 +110,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'public_slug',
     required: false,
     includeIfNull: false,
@@ -122,7 +122,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'audit_note',
     required: false,
     includeIfNull: false,
@@ -134,7 +134,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'submitted_at',
     required: false,
     includeIfNull: false,
@@ -146,7 +146,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'audited_at',
     required: false,
     includeIfNull: false,
@@ -158,7 +158,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'published_at',
     required: false,
     includeIfNull: false,
@@ -170,7 +170,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'rolled_back_at',
     required: false,
     includeIfNull: false,
@@ -183,7 +183,7 @@ class MiniprogramRelease {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -195,7 +195,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -207,7 +207,7 @@ class MiniprogramRelease {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -289,5 +289,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

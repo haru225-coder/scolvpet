@@ -30,7 +30,7 @@ class CreateMiniprogramReleaseRequest {
   });
 
   @JsonKey(
-    
+
     name: r'version_label',
     required: false,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class CreateMiniprogramReleaseRequest {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: false,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class CreateMiniprogramReleaseRequest {
 
 
   @JsonKey(
-    
+
     name: r'summary',
     required: false,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class CreateMiniprogramReleaseRequest {
 
 
   @JsonKey(
-    
+
     name: r'public_slug',
     required: false,
     includeIfNull: false,
@@ -103,4 +103,3 @@ class CreateMiniprogramReleaseRequest {
   }
 
 }
-

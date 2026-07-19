@@ -30,7 +30,7 @@ class ShareRevocationResponseDataCacheInvalidation {
   });
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class ShareRevocationResponseDataCacheInvalidation {
 
 
   @JsonKey(
-    
+
     name: r'outbox_event_id',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class ShareRevocationResponseDataCacheInvalidation {
 
 
   @JsonKey(
-    
+
     name: r'queued_at',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class ShareRevocationResponseDataCacheInvalidation {
 
 
   @JsonKey(
-    
+
     name: r'max_edge_ttl_seconds',
     required: true,
     includeIfNull: false,
@@ -130,5 +130,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

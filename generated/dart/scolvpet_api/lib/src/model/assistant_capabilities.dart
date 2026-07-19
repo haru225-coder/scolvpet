@@ -30,7 +30,7 @@ class AssistantCapabilities {
   });
 
   @JsonKey(
-    
+
     name: r'intents',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class AssistantCapabilities {
 
 
   @JsonKey(
-    
+
     name: r'mode_default',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class AssistantCapabilities {
 
 
   @JsonKey(
-    
+
     name: r'llm_available',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class AssistantCapabilities {
 
 
   @JsonKey(
-    
+
     name: r'disclaimer',
     required: true,
     includeIfNull: false,
@@ -116,5 +116,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

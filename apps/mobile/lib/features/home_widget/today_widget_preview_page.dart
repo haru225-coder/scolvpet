@@ -1,11 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../ui/theme/ios_theme.dart';
 import '../shell/today_care_queue.dart';
 import '../tasks/task_controller.dart';
 import 'today_widget_publisher.dart';
 import 'today_widget_snapshot.dart';
 
-/// In-app preview of the home-screen "今日待办" widget (T-P1-05).
+/// In-app preview of the home-screen "今日待办" widget.
 class TodayWidgetPreviewPage extends StatefulWidget {
   const TodayWidgetPreviewPage({
     super.key,
@@ -58,7 +60,7 @@ class _TodayWidgetPreviewPageState extends State<TodayWidgetPreviewPage> {
     setState(() {
       _snapshot = snapshot;
       _loading = false;
-      _message = '已同步到桌面组件数据';
+      _message = '桌面待办已更新';
     });
   }
 
@@ -72,7 +74,7 @@ class _TodayWidgetPreviewPageState extends State<TodayWidgetPreviewPage> {
           IconButton(
             key: const Key('today-widget-reload'),
             onPressed: _loading ? null : _reload,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(CupertinoIcons.arrow_clockwise),
           ),
         ],
       ),
@@ -80,24 +82,26 @@ class _TodayWidgetPreviewPageState extends State<TodayWidgetPreviewPage> {
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
           Text(
-            '桌面小组件预览',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+            '桌面预览',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
           Text(
-            'Android 可长按桌面添加「今日待办」。iOS WidgetKit 扩展脚手架见 ios/TodayTasksWidget。',
+            '同步后，桌面上的「今日待办」会显示最新安排。',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 16),
           if (_loading)
-            const Center(child: Padding(
-              padding: EdgeInsets.all(24),
-              child: CircularProgressIndicator(),
-            ))
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: CircularProgressIndicator(),
+              ),
+            )
           else
             _WidgetCard(snapshot: snapshot ?? TodayWidgetSnapshot.empty()),
           if (_message != null) ...[
@@ -111,32 +115,35 @@ class _TodayWidgetPreviewPageState extends State<TodayWidgetPreviewPage> {
           FilledButton.icon(
             key: const Key('today-widget-sync'),
             onPressed: _loading ? null : _syncNow,
-            icon: const Icon(Icons.widgets_outlined),
-            label: const Text('从任务同步到组件'),
+            icon: const Icon(CupertinoIcons.square_grid_2x2),
+            label: const Text('更新桌面待办'),
           ),
           const SizedBox(height: 12),
           if (snapshot != null) ...[
-            Text(
-              '最近同步',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+            Text('最近同步', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 4),
             Text(
-              snapshot.updatedAt.toLocal().toIso8601String(),
+              _updatedAtLabel(snapshot.updatedAt),
               style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 8),
-            SelectableText(
-              snapshot.toJsonString(),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontFamily: 'monospace',
-              ),
             ),
           ],
         ],
       ),
     );
   }
+}
+
+String _updatedAtLabel(DateTime value) {
+  final local = value.toLocal();
+  final now = DateTime.now();
+  final time =
+      '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
+  if (local.year == now.year &&
+      local.month == now.month &&
+      local.day == now.day) {
+    return '今天 $time';
+  }
+  return '${local.month}月${local.day}日 $time';
 }
 
 class _WidgetCard extends StatelessWidget {
@@ -146,8 +153,13 @@ class _WidgetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: const Color(0xff2b3634),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xff2b3634),
+        borderRadius: BorderRadius.all(
+          Radius.circular(IosMetrics.continuousRadius),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -189,10 +201,7 @@ class _WidgetCard extends StatelessWidget {
             Text(
               snapshot.bodyText,
               key: const Key('today-widget-body'),
-              style: const TextStyle(
-                color: Color(0xffe7eeec),
-                height: 1.45,
-              ),
+              style: const TextStyle(color: Color(0xffe7eeec), height: 1.45),
             ),
           ],
         ),

@@ -72,6 +72,34 @@ class LitterPup {
   };
 }
 
+/// One confirmed destination for a living pup during sex separation.
+class LitterPupSeparation {
+  const LitterPupSeparation({
+    required this.pupIdentityId,
+    required this.sex,
+    required this.destinationEnclosureId,
+    this.requiresRecheck = false,
+  });
+
+  final String pupIdentityId;
+  final String sex;
+  final String destinationEnclosureId;
+  final bool requiresRecheck;
+}
+
+/// Profile fields used when turning a pup identity into a hamster record.
+class LitterPupProfileDraft {
+  const LitterPupProfileDraft({
+    required this.pupIdentityId,
+    required this.internalCode,
+    this.name,
+  });
+
+  final String pupIdentityId;
+  final String internalCode;
+  final String? name;
+}
+
 class LitterBoard {
   const LitterBoard({
     required this.id,
@@ -102,7 +130,7 @@ class LitterBoard {
   String get displayName {
     final c = code?.trim();
     if (c != null && c.isNotEmpty) return c;
-    return '窝次 ${id.length > 8 ? id.substring(0, 8) : id}';
+    return '${bornAt.month}月${bornAt.day}日出生的一窝';
   }
 
   List<LitterPup> get alivePups => pups.where((p) => p.isAlive).toList();
@@ -131,7 +159,8 @@ class LitterBoard {
     code: json['code'] as String?,
     state: json['state'] as String? ?? 'litter_nursing',
     version: json['version'] as int? ?? 1,
-    bornAt: DateTime.tryParse(json['born_at'] as String? ?? '') ??
+    bornAt:
+        DateTime.tryParse(json['born_at'] as String? ?? '') ??
         DateTime.fromMillisecondsSinceEpoch(0),
     initialAliveCount: json['initial_alive_count'] as int? ?? 0,
     currentManagedCount: json['current_managed_count'] as int? ?? 0,
@@ -150,23 +179,27 @@ enum LitterBoardAction { wean, sexAndSeparate, individualize }
 
 LitterBoardAction? nextLitterAction(String state) {
   switch (state) {
-    case 'litter_nursing':
-    case 'nursing':
-    case 'newborn':
-      return LitterBoardAction.wean;
     case 'weaning_due':
+      return LitterBoardAction.wean;
     case 'sexing_due':
     case 'sex_separation_due':
-      // After wean the board enters sexing_due; weaning_due still allows wean retry.
-      return state == 'weaning_due'
-          ? LitterBoardAction.wean
-          : LitterBoardAction.sexAndSeparate;
+      return LitterBoardAction.sexAndSeparate;
     case 'individualizing':
       return LitterBoardAction.individualize;
     default:
       return null;
   }
 }
+
+bool isLitterTerminal(String state) => state == 'closed' || state == 'voided';
+
+String litterWaitingMessage(String state) => switch (state) {
+  'litter_nursing' || 'nursing' || 'newborn' =>
+    '幼崽仍在带崽期。到达断奶日后，系统会开放断奶操作。',
+  'closed' => '这一窝已完成，已建档幼崽可在仓鼠列表查看。',
+  'voided' => '这一窝已作废，不再继续阶段操作。',
+  _ => '当前状态没有可执行的阶段操作，请刷新后再次检查。',
+};
 
 String litterActionLabel(LitterBoardAction action) => switch (action) {
   LitterBoardAction.wean => '断奶',
@@ -182,5 +215,20 @@ String litterBoardStateLabel(String state) => switch (state) {
   'individualizing' => '待个体化',
   'closed' => '已关闭',
   'voided' => '已作废',
-  _ => state,
+  _ => '状态待更新',
+};
+
+String litterPupOutcomeLabel(String status) => switch (status) {
+  'alive' => '存活',
+  'dead' || 'stillborn' => '未存活',
+  'adopted' => '已送养',
+  'missing' => '待确认',
+  _ => '状态待更新',
+};
+
+String litterPupSexLabel(String? sex) => switch (sex) {
+  'male' => '公',
+  'female' => '母',
+  'unknown' || null => '性别待定',
+  _ => '性别待定',
 };

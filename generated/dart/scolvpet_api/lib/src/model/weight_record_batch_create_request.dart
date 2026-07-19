@@ -27,7 +27,7 @@ class WeightRecordBatchCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'task_id',
     required: true,
     includeIfNull: true,
@@ -39,7 +39,7 @@ class WeightRecordBatchCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'items',
     required: true,
     includeIfNull: false,
@@ -72,4 +72,3 @@ class WeightRecordBatchCreateRequest {
   }
 
 }
-

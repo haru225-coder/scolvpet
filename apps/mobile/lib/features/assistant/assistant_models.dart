@@ -19,6 +19,33 @@ class AssistantFact {
   );
 }
 
+class AssistantAction {
+  const AssistantAction({
+    required this.type,
+    required this.label,
+    required this.summary,
+    required this.requiresConfirmation,
+    required this.payload,
+  });
+
+  final String type;
+  final String label;
+  final String summary;
+  final bool requiresConfirmation;
+  final Map<String, dynamic> payload;
+
+  factory AssistantAction.fromJson(Map<String, dynamic> json) =>
+      AssistantAction(
+        type: json['type'] as String? ?? '',
+        label: json['label'] as String? ?? '继续',
+        summary: json['summary'] as String? ?? '',
+        requiresConfirmation: json['requires_confirmation'] as bool? ?? false,
+        payload: json['payload'] is Map
+            ? Map<String, dynamic>.from(json['payload'] as Map)
+            : const <String, dynamic>{},
+      );
+}
+
 class AssistantAnswer {
   const AssistantAnswer({
     required this.answer,
@@ -26,6 +53,7 @@ class AssistantAnswer {
     required this.mode,
     required this.facts,
     required this.disclaimer,
+    this.actions = const <AssistantAction>[],
   });
 
   final String answer;
@@ -33,9 +61,11 @@ class AssistantAnswer {
   final String mode;
   final List<AssistantFact> facts;
   final String disclaimer;
+  final List<AssistantAction> actions;
 
   factory AssistantAnswer.fromJson(Map<String, dynamic> json) {
     final facts = json['facts'];
+    final actions = json['actions'];
     return AssistantAnswer(
       answer: json['answer'] as String? ?? '',
       intent: json['intent'] as String? ?? 'unknown',
@@ -43,10 +73,23 @@ class AssistantAnswer {
       facts: facts is List
           ? facts
                 .whereType<Map>()
-                .map((e) => AssistantFact.fromJson(Map<String, dynamic>.from(e)))
+                .map(
+                  (e) => AssistantFact.fromJson(Map<String, dynamic>.from(e)),
+                )
                 .toList()
           : const [],
       disclaimer: json['disclaimer'] as String? ?? '',
+      actions: actions is List
+          ? actions
+                .whereType<Map>()
+                .map(
+                  (value) => AssistantAction.fromJson(
+                    Map<String, dynamic>.from(value),
+                  ),
+                )
+                .where((value) => value.type.isNotEmpty)
+                .toList()
+          : const <AssistantAction>[],
     );
   }
 }
@@ -130,24 +173,21 @@ AssistantAnswer answerFromSnapshot(String question, AssistantSnapshot snap) {
   String body;
   switch (intent) {
     case 'help':
-      body =
-          '我是只读助手，可以回答：在养数量、待办/逾期任务、繁育概况、用量与套餐。例如「现在有多少只在养？」「有没有逾期任务？」';
+      body = '我可以帮你查看在养数量、待办与逾期任务、繁育概况、用量和套餐。例如「现在有多少只在养？」「有没有逾期任务？」';
     case 'hamsters':
       body = '$org当前在养仓鼠约 ${snap.activeHamsters} 只，笼盒 ${snap.enclosures} 个。';
     case 'tasks':
-      body =
-          '$org未完成任务 ${snap.openTasks} 项，其中逾期 ${snap.overdueTasks} 项。';
+      body = '$org未完成任务 ${snap.openTasks} 项，其中逾期 ${snap.overdueTasks} 项。';
     case 'overdue':
       body = snap.overdueTasks == 0
           ? '$org目前没有逾期任务。'
           : '$org有 ${snap.overdueTasks} 项逾期任务，建议优先处理。';
     case 'breeding':
-      body =
-          '$org活跃窝次 ${snap.activeLitters}，繁育中计划约 ${snap.gestatingPlans}。';
+      body = '$org活跃窝次 ${snap.activeLitters}，繁育中计划约 ${snap.gestatingPlans}。';
     case 'usage':
       body = '$org媒体占用约 ${_fmtBytes(snap.mediaBytes)}，套餐 $plan。';
     case 'plan':
-      body = '$org当前套餐为 $plan（软门禁）。可在「套餐与权益」查看详情。';
+      body = '$org当前套餐为 $plan。可在「套餐与权益」查看可用范围。';
     case 'overview':
       body =
           '$org概况：在养 ${snap.activeHamsters}、笼盒 ${snap.enclosures}、窝次 ${snap.activeLitters}、待办 ${snap.openTasks}（逾期 ${snap.overdueTasks}）、繁育计划 ${snap.gestatingPlans}、套餐 $plan。';
@@ -179,7 +219,7 @@ AssistantAnswer answerFromSnapshot(String question, AssistantSnapshot snap) {
         source: 'local',
       ),
     ],
-    disclaimer: '只读助手：基于结构化查询，不会修改任何数据。',
+    disclaimer: '回答只会读取已同步记录，不会直接修改数据。',
   );
 }
 

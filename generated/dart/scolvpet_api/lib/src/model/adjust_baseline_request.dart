@@ -28,7 +28,7 @@ class AdjustBaselineRequest {
   });
 
   @JsonKey(
-    
+
     name: r'new_baseline_at',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class AdjustBaselineRequest {
 
 
   @JsonKey(
-    
+
     name: r'reason',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class AdjustBaselineRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -87,4 +87,3 @@ class AdjustBaselineRequest {
   }
 
 }
-

@@ -32,7 +32,7 @@ class ImportCommitRequest {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'preflight_version',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class ImportCommitRequest {
 
 
   @JsonKey(
-    
+
     name: r'batch_key',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class ImportCommitRequest {
 
 
   @JsonKey(
-    
+
     name: r'partial_failure_policy',
     required: true,
     includeIfNull: false,
@@ -69,7 +69,7 @@ class ImportCommitRequest {
 
       /// 预检列出的更新候选逐项确认；未列出的已有非空字段保持不变
   @JsonKey(
-    
+
     name: r'approved_updates',
     required: false,
     includeIfNull: false,
@@ -121,5 +121,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

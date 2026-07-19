@@ -52,7 +52,7 @@ class HealthRecord {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -64,7 +64,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: false,
     includeIfNull: false,
@@ -76,7 +76,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: false,
     includeIfNull: false,
@@ -88,7 +88,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'type',
     required: true,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'observed_at',
     required: true,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'structured_checks',
     required: false,
     includeIfNull: false,
@@ -124,7 +124,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'severity',
     required: false,
     includeIfNull: false,
@@ -136,7 +136,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'medication',
     required: false,
     includeIfNull: false,
@@ -148,7 +148,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'media_ids',
     required: false,
     includeIfNull: false,
@@ -160,7 +160,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'follow_up_at',
     required: false,
     includeIfNull: false,
@@ -172,7 +172,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -185,7 +185,7 @@ class HealthRecord {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -197,7 +197,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -209,7 +209,7 @@ class HealthRecord {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -266,4 +266,3 @@ class HealthRecord {
   }
 
 }
-

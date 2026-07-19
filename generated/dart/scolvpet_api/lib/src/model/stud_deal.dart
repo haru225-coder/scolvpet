@@ -56,7 +56,7 @@ class StudDeal {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'listing_id',
     required: false,
     includeIfNull: false,
@@ -80,7 +80,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'side',
     required: true,
     includeIfNull: false,
@@ -92,7 +92,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -104,7 +104,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'my_hamster_label',
     required: false,
     includeIfNull: false,
@@ -116,7 +116,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'partner_cattery_name',
     required: true,
     includeIfNull: false,
@@ -128,7 +128,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'partner_contact',
     required: false,
     includeIfNull: false,
@@ -140,7 +140,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'partner_animal_label',
     required: false,
     includeIfNull: false,
@@ -153,7 +153,7 @@ class StudDeal {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'fee_cents',
     required: true,
     includeIfNull: false,
@@ -165,7 +165,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'currency',
     required: true,
     includeIfNull: false,
@@ -177,7 +177,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -189,7 +189,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'confirmed_at',
     required: false,
     includeIfNull: false,
@@ -201,7 +201,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'started_at',
     required: false,
     includeIfNull: false,
@@ -213,7 +213,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'completed_at',
     required: false,
     includeIfNull: false,
@@ -225,7 +225,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'cancelled_at',
     required: false,
     includeIfNull: false,
@@ -238,7 +238,7 @@ class StudDeal {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -250,7 +250,7 @@ class StudDeal {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -352,5 +352,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

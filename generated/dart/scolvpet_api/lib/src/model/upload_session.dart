@@ -36,7 +36,7 @@ class UploadSession {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -48,7 +48,7 @@ class UploadSession {
 
 
   @JsonKey(
-    
+
     name: r'upload_url',
     required: true,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class UploadSession {
 
 
   @JsonKey(
-    
+
     name: r'method',
     required: true,
     includeIfNull: false,
@@ -72,7 +72,7 @@ class UploadSession {
 
 
   @JsonKey(
-    
+
     name: r'headers',
     required: true,
     includeIfNull: false,
@@ -84,7 +84,7 @@ class UploadSession {
 
 
   @JsonKey(
-    
+
     name: r'object_key',
     required: false,
     includeIfNull: false,
@@ -96,7 +96,7 @@ class UploadSession {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: true,
     includeIfNull: false,
@@ -109,7 +109,7 @@ class UploadSession {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -165,5 +165,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

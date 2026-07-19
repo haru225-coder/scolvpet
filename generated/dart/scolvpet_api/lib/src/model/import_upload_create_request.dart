@@ -28,7 +28,7 @@ class ImportUploadCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'file_name',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class ImportUploadCreateRequest {
           // minimum: 1
           // maximum: 104857600
   @JsonKey(
-    
+
     name: r'size_bytes',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class ImportUploadCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'sha256',
     required: true,
     includeIfNull: false,
@@ -89,4 +89,3 @@ class ImportUploadCreateRequest {
   }
 
 }
-

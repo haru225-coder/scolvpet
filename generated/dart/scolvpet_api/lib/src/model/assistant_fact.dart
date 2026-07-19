@@ -30,7 +30,7 @@ class AssistantFact {
   });
 
   @JsonKey(
-    
+
     name: r'key',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class AssistantFact {
 
 
   @JsonKey(
-    
+
     name: r'label',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class AssistantFact {
 
 
   @JsonKey(
-    
+
     name: r'value',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class AssistantFact {
 
 
   @JsonKey(
-    
+
     name: r'source',
     required: true,
     includeIfNull: false,
@@ -103,4 +103,3 @@ class AssistantFact {
   }
 
 }
-

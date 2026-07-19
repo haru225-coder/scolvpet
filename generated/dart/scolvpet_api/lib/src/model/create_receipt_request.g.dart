@@ -11,6 +11,8 @@ abstract class _$CreateReceiptRequestCWProxy {
 
   CreateReceiptRequest contactId(String? contactId);
 
+  CreateReceiptRequest handoverId(String? handoverId);
+
   CreateReceiptRequest title(String? title);
 
   CreateReceiptRequest amountCents(int amountCents);
@@ -21,6 +23,8 @@ abstract class _$CreateReceiptRequestCWProxy {
 
   CreateReceiptRequest contactName(String? contactName);
 
+  CreateReceiptRequest hamsterName(String? hamsterName);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CreateReceiptRequest(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -30,11 +34,13 @@ abstract class _$CreateReceiptRequestCWProxy {
   CreateReceiptRequest call({
     String templateId,
     String? contactId,
+    String? handoverId,
     String? title,
     int amountCents,
     String? currency,
     String? notes,
     String? contactName,
+    String? hamsterName,
   });
 }
 
@@ -54,6 +60,10 @@ class _$CreateReceiptRequestCWProxyImpl
       this(contactId: contactId);
 
   @override
+  CreateReceiptRequest handoverId(String? handoverId) =>
+      this(handoverId: handoverId);
+
+  @override
   CreateReceiptRequest title(String? title) => this(title: title);
 
   @override
@@ -71,6 +81,10 @@ class _$CreateReceiptRequestCWProxyImpl
       this(contactName: contactName);
 
   @override
+  CreateReceiptRequest hamsterName(String? hamsterName) =>
+      this(hamsterName: hamsterName);
+
+  @override
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CreateReceiptRequest(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -80,11 +94,13 @@ class _$CreateReceiptRequestCWProxyImpl
   CreateReceiptRequest call({
     Object? templateId = const $CopyWithPlaceholder(),
     Object? contactId = const $CopyWithPlaceholder(),
+    Object? handoverId = const $CopyWithPlaceholder(),
     Object? title = const $CopyWithPlaceholder(),
     Object? amountCents = const $CopyWithPlaceholder(),
     Object? currency = const $CopyWithPlaceholder(),
     Object? notes = const $CopyWithPlaceholder(),
     Object? contactName = const $CopyWithPlaceholder(),
+    Object? hamsterName = const $CopyWithPlaceholder(),
   }) {
     return CreateReceiptRequest(
       templateId: templateId == const $CopyWithPlaceholder()
@@ -95,6 +111,10 @@ class _$CreateReceiptRequestCWProxyImpl
           ? _value.contactId
           // ignore: cast_nullable_to_non_nullable
           : contactId as String?,
+      handoverId: handoverId == const $CopyWithPlaceholder()
+          ? _value.handoverId
+          // ignore: cast_nullable_to_non_nullable
+          : handoverId as String?,
       title: title == const $CopyWithPlaceholder()
           ? _value.title
           // ignore: cast_nullable_to_non_nullable
@@ -115,6 +135,10 @@ class _$CreateReceiptRequestCWProxyImpl
           ? _value.contactName
           // ignore: cast_nullable_to_non_nullable
           : contactName as String?,
+      hamsterName: hamsterName == const $CopyWithPlaceholder()
+          ? _value.hamsterName
+          // ignore: cast_nullable_to_non_nullable
+          : hamsterName as String?,
     );
   }
 }
@@ -140,19 +164,23 @@ CreateReceiptRequest _$CreateReceiptRequestFromJson(
     final val = CreateReceiptRequest(
       templateId: $checkedConvert('template_id', (v) => v as String),
       contactId: $checkedConvert('contact_id', (v) => v as String?),
+      handoverId: $checkedConvert('handover_id', (v) => v as String?),
       title: $checkedConvert('title', (v) => v as String?),
       amountCents: $checkedConvert('amount_cents', (v) => (v as num).toInt()),
       currency: $checkedConvert('currency', (v) => v as String? ?? 'CNY'),
       notes: $checkedConvert('notes', (v) => v as String?),
       contactName: $checkedConvert('contact_name', (v) => v as String?),
+      hamsterName: $checkedConvert('hamster_name', (v) => v as String?),
     );
     return val;
   },
   fieldKeyMap: const {
     'templateId': 'template_id',
     'contactId': 'contact_id',
+    'handoverId': 'handover_id',
     'amountCents': 'amount_cents',
     'contactName': 'contact_name',
+    'hamsterName': 'hamster_name',
   },
 );
 
@@ -161,9 +189,11 @@ Map<String, dynamic> _$CreateReceiptRequestToJson(
 ) => <String, dynamic>{
   'template_id': instance.templateId,
   'contact_id': ?instance.contactId,
+  'handover_id': ?instance.handoverId,
   'title': ?instance.title,
   'amount_cents': instance.amountCents,
   'currency': ?instance.currency,
   'notes': ?instance.notes,
   'contact_name': ?instance.contactName,
+  'hamster_name': ?instance.hamsterName,
 };

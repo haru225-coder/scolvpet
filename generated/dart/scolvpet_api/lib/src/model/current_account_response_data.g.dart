@@ -13,6 +13,10 @@ abstract class _$CurrentAccountResponseDataCWProxy {
     Organization currentOrganization,
   );
 
+  CurrentAccountResponseData memberRole(
+    CurrentAccountResponseDataMemberRoleEnum memberRole,
+  );
+
   CurrentAccountResponseData capabilities(List<String> capabilities);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CurrentAccountResponseData(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
@@ -24,6 +28,7 @@ abstract class _$CurrentAccountResponseDataCWProxy {
   CurrentAccountResponseData call({
     Account account,
     Organization currentOrganization,
+    CurrentAccountResponseDataMemberRoleEnum memberRole,
     List<String> capabilities,
   });
 }
@@ -44,6 +49,11 @@ class _$CurrentAccountResponseDataCWProxyImpl
   ) => this(currentOrganization: currentOrganization);
 
   @override
+  CurrentAccountResponseData memberRole(
+    CurrentAccountResponseDataMemberRoleEnum memberRole,
+  ) => this(memberRole: memberRole);
+
+  @override
   CurrentAccountResponseData capabilities(List<String> capabilities) =>
       this(capabilities: capabilities);
 
@@ -57,6 +67,7 @@ class _$CurrentAccountResponseDataCWProxyImpl
   CurrentAccountResponseData call({
     Object? account = const $CopyWithPlaceholder(),
     Object? currentOrganization = const $CopyWithPlaceholder(),
+    Object? memberRole = const $CopyWithPlaceholder(),
     Object? capabilities = const $CopyWithPlaceholder(),
   }) {
     return CurrentAccountResponseData(
@@ -68,6 +79,10 @@ class _$CurrentAccountResponseDataCWProxyImpl
           ? _value.currentOrganization
           // ignore: cast_nullable_to_non_nullable
           : currentOrganization as Organization,
+      memberRole: memberRole == const $CopyWithPlaceholder()
+          ? _value.memberRole
+          // ignore: cast_nullable_to_non_nullable
+          : memberRole as CurrentAccountResponseDataMemberRoleEnum,
       capabilities: capabilities == const $CopyWithPlaceholder()
           ? _value.capabilities
           // ignore: cast_nullable_to_non_nullable
@@ -95,7 +110,12 @@ CurrentAccountResponseData _$CurrentAccountResponseDataFromJson(
   ($checkedConvert) {
     $checkKeys(
       json,
-      requiredKeys: const ['account', 'current_organization', 'capabilities'],
+      requiredKeys: const [
+        'account',
+        'current_organization',
+        'member_role',
+        'capabilities',
+      ],
     );
     final val = CurrentAccountResponseData(
       account: $checkedConvert(
@@ -106,6 +126,11 @@ CurrentAccountResponseData _$CurrentAccountResponseDataFromJson(
         'current_organization',
         (v) => Organization.fromJson(v as Map<String, dynamic>),
       ),
+      memberRole: $checkedConvert(
+        'member_role',
+        (v) =>
+            $enumDecode(_$CurrentAccountResponseDataMemberRoleEnumEnumMap, v),
+      ),
       capabilities: $checkedConvert(
         'capabilities',
         (v) => (v as List<dynamic>).map((e) => e as String).toList(),
@@ -113,7 +138,10 @@ CurrentAccountResponseData _$CurrentAccountResponseDataFromJson(
     );
     return val;
   },
-  fieldKeyMap: const {'currentOrganization': 'current_organization'},
+  fieldKeyMap: const {
+    'currentOrganization': 'current_organization',
+    'memberRole': 'member_role',
+  },
 );
 
 Map<String, dynamic> _$CurrentAccountResponseDataToJson(
@@ -121,5 +149,15 @@ Map<String, dynamic> _$CurrentAccountResponseDataToJson(
 ) => <String, dynamic>{
   'account': instance.account.toJson(),
   'current_organization': instance.currentOrganization.toJson(),
+  'member_role':
+      _$CurrentAccountResponseDataMemberRoleEnumEnumMap[instance.memberRole]!,
   'capabilities': instance.capabilities,
+};
+
+const _$CurrentAccountResponseDataMemberRoleEnumEnumMap = {
+  CurrentAccountResponseDataMemberRoleEnum.owner: 'owner',
+  CurrentAccountResponseDataMemberRoleEnum.breeder: 'breeder',
+  CurrentAccountResponseDataMemberRoleEnum.caretaker: 'caretaker',
+  CurrentAccountResponseDataMemberRoleEnum.staff: 'staff',
+  CurrentAccountResponseDataMemberRoleEnum.viewer: 'viewer',
 };

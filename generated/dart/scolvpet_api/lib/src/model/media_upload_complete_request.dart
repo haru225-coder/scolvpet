@@ -32,7 +32,7 @@ class MediaUploadCompleteRequest {
   });
 
   @JsonKey(
-    
+
     name: r'object_etag',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class MediaUploadCompleteRequest {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'size_bytes',
     required: true,
     includeIfNull: false,
@@ -57,7 +57,7 @@ class MediaUploadCompleteRequest {
 
 
   @JsonKey(
-    
+
     name: r'sha256',
     required: true,
     includeIfNull: false,
@@ -69,7 +69,7 @@ class MediaUploadCompleteRequest {
 
 
   @JsonKey(
-    
+
     name: r'captured_at',
     required: false,
     includeIfNull: false,
@@ -81,7 +81,7 @@ class MediaUploadCompleteRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: false,
     includeIfNull: false,
@@ -120,4 +120,3 @@ class MediaUploadCompleteRequest {
   }
 
 }
-

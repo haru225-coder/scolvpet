@@ -10,14 +10,25 @@ class GeneticController extends ChangeNotifier {
   final GeneticRepository repository;
 
   I2AsyncState<List<GeneticLocus>> lociState = const I2AsyncState.idle();
+  I2AsyncState<PhenotypeCatalog> catalogState = const I2AsyncState.idle();
   I2AsyncState<List<GeneticProfile>> profilesState = const I2AsyncState.idle();
   I2AsyncState<GeneticSimulationResult> simulateState =
+      const I2AsyncState.idle();
+  I2AsyncState<List<TargetCrossRecommendation>> targetState =
+      const I2AsyncState.idle();
+  I2AsyncState<PhenotypeCompareResult> compareState = const I2AsyncState.idle();
+  I2AsyncState<List<PhenotypeFeedbackPairSummary>> summaryState =
       const I2AsyncState.idle();
   I2AsyncState<void> actionState = const I2AsyncState.idle();
   String? lastMessage;
 
   Future<void> refreshAll() async {
-    await Future.wait([refreshLoci(), refreshProfiles()]);
+    await Future.wait([
+      refreshLoci(),
+      refreshCatalog(),
+      refreshProfiles(),
+      refreshFeedbackSummary(),
+    ]);
   }
 
   Future<void> refreshLoci() async {
@@ -28,6 +39,18 @@ class GeneticController extends ChangeNotifier {
       lociState = I2AsyncState.data(items);
     } catch (error) {
       lociState = I2AsyncState.error(geneticErrorMessage(error));
+    }
+    notifyListeners();
+  }
+
+  Future<void> refreshCatalog() async {
+    catalogState = const I2AsyncState.loading();
+    notifyListeners();
+    try {
+      final catalog = await repository.listPhenotypeCatalog();
+      catalogState = I2AsyncState.data(catalog);
+    } catch (error) {
+      catalogState = I2AsyncState.error(geneticErrorMessage(error));
     }
     notifyListeners();
   }
@@ -72,6 +95,120 @@ class GeneticController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  Future<bool> simulatePhenotype({
+    required String series,
+    required String sirePhenotype,
+    required String damPhenotype,
+    String? sireHamsterId,
+    String? damHamsterId,
+  }) async {
+    simulateState = const I2AsyncState.loading();
+    lastMessage = null;
+    notifyListeners();
+    try {
+      final result = await repository.simulatePhenotype(
+        series: series,
+        sirePhenotype: sirePhenotype,
+        damPhenotype: damPhenotype,
+        sireHamsterId: sireHamsterId,
+        damHamsterId: damHamsterId,
+      );
+      simulateState = I2AsyncState.data(result);
+      lastMessage = '预测完成 · ${result.outcomes.length} 种后代表型';
+      notifyListeners();
+      return true;
+    } catch (error) {
+      final message = geneticErrorMessage(error);
+      simulateState = I2AsyncState.error(message);
+      lastMessage = message;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> findTargetCrosses({
+    required String series,
+    required String targetPhenotype,
+  }) async {
+    targetState = const I2AsyncState.loading();
+    lastMessage = null;
+    notifyListeners();
+    try {
+      final items = await repository.findTargetCrosses(
+        series: series,
+        targetPhenotype: targetPhenotype,
+      );
+      if (items.isEmpty) {
+        targetState = const I2AsyncState.empty(message: '核心表中无产出该表型的配对');
+        lastMessage = '暂时没有找到合适的组合';
+      } else {
+        targetState = I2AsyncState.data(items);
+        lastMessage = '找到 ${items.length} 组可产出「$targetPhenotype」的配对';
+      }
+      notifyListeners();
+      return items.isNotEmpty;
+    } catch (error) {
+      final message = geneticErrorMessage(error);
+      targetState = I2AsyncState.error(message);
+      lastMessage = message;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> compareActual({
+    required String series,
+    required String sirePhenotype,
+    required String damPhenotype,
+    required Map<String, int> actualCounts,
+    bool save = true,
+    String? breedingPlanId,
+    String? litterId,
+  }) async {
+    compareState = const I2AsyncState.loading();
+    lastMessage = null;
+    notifyListeners();
+    try {
+      final result = await repository.compareActual(
+        series: series,
+        sirePhenotype: sirePhenotype,
+        damPhenotype: damPhenotype,
+        actualCounts: actualCounts,
+        save: save,
+        breedingPlanId: breedingPlanId,
+        litterId: litterId,
+      );
+      compareState = I2AsyncState.data(result);
+      lastMessage = save ? '本窝记录已保存' : '本窝结果已完成比较';
+      if (save) {
+        await refreshFeedbackSummary();
+      } else {
+        notifyListeners();
+      }
+      return true;
+    } catch (error) {
+      final message = geneticErrorMessage(error);
+      compareState = I2AsyncState.error(message);
+      lastMessage = message;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> refreshFeedbackSummary() async {
+    summaryState = const I2AsyncState.loading();
+    notifyListeners();
+    try {
+      final items = await repository.listFeedbackSummary();
+      summaryState = items.isEmpty
+          ? const I2AsyncState.empty(message: '暂无历史回填，完成产仔对比后会出现')
+          : I2AsyncState.data(items);
+    } catch (error) {
+      summaryState = I2AsyncState.error(geneticErrorMessage(error));
+    }
+    notifyListeners();
   }
 
   Future<bool> _run(Future<void> Function() body) async {

@@ -41,8 +41,8 @@ class LitterBoardController extends ChangeNotifier {
   }
 
   Future<bool> runNextAction({
-    required String maleEnclosureId,
-    required String femaleEnclosureId,
+    List<LitterPupSeparation> separations = const [],
+    List<LitterPupProfileDraft> profiles = const [],
   }) async {
     final board = detailState.data;
     if (board == null) {
@@ -70,17 +70,23 @@ class LitterBoardController extends ChangeNotifier {
           );
           lastMessage = '断奶完成';
         case LitterBoardAction.sexAndSeparate:
+          if (separations.isEmpty) {
+            throw const LitterBoardRepositoryException('请先完成每只幼崽的分性与分笼');
+          }
           next = await repository.sexAndSeparate(
             litterId: board.id,
             version: board.version,
-            maleEnclosureId: maleEnclosureId,
-            femaleEnclosureId: femaleEnclosureId,
+            assignments: separations,
           );
           lastMessage = '分性分笼完成';
         case LitterBoardAction.individualize:
+          if (profiles.isEmpty) {
+            throw const LitterBoardRepositoryException('请先填写每只幼崽的建档资料');
+          }
           next = await repository.individualize(
             litterId: board.id,
             version: board.version,
+            profiles: profiles,
           );
           lastMessage = '个体化建档完成';
       }

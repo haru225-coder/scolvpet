@@ -34,7 +34,7 @@ class ImportTemplateResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'template_type',
     required: true,
     includeIfNull: false,
@@ -46,7 +46,7 @@ class ImportTemplateResponseData {
 
 
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class ImportTemplateResponseData {
 
 
   @JsonKey(
-    
+
     name: r'download_url',
     required: true,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class ImportTemplateResponseData {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: true,
     includeIfNull: false,
@@ -82,7 +82,7 @@ class ImportTemplateResponseData {
 
 
   @JsonKey(
-    
+
     name: r'columns',
     required: true,
     includeIfNull: false,
@@ -121,4 +121,3 @@ class ImportTemplateResponseData {
   }
 
 }
-

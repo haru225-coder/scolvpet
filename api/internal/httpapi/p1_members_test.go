@@ -1,12 +1,14 @@
 package httpapi
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/scolvpet/scolvpet/api/internal/auth"
+	"github.com/scolvpet/scolvpet/api/internal/store"
 )
 
 func TestP1MemberRoutesRequireAuth(t *testing.T) {
@@ -38,5 +40,20 @@ func TestNormalizeMemberPhoneAndRoles(t *testing.T) {
 	}
 	if !validMemberRole("breeder") || validMemberRole("admin") {
 		t.Fatal("role validation failed")
+	}
+}
+
+func TestValidateMemberIfMatch(t *testing.T) {
+	if err := validateMemberIfMatch("", 3); err != nil {
+		t.Fatalf("optional If-Match rejected: %v", err)
+	}
+	if err := validateMemberIfMatch(`W/"3"`, 3); err != nil {
+		t.Fatalf("matching If-Match rejected: %v", err)
+	}
+	if err := validateMemberIfMatch("bad", 3); err == nil {
+		t.Fatal("invalid If-Match accepted")
+	}
+	if err := validateMemberIfMatch(`"2"`, 3); !errors.Is(err, store.ErrVersionConflict) {
+		t.Fatalf("stale If-Match error=%v", err)
 	}
 }

@@ -44,7 +44,7 @@ class Reminder {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class Reminder {
 
 
   @JsonKey(
-    
+
     name: r'rule_code',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class Reminder {
 
 
   @JsonKey(
-    
+
     name: r'rule_version',
     required: false,
     includeIfNull: false,
@@ -80,7 +80,7 @@ class Reminder {
 
 
   @JsonKey(
-    
+
     name: r'base_event_id',
     required: false,
     includeIfNull: false,
@@ -92,7 +92,7 @@ class Reminder {
 
 
   @JsonKey(
-    
+
     name: r'target_type',
     required: false,
     includeIfNull: false,
@@ -104,7 +104,7 @@ class Reminder {
 
 
   @JsonKey(
-    
+
     name: r'target_id',
     required: false,
     includeIfNull: false,
@@ -116,7 +116,7 @@ class Reminder {
 
 
   @JsonKey(
-    
+
     name: r'scheduled_at',
     required: true,
     includeIfNull: false,
@@ -128,7 +128,7 @@ class Reminder {
 
 
   @JsonKey(
-    
+
     name: r'state',
     required: true,
     includeIfNull: false,
@@ -140,7 +140,7 @@ class Reminder {
 
 
   @JsonKey(
-    
+
     name: r'superseded_by',
     required: false,
     includeIfNull: false,
@@ -152,7 +152,7 @@ class Reminder {
 
 
   @JsonKey(
-    
+
     name: r'channel_statuses',
     required: true,
     includeIfNull: false,
@@ -201,4 +201,3 @@ class Reminder {
   }
 
 }
-

@@ -32,7 +32,7 @@ class ActionItemResult {
   });
 
   @JsonKey(
-    
+
     name: r'pup_identity_id',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class ActionItemResult {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class ActionItemResult {
 
 
   @JsonKey(
-    
+
     name: r'enclosure_stay_id',
     required: false,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class ActionItemResult {
 
 
   @JsonKey(
-    
+
     name: r'error',
     required: false,
     includeIfNull: false,
@@ -105,4 +105,3 @@ class ActionItemResult {
   }
 
 }
-

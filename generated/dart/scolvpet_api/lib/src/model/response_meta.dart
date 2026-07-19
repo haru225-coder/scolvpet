@@ -29,7 +29,7 @@ class ResponseMeta {
 
       /// 请求追踪 ID
   @JsonKey(
-    
+
     name: r'request_id',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class ResponseMeta {
 
       /// UTC 响应生成时间
   @JsonKey(
-    
+
     name: r'generated_at',
     required: true,
     includeIfNull: false,
@@ -55,7 +55,7 @@ class ResponseMeta {
 
       /// 本次业务日期计算使用的 IANA 时区
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -90,4 +90,3 @@ class ResponseMeta {
   }
 
 }
-

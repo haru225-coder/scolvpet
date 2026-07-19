@@ -27,7 +27,7 @@ class MediaEditRecipeRequest {
   });
 
   @JsonKey(
-    
+
     name: r'operations',
     required: true,
     includeIfNull: false,
@@ -89,5 +89,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -30,7 +30,7 @@ class ExportJobCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'datasets',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class ExportJobCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'format',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class ExportJobCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class ExportJobCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'filters',
     required: false,
     includeIfNull: false,
@@ -144,5 +144,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

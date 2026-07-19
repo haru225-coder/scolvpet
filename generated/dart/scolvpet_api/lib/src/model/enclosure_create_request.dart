@@ -35,7 +35,7 @@ class EnclosureCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -47,7 +47,7 @@ class EnclosureCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'rack_code',
     required: false,
     includeIfNull: false,
@@ -59,7 +59,7 @@ class EnclosureCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'level_code',
     required: false,
     includeIfNull: false,
@@ -71,7 +71,7 @@ class EnclosureCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'dimensions',
     required: false,
     includeIfNull: false,
@@ -96,7 +96,7 @@ class EnclosureCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'equipment',
     required: false,
     includeIfNull: false,
@@ -137,4 +137,3 @@ class EnclosureCreateRequest {
   }
 
 }
-

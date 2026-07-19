@@ -40,7 +40,7 @@ class IndividualizeLitterResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: true,
     includeIfNull: false,
@@ -53,7 +53,7 @@ class IndividualizeLitterResponseData {
 
       /// 服务端执行时重算并接受的 eligible set token
   @JsonKey(
-    
+
     name: r'evaluated_eligible_set_token',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class IndividualizeLitterResponseData {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'evaluated_eligible_count',
     required: true,
     includeIfNull: false,
@@ -78,7 +78,7 @@ class IndividualizeLitterResponseData {
 
 
   @JsonKey(
-    
+
     name: r'mappings',
     required: true,
     includeIfNull: false,
@@ -91,7 +91,7 @@ class IndividualizeLitterResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'created_litter_member_count',
     required: true,
     includeIfNull: false,
@@ -104,7 +104,7 @@ class IndividualizeLitterResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'created_parentage_count',
     required: true,
     includeIfNull: false,
@@ -116,7 +116,7 @@ class IndividualizeLitterResponseData {
 
 
   @JsonKey(
-    
+
     name: r'reconciliation',
     required: true,
     includeIfNull: false,
@@ -129,7 +129,7 @@ class IndividualizeLitterResponseData {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'litter_version',
     required: true,
     includeIfNull: false,
@@ -174,4 +174,3 @@ class IndividualizeLitterResponseData {
   }
 
 }
-

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'paywall_models.dart';
 
 abstract interface class PaywallRepository {
@@ -18,18 +19,11 @@ class PaywallRepositoryException implements Exception {
   String toString() => message;
 }
 
-String paywallErrorMessage(Object error) {
-  if (error is PaywallRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '权益请求失败';
-  }
-  return error.toString();
-}
+String paywallErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '权益请求失败',
+  mapLocal: (e) => e is PaywallRepositoryException ? e.message : null,
+);
 
 class MemoryPaywallRepository implements PaywallRepository {
   String _planCode = 'free';
@@ -37,7 +31,8 @@ class MemoryPaywallRepository implements PaywallRepository {
   final Map<String, double> _usage;
 
   MemoryPaywallRepository({Map<String, double>? usage})
-    : _usage = usage ??
+    : _usage =
+          usage ??
           {
             'active_hamsters': 12,
             'active_litters': 3,
@@ -52,7 +47,10 @@ class MemoryPaywallRepository implements PaywallRepository {
   Future<EntitlementSnapshot> current() async => _snapshot();
 
   @override
-  Future<EntitlementCheckResult> check({String? feature, String? metric}) async {
+  Future<EntitlementCheckResult> check({
+    String? feature,
+    String? metric,
+  }) async {
     final snap = _snapshot();
     if (feature != null && feature.isNotEmpty) {
       final f = snap.features.cast<EntitlementFeature?>().firstWhere(
@@ -249,7 +247,10 @@ class DefaultApiPaywallRepository implements PaywallRepository {
   }
 
   @override
-  Future<EntitlementCheckResult> check({String? feature, String? metric}) async {
+  Future<EntitlementCheckResult> check({
+    String? feature,
+    String? metric,
+  }) async {
     final response = await client.dio.post<Map<String, dynamic>>(
       '/entitlements/check',
       data: {

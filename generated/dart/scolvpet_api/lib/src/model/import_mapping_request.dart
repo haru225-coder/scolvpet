@@ -27,7 +27,7 @@ class ImportMappingRequest {
   });
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -39,7 +39,7 @@ class ImportMappingRequest {
 
 
   @JsonKey(
-    
+
     name: r'mappings',
     required: true,
     includeIfNull: false,
@@ -72,4 +72,3 @@ class ImportMappingRequest {
   }
 
 }
-

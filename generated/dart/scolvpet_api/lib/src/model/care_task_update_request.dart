@@ -31,7 +31,7 @@ class CareTaskUpdateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'title',
     required: false,
     includeIfNull: false,
@@ -43,7 +43,7 @@ class CareTaskUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'scheduled_at',
     required: false,
     includeIfNull: false,
@@ -55,7 +55,7 @@ class CareTaskUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'priority',
     required: false,
     includeIfNull: false,
@@ -67,7 +67,7 @@ class CareTaskUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -104,4 +104,3 @@ class CareTaskUpdateRequest {
   }
 
 }
-

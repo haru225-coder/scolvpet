@@ -32,7 +32,7 @@ class CreateCrmHandoverRequest {
   });
 
   @JsonKey(
-    
+
     name: r'contact_id',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class CreateCrmHandoverRequest {
 
 
   @JsonKey(
-    
+
     name: r'reservation_id',
     required: false,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class CreateCrmHandoverRequest {
 
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: false,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class CreateCrmHandoverRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -80,7 +80,7 @@ class CreateCrmHandoverRequest {
 
 
   @JsonKey(
-    
+
     name: r'scheduled_at',
     required: false,
     includeIfNull: false,
@@ -119,4 +119,3 @@ class CreateCrmHandoverRequest {
   }
 
 }
-

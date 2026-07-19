@@ -186,6 +186,25 @@ paths:
                     version: 1
                     created_at: '2026-07-16T01:00:00Z'
                     updated_at: '2026-07-16T01:00:00Z'
+                  member_role: owner
+                  capabilities:
+                    - member_role:owner
+                    - tenant_scope
+                    - offline_read_cache
+                    - manage_members
+                    - write_breeding
+                    - write_litter
+                    - write_hamster
+                    - write_enclosure
+                    - write_weight
+                    - write_task
+                    - write_health
+                    - write_import
+                    - write_media
+                    - write_crm
+                    - write_documents
+                    - write_accounting
+                    - write_growth
                 meta:
                   request_id: req_01J0AUTH002
                   generated_at: '2026-07-16T01:00:00Z'
@@ -3986,6 +4005,8 @@ paths:
                 "$ref": "#/components/schemas/OrganizationMemberResponse"
         '401':
           "$ref": "#/components/responses/Unauthorized"
+        '403':
+          "$ref": "#/components/responses/Forbidden"
         '409':
           "$ref": "#/components/responses/ConflictError"
         '422':
@@ -4023,6 +4044,8 @@ paths:
                 "$ref": "#/components/schemas/OrganizationMemberResponse"
         '401':
           "$ref": "#/components/responses/Unauthorized"
+        '403':
+          "$ref": "#/components/responses/Forbidden"
         '404':
           "$ref": "#/components/responses/NotFound"
         '409':
@@ -4050,7 +4073,8 @@ paths:
         schema:
           type: string
           format: uuid
-      - *1
+      - "$ref": "#/components/parameters/IfMatchOptional"
+      - "$ref": "#/components/parameters/P1P2IdempotencyKey"
       responses:
         '200':
           description: 撤销熊舍成员成功
@@ -4060,6 +4084,8 @@ paths:
                 "$ref": "#/components/schemas/OrganizationMemberResponse"
         '401':
           "$ref": "#/components/responses/Unauthorized"
+        '403':
+          "$ref": "#/components/responses/Forbidden"
         '404':
           "$ref": "#/components/responses/NotFound"
         '409':
@@ -4708,6 +4734,96 @@ paths:
           "$ref": "#/components/responses/Unauthorized"
         '422':
           "$ref": "#/components/responses/ValidationError"
+  "/v1/genetic/phenotype-catalog":
+    get:
+      tags:
+      - genetic
+      summary: List phenotype series catalog from authority table
+      operationId: listGeneticPhenotypeCatalog
+      security:
+      - bearerAuth: []
+      responses:
+        "200":
+          description: Catalog of series and phenotypes (core breeding table)
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+  "/v1/genetic/target-crosses":
+    get:
+      tags:
+      - genetic
+      summary: Rank parent pairs that can produce a target phenotype
+      operationId: listGeneticTargetCrosses
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: series
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: phenotype
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Ranked crosses for target phenotype
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+  "/v1/genetic/compare-actual":
+    post:
+      tags:
+      - genetic
+      summary: Compare actual litter phenotype counts to core table expectation
+      operationId: compareGeneticActual
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Expected vs actual phenotype comparison
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+  "/v1/genetic/feedback-summary":
+    get:
+      tags:
+      - genetic
+      summary: Summarize historical phenotype prediction feedback
+      operationId: listGeneticFeedbackSummary
+      security:
+      - bearerAuth: []
+      responses:
+        "200":
+          description: Historical prediction deviation grouped by phenotype pair
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
   "/v1/genetic/profiles":
     get:
       tags:
@@ -5638,6 +5754,363 @@ paths:
         '422':
           "$ref": "#/components/responses/ValidationError"
 
+  "/v1/growth/public-hamsters":
+    get:
+      tags:
+      - growth
+      operationId: listGrowthPublicHamsters
+      summary: 查看本舍仓鼠公开资料
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 公开资料列表
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GrowthPublicHamsterListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+
+  "/v1/growth/public-hamsters/{hamster_id}":
+    put:
+      tags:
+      - growth
+      operationId: upsertGrowthPublicHamster
+      summary: 保存仓鼠公开资料
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: hamster_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - *1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/GrowthPublicHamsterRequest"
+      responses:
+        '200':
+          description: 公开资料已保存
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GrowthPublicHamsterResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+
+  "/v1/growth/opportunities":
+    get:
+      tags:
+      - growth
+      operationId: listGrowthOpportunities
+      summary: 查看 AI 内容机会
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 基于公开资料生成的内容机会
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GrowthOpportunityListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+
+  "/v1/growth/campaigns":
+    get:
+      tags:
+      - growth
+      operationId: listGrowthCampaigns
+      summary: 查看获客活动
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 获客活动列表
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GrowthCampaignListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+
+  "/v1/growth/campaigns/generate":
+    post:
+      tags:
+      - growth
+      operationId: generateGrowthCampaign
+      summary: 生成并保存视频或直播脚本
+      security:
+      - bearerAuth: []
+      parameters:
+      - *1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/GrowthCampaignGenerateRequest"
+      responses:
+        '201':
+          description: 脚本活动已保存
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GrowthCampaignResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+
+  "/v1/growth/campaigns/{campaign_id}":
+    get:
+      tags:
+      - growth
+      operationId: getGrowthCampaign
+      summary: 查看获客活动详情
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: campaign_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: 获客活动详情
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GrowthCampaignResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+
+  "/v1/growth/campaigns/{campaign_id}/publish":
+    post:
+      tags:
+      - growth
+      operationId: publishGrowthCampaign
+      summary: 发布获客活动
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: campaign_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 活动已发布
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GrowthCampaignResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+
+  "/v1/growth/campaigns/{campaign_id}/archive":
+    post:
+      tags:
+      - growth
+      operationId: archiveGrowthCampaign
+      summary: 归档获客活动
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: campaign_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - *1
+      responses:
+        '200':
+          description: 活动已归档
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GrowthCampaignResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+
+  "/v1/growth/leads":
+    get:
+      tags:
+      - growth
+      operationId: listGrowthLeads
+      summary: 查看获客线索及来源归因
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 线索列表
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GrowthLeadListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+
+  "/v1/public/sites/{slug}/catalog":
+    get:
+      tags:
+      - public-growth
+      operationId: getPublicGrowthCatalog
+      summary: 查看公开熊舍获客目录
+      security: []
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: campaign
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 公开主页、仓鼠目录和活动主题
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicGrowthCatalogResponse"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+
+  "/v1/public/sites/{slug}/media/{media_id}":
+    get:
+      tags:
+      - public-growth
+      operationId: getPublicGrowthMedia
+      summary: 读取公开仓鼠封面图片
+      description: 匿名公开读取；仅允许读取已发布主页中已公开仓鼠当前选择的封面图片，撤下主页或公开资料后统一返回 404。
+      security: []
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 2
+          maxLength: 64
+          pattern: "^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$"
+      - name: media_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: 公开封面图片
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: public, no-store, max-age=0
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          "$ref": "#/components/responses/NotFound"
+
+  "/v1/public/sites/{slug}/consult":
+    post:
+      tags:
+      - public-growth
+      operationId: consultPublicGrowthAdvisor
+      summary: 向公开 AI 顾问咨询
+      security: []
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PublicGrowthConsultRequest"
+      responses:
+        '200':
+          description: AI 顾问回答和公开资料匹配结果
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicGrowthConsultResponse"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+
+  "/v1/public/sites/{slug}/leads":
+    post:
+      tags:
+      - public-growth
+      operationId: createPublicGrowthLead
+      summary: 提交公开咨询线索
+      security: []
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - *1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PublicGrowthLeadRequest"
+      responses:
+        '201':
+          description: 线索已进入 CRM 并记录来源
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicGrowthLeadResponse"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -5872,6 +6345,22 @@ components:
             meta:
               request_id: req_01J0ERR401
               generated_at: '2026-07-16T03:00:00Z'
+              timezone: Asia/Shanghai
+    Forbidden:
+      description: 当前成员角色缺少执行该操作的权限
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: PERMISSION_DENIED
+              message: 当前角色没有执行此操作的权限
+              field_errors: []
+              recovery_actions: []
+            meta:
+              request_id: req_01J0ERR403
+              generated_at: '2026-07-19T03:00:00Z'
               timezone: Asia/Shanghai
     NotFound:
       description: 资源不存在、已撤销或不属于当前 owner
@@ -6426,6 +6915,8 @@ components:
             - refresh_token
             - account
             - current_organization
+            - member_role
+            - capabilities
           properties:
             token_type:
               type: string
@@ -6441,6 +6932,13 @@ components:
               $ref: '#/components/schemas/Account'
             current_organization:
               $ref: '#/components/schemas/Organization'
+            member_role:
+              type: string
+              enum: [owner, breeder, caretaker, staff, viewer]
+            capabilities:
+              type: array
+              items:
+                type: string
           additionalProperties: false
         meta:
           $ref: '#/components/schemas/ResponseMeta'
@@ -6452,12 +6950,15 @@ components:
       properties:
         data:
           type: object
-          required: [account, current_organization, capabilities]
+          required: [account, current_organization, member_role, capabilities]
           properties:
             account:
               $ref: '#/components/schemas/Account'
             current_organization:
               $ref: '#/components/schemas/Organization'
+            member_role:
+              type: string
+              enum: [owner, breeder, caretaker, staff, viewer]
             capabilities:
               type: array
               items:
@@ -11143,6 +11644,10 @@ components:
           minimum: 1
         contact_name:
           type: string
+        hamster_name:
+          type:
+          - string
+          - 'null'
       required:
       - id
       - contact_id
@@ -11216,6 +11721,10 @@ components:
           minimum: 1
         contact_name:
           type: string
+        hamster_name:
+          type:
+          - string
+          - 'null'
       required:
       - id
       - contact_id
@@ -11479,6 +11988,11 @@ components:
           - string
           - 'null'
           format: uuid
+        handover_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
         title:
           type: string
           maxLength: 200
@@ -11497,6 +12011,11 @@ components:
           - 'null'
           maxLength: 4000
         contact_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 160
+        hamster_name:
           type:
           - string
           - 'null'
@@ -11928,18 +12447,66 @@ components:
       additionalProperties: false
     GeneticSimulationRequest:
       type: object
+      description: |
+        繁殖推算请求。商家默认使用 phenotype_table 模式，数据来自《金丝熊后代推算整理表（双重核验版）》权威表。
+        mendel 模式保留简化位点基因型推算（教育用）。
       properties:
+        mode:
+          type: string
+          enum:
+          - phenotype_table
+          - mendel
+          description: phenotype_table=核心表查表；mendel=简化孟德尔
+        series:
+          type: string
+          description: 系列代码或中文名，如 poly / 波利系列 / chocolate / 巧克力色系
+        sire_phenotype:
+          type: string
+          description: 父本表型（phenotype_table 模式）
+        dam_phenotype:
+          type: string
+          description: 母本表型（phenotype_table 模式）
+        sire_hamster_id:
+          type: string
+          format: uuid
+          description: 可选父本档案 ID；父母双方都提供时启用具体亲本历史校准
+        dam_hamster_id:
+          type: string
+          format: uuid
+          description: 可选母本档案 ID；父母双方都提供时启用具体亲本历史校准
+        target_phenotype:
+          type: string
+          description: 可选重点表型；客户端可据最终概率计算本窝至少出现一只的机会
         sire:
           type: object
           additionalProperties:
             type: string
+          description: 父本基因型位点映射（mendel 模式）
         dam:
           type: object
           additionalProperties:
             type: string
+          description: 母本基因型位点映射（mendel 模式）
+      additionalProperties: false
+    PhenotypeTableOutcome:
+      type: object
+      properties:
+        phenotype:
+          type: string
+        probability:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          description: 最终模拟概率；有历史数据时为权威表强先验校准后的概率
+        fraction:
+          type: string
+          description: 仅静态权威表概率存在精确分数时返回
+        note:
+          type: string
       required:
-      - sire
-      - dam
+      - phenotype
+      - probability
       additionalProperties: false
     GeneticOutcome:
       type: object
@@ -11975,6 +12542,23 @@ components:
     GeneticSimulationResult:
       type: object
       properties:
+        mode:
+          type: string
+          enum:
+          - phenotype_table
+          - mendel
+        table_id:
+          type: string
+        table_version:
+          type: string
+        series:
+          type: string
+        series_name:
+          type: string
+        sire_phenotype:
+          type: string
+        dam_phenotype:
+          type: string
         sire:
           type: object
           additionalProperties:
@@ -11987,6 +12571,22 @@ components:
           type: array
           items:
             "$ref": "#/components/schemas/GeneticOutcome"
+        table_outcomes:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PhenotypeTableOutcome"
+        prediction_basis:
+          type: string
+          enum:
+          - authority_table
+          - authority_table_plus_history
+          description: 前端仅需映射为“基于权威表”或“已结合历史繁殖记录”
+        history_litter_count:
+          type: integer
+          minimum: 0
+        history_pup_count:
+          type: integer
+          minimum: 0
         notes:
           type: string
       required:
@@ -12537,6 +13137,8 @@ components:
           format: date-time
         public_url_path:
           type: string
+          pattern: "^/p/[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$"
+          example: /p/snow-cattery
       required:
       - slug
       - title
@@ -13223,4 +13825,477 @@ components:
       required:
       - data
       - meta
+      additionalProperties: false
+    GrowthPublicHamster:
+      type: object
+      properties:
+        hamster_id:
+          type: string
+          format: uuid
+        public_name:
+          type: string
+        summary:
+          type: string
+        traits:
+          type: array
+          items:
+            type: string
+        sex:
+          type: string
+        variety:
+          type: string
+        birth_date:
+          type: string
+          format: date
+        filming_status:
+          type: string
+          enum: [ready, rest, restricted]
+        published:
+          type: boolean
+        consultable:
+          type: boolean
+        cta_text:
+          type: string
+        price_label:
+          type: string
+        media:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GrowthPublicMedia"
+      required:
+      - hamster_id
+      - public_name
+      - filming_status
+      - published
+      - consultable
+      additionalProperties: false
+    GrowthPublicMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          description: API 媒体读取路径；Web 公开页通过同源代理渲染。
+        kind:
+          type: string
+          enum: [cover, thumbnail, preview]
+        status:
+          type: string
+          enum: [ready, processing, failed]
+      required: [id, url, kind]
+      additionalProperties: false
+    GrowthPublicHamsterRequest:
+      type: object
+      properties:
+        public_name:
+          type: string
+          maxLength: 160
+        summary:
+          type: string
+          maxLength: 2000
+        traits:
+          type: array
+          maxItems: 12
+          items:
+            type: string
+            maxLength: 40
+        filming_status:
+          type: string
+          enum: [ready, rest, restricted]
+        published:
+          type: boolean
+        consultable:
+          type: boolean
+        cta_text:
+          type: string
+          maxLength: 160
+        price_label:
+          type: string
+          maxLength: 120
+      required:
+      - filming_status
+      - published
+      - consultable
+      additionalProperties: false
+    GrowthPublicHamsterListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GrowthPublicHamster"
+        page:
+          "$ref": "#/components/schemas/PageInfo"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    GrowthPublicHamsterResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/GrowthPublicHamster"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    GrowthOpportunity:
+      type: object
+      properties:
+        kind:
+          type: string
+        hamster_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        reason:
+          type: string
+        priority:
+          type: integer
+        suggestion:
+          type: string
+        public_name:
+          type: string
+      required: [kind, hamster_id, title, reason, priority, suggestion]
+      additionalProperties: false
+    GrowthOpportunityListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GrowthOpportunity"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    GrowthCampaignGenerateRequest:
+      type: object
+      properties:
+        campaign_type:
+          type: string
+          enum: [video, live]
+        platform:
+          type: string
+          minLength: 1
+          maxLength: 32
+        goal:
+          type: string
+          minLength: 1
+          maxLength: 300
+        duration_seconds:
+          type: integer
+          minimum: 1
+          maximum: 7200
+        tone:
+          type: string
+          minLength: 1
+          maxLength: 80
+        cta:
+          type: string
+          maxLength: 300
+        hamster_id:
+          type: string
+          format: uuid
+      required: [campaign_type, platform, goal, tone, hamster_id]
+      additionalProperties: false
+    GrowthScriptSection:
+      type: object
+      properties:
+        order:
+          type: integer
+        duration_seconds:
+          type: integer
+        shot:
+          type: string
+        voiceover:
+          type: string
+        overlay:
+          type: string
+      required: [order, duration_seconds, shot, voiceover, overlay]
+      additionalProperties: false
+    GrowthScript:
+      type: object
+      properties:
+        title:
+          type: string
+        hook:
+          type: string
+        cover_text:
+          type: string
+        sections:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GrowthScriptSection"
+        caption:
+          type: string
+        hashtags:
+          type: array
+          items:
+            type: string
+        cta:
+          type: string
+        facts:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GrowthPublicFact"
+      required: [title, hook, cover_text, sections, caption, hashtags, cta, facts]
+      additionalProperties: false
+    GrowthPublicFact:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+        source:
+          type: string
+      required: [key, value, source]
+      additionalProperties: false
+    GrowthCampaign:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        campaign_code:
+          type: string
+        campaign_type:
+          type: string
+          enum: [video, live]
+        platform:
+          type: string
+        status:
+          type: string
+          enum: [draft, ready, published, archived]
+        subject_type:
+          type: string
+        subject_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        goal:
+          type: string
+        duration_seconds:
+          type: [integer, 'null']
+        tone:
+          type: string
+        cta:
+          type: string
+        facts_snapshot:
+          type: object
+          additionalProperties: true
+        script:
+          "$ref": "#/components/schemas/GrowthScript"
+        model_name:
+          type: string
+        prompt_version:
+          type: string
+        published_at:
+          type: [string, 'null']
+          format: date-time
+        version:
+          type: integer
+        public_url_path:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required: [id, campaign_code, campaign_type, platform, status, subject_type, subject_id, title, goal, tone, cta, script, model_name, prompt_version, version]
+      additionalProperties: false
+    GrowthCampaignListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GrowthCampaign"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    GrowthCampaignResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/GrowthCampaign"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    GrowthLead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        contact_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+        wechat:
+          type: string
+        campaign_id:
+          type: [string, 'null']
+          format: uuid
+        campaign_code:
+          type: [string, 'null']
+        campaign_title:
+          type: [string, 'null']
+        consultation_id:
+          type: [string, 'null']
+          format: uuid
+        source_channel:
+          type: string
+        landing_path:
+          type: [string, 'null']
+        interest_hamster_id:
+          type: [string, 'null']
+          format: uuid
+        interest_hamster_name:
+          type: [string, 'null']
+        intent_summary:
+          type: [string, 'null']
+        created_at:
+          type: string
+          format: date-time
+      required: [id, contact_id, name, source_channel, created_at]
+      additionalProperties: false
+    GrowthLeadListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GrowthLead"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    PublicGrowthCatalog:
+      type: object
+      properties:
+        site:
+          type: object
+          additionalProperties: true
+        hamsters:
+          type: array
+          items:
+            "$ref": "#/components/schemas/GrowthPublicHamster"
+        campaign:
+          anyOf:
+            - "$ref": "#/components/schemas/GrowthCampaign"
+            - type: 'null'
+      required: [site, hamsters]
+      additionalProperties: false
+    PublicGrowthCatalogResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/PublicGrowthCatalog"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    PublicGrowthConsultRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        session_token:
+          type: string
+          maxLength: 128
+        campaign_code:
+          type: string
+          maxLength: 24
+        interested_hamster_id:
+          type: string
+          format: uuid
+        landing_path:
+          type: string
+          maxLength: 500
+      required: [message]
+      additionalProperties: false
+    PublicGrowthConsultResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            session_token:
+              type: string
+            consultation_id:
+              type: string
+              format: uuid
+            answer:
+              type: string
+            recommendations:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            facts:
+              type: array
+              items:
+                "$ref": "#/components/schemas/GrowthPublicFact"
+            handoff_suggested:
+              type: boolean
+          required: [session_token, consultation_id, answer, recommendations, facts, handoff_suggested]
+          additionalProperties: false
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    PublicGrowthLeadRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        phone:
+          type: string
+          maxLength: 32
+        wechat:
+          type: string
+          maxLength: 64
+        campaign_code:
+          type: string
+          maxLength: 24
+        consultation_token:
+          type: string
+          maxLength: 128
+        interested_hamster_id:
+          type: string
+          format: uuid
+        intent_summary:
+          type: string
+          maxLength: 2000
+        landing_path:
+          type: string
+          maxLength: 500
+      required: [name]
+      description: 手机号和微信至少填写一个。
+      additionalProperties: false
+    PublicGrowthLeadResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          additionalProperties: true
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
       additionalProperties: false

@@ -8,16 +8,14 @@ import 'package:scolvpet_api/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **String** |  | 
-**platform** | **String** |  | 
-**provider** | **String** |  | 
-**token** | **String** |  | 
-**deviceName** | **String** |  | [optional] 
-**appVersion** | **String** |  | [optional] 
-**enabled** | **bool** |  | 
-**lastSeenAt** | [**DateTime**](DateTime.md) |  | 
-**version** | **int** |  | 
+**id** | **String** |  |
+**platform** | **String** |  |
+**provider** | **String** |  |
+**token** | **String** |  |
+**deviceName** | **String** |  | [optional]
+**appVersion** | **String** |  | [optional]
+**enabled** | **bool** |  |
+**lastSeenAt** | [**DateTime**](DateTime.md) |  |
+**version** | **int** |  |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

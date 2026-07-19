@@ -47,8 +47,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **reservationId** | **String**| 预订 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **reservationId** | **String**| 预订 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -92,8 +92,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **handoverId** | **String**| 交付 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **handoverId** | **String**| 交付 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -137,8 +137,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **reservationId** | **String**| 预订 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **reservationId** | **String**| 预订 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -167,7 +167,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1CRMApi();
-final CreateCrmContactRequest createCrmContactRequest = ; // CreateCrmContactRequest | 
+final CreateCrmContactRequest createCrmContactRequest = ; // CreateCrmContactRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -182,8 +182,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createCrmContactRequest** | [**CreateCrmContactRequest**](CreateCrmContactRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createCrmContactRequest** | [**CreateCrmContactRequest**](CreateCrmContactRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -212,7 +212,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1CRMApi();
-final CreateCrmHandoverRequest createCrmHandoverRequest = ; // CreateCrmHandoverRequest | 
+final CreateCrmHandoverRequest createCrmHandoverRequest = ; // CreateCrmHandoverRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -227,8 +227,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createCrmHandoverRequest** | [**CreateCrmHandoverRequest**](CreateCrmHandoverRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createCrmHandoverRequest** | [**CreateCrmHandoverRequest**](CreateCrmHandoverRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -257,7 +257,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1CRMApi();
-final CreateCrmReservationRequest createCrmReservationRequest = ; // CreateCrmReservationRequest | 
+final CreateCrmReservationRequest createCrmReservationRequest = ; // CreateCrmReservationRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -272,8 +272,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createCrmReservationRequest** | [**CreateCrmReservationRequest**](CreateCrmReservationRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createCrmReservationRequest** | [**CreateCrmReservationRequest**](CreateCrmReservationRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -406,4 +406,3 @@ This endpoint does not need any parameter.
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

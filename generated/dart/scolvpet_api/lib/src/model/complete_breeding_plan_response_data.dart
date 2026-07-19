@@ -30,7 +30,7 @@ class CompleteBreedingPlanResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'breeding_plan',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class CompleteBreedingPlanResponseData {
 
 
   @JsonKey(
-    
+
     name: r'reconciliation',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class CompleteBreedingPlanResponseData {
 
 
   @JsonKey(
-    
+
     name: r'completed_at',
     required: true,
     includeIfNull: false,
@@ -89,4 +89,3 @@ class CompleteBreedingPlanResponseData {
   }
 
 }
-

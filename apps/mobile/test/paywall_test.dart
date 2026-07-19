@@ -17,19 +17,63 @@ void main() {
     expect(check.allowed, isTrue);
   });
 
-  testWidgets('PaywallPage activates pro in sandbox', (tester) async {
-    final controller = PaywallController(
-      repository: MemoryPaywallRepository(),
-    );
+  testWidgets('PaywallPage only presents public entitlement information', (
+    tester,
+  ) async {
+    final controller = PaywallController(repository: MemoryPaywallRepository());
     await tester.pumpWidget(
       MaterialApp(home: PaywallPage(controller: controller)),
     );
     await tester.pumpAndSettle();
     expect(find.text('套餐与权益'), findsOneWidget);
     expect(find.byKey(const Key('paywall-plan-title')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('paywall-activate-pro')));
-    await tester.pumpAndSettle();
-    expect(controller.snapshotState.data?.isPro, isTrue);
-    expect(find.textContaining('专业版'), findsWidgets);
+    expect(find.byKey(const Key('paywall-read-only')), findsOneWidget);
+    expect(find.byKey(const Key('paywall-activate-pro')), findsNothing);
+    expect(find.byKey(const Key('paywall-activate-free')), findsNothing);
+    expect(
+      find.byKey(const Key('paywall-feature-feature.server_push')),
+      findsNothing,
+    );
+    expect(find.textContaining('沙箱'), findsNothing);
+    expect(find.textContaining('门禁'), findsNothing);
+    expect(controller.snapshotState.data?.planCode, 'free');
   });
+
+  testWidgets('PaywallPage exposes loading failure with retry', (tester) async {
+    final controller = PaywallController(
+      repository: _FailingPaywallRepository(),
+    );
+    await tester.pumpWidget(
+      MaterialApp(home: PaywallPage(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('权益加载失败'), findsWidgets);
+    expect(find.text('重试'), findsWidgets);
+  });
+}
+
+class _FailingPaywallRepository implements PaywallRepository {
+  @override
+  Future<List<PlanCatalogEntry>> listCatalog() async {
+    throw const PaywallRepositoryException('权益加载失败');
+  }
+
+  @override
+  Future<EntitlementSnapshot> current() async {
+    throw const PaywallRepositoryException('权益加载失败');
+  }
+
+  @override
+  Future<EntitlementCheckResult> check({
+    String? feature,
+    String? metric,
+  }) async {
+    throw const PaywallRepositoryException('权益加载失败');
+  }
+
+  @override
+  Future<EntitlementSnapshot> sandboxActivate(String planCode) async {
+    throw const PaywallRepositoryException('权益加载失败');
+  }
 }

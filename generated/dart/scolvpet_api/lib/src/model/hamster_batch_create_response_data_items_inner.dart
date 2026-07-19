@@ -33,7 +33,7 @@ class HamsterBatchCreateResponseDataItemsInner {
   });
 
   @JsonKey(
-    
+
     name: r'client_item_id',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class HamsterBatchCreateResponseDataItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -57,7 +57,7 @@ class HamsterBatchCreateResponseDataItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'resource',
     required: false,
     includeIfNull: false,
@@ -69,7 +69,7 @@ class HamsterBatchCreateResponseDataItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'error',
     required: false,
     includeIfNull: false,
@@ -106,4 +106,3 @@ class HamsterBatchCreateResponseDataItemsInner {
   }
 
 }
-

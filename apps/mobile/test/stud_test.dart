@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scolvpet_mobile/features/i2/i2_models.dart';
 import 'package:scolvpet_mobile/features/stud/stud.dart';
 
 void main() {
@@ -30,16 +31,36 @@ void main() {
   testWidgets('StudHubPage creates listing', (tester) async {
     final controller = StudController(repository: MemoryStudRepository());
     await tester.pumpWidget(
-      MaterialApp(home: StudHubPage(controller: controller)),
+      MaterialApp(
+        home: StudHubPage(
+          controller: controller,
+          hamsters: const [
+            I2Hamster(
+              id: 'sire-1',
+              internalCode: 'M-01',
+              name: '大王',
+              sex: 'male',
+              varietyCode: 'golden',
+              lifecycleStatus: 'active',
+              breedingStatus: 'candidate',
+              birthDate: null,
+              currentEnclosureId: null,
+              litterId: null,
+              notes: null,
+              version: 1,
+            ),
+          ],
+        ),
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.text('跨舍借配'), findsOneWidget);
     await tester.tap(find.byKey(const Key('stud-fab')));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const Key('stud-listing-sire')), '大王');
+    expect(find.byKey(const Key('stud-listing-sire')), findsOneWidget);
     await tester.tap(find.byKey(const Key('stud-listing-submit')));
     await tester.pumpAndSettle();
     expect(controller.listingsState.hasValue, isTrue);
-    expect(controller.listingsState.data!.single.sireLabel, '大王');
+    expect(controller.listingsState.data!.single.sireLabel, '大王 · M-01');
   });
 }

@@ -32,7 +32,7 @@ class MediaUploadPresignRequest {
   });
 
   @JsonKey(
-    
+
     name: r'file_name',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class MediaUploadPresignRequest {
 
 
   @JsonKey(
-    
+
     name: r'content_type',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class MediaUploadPresignRequest {
           // minimum: 1
           // maximum: 524288000
   @JsonKey(
-    
+
     name: r'size_bytes',
     required: true,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class MediaUploadPresignRequest {
 
 
   @JsonKey(
-    
+
     name: r'sha256',
     required: true,
     includeIfNull: false,
@@ -82,7 +82,7 @@ class MediaUploadPresignRequest {
 
 
   @JsonKey(
-    
+
     name: r'purpose',
     required: false,
     includeIfNull: false,
@@ -166,5 +166,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -36,7 +36,7 @@ class DataCenterSummaryResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'recent_imports',
     required: true,
     includeIfNull: false,
@@ -48,7 +48,7 @@ class DataCenterSummaryResponseData {
 
 
   @JsonKey(
-    
+
     name: r'recent_exports',
     required: true,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class DataCenterSummaryResponseData {
 
 
   @JsonKey(
-    
+
     name: r'recent_backups',
     required: true,
     includeIfNull: false,
@@ -73,7 +73,7 @@ class DataCenterSummaryResponseData {
 
       /// 六项固定用量指标各出现一次
   @JsonKey(
-    
+
     name: r'usage',
     required: true,
     includeIfNull: false,
@@ -85,7 +85,7 @@ class DataCenterSummaryResponseData {
 
 
   @JsonKey(
-    
+
     name: r'usage_status',
     required: true,
     includeIfNull: false,
@@ -141,5 +141,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -43,7 +43,7 @@ class ConfirmBirthNoLitterData {
   });
 
   @JsonKey(
-    
+
     name: r'result_type',
     required: true,
     includeIfNull: false,
@@ -55,7 +55,7 @@ class ConfirmBirthNoLitterData {
 
 
   @JsonKey(
-    
+
     name: r'breeding_plan',
     required: true,
     includeIfNull: false,
@@ -67,7 +67,7 @@ class ConfirmBirthNoLitterData {
 
 
   @JsonKey(
-    
+
     name: r'birth_event_id',
     required: true,
     includeIfNull: false,
@@ -79,7 +79,7 @@ class ConfirmBirthNoLitterData {
 
 
   @JsonKey(
-    
+
     name: r'event_type',
     required: true,
     includeIfNull: false,
@@ -91,7 +91,7 @@ class ConfirmBirthNoLitterData {
 
 
   @JsonKey(
-    
+
     name: r'born_at',
     required: true,
     includeIfNull: false,
@@ -104,7 +104,7 @@ class ConfirmBirthNoLitterData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'initial_other_count',
     required: true,
     includeIfNull: false,
@@ -116,7 +116,7 @@ class ConfirmBirthNoLitterData {
 
 
   @JsonKey(
-    
+
     name: r'outcome_reason',
     required: true,
     includeIfNull: false,
@@ -128,7 +128,7 @@ class ConfirmBirthNoLitterData {
 
 
   @JsonKey(
-    
+
     name: r'dam_condition',
     required: true,
     includeIfNull: false,
@@ -140,7 +140,7 @@ class ConfirmBirthNoLitterData {
 
 
   @JsonKey(
-    
+
     name: r'celebration_job',
     required: false,
     includeIfNull: false,
@@ -214,5 +214,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -30,7 +30,7 @@ class AdjustBaselineResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'breeding_plan',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class AdjustBaselineResponseData {
 
 
   @JsonKey(
-    
+
     name: r'superseded_reminder_ids',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class AdjustBaselineResponseData {
 
 
   @JsonKey(
-    
+
     name: r'created_reminders',
     required: true,
     includeIfNull: false,
@@ -89,4 +89,3 @@ class AdjustBaselineResponseData {
   }
 
 }
-

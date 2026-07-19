@@ -35,6 +35,13 @@ class PublicSite {
 
   String get statusLabel => published ? '已发布' : '未发布';
 
+  String get canonicalPublicPath => '/p/$slug';
+
+  String publicUrl({String host = 'https://p.scolv.com'}) {
+    final normalizedHost = host.replaceFirst(RegExp(r'/$'), '');
+    return '$normalizedHost$canonicalPublicPath';
+  }
+
   factory PublicSite.fromJson(Map<String, dynamic> json) => PublicSite(
     id: json['id'] as String?,
     slug: json['slug'] as String? ?? '',
@@ -47,7 +54,9 @@ class PublicSite {
     showStats: json['show_stats'] as bool? ?? true,
     showContact: json['show_contact'] as bool? ?? true,
     published: json['published'] as bool? ?? false,
-    publishedAt: DateTime.tryParse(json['published_at'] as String? ?? '')?.toUtc(),
+    publishedAt: DateTime.tryParse(
+      json['published_at'] as String? ?? '',
+    )?.toUtc(),
     version: (json['version'] as num?)?.toInt() ?? 0,
     updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '')?.toUtc(),
     publicUrlPath: json['public_url_path'] as String?,

@@ -28,7 +28,7 @@ class HamsterBatchCreateRequest {
 
       /// true 时任一项失败则全部回滚
   @JsonKey(
-    
+
     name: r'atomic',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class HamsterBatchCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'items',
     required: true,
     includeIfNull: false,
@@ -73,4 +73,3 @@ class HamsterBatchCreateRequest {
   }
 
 }
-

@@ -26,7 +26,7 @@ class AuditMiniprogramReleaseRequest {
   });
 
   @JsonKey(
-    
+
     name: r'decision',
     required: true,
     includeIfNull: false,
@@ -38,7 +38,7 @@ class AuditMiniprogramReleaseRequest {
 
 
   @JsonKey(
-    
+
     name: r'note',
     required: false,
     includeIfNull: false,
@@ -86,5 +86,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

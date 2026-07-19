@@ -18,7 +18,7 @@ class PedigreeNode {
   String get displayName {
     final n = name?.trim();
     if (n != null && n.isNotEmpty) return '$n · $internalCode';
-    return internalCode.isEmpty ? id : internalCode;
+    return internalCode.isEmpty ? '未命名仓鼠' : internalCode;
   }
 
   factory PedigreeNode.fromJson(Map<String, dynamic> json) => PedigreeNode(
@@ -37,6 +37,14 @@ class PedigreeNode {
     'variety_code': varietyCode,
   };
 }
+
+String pedigreeEvidenceLabel(String? value) => switch (value) {
+  'profile' || 'record' => '档案记录',
+  'manual' || 'human_confirmed' => '人工确认',
+  'test' || 'genetic_test' => '检测确认',
+  null || '' => '来源待更新',
+  _ => '来源待更新',
+};
 
 class PedigreeEdge {
   const PedigreeEdge({
@@ -98,9 +106,7 @@ class PedigreeGraph {
   final List<PedigreeEdge> edges;
   final List<PedigreeCommonAncestor> commonAncestors;
 
-  Map<String, PedigreeNode> get nodeById => {
-    for (final n in nodes) n.id: n,
-  };
+  Map<String, PedigreeNode> get nodeById => {for (final n in nodes) n.id: n};
 }
 
 /// One ancestor slot in a generation row (sire left / dam right layout).

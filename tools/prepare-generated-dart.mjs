@@ -93,17 +93,26 @@ if (fs.existsSync(apiPath)) {
 
 // OpenAPI Generator leaves trailing spaces on some doc/comment lines; strip
 // them so git diff --check and CI whitespace gates stay green.
-function stripTrailingWhitespace(filePath) {
-  if (!fs.existsSync(filePath)) return;
-  const original = fs.readFileSync(filePath, 'utf8');
-  const cleaned = original.replace(/[ \t]+$/gm, '');
-  if (cleaned !== original) {
-    fs.writeFileSync(filePath, cleaned);
+function stripTrailingWhitespaceTree(dirPath) {
+  if (!fs.existsSync(dirPath)) return;
+  for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+    const full = path.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === '.dart_tool' || entry.name === '.openapi-generator') {
+        continue;
+      }
+      stripTrailingWhitespaceTree(full);
+      continue;
+    }
+    if (!/\.(dart|md|yaml|yml|json|txt)$/.test(entry.name)) continue;
+    const original = fs.readFileSync(full, 'utf8');
+    const cleaned = original.replace(/[ \t]+$/gm, '').replace(/\s+$/u, '\n');
+    if (cleaned !== original) {
+      fs.writeFileSync(full, cleaned);
+    }
   }
 }
-stripTrailingWhitespace(apiPath);
-stripTrailingWhitespace(path.join(generated, 'doc/DefaultApi.md'));
-stripTrailingWhitespace(path.join(generated, 'README.md'));
+stripTrailingWhitespaceTree(generated);
 
 const emptyExample = path.join(modelDir, 'import_template_response_data_columns_inner_example.dart');
 if (fs.existsSync(emptyExample)) {

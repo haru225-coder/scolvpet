@@ -34,7 +34,7 @@ class IndividualizeLitterRequestItemsInner {
   });
 
   @JsonKey(
-    
+
     name: r'pup_identity_id',
     required: true,
     includeIfNull: false,
@@ -46,7 +46,7 @@ class IndividualizeLitterRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'internal_code',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class IndividualizeLitterRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: false,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class IndividualizeLitterRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'variety_code',
     required: false,
     includeIfNull: false,
@@ -82,7 +82,7 @@ class IndividualizeLitterRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'cover_media_id',
     required: false,
     includeIfNull: false,
@@ -94,7 +94,7 @@ class IndividualizeLitterRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -135,4 +135,3 @@ class IndividualizeLitterRequestItemsInner {
   }
 
 }
-

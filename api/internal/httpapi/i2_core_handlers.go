@@ -84,19 +84,20 @@ type i2EnclosureDimensionsRequest struct {
 }
 
 type i2HamsterCreateRequest struct {
-	InternalCode         string     `json:"internal_code"`
-	Name                 *string    `json:"name"`
-	SpeciesRuleVersionID uuid.UUID  `json:"species_rule_version_id"`
-	VarietyCode          *string    `json:"variety_code"`
-	Sex                  string     `json:"sex"`
-	SexConfidence        *float64   `json:"sex_confidence"`
-	BirthDate            *string    `json:"birth_date"`
-	SourceType           string     `json:"source_type"`
-	CoverMediaID         *uuid.UUID `json:"cover_media_id"`
-	Notes                *string    `json:"notes"`
-	SireID               *uuid.UUID `json:"sire_id"`
-	DamID                *uuid.UUID `json:"dam_id"`
-	LitterID             *uuid.UUID `json:"litter_id"`
+	InternalCode         string         `json:"internal_code"`
+	Name                 *string        `json:"name"`
+	SpeciesRuleVersionID uuid.UUID      `json:"species_rule_version_id"`
+	VarietyCode          *string        `json:"variety_code"`
+	Sex                  string         `json:"sex"`
+	SexConfidence        *float64       `json:"sex_confidence"`
+	BirthDate            *string        `json:"birth_date"`
+	SourceType           string         `json:"source_type"`
+	CoverMediaID         *uuid.UUID     `json:"cover_media_id"`
+	Notes                *string        `json:"notes"`
+	SireID               *uuid.UUID     `json:"sire_id"`
+	DamID                *uuid.UUID     `json:"dam_id"`
+	LitterID             *uuid.UUID     `json:"litter_id"`
+	Phenotype            map[string]any `json:"phenotype"`
 }
 
 type i2HamsterBatchItemRequest struct {
@@ -334,6 +335,7 @@ func (s *Server) updateI2Hamster(w http.ResponseWriter, r *http.Request) {
 	patch, payload, err := decodeI2MergePatch(r, map[string]bool{
 		"internal_code": true, "name": true, "variety_code": true, "sex": true,
 		"sex_confidence": true, "birth_date": true, "cover_media_id": true, "notes": true,
+		"phenotype": true,
 	})
 	if err != nil || len(patch) == 0 {
 		writeI2CoreError(w, r, validationError("body", "仓鼠更新请求体格式不正确"))
@@ -363,6 +365,18 @@ func (s *Server) updateI2Hamster(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		input.ClearVariety, input.VarietyCode = isNull, value
+	}
+	if raw, exists := patch["phenotype"]; exists {
+		if i2JSONNull(raw) {
+			input.Phenotype = map[string]any{}
+		} else {
+			var value map[string]any
+			if json.Unmarshal(raw, &value) != nil {
+				writeI2CoreError(w, r, validationError("phenotype", "表型 JSON 格式不正确"))
+				return
+			}
+			input.Phenotype = value
+		}
 	}
 	if raw, exists := patch["sex"]; exists {
 		value, valueErr := i2PatchString(raw, false)
@@ -1228,6 +1242,7 @@ func (request i2HamsterCreateRequest) coreInput() (i2core.CreateHamsterInput, er
 		InternalCode: request.InternalCode, Name: request.Name, SpeciesRuleVersionID: request.SpeciesRuleVersionID,
 		VarietyCode: request.VarietyCode, Sex: request.Sex, SexConfidence: request.SexConfidence,
 		BirthDate: birthDate, SourceType: request.SourceType, Notes: request.Notes,
+		Phenotype: request.Phenotype,
 	}, nil
 }
 
@@ -1631,6 +1646,10 @@ func mapI2Slice[T any](values []T, mapper func(T) any) []any {
 }
 
 func i2HamsterJSON(hamster i2core.Hamster) any {
+	phenotype := hamster.Phenotype
+	if phenotype == nil {
+		phenotype = map[string]any{}
+	}
 	return map[string]any{
 		"id": hamster.ID, "owner_id": hamster.OwnerID, "internal_code": hamster.InternalCode,
 		"name": hamster.Name, "species_rule_version_id": hamster.SpeciesRuleVersionID,
@@ -1638,7 +1657,8 @@ func i2HamsterJSON(hamster i2core.Hamster) any {
 		"birth_date": i2DatePointer(hamster.BirthDate), "litter_id": nil, "source_type": hamster.SourceType,
 		"lifecycle_status": hamster.LifecycleStatus, "breeding_status": hamster.BreedingStatus,
 		"current_enclosure_id": hamster.CurrentEnclosureID, "cover_media_id": nil, "notes": hamster.Notes,
-		"version": hamster.Version, "created_at": hamster.CreatedAt, "updated_at": hamster.UpdatedAt,
+		"phenotype": phenotype,
+		"version":   hamster.Version, "created_at": hamster.CreatedAt, "updated_at": hamster.UpdatedAt,
 	}
 }
 

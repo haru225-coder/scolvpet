@@ -32,7 +32,7 @@ class UsageMetric {
   });
 
   @JsonKey(
-    
+
     name: r'metric',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class UsageMetric {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'used',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class UsageMetric {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'limit',
     required: false,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class UsageMetric {
 
 
   @JsonKey(
-    
+
     name: r'unit',
     required: true,
     includeIfNull: false,
@@ -82,7 +82,7 @@ class UsageMetric {
 
 
   @JsonKey(
-    
+
     name: r'measured_at',
     required: true,
     includeIfNull: false,
@@ -162,5 +162,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

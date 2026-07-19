@@ -27,6 +27,8 @@ abstract class _$CrmHandoverCWProxy {
 
   CrmHandover contactName(String? contactName);
 
+  CrmHandover hamsterName(String? hamsterName);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CrmHandover(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -44,6 +46,7 @@ abstract class _$CrmHandoverCWProxy {
     String? notes,
     int version,
     String? contactName,
+    String? hamsterName,
   });
 }
 
@@ -88,6 +91,10 @@ class _$CrmHandoverCWProxyImpl implements _$CrmHandoverCWProxy {
       this(contactName: contactName);
 
   @override
+  CrmHandover hamsterName(String? hamsterName) =>
+      this(hamsterName: hamsterName);
+
+  @override
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CrmHandover(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -105,6 +112,7 @@ class _$CrmHandoverCWProxyImpl implements _$CrmHandoverCWProxy {
     Object? notes = const $CopyWithPlaceholder(),
     Object? version = const $CopyWithPlaceholder(),
     Object? contactName = const $CopyWithPlaceholder(),
+    Object? hamsterName = const $CopyWithPlaceholder(),
   }) {
     return CrmHandover(
       id: id == const $CopyWithPlaceholder()
@@ -147,6 +155,10 @@ class _$CrmHandoverCWProxyImpl implements _$CrmHandoverCWProxy {
           ? _value.contactName
           // ignore: cast_nullable_to_non_nullable
           : contactName as String?,
+      hamsterName: hamsterName == const $CopyWithPlaceholder()
+          ? _value.hamsterName
+          // ignore: cast_nullable_to_non_nullable
+          : hamsterName as String?,
     );
   }
 }
@@ -195,6 +207,7 @@ CrmHandover _$CrmHandoverFromJson(Map<String, dynamic> json) => $checkedCreate(
       notes: $checkedConvert('notes', (v) => v as String?),
       version: $checkedConvert('version', (v) => (v as num).toInt()),
       contactName: $checkedConvert('contact_name', (v) => v as String?),
+      hamsterName: $checkedConvert('hamster_name', (v) => v as String?),
     );
     return val;
   },
@@ -205,6 +218,7 @@ CrmHandover _$CrmHandoverFromJson(Map<String, dynamic> json) => $checkedCreate(
     'scheduledAt': 'scheduled_at',
     'completedAt': 'completed_at',
     'contactName': 'contact_name',
+    'hamsterName': 'hamster_name',
   },
 );
 
@@ -220,6 +234,7 @@ Map<String, dynamic> _$CrmHandoverToJson(CrmHandover instance) =>
       'notes': ?instance.notes,
       'version': instance.version,
       'contact_name': ?instance.contactName,
+      'hamster_name': ?instance.hamsterName,
     };
 
 const _$CrmHandoverStatusEnumEnumMap = {

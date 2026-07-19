@@ -30,7 +30,7 @@ class StartPairingRequest {
   });
 
   @JsonKey(
-    
+
     name: r'enclosure_id',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class StartPairingRequest {
 
 
   @JsonKey(
-    
+
     name: r'started_at',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class StartPairingRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class StartPairingRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -103,4 +103,3 @@ class StartPairingRequest {
   }
 
 }
-

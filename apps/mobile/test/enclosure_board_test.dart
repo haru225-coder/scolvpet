@@ -57,91 +57,97 @@ void main() {
       EnclosureBoardTone.dirty,
     );
     expect(
-      enclosureBoardTone(enclosure(id: 'e5', state: 'pairing_temp', occupants: ['h4', 'h5'])),
+      enclosureBoardTone(
+        enclosure(id: 'e5', state: 'pairing_temp', occupants: ['h4', 'h5']),
+      ),
       EnclosureBoardTone.pairing,
     );
   });
 
   test('enclosureStateForPurpose maps stay purpose', () {
-    expect(enclosureStateForPurpose('isolation', occupantCount: 1), 'isolation');
+    expect(
+      enclosureStateForPurpose('isolation', occupantCount: 1),
+      'isolation',
+    );
     expect(
       enclosureStateForPurpose('single', occupantCount: 1),
       'occupied_single',
     );
     expect(enclosureStateForPurpose('single', occupantCount: 0), 'vacant');
-    expect(enclosureStateForPurpose('pairing_temp', occupantCount: 2), 'pairing_temp');
-  });
-
-  test('MemoryI2Repository.moveHamster writes stay and updates board state', () async {
-    final repo = MemoryI2Repository(
-      snapshot: I2Snapshot(
-        hamsters: const [
-          I2Hamster(
-            id: 'h1',
-            internalCode: 'H-1',
-            name: '雪团',
-            sex: 'female',
-            varietyCode: 'golden',
-            lifecycleStatus: 'active',
-            breedingStatus: 'candidate',
-            birthDate: null,
-            currentEnclosureId: null,
-            litterId: null,
-            notes: null,
-            version: 1,
-          ),
-        ],
-        litters: const [],
-        enclosures: [
-          enclosure(id: 'e-vacant', state: 'vacant'),
-          enclosure(
-            id: 'e-old',
-            state: 'occupied_single',
-            occupants: const ['h1'],
-          ),
-        ],
-        lastSyncedAt: DateTime.utc(2026, 7, 1),
-      ),
-    );
-    // Seed old occupancy on hamster.
-    await repo.updateHamster(
-      'h1',
-      1,
-      const I2HamsterUpdate(),
-    );
-    // Manually set current enclosure via move into vacant with isolation.
-    // First put hamster on e-old by a move.
-    final stay = await repo.moveHamster(
-      I2MoveDraft(
-        enclosureId: 'e-vacant',
-        hamsterId: 'h1',
-        purpose: 'isolation',
-        startedAt: DateTime.utc(2026, 7, 17, 10),
-      ),
-      enclosureVersion: 1,
-    );
-    expect(stay.enclosureId, 'e-vacant');
-    expect(stay.purpose, 'isolation');
-    expect(stay.endedAt, isNull);
-
-    final snapshot = await repo.loadSnapshot();
-    final target = snapshot.enclosures.firstWhere((e) => e.id == 'e-vacant');
-    expect(target.state, 'isolation');
-    expect(target.currentHamsterIds, ['h1']);
     expect(
-      enclosureBoardTone(target),
-      EnclosureBoardTone.isolation,
+      enclosureStateForPurpose('pairing_temp', occupantCount: 2),
+      'pairing_temp',
     );
-
-    final detail = await repo.getEnclosureDetail('e-vacant');
-    expect(detail.stays, isNotEmpty);
-    expect(detail.stays.first.hamsterId, 'h1');
-
-    final hamster = snapshot.hamsters.single;
-    expect(hamster.currentEnclosureId, 'e-vacant');
   });
 
-  testWidgets('EnclosureGridPage shows legend and colored tiles', (tester) async {
+  test(
+    'MemoryI2Repository.moveHamster writes stay and updates board state',
+    () async {
+      final repo = MemoryI2Repository(
+        snapshot: I2Snapshot(
+          hamsters: const [
+            I2Hamster(
+              id: 'h1',
+              internalCode: 'H-1',
+              name: '雪团',
+              sex: 'female',
+              varietyCode: 'golden',
+              lifecycleStatus: 'active',
+              breedingStatus: 'candidate',
+              birthDate: null,
+              currentEnclosureId: null,
+              litterId: null,
+              notes: null,
+              version: 1,
+            ),
+          ],
+          litters: const [],
+          enclosures: [
+            enclosure(id: 'e-vacant', state: 'vacant'),
+            enclosure(
+              id: 'e-old',
+              state: 'occupied_single',
+              occupants: const ['h1'],
+            ),
+          ],
+          lastSyncedAt: DateTime.utc(2026, 7, 1),
+        ),
+      );
+      // Seed old occupancy on hamster.
+      await repo.updateHamster('h1', 1, const I2HamsterUpdate());
+      // Manually set current enclosure via move into vacant with isolation.
+      // First put hamster on e-old by a move.
+      final stay = await repo.moveHamster(
+        I2MoveDraft(
+          enclosureId: 'e-vacant',
+          hamsterId: 'h1',
+          purpose: 'isolation',
+          startedAt: DateTime.utc(2026, 7, 17, 10),
+        ),
+        enclosureVersion: 1,
+      );
+      expect(stay.enclosureId, 'e-vacant');
+      expect(stay.purpose, 'isolation');
+      expect(stay.endedAt, isNull);
+
+      final snapshot = await repo.loadSnapshot();
+      final target = snapshot.enclosures.firstWhere((e) => e.id == 'e-vacant');
+      expect(target.state, 'isolation');
+      expect(target.currentHamsterIds, ['h1']);
+      expect(enclosureBoardTone(target), EnclosureBoardTone.isolation);
+
+      final detail = await repo.getEnclosureDetail('e-vacant');
+      expect(detail.stays, isNotEmpty);
+      expect(detail.stays.first.hamsterId, 'h1');
+
+      final hamster = snapshot.hamsters.single;
+      expect(hamster.currentEnclosureId, 'e-vacant');
+    },
+  );
+
+  testWidgets('EnclosureGridPage shows legend and colored tiles', (
+    tester,
+  ) async {
     final controller = I2Controller(
       repository: MemoryI2Repository(
         snapshot: I2Snapshot(
@@ -149,11 +155,7 @@ void main() {
           litters: const [],
           enclosures: [
             enclosure(id: 'e1', state: 'vacant'),
-            enclosure(
-              id: 'e2',
-              state: 'isolation',
-              occupants: const ['h9'],
-            ),
+            enclosure(id: 'e2', state: 'isolation', occupants: const ['h9']),
           ],
           lastSyncedAt: DateTime.utc(2026, 7, 1),
         ),
@@ -213,5 +215,18 @@ void main() {
     final enc = controller.snapshotState.data!.enclosures.single;
     expect(enc.currentHamsterIds, ['h1']);
     expect(enc.state, 'occupied_single');
+  });
+
+  test('I2Controller creates an empty enclosure', () async {
+    final repo = MemoryI2Repository();
+    final controller = I2Controller(repository: repo);
+    await controller.restore();
+
+    await controller.createEnclosure(
+      const I2EnclosureDraft(code: 'A-01', rackCode: 'A', levelCode: '1'),
+    );
+
+    expect(controller.actionState.status, I2AsyncStatus.data);
+    expect(controller.snapshotState.data!.enclosures.single.code, 'A-01');
   });
 }

@@ -50,7 +50,7 @@ class AsyncJob {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -62,7 +62,7 @@ class AsyncJob {
 
 
   @JsonKey(
-    
+
     name: r'job_type',
     required: true,
     includeIfNull: false,
@@ -74,7 +74,7 @@ class AsyncJob {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -88,7 +88,7 @@ class AsyncJob {
           // minimum: 0
           // maximum: 100
   @JsonKey(
-    
+
     name: r'progress_percent',
     required: true,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class AsyncJob {
 
 
   @JsonKey(
-    
+
     name: r'current_step',
     required: false,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class AsyncJob {
 
 
   @JsonKey(
-    
+
     name: r'error',
     required: false,
     includeIfNull: false,
@@ -124,7 +124,7 @@ class AsyncJob {
 
 
   @JsonKey(
-    
+
     name: r'retryable',
     required: true,
     includeIfNull: false,
@@ -149,7 +149,7 @@ class AsyncJob {
 
 
   @JsonKey(
-    
+
     name: r'result',
     required: false,
     includeIfNull: false,
@@ -161,7 +161,7 @@ class AsyncJob {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: false,
     includeIfNull: false,
@@ -174,7 +174,7 @@ class AsyncJob {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -186,7 +186,7 @@ class AsyncJob {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -198,7 +198,7 @@ class AsyncJob {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -276,5 +276,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

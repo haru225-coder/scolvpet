@@ -28,7 +28,7 @@ class FieldError {
   });
 
   @JsonKey(
-    
+
     name: r'field',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class FieldError {
 
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class FieldError {
 
 
   @JsonKey(
-    
+
     name: r'message',
     required: true,
     includeIfNull: false,
@@ -87,4 +87,3 @@ class FieldError {
   }
 
 }
-

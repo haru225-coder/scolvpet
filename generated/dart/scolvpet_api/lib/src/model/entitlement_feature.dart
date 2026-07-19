@@ -30,7 +30,7 @@ class EntitlementFeature {
   });
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class EntitlementFeature {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class EntitlementFeature {
 
 
   @JsonKey(
-    
+
     name: r'description',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class EntitlementFeature {
 
 
   @JsonKey(
-    
+
     name: r'allowed',
     required: true,
     includeIfNull: false,
@@ -103,4 +103,3 @@ class EntitlementFeature {
   }
 
 }
-

@@ -38,7 +38,7 @@ class ImportIssue {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'row_number',
     required: true,
     includeIfNull: false,
@@ -50,7 +50,7 @@ class ImportIssue {
 
 
   @JsonKey(
-    
+
     name: r'column_name',
     required: false,
     includeIfNull: false,
@@ -62,7 +62,7 @@ class ImportIssue {
 
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -74,7 +74,7 @@ class ImportIssue {
 
 
   @JsonKey(
-    
+
     name: r'message',
     required: true,
     includeIfNull: false,
@@ -86,7 +86,7 @@ class ImportIssue {
 
 
   @JsonKey(
-    
+
     name: r'severity',
     required: true,
     includeIfNull: false,
@@ -98,7 +98,7 @@ class ImportIssue {
 
 
   @JsonKey(
-    
+
     name: r'original_value',
     required: false,
     includeIfNull: false,
@@ -110,7 +110,7 @@ class ImportIssue {
 
 
   @JsonKey(
-    
+
     name: r'suggestion',
     required: false,
     includeIfNull: false,
@@ -168,5 +168,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -28,7 +28,7 @@ class ErrorResponse {
   });
 
   @JsonKey(
-    
+
     name: r'error',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class ErrorResponse {
 
 
   @JsonKey(
-    
+
     name: r'meta',
     required: true,
     includeIfNull: false,
@@ -73,4 +73,3 @@ class ErrorResponse {
   }
 
 }
-

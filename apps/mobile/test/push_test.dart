@@ -6,10 +6,7 @@ void main() {
   test('MemoryPushRepository register and send test', () async {
     final repo = MemoryPushRepository();
     final device = await repo.upsertDevice(
-      const PushDeviceDraft(
-        token: 'dev-android-token-1',
-        platform: 'android',
-      ),
+      const PushDeviceDraft(token: 'dev-android-token-1', platform: 'android'),
     );
     expect(device.enabled, isTrue);
     final message = await repo.createMessage(
@@ -25,21 +22,21 @@ void main() {
     expect(failed.status, 'failed');
   });
 
-  testWidgets('PushSettingsPage registers device', (tester) async {
+  testWidgets('PushSettingsPage is a read-only availability notice', (
+    tester,
+  ) async {
     final controller = PushController(repository: MemoryPushRepository());
     await tester.pumpWidget(
       MaterialApp(home: PushSettingsPage(controller: controller)),
     );
     await tester.pumpAndSettle();
-    expect(find.text('服务端推送'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('push-register')));
-    await tester.pumpAndSettle();
-    expect(controller.devicesState.hasValue, isTrue);
-    expect(controller.lastMessage, contains('设备已注册'));
-    await tester.tap(find.byKey(const Key('push-send-test')));
-    await tester.pumpAndSettle();
-    expect(controller.messagesState.hasValue, isTrue);
-    expect(controller.lastMessage, contains('测试推送已发送'));
-    expect(controller.messagesState.data!.single.isSent, isTrue);
+    expect(find.text('通知说明'), findsOneWidget);
+    expect(find.byKey(const Key('push-read-only')), findsOneWidget);
+    expect(find.byKey(const Key('push-in-app-ready')), findsOneWidget);
+    expect(find.byKey(const Key('push-register')), findsNothing);
+    expect(find.byKey(const Key('push-send-test')), findsNothing);
+    expect(find.textContaining('log'), findsNothing);
+    expect(controller.devicesState.status.name, 'idle');
+    expect(controller.messagesState.status.name, 'idle');
   });
 }

@@ -160,14 +160,59 @@ void main() {
     expect(find.text('在养'), findsOneWidget);
     expect(find.text('1'), findsWidgets);
     expect(find.text('快捷操作'), findsOneWidget);
-    expect(find.byKey(const Key('home-quick-litters')), findsOneWidget);
+    expect(find.byKey(const Key('home-quick-create-hamster')), findsOneWidget);
+    expect(find.byKey(const Key('home-quick-enclosures')), findsOneWidget);
+    expect(find.byKey(const Key('home-quick-litters')), findsNothing);
     expect(find.textContaining('离线只读'), findsOneWidget);
 
+    final moreToggle = find.byKey(const Key('home-quick-more-toggle'));
+    await tester.ensureVisible(moreToggle);
+    await tester.tap(moreToggle);
+    await tester.pumpAndSettle();
     final litterQuick = find.byKey(const Key('home-quick-litters'));
+    expect(litterQuick, findsOneWidget);
     await tester.ensureVisible(litterQuick);
     await tester.tap(litterQuick);
     await tester.pumpAndSettle();
     expect(openedLitters, isTrue);
+  });
+
+  testWidgets('HomeOverviewPage hides zero dashboard on uncached error', (
+    tester,
+  ) async {
+    final controller = I2Controller(repository: MemoryI2Repository());
+    controller.snapshotState = const I2AsyncState.error('服务器暂时繁忙');
+    final appState = AppState(
+      repository: _OfflineI1(),
+      sessionStore: _TokenSessionStore(snapshot: _homeSnapshot),
+    );
+    await appState.restore();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: HomeOverviewPage(
+            state: appState,
+            controller: controller,
+            onOpenHamsters: () {},
+            onOpenEnclosures: () {},
+            onOpenBreeding: () {},
+            onOpenLitters: () {},
+            onOpenDataCenter: () {},
+            onCreateHamster: () {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('未同步'), findsOneWidget);
+    expect(find.text('今日数据暂时不可用'), findsOneWidget);
+    expect(find.text('服务器暂时繁忙'), findsOneWidget);
+    expect(find.text('在养'), findsNothing);
+    expect(find.text('今日护理'), findsNothing);
+    expect(find.text('一切正常'), findsNothing);
+    expect(find.text('快捷操作'), findsOneWidget);
   });
 }
 

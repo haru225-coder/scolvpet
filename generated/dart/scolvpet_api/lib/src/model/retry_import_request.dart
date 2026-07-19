@@ -26,7 +26,7 @@ class RetryImportRequest {
   });
 
   @JsonKey(
-    
+
     name: r'scope',
     required: true,
     includeIfNull: false,
@@ -38,7 +38,7 @@ class RetryImportRequest {
 
 
   @JsonKey(
-    
+
     name: r'row_numbers',
     required: false,
     includeIfNull: false,
@@ -86,5 +86,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

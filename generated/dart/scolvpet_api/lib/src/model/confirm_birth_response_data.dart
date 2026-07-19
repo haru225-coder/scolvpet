@@ -54,7 +54,7 @@ class ConfirmBirthResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'result_type',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class ConfirmBirthResponseData {
 
 
   @JsonKey(
-    
+
     name: r'breeding_plan',
     required: true,
     includeIfNull: false,
@@ -78,7 +78,7 @@ class ConfirmBirthResponseData {
 
 
   @JsonKey(
-    
+
     name: r'litter',
     required: true,
     includeIfNull: false,
@@ -91,7 +91,7 @@ class ConfirmBirthResponseData {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'pup_identity_count',
     required: true,
     includeIfNull: false,
@@ -104,7 +104,7 @@ class ConfirmBirthResponseData {
 
       /// 数量严格等于 pup_identity_count 和请求 initial_alive_count
   @JsonKey(
-    
+
     name: r'pup_identities',
     required: true,
     includeIfNull: false,
@@ -116,7 +116,7 @@ class ConfirmBirthResponseData {
 
 
   @JsonKey(
-    
+
     name: r'initial_count_event',
     required: true,
     includeIfNull: false,
@@ -128,7 +128,7 @@ class ConfirmBirthResponseData {
 
 
   @JsonKey(
-    
+
     name: r'celebration_job',
     required: false,
     includeIfNull: false,
@@ -140,7 +140,7 @@ class ConfirmBirthResponseData {
 
 
   @JsonKey(
-    
+
     name: r'birth_event_id',
     required: true,
     includeIfNull: false,
@@ -152,7 +152,7 @@ class ConfirmBirthResponseData {
 
 
   @JsonKey(
-    
+
     name: r'event_type',
     required: true,
     includeIfNull: false,
@@ -164,7 +164,7 @@ class ConfirmBirthResponseData {
 
 
   @JsonKey(
-    
+
     name: r'born_at',
     required: true,
     includeIfNull: false,
@@ -177,7 +177,7 @@ class ConfirmBirthResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'initial_other_count',
     required: true,
     includeIfNull: false,
@@ -189,7 +189,7 @@ class ConfirmBirthResponseData {
 
 
   @JsonKey(
-    
+
     name: r'outcome_reason',
     required: true,
     includeIfNull: false,
@@ -201,7 +201,7 @@ class ConfirmBirthResponseData {
 
 
   @JsonKey(
-    
+
     name: r'dam_condition',
     required: true,
     includeIfNull: false,
@@ -283,5 +283,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

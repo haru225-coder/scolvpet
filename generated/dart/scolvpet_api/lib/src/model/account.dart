@@ -28,7 +28,7 @@ class Account {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class Account {
 
 
   @JsonKey(
-    
+
     name: r'phone_masked',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class Account {
 
 
   @JsonKey(
-    
+
     name: r'display_name',
     required: false,
     includeIfNull: false,
@@ -87,4 +87,3 @@ class Account {
   }
 
 }
-

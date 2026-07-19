@@ -44,7 +44,7 @@ class OrganizationMember {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class OrganizationMember {
 
 
   @JsonKey(
-    
+
     name: r'organization_id',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class OrganizationMember {
 
 
   @JsonKey(
-    
+
     name: r'account_id',
     required: false,
     includeIfNull: false,
@@ -80,7 +80,7 @@ class OrganizationMember {
 
 
   @JsonKey(
-    
+
     name: r'phone',
     required: true,
     includeIfNull: false,
@@ -92,7 +92,7 @@ class OrganizationMember {
 
 
   @JsonKey(
-    
+
     name: r'display_name',
     required: false,
     includeIfNull: false,
@@ -104,7 +104,7 @@ class OrganizationMember {
 
 
   @JsonKey(
-    
+
     name: r'role',
     required: true,
     includeIfNull: false,
@@ -116,7 +116,7 @@ class OrganizationMember {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -128,7 +128,7 @@ class OrganizationMember {
 
 
   @JsonKey(
-    
+
     name: r'invited_at',
     required: true,
     includeIfNull: false,
@@ -140,7 +140,7 @@ class OrganizationMember {
 
 
   @JsonKey(
-    
+
     name: r'accepted_at',
     required: false,
     includeIfNull: false,
@@ -152,7 +152,7 @@ class OrganizationMember {
 
 
   @JsonKey(
-    
+
     name: r'revoked_at',
     required: false,
     includeIfNull: false,
@@ -165,7 +165,7 @@ class OrganizationMember {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -255,5 +255,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

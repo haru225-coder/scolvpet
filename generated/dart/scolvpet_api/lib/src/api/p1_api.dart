@@ -56,7 +56,7 @@ class P1Api {
   /// 需要 Bearer 令牌；当前熊舍成员可检查本舍功能与指标门限。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [entitlementCheckRequest] 
+  /// * [entitlementCheckRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -67,7 +67,7 @@ class P1Api {
   ///
   /// Returns a [Future] containing a [Response] with a [EntitlementCheckResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EntitlementCheckResponse>> checkEntitlement({ 
+  Future<Response<EntitlementCheckResponse>> checkEntitlement({
     required EntitlementCheckRequest entitlementCheckRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -156,7 +156,7 @@ _responseData = rawData == null ? null : deserialize<EntitlementCheckResponse, E
   /// 需要 Bearer 令牌；当前熊舍成员可创建记账分类。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createAccountingCategoryRequest] 
+  /// * [createAccountingCategoryRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -167,7 +167,7 @@ _responseData = rawData == null ? null : deserialize<EntitlementCheckResponse, E
   ///
   /// Returns a [Future] containing a [Response] with a [AccountingCategoryResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AccountingCategoryResponse>> createAccountingCategory({ 
+  Future<Response<AccountingCategoryResponse>> createAccountingCategory({
     required CreateAccountingCategoryRequest createAccountingCategoryRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -256,7 +256,7 @@ _responseData = rawData == null ? null : deserialize<AccountingCategoryResponse,
   /// 需要 Bearer 令牌；当前熊舍成员可创建记账流水。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createAccountingRecordRequest] 
+  /// * [createAccountingRecordRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -267,7 +267,7 @@ _responseData = rawData == null ? null : deserialize<AccountingCategoryResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [AccountingRecordResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AccountingRecordResponse>> createAccountingRecord({ 
+  Future<Response<AccountingRecordResponse>> createAccountingRecord({
     required CreateAccountingRecordRequest createAccountingRecordRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -356,7 +356,7 @@ _responseData = rawData == null ? null : deserialize<AccountingRecordResponse, A
   /// 需要 Bearer 令牌；当前熊舍成员可创建合同草稿。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createContractRequest] 
+  /// * [createContractRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -367,7 +367,7 @@ _responseData = rawData == null ? null : deserialize<AccountingRecordResponse, A
   ///
   /// Returns a [Future] containing a [Response] with a [DocumentResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DocumentResponse>> createContract({ 
+  Future<Response<DocumentResponse>> createContract({
     required CreateContractRequest createContractRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -456,7 +456,7 @@ _responseData = rawData == null ? null : deserialize<DocumentResponse, DocumentR
   /// 需要 Bearer 令牌；当前熊舍成员可创建合同模板。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createDocumentTemplateRequest] 
+  /// * [createDocumentTemplateRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -467,7 +467,7 @@ _responseData = rawData == null ? null : deserialize<DocumentResponse, DocumentR
   ///
   /// Returns a [Future] containing a [Response] with a [DocumentTemplateResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DocumentTemplateResponse>> createContractTemplate({ 
+  Future<Response<DocumentTemplateResponse>> createContractTemplate({
     required CreateDocumentTemplateRequest createDocumentTemplateRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -556,7 +556,7 @@ _responseData = rawData == null ? null : deserialize<DocumentTemplateResponse, D
   /// 需要 Bearer 令牌；当前熊舍成员可创建遗传档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createGeneticProfileRequest] 
+  /// * [createGeneticProfileRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -567,7 +567,7 @@ _responseData = rawData == null ? null : deserialize<DocumentTemplateResponse, D
   ///
   /// Returns a [Future] containing a [Response] with a [GeneticProfileResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GeneticProfileResponse>> createGeneticProfile({ 
+  Future<Response<GeneticProfileResponse>> createGeneticProfile({
     required CreateGeneticProfileRequest createGeneticProfileRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -656,7 +656,7 @@ _responseData = rawData == null ? null : deserialize<GeneticProfileResponse, Gen
   /// 需要 Bearer 令牌；当前熊舍成员可发送测试或业务推送。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createPushMessageRequest] 
+  /// * [createPushMessageRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -667,7 +667,7 @@ _responseData = rawData == null ? null : deserialize<GeneticProfileResponse, Gen
   ///
   /// Returns a [Future] containing a [Response] with a [PushMessageResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PushMessageResponse>> createPushMessage({ 
+  Future<Response<PushMessageResponse>> createPushMessage({
     required CreatePushMessageRequest createPushMessageRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -756,7 +756,7 @@ _responseData = rawData == null ? null : deserialize<PushMessageResponse, PushMe
   /// 需要 Bearer 令牌；当前熊舍成员可创建回执草稿。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createReceiptRequest] 
+  /// * [createReceiptRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -767,7 +767,7 @@ _responseData = rawData == null ? null : deserialize<PushMessageResponse, PushMe
   ///
   /// Returns a [Future] containing a [Response] with a [DocumentResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DocumentResponse>> createReceipt({ 
+  Future<Response<DocumentResponse>> createReceipt({
     required CreateReceiptRequest createReceiptRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -856,7 +856,7 @@ _responseData = rawData == null ? null : deserialize<DocumentResponse, DocumentR
   /// 需要 Bearer 令牌；当前熊舍成员可创建回执模板。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [createDocumentTemplateRequest] 
+  /// * [createDocumentTemplateRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -867,7 +867,7 @@ _responseData = rawData == null ? null : deserialize<DocumentResponse, DocumentR
   ///
   /// Returns a [Future] containing a [Response] with a [DocumentTemplateResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DocumentTemplateResponse>> createReceiptTemplate({ 
+  Future<Response<DocumentTemplateResponse>> createReceiptTemplate({
     required CreateDocumentTemplateRequest createDocumentTemplateRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -967,7 +967,7 @@ _responseData = rawData == null ? null : deserialize<DocumentTemplateResponse, D
   ///
   /// Returns a [Future] containing a [Response] with a [PushDeviceResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PushDeviceResponse>> disablePushDevice({ 
+  Future<Response<PushDeviceResponse>> disablePushDevice({
     required String deviceId,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -1049,7 +1049,7 @@ _responseData = rawData == null ? null : deserialize<PushDeviceResponse, PushDev
   ///
   /// Returns a [Future] containing a [Response] with a [AccountingSummaryResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AccountingSummaryResponse>> getAccountingSummary({ 
+  Future<Response<AccountingSummaryResponse>> getAccountingSummary({
     String? entryType,
     DateTime? from,
     DateTime? to,
@@ -1135,7 +1135,7 @@ _responseData = rawData == null ? null : deserialize<AccountingSummaryResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [EntitlementSnapshotResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EntitlementSnapshotResponse>> getCurrentEntitlement({ 
+  Future<Response<EntitlementSnapshotResponse>> getCurrentEntitlement({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1211,7 +1211,7 @@ _responseData = rawData == null ? null : deserialize<EntitlementSnapshotResponse
   ///
   /// Returns a [Future] containing a [Response] with a [EntitlementCatalogResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EntitlementCatalogResponse>> getEntitlementCatalog({ 
+  Future<Response<EntitlementCatalogResponse>> getEntitlementCatalog({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1278,7 +1278,7 @@ _responseData = rawData == null ? null : deserialize<EntitlementCatalogResponse,
   /// 需要 Bearer 令牌；仅舍主可邀请成员。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [inviteOrganizationMemberRequest] 
+  /// * [inviteOrganizationMemberRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -1289,7 +1289,7 @@ _responseData = rawData == null ? null : deserialize<EntitlementCatalogResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [OrganizationMemberResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<OrganizationMemberResponse>> inviteOrganizationMember({ 
+  Future<Response<OrganizationMemberResponse>> inviteOrganizationMember({
     required InviteOrganizationMemberRequest inviteOrganizationMemberRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -1390,7 +1390,7 @@ _responseData = rawData == null ? null : deserialize<OrganizationMemberResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [DocumentResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DocumentResponse>> issueContract({ 
+  Future<Response<DocumentResponse>> issueContract({
     required String documentId,
     String? ifMatch,
     String? idempotencyKey,
@@ -1474,7 +1474,7 @@ _responseData = rawData == null ? null : deserialize<DocumentResponse, DocumentR
   ///
   /// Returns a [Future] containing a [Response] with a [DocumentResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DocumentResponse>> issueReceipt({ 
+  Future<Response<DocumentResponse>> issueReceipt({
     required String documentId,
     String? ifMatch,
     String? idempotencyKey,
@@ -1556,7 +1556,7 @@ _responseData = rawData == null ? null : deserialize<DocumentResponse, DocumentR
   ///
   /// Returns a [Future] containing a [Response] with a [AccountingCategoryListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AccountingCategoryListResponse>> listAccountingCategories({ 
+  Future<Response<AccountingCategoryListResponse>> listAccountingCategories({
     String? entryType,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1641,7 +1641,7 @@ _responseData = rawData == null ? null : deserialize<AccountingCategoryListRespo
   ///
   /// Returns a [Future] containing a [Response] with a [AccountingRecordListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AccountingRecordListResponse>> listAccountingRecords({ 
+  Future<Response<AccountingRecordListResponse>> listAccountingRecords({
     String? entryType,
     DateTime? from,
     DateTime? to,
@@ -1727,7 +1727,7 @@ _responseData = rawData == null ? null : deserialize<AccountingRecordListRespons
   ///
   /// Returns a [Future] containing a [Response] with a [DocumentTemplateListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DocumentTemplateListResponse>> listContractTemplates({ 
+  Future<Response<DocumentTemplateListResponse>> listContractTemplates({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1803,7 +1803,7 @@ _responseData = rawData == null ? null : deserialize<DocumentTemplateListRespons
   ///
   /// Returns a [Future] containing a [Response] with a [DocumentListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DocumentListResponse>> listContracts({ 
+  Future<Response<DocumentListResponse>> listContracts({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1879,7 +1879,7 @@ _responseData = rawData == null ? null : deserialize<DocumentListResponse, Docum
   ///
   /// Returns a [Future] containing a [Response] with a [GeneticLocusListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GeneticLocusListResponse>> listGeneticLoci({ 
+  Future<Response<GeneticLocusListResponse>> listGeneticLoci({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1955,7 +1955,7 @@ _responseData = rawData == null ? null : deserialize<GeneticLocusListResponse, G
   ///
   /// Returns a [Future] containing a [Response] with a [GeneticProfileListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GeneticProfileListResponse>> listGeneticProfiles({ 
+  Future<Response<GeneticProfileListResponse>> listGeneticProfiles({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2031,7 +2031,7 @@ _responseData = rawData == null ? null : deserialize<GeneticProfileListResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [OrganizationMemberListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<OrganizationMemberListResponse>> listOrganizationMembers({ 
+  Future<Response<OrganizationMemberListResponse>> listOrganizationMembers({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2107,7 +2107,7 @@ _responseData = rawData == null ? null : deserialize<OrganizationMemberListRespo
   ///
   /// Returns a [Future] containing a [Response] with a [PushDeviceListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PushDeviceListResponse>> listPushDevices({ 
+  Future<Response<PushDeviceListResponse>> listPushDevices({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2183,7 +2183,7 @@ _responseData = rawData == null ? null : deserialize<PushDeviceListResponse, Pus
   ///
   /// Returns a [Future] containing a [Response] with a [PushMessageListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PushMessageListResponse>> listPushMessages({ 
+  Future<Response<PushMessageListResponse>> listPushMessages({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2259,7 +2259,7 @@ _responseData = rawData == null ? null : deserialize<PushMessageListResponse, Pu
   ///
   /// Returns a [Future] containing a [Response] with a [DocumentTemplateListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DocumentTemplateListResponse>> listReceiptTemplates({ 
+  Future<Response<DocumentTemplateListResponse>> listReceiptTemplates({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2335,7 +2335,7 @@ _responseData = rawData == null ? null : deserialize<DocumentTemplateListRespons
   ///
   /// Returns a [Future] containing a [Response] with a [DocumentListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DocumentListResponse>> listReceipts({ 
+  Future<Response<DocumentListResponse>> listReceipts({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2403,6 +2403,7 @@ _responseData = rawData == null ? null : deserialize<DocumentListResponse, Docum
   ///
   /// Parameters:
   /// * [memberId] - 成员 ID
+  /// * [ifMatch] - 可选的当前资源版本 ETag；传入时用于乐观并发控制。
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -2413,8 +2414,9 @@ _responseData = rawData == null ? null : deserialize<DocumentListResponse, Docum
   ///
   /// Returns a [Future] containing a [Response] with a [OrganizationMemberResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<OrganizationMemberResponse>> revokeOrganizationMember({ 
+  Future<Response<OrganizationMemberResponse>> revokeOrganizationMember({
     required String memberId,
+    String? ifMatch,
     String? idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2427,6 +2429,7 @@ _responseData = rawData == null ? null : deserialize<DocumentListResponse, Docum
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
+        if (ifMatch != null) r'If-Match': ifMatch,
         if (idempotencyKey != null) r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
@@ -2483,7 +2486,7 @@ _responseData = rawData == null ? null : deserialize<OrganizationMemberResponse,
   /// 需要 Bearer 令牌；仅写入 sandbox 来源的权益记录，不代表正式支付或生产订阅。
   ///
   /// Parameters:
-  /// * [sandboxActivatePlanRequest] 
+  /// * [sandboxActivatePlanRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -2494,7 +2497,7 @@ _responseData = rawData == null ? null : deserialize<OrganizationMemberResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [EntitlementSnapshotResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<EntitlementSnapshotResponse>> sandboxActivatePlan({ 
+  Future<Response<EntitlementSnapshotResponse>> sandboxActivatePlan({
     required SandboxActivatePlanRequest sandboxActivatePlanRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -2583,7 +2586,7 @@ _responseData = rawData == null ? null : deserialize<EntitlementSnapshotResponse
   /// 需要 Bearer 令牌；当前熊舍成员可运行只读遗传模拟。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [geneticSimulationRequest] 
+  /// * [geneticSimulationRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -2594,7 +2597,7 @@ _responseData = rawData == null ? null : deserialize<EntitlementSnapshotResponse
   ///
   /// Returns a [Future] containing a [Response] with a [GeneticSimulationResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GeneticSimulationResponse>> simulateGeneticBreeding({ 
+  Future<Response<GeneticSimulationResponse>> simulateGeneticBreeding({
     required GeneticSimulationRequest geneticSimulationRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,
@@ -2684,7 +2687,7 @@ _responseData = rawData == null ? null : deserialize<GeneticSimulationResponse, 
   ///
   /// Parameters:
   /// * [memberId] - 成员 ID
-  /// * [updateOrganizationMemberRequest] 
+  /// * [updateOrganizationMemberRequest]
   /// * [ifMatch] - 可选的当前资源版本 ETag；传入时用于乐观并发控制。
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2696,7 +2699,7 @@ _responseData = rawData == null ? null : deserialize<GeneticSimulationResponse, 
   ///
   /// Returns a [Future] containing a [Response] with a [OrganizationMemberResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<OrganizationMemberResponse>> updateOrganizationMember({ 
+  Future<Response<OrganizationMemberResponse>> updateOrganizationMember({
     required String memberId,
     required UpdateOrganizationMemberRequest updateOrganizationMemberRequest,
     String? ifMatch,
@@ -2788,7 +2791,7 @@ _responseData = rawData == null ? null : deserialize<OrganizationMemberResponse,
   /// 需要 Bearer 令牌；当前熊舍成员可登记或恢复推送设备。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
   /// Parameters:
-  /// * [upsertPushDeviceRequest] 
+  /// * [upsertPushDeviceRequest]
   /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -2799,7 +2802,7 @@ _responseData = rawData == null ? null : deserialize<OrganizationMemberResponse,
   ///
   /// Returns a [Future] containing a [Response] with a [PushDeviceResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PushDeviceResponse>> upsertPushDevice({ 
+  Future<Response<PushDeviceResponse>> upsertPushDevice({
     required UpsertPushDeviceRequest upsertPushDeviceRequest,
     String? idempotencyKey,
     CancelToken? cancelToken,

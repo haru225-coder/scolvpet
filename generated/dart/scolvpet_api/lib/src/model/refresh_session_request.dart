@@ -24,7 +24,7 @@ class RefreshSessionRequest {
   });
 
   @JsonKey(
-    
+
     name: r'refresh_token',
     required: true,
     includeIfNull: false,
@@ -55,4 +55,3 @@ class RefreshSessionRequest {
   }
 
 }
-

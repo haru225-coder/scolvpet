@@ -32,7 +32,7 @@ class StartGestationRequest {
   });
 
   @JsonKey(
-    
+
     name: r'pairing_attempt_id',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class StartGestationRequest {
 
 
   @JsonKey(
-    
+
     name: r'result',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class StartGestationRequest {
 
 
   @JsonKey(
-    
+
     name: r'baseline_at',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class StartGestationRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -80,7 +80,7 @@ class StartGestationRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -134,5 +134,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

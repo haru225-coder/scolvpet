@@ -28,7 +28,7 @@ class InviteOrganizationMemberRequest {
   });
 
   @JsonKey(
-    
+
     name: r'phone',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class InviteOrganizationMemberRequest {
 
 
   @JsonKey(
-    
+
     name: r'role',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class InviteOrganizationMemberRequest {
 
 
   @JsonKey(
-    
+
     name: r'display_name',
     required: false,
     includeIfNull: false,
@@ -106,5 +106,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

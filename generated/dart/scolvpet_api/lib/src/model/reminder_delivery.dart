@@ -34,7 +34,7 @@ class ReminderDelivery {
   });
 
   @JsonKey(
-    
+
     name: r'channel',
     required: true,
     includeIfNull: false,
@@ -46,7 +46,7 @@ class ReminderDelivery {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class ReminderDelivery {
 
 
   @JsonKey(
-    
+
     name: r'dedupe_key',
     required: true,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class ReminderDelivery {
 
 
   @JsonKey(
-    
+
     name: r'attempted_at',
     required: false,
     includeIfNull: false,
@@ -82,7 +82,7 @@ class ReminderDelivery {
 
 
   @JsonKey(
-    
+
     name: r'delivered_at',
     required: false,
     includeIfNull: false,
@@ -94,7 +94,7 @@ class ReminderDelivery {
 
 
   @JsonKey(
-    
+
     name: r'failure_code',
     required: false,
     includeIfNull: false,
@@ -176,5 +176,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

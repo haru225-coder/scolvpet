@@ -29,7 +29,7 @@ class MediaEditRecipeResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'source_media_id',
     required: true,
     includeIfNull: false,
@@ -41,7 +41,7 @@ class MediaEditRecipeResponseData {
 
 
   @JsonKey(
-    
+
     name: r'recipe_id',
     required: true,
     includeIfNull: false,
@@ -53,7 +53,7 @@ class MediaEditRecipeResponseData {
 
 
   @JsonKey(
-    
+
     name: r'job',
     required: true,
     includeIfNull: false,
@@ -88,4 +88,3 @@ class MediaEditRecipeResponseData {
   }
 
 }
-

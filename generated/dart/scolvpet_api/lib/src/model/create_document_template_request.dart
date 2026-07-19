@@ -26,7 +26,7 @@ class CreateDocumentTemplateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'name',
     required: true,
     includeIfNull: false,
@@ -38,7 +38,7 @@ class CreateDocumentTemplateRequest {
 
 
   @JsonKey(
-    
+
     name: r'body_text',
     required: false,
     includeIfNull: false,
@@ -71,4 +71,3 @@ class CreateDocumentTemplateRequest {
   }
 
 }
-

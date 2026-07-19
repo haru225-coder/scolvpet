@@ -12,10 +12,7 @@ void main() {
       ),
     );
     final draft = await repo.createRelease(
-      const MiniprogramReleaseDraft(
-        versionLabel: 'v1',
-        title: '首发',
-      ),
+      const MiniprogramReleaseDraft(versionLabel: 'v1', title: '首发'),
     );
     expect(draft.status, 'draft');
     final submitted = await repo.submit(draft.id);
@@ -28,7 +25,9 @@ void main() {
     expect(rolled.status, 'rolled_back');
   });
 
-  testWidgets('MiniprogramHubPage creates release draft', (tester) async {
+  testWidgets('MiniprogramHubPage is a read-only availability notice', (
+    tester,
+  ) async {
     final controller = MiniprogramController(
       repository: MemoryMiniprogramRepository(),
     );
@@ -36,14 +35,13 @@ void main() {
       MaterialApp(home: MiniprogramHubPage(controller: controller)),
     );
     await tester.pumpAndSettle();
-    expect(find.text('小程序轻发布'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('mp-fab-create')));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const Key('mp-release-label')), 'v9');
-    await tester.enterText(find.byKey(const Key('mp-release-title')), '测试版');
-    await tester.tap(find.byKey(const Key('mp-release-submit')));
-    await tester.pumpAndSettle();
-    expect(controller.releasesState.hasValue, isTrue);
-    expect(controller.releasesState.data!.single.versionLabel, 'v9');
+    expect(find.text('小程序说明'), findsOneWidget);
+    expect(find.byKey(const Key('mp-read-only')), findsOneWidget);
+    expect(find.byKey(const Key('mp-public-site-ready')), findsOneWidget);
+    expect(find.byKey(const Key('mp-fab-create')), findsNothing);
+    expect(find.byKey(const Key('mp-config-save')), findsNothing);
+    expect(find.text('提交审核'), findsNothing);
+    expect(find.text('发布'), findsNothing);
+    expect(controller.releasesState.status.name, 'idle');
   });
 }

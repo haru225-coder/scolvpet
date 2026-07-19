@@ -39,7 +39,7 @@ class SeparatePairingRequest {
   });
 
   @JsonKey(
-    
+
     name: r'ended_at',
     required: true,
     includeIfNull: false,
@@ -51,7 +51,7 @@ class SeparatePairingRequest {
 
 
   @JsonKey(
-    
+
     name: r'separated_at',
     required: true,
     includeIfNull: false,
@@ -63,7 +63,7 @@ class SeparatePairingRequest {
 
 
   @JsonKey(
-    
+
     name: r'result',
     required: true,
     includeIfNull: false,
@@ -75,7 +75,7 @@ class SeparatePairingRequest {
 
 
   @JsonKey(
-    
+
     name: r'sire_destination_enclosure_id',
     required: true,
     includeIfNull: false,
@@ -87,7 +87,7 @@ class SeparatePairingRequest {
 
 
   @JsonKey(
-    
+
     name: r'dam_destination_enclosure_id',
     required: true,
     includeIfNull: false,
@@ -99,7 +99,7 @@ class SeparatePairingRequest {
 
 
   @JsonKey(
-    
+
     name: r'safety_stop',
     required: true,
     includeIfNull: false,
@@ -111,7 +111,7 @@ class SeparatePairingRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -123,7 +123,7 @@ class SeparatePairingRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -168,4 +168,3 @@ class SeparatePairingRequest {
   }
 
 }
-

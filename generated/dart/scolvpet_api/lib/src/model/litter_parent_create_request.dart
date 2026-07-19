@@ -32,7 +32,7 @@ class LitterParentCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class LitterParentCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'role',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class LitterParentCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'evidence_type',
     required: true,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class LitterParentCreateRequest {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'confidence',
     required: true,
     includeIfNull: false,
@@ -82,7 +82,7 @@ class LitterParentCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'correction_reason',
     required: false,
     includeIfNull: false,
@@ -156,5 +156,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

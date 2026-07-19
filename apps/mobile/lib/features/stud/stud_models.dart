@@ -29,6 +29,7 @@ class StudListing {
 
   String get feeLabel {
     final yuan = feeCents / 100.0;
+    if (currency == 'CNY') return '¥${yuan.toStringAsFixed(2)}';
     return '${yuan.toStringAsFixed(2)} $currency';
   }
 
@@ -98,17 +99,25 @@ class StudDeal {
     'in_progress' => '进行中',
     'completed' => '已完成',
     'cancelled' => '已取消',
-    _ => status,
+    _ => '状态待更新',
   };
 
   String get feeLabel {
     final yuan = feeCents / 100.0;
+    if (currency == 'CNY') return '¥${yuan.toStringAsFixed(2)}';
     return '${yuan.toStringAsFixed(2)} $currency';
+  }
+
+  String? get nextActionLabel {
+    if (canConfirm) return '确认借配';
+    if (canStart) return '开始履约';
+    if (canComplete) return '完成履约';
+    return null;
   }
 
   bool get canConfirm => status == 'draft' || status == 'requested';
   bool get canStart => status == 'confirmed';
-  bool get canComplete => status == 'in_progress' || status == 'confirmed';
+  bool get canComplete => status == 'in_progress';
   bool get canCancel =>
       status == 'draft' ||
       status == 'requested' ||

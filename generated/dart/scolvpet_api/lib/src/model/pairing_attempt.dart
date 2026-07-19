@@ -54,7 +54,7 @@ class PairingAttempt {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class PairingAttempt {
 
 
   @JsonKey(
-    
+
     name: r'breeding_plan_id',
     required: true,
     includeIfNull: false,
@@ -79,7 +79,7 @@ class PairingAttempt {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'sequence',
     required: true,
     includeIfNull: false,
@@ -91,7 +91,7 @@ class PairingAttempt {
 
 
   @JsonKey(
-    
+
     name: r'enclosure_id',
     required: true,
     includeIfNull: false,
@@ -103,7 +103,7 @@ class PairingAttempt {
 
 
   @JsonKey(
-    
+
     name: r'started_at',
     required: true,
     includeIfNull: false,
@@ -115,7 +115,7 @@ class PairingAttempt {
 
 
   @JsonKey(
-    
+
     name: r'ended_at',
     required: false,
     includeIfNull: false,
@@ -127,7 +127,7 @@ class PairingAttempt {
 
 
   @JsonKey(
-    
+
     name: r'separated_at',
     required: false,
     includeIfNull: false,
@@ -139,7 +139,7 @@ class PairingAttempt {
 
 
   @JsonKey(
-    
+
     name: r'separation_deadline',
     required: true,
     includeIfNull: false,
@@ -151,7 +151,7 @@ class PairingAttempt {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -164,7 +164,7 @@ class PairingAttempt {
 
       /// 配对尝试未结束时为 null，分笼闭环后写入持久结果
   @JsonKey(
-    
+
     name: r'result',
     required: true,
     includeIfNull: true,
@@ -176,7 +176,7 @@ class PairingAttempt {
 
 
   @JsonKey(
-    
+
     name: r'conflict_level',
     required: false,
     includeIfNull: false,
@@ -188,7 +188,7 @@ class PairingAttempt {
 
 
   @JsonKey(
-    
+
     name: r'sire_destination_enclosure_id',
     required: false,
     includeIfNull: false,
@@ -200,7 +200,7 @@ class PairingAttempt {
 
 
   @JsonKey(
-    
+
     name: r'dam_destination_enclosure_id',
     required: false,
     includeIfNull: false,
@@ -212,7 +212,7 @@ class PairingAttempt {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -225,7 +225,7 @@ class PairingAttempt {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -303,5 +303,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -41,7 +41,7 @@ class Reconciliation {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'initial_alive_count',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class Reconciliation {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'discovered_count',
     required: true,
     includeIfNull: false,
@@ -67,7 +67,7 @@ class Reconciliation {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'deceased_count',
     required: true,
     includeIfNull: false,
@@ -80,7 +80,7 @@ class Reconciliation {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'transferred_count',
     required: true,
     includeIfNull: false,
@@ -93,7 +93,7 @@ class Reconciliation {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'expected_managed_count',
     required: true,
     includeIfNull: false,
@@ -106,7 +106,7 @@ class Reconciliation {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'unindividualized_alive_count',
     required: true,
     includeIfNull: false,
@@ -119,7 +119,7 @@ class Reconciliation {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'individualized_alive_count',
     required: true,
     includeIfNull: false,
@@ -131,7 +131,7 @@ class Reconciliation {
 
 
   @JsonKey(
-    
+
     name: r'difference',
     required: true,
     includeIfNull: false,
@@ -143,7 +143,7 @@ class Reconciliation {
 
 
   @JsonKey(
-    
+
     name: r'closed',
     required: true,
     includeIfNull: false,
@@ -190,4 +190,3 @@ class Reconciliation {
   }
 
 }
-

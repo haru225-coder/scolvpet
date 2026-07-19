@@ -27,7 +27,7 @@ class IndividualizeMapping {
   });
 
   @JsonKey(
-    
+
     name: r'pup_identity_id',
     required: true,
     includeIfNull: false,
@@ -39,7 +39,7 @@ class IndividualizeMapping {
 
 
   @JsonKey(
-    
+
     name: r'hamster',
     required: true,
     includeIfNull: false,
@@ -72,4 +72,3 @@ class IndividualizeMapping {
   }
 
 }
-

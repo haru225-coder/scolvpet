@@ -33,7 +33,7 @@ class ImportPreflightRequest {
 
       /// 父母、窝次和笼位引用缺失时必须报错
   @JsonKey(
-    
+
     name: r'strict_references',
     required: true,
     includeIfNull: false,
@@ -56,9 +56,9 @@ class ImportPreflightRequest {
 
 
 
-      /// create_if_complete 仅在同一历史窝次编号的出生时间、双亲和物种规则一致时， 自动规划创建一个历史窝次；信息缺失或冲突时产生阻塞问题。 
+      /// create_if_complete 仅在同一历史窝次编号的出生时间、双亲和物种规则一致时， 自动规划创建一个历史窝次；信息缺失或冲突时产生阻塞问题。
   @JsonKey(
-    
+
     name: r'historical_litter_policy',
     required: true,
     includeIfNull: false,
@@ -71,7 +71,7 @@ class ImportPreflightRequest {
 
       /// 导入父母与既有已接受谱系边或同窝父母不一致时拒绝相关行
   @JsonKey(
-    
+
     name: r'parentage_conflict_policy',
     required: true,
     includeIfNull: false,
@@ -84,7 +84,7 @@ class ImportPreflightRequest {
 
       /// 默认不覆盖已有非空字段；更新候选必须在提交时逐项确认并带版本
   @JsonKey(
-    
+
     name: r'existing_field_policy',
     required: true,
     includeIfNull: false,
@@ -157,12 +157,12 @@ String toString() => value;
 }
 
 
-/// create_if_complete 仅在同一历史窝次编号的出生时间、双亲和物种规则一致时， 自动规划创建一个历史窝次；信息缺失或冲突时产生阻塞问题。 
+/// create_if_complete 仅在同一历史窝次编号的出生时间、双亲和物种规则一致时， 自动规划创建一个历史窝次；信息缺失或冲突时产生阻塞问题。
 enum ImportPreflightRequestHistoricalLitterPolicyEnum {
-    /// create_if_complete 仅在同一历史窝次编号的出生时间、双亲和物种规则一致时， 自动规划创建一个历史窝次；信息缺失或冲突时产生阻塞问题。 
+    /// create_if_complete 仅在同一历史窝次编号的出生时间、双亲和物种规则一致时， 自动规划创建一个历史窝次；信息缺失或冲突时产生阻塞问题。
 @JsonValue(r'create_if_complete')
 createIfComplete(r'create_if_complete'),
-    /// create_if_complete 仅在同一历史窝次编号的出生时间、双亲和物种规则一致时， 自动规划创建一个历史窝次；信息缺失或冲突时产生阻塞问题。 
+    /// create_if_complete 仅在同一历史窝次编号的出生时间、双亲和物种规则一致时， 自动规划创建一个历史窝次；信息缺失或冲突时产生阻塞问题。
 @JsonValue(r'require_existing')
 requireExisting(r'require_existing');
 
@@ -206,5 +206,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

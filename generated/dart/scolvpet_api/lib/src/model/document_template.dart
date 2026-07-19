@@ -32,7 +32,7 @@ class DocumentTemplate {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class DocumentTemplate {
 
 
   @JsonKey(
-    
+
     name: r'kind',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class DocumentTemplate {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class DocumentTemplate {
 
 
   @JsonKey(
-    
+
     name: r'body_text',
     required: true,
     includeIfNull: false,
@@ -81,7 +81,7 @@ class DocumentTemplate {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -135,5 +135,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

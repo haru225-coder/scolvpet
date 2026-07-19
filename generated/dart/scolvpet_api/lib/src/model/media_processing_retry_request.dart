@@ -28,7 +28,7 @@ class MediaProcessingRetryRequest {
   });
 
   @JsonKey(
-    
+
     name: r'scope',
     required: true,
     includeIfNull: false,
@@ -41,7 +41,7 @@ class MediaProcessingRetryRequest {
 
       /// scope=failed_variants 时可限定失败派生；省略表示全部失败派生
   @JsonKey(
-    
+
     name: r'variant_ids',
     required: false,
     includeIfNull: false,
@@ -53,7 +53,7 @@ class MediaProcessingRetryRequest {
 
 
   @JsonKey(
-    
+
     name: r'reason',
     required: true,
     includeIfNull: false,
@@ -105,5 +105,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

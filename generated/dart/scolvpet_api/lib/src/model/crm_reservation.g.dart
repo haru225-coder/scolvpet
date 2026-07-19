@@ -25,6 +25,8 @@ abstract class _$CrmReservationCWProxy {
 
   CrmReservation contactName(String? contactName);
 
+  CrmReservation hamsterName(String? hamsterName);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CrmReservation(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -41,6 +43,7 @@ abstract class _$CrmReservationCWProxy {
     String? notes,
     int version,
     String? contactName,
+    String? hamsterName,
   });
 }
 
@@ -81,6 +84,10 @@ class _$CrmReservationCWProxyImpl implements _$CrmReservationCWProxy {
       this(contactName: contactName);
 
   @override
+  CrmReservation hamsterName(String? hamsterName) =>
+      this(hamsterName: hamsterName);
+
+  @override
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CrmReservation(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -97,6 +104,7 @@ class _$CrmReservationCWProxyImpl implements _$CrmReservationCWProxy {
     Object? notes = const $CopyWithPlaceholder(),
     Object? version = const $CopyWithPlaceholder(),
     Object? contactName = const $CopyWithPlaceholder(),
+    Object? hamsterName = const $CopyWithPlaceholder(),
   }) {
     return CrmReservation(
       id: id == const $CopyWithPlaceholder()
@@ -135,6 +143,10 @@ class _$CrmReservationCWProxyImpl implements _$CrmReservationCWProxy {
           ? _value.contactName
           // ignore: cast_nullable_to_non_nullable
           : contactName as String?,
+      hamsterName: hamsterName == const $CopyWithPlaceholder()
+          ? _value.hamsterName
+          // ignore: cast_nullable_to_non_nullable
+          : hamsterName as String?,
     );
   }
 }
@@ -181,6 +193,7 @@ CrmReservation _$CrmReservationFromJson(Map<String, dynamic> json) =>
           notes: $checkedConvert('notes', (v) => v as String?),
           version: $checkedConvert('version', (v) => (v as num).toInt()),
           contactName: $checkedConvert('contact_name', (v) => v as String?),
+          hamsterName: $checkedConvert('hamster_name', (v) => v as String?),
         );
         return val;
       },
@@ -189,6 +202,7 @@ CrmReservation _$CrmReservationFromJson(Map<String, dynamic> json) =>
         'hamsterId': 'hamster_id',
         'reservedAt': 'reserved_at',
         'contactName': 'contact_name',
+        'hamsterName': 'hamster_name',
       },
     );
 
@@ -203,6 +217,7 @@ Map<String, dynamic> _$CrmReservationToJson(CrmReservation instance) =>
       'notes': ?instance.notes,
       'version': instance.version,
       'contact_name': ?instance.contactName,
+      'hamster_name': ?instance.hamsterName,
     };
 
 const _$CrmReservationStatusEnumEnumMap = {

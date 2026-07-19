@@ -41,7 +41,7 @@ class EnclosureCleaning {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -53,7 +53,7 @@ class EnclosureCleaning {
 
 
   @JsonKey(
-    
+
     name: r'enclosure_id',
     required: true,
     includeIfNull: false,
@@ -65,7 +65,7 @@ class EnclosureCleaning {
 
 
   @JsonKey(
-    
+
     name: r'cleaning_type',
     required: true,
     includeIfNull: false,
@@ -77,7 +77,7 @@ class EnclosureCleaning {
 
 
   @JsonKey(
-    
+
     name: r'performed_at',
     required: true,
     includeIfNull: false,
@@ -89,7 +89,7 @@ class EnclosureCleaning {
 
 
   @JsonKey(
-    
+
     name: r'supplies',
     required: true,
     includeIfNull: false,
@@ -101,7 +101,7 @@ class EnclosureCleaning {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -113,7 +113,7 @@ class EnclosureCleaning {
 
 
   @JsonKey(
-    
+
     name: r'corrects_cleaning_record_id',
     required: false,
     includeIfNull: false,
@@ -125,7 +125,7 @@ class EnclosureCleaning {
 
 
   @JsonKey(
-    
+
     name: r'correction_reason',
     required: false,
     includeIfNull: false,
@@ -137,7 +137,7 @@ class EnclosureCleaning {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -184,4 +184,3 @@ class EnclosureCleaning {
   }
 
 }
-

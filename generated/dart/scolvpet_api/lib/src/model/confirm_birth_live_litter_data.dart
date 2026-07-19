@@ -41,7 +41,7 @@ class ConfirmBirthLiveLitterData {
   });
 
   @JsonKey(
-    
+
     name: r'result_type',
     required: true,
     includeIfNull: false,
@@ -53,7 +53,7 @@ class ConfirmBirthLiveLitterData {
 
 
   @JsonKey(
-    
+
     name: r'breeding_plan',
     required: true,
     includeIfNull: false,
@@ -65,7 +65,7 @@ class ConfirmBirthLiveLitterData {
 
 
   @JsonKey(
-    
+
     name: r'litter',
     required: true,
     includeIfNull: false,
@@ -78,7 +78,7 @@ class ConfirmBirthLiveLitterData {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'pup_identity_count',
     required: true,
     includeIfNull: false,
@@ -91,7 +91,7 @@ class ConfirmBirthLiveLitterData {
 
       /// 数量严格等于 pup_identity_count 和请求 initial_alive_count
   @JsonKey(
-    
+
     name: r'pup_identities',
     required: true,
     includeIfNull: false,
@@ -103,7 +103,7 @@ class ConfirmBirthLiveLitterData {
 
 
   @JsonKey(
-    
+
     name: r'initial_count_event',
     required: true,
     includeIfNull: false,
@@ -115,7 +115,7 @@ class ConfirmBirthLiveLitterData {
 
 
   @JsonKey(
-    
+
     name: r'celebration_job',
     required: false,
     includeIfNull: false,
@@ -171,5 +171,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

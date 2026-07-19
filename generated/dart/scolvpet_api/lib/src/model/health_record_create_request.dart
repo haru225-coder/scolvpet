@@ -44,7 +44,7 @@ class HealthRecordCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: false,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class HealthRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: false,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class HealthRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'type',
     required: true,
     includeIfNull: false,
@@ -80,7 +80,7 @@ class HealthRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'observed_at',
     required: true,
     includeIfNull: false,
@@ -92,7 +92,7 @@ class HealthRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'structured_checks',
     required: false,
     includeIfNull: false,
@@ -104,7 +104,7 @@ class HealthRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'severity',
     required: false,
     includeIfNull: false,
@@ -116,7 +116,7 @@ class HealthRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'medication',
     required: false,
     includeIfNull: false,
@@ -128,7 +128,7 @@ class HealthRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'media_ids',
     required: false,
     includeIfNull: false,
@@ -140,7 +140,7 @@ class HealthRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'follow_up_at',
     required: false,
     includeIfNull: false,
@@ -152,7 +152,7 @@ class HealthRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -201,4 +201,3 @@ class HealthRecordCreateRequest {
   }
 
 }
-

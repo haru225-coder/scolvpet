@@ -36,7 +36,7 @@ class BreedingPlanUpdateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'name',
     required: false,
     includeIfNull: false,
@@ -48,7 +48,7 @@ class BreedingPlanUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'sire_id',
     required: false,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class BreedingPlanUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'dam_id',
     required: false,
     includeIfNull: false,
@@ -72,7 +72,7 @@ class BreedingPlanUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'rule_version_id',
     required: false,
     includeIfNull: false,
@@ -84,7 +84,7 @@ class BreedingPlanUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'planned_pairing_at',
     required: false,
     includeIfNull: false,
@@ -96,7 +96,7 @@ class BreedingPlanUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'objective_traits',
     required: false,
     includeIfNull: false,
@@ -108,7 +108,7 @@ class BreedingPlanUpdateRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -151,4 +151,3 @@ class BreedingPlanUpdateRequest {
   }
 
 }
-

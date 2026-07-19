@@ -140,14 +140,15 @@ class EntitlementSnapshot {
       effectiveAt:
           DateTime.tryParse(json['effective_at'] as String? ?? '')?.toUtc() ??
           DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
-      expiresAt: DateTime.tryParse(json['expires_at'] as String? ?? '')?.toUtc(),
+      expiresAt: DateTime.tryParse(
+        json['expires_at'] as String? ?? '',
+      )?.toUtc(),
       features: features is List
           ? features
                 .whereType<Map>()
                 .map(
-                  (e) => EntitlementFeature.fromJson(
-                    Map<String, dynamic>.from(e),
-                  ),
+                  (e) =>
+                      EntitlementFeature.fromJson(Map<String, dynamic>.from(e)),
                 )
                 .toList()
           : const [],
@@ -216,7 +217,7 @@ List<PlanCatalogEntry> defaultPlanCatalog() => const [
     code: 'pro',
     title: '专业版',
     description: '更高用量与高级导出；适合扩繁',
-    priceHint: '沙箱可激活 · 正式支付另接',
+    priceHint: '开通方式准备中',
     enforcement: 'soft',
     highlight: true,
   ),

@@ -28,7 +28,7 @@ class MediaUploadCompleteResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'media',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class MediaUploadCompleteResponseData {
 
 
   @JsonKey(
-    
+
     name: r'processing_job',
     required: true,
     includeIfNull: false,
@@ -73,4 +73,3 @@ class MediaUploadCompleteResponseData {
   }
 
 }
-

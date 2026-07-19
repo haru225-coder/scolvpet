@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'public_site_models.dart';
 
 abstract interface class PublicSiteRepository {
@@ -19,18 +20,11 @@ class PublicSiteRepositoryException implements Exception {
   String toString() => message;
 }
 
-String publicSiteErrorMessage(Object error) {
-  if (error is PublicSiteRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '公开主页请求失败';
-  }
-  return error.toString();
-}
+String publicSiteErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '公开主页请求失败',
+  mapLocal: (e) => e is PublicSiteRepositoryException ? e.message : null,
+);
 
 class MemoryPublicSiteRepository implements PublicSiteRepository {
   PublicSite? _site;
@@ -46,7 +40,7 @@ class MemoryPublicSiteRepository implements PublicSiteRepository {
           showStats: true,
           showContact: true,
           published: false,
-          publicUrlPath: '/v1/public/sites/my-cattery',
+          publicUrlPath: '/p/my-cattery',
         );
   }
 
@@ -80,7 +74,7 @@ class MemoryPublicSiteRepository implements PublicSiteRepository {
       publishedAt: previous?.publishedAt,
       version: (previous?.version ?? 0) + 1,
       updatedAt: DateTime.now().toUtc(),
-      publicUrlPath: '/v1/public/sites/$slug',
+      publicUrlPath: '/p/$slug',
     );
     return _site!;
   }
@@ -148,11 +142,7 @@ class MemoryPublicSiteRepository implements PublicSiteRepository {
       contactWechat: site.showContact ? site.contactWechat : null,
       contactPhone: site.showContact ? site.contactPhone : null,
       stats: site.showStats
-          ? const {
-              'active_hamsters': 12,
-              'active_litters': 2,
-              'enclosures': 8,
-            }
+          ? const {'active_hamsters': 12, 'active_litters': 2, 'enclosures': 8}
           : const {},
       organizationName: site.title,
       publishedAt: site.publishedAt,
@@ -177,9 +167,7 @@ class DefaultApiPublicSiteRepository implements PublicSiteRepository {
 
   @override
   Future<PublicSite> getMine() async {
-    final response = await client.dio.get<Map<String, dynamic>>(
-      '/public-site',
-    );
+    final response = await client.dio.get<Map<String, dynamic>>('/public-site');
     return PublicSite.fromJson(_data(response));
   }
 

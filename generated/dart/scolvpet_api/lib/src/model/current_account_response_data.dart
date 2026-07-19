@@ -26,11 +26,13 @@ class CurrentAccountResponseData {
 
     required  this.currentOrganization,
 
+    required  this.memberRole,
+
     required  this.capabilities,
   });
 
   @JsonKey(
-    
+
     name: r'account',
     required: true,
     includeIfNull: false,
@@ -42,7 +44,7 @@ class CurrentAccountResponseData {
 
 
   @JsonKey(
-    
+
     name: r'current_organization',
     required: true,
     includeIfNull: false,
@@ -54,7 +56,19 @@ class CurrentAccountResponseData {
 
 
   @JsonKey(
-    
+
+    name: r'member_role',
+    required: true,
+    includeIfNull: false,
+  )
+
+
+  final CurrentAccountResponseDataMemberRoleEnum memberRole;
+
+
+
+  @JsonKey(
+
     name: r'capabilities',
     required: true,
     includeIfNull: false,
@@ -71,12 +85,14 @@ class CurrentAccountResponseData {
     bool operator ==(Object other) => identical(this, other) || other is CurrentAccountResponseData &&
       other.account == account &&
       other.currentOrganization == currentOrganization &&
+      other.memberRole == memberRole &&
       other.capabilities == capabilities;
 
     @override
     int get hashCode =>
         account.hashCode +
         currentOrganization.hashCode +
+        memberRole.hashCode +
         capabilities.hashCode;
 
   factory CurrentAccountResponseData.fromJson(Map<String, dynamic> json) => _$CurrentAccountResponseDataFromJson(json);
@@ -90,3 +106,23 @@ class CurrentAccountResponseData {
 
 }
 
+
+enum CurrentAccountResponseDataMemberRoleEnum {
+@JsonValue(r'owner')
+owner(r'owner'),
+@JsonValue(r'breeder')
+breeder(r'breeder'),
+@JsonValue(r'caretaker')
+caretaker(r'caretaker'),
+@JsonValue(r'staff')
+staff(r'staff'),
+@JsonValue(r'viewer')
+viewer(r'viewer');
+
+const CurrentAccountResponseDataMemberRoleEnum(this.value);
+
+final String value;
+
+@override
+String toString() => value;
+}

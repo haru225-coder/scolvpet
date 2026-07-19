@@ -36,7 +36,7 @@ class CrmContact {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -48,7 +48,7 @@ class CrmContact {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: true,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class CrmContact {
 
 
   @JsonKey(
-    
+
     name: r'phone',
     required: false,
     includeIfNull: false,
@@ -72,7 +72,7 @@ class CrmContact {
 
 
   @JsonKey(
-    
+
     name: r'wechat',
     required: false,
     includeIfNull: false,
@@ -84,7 +84,7 @@ class CrmContact {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -96,7 +96,7 @@ class CrmContact {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -109,7 +109,7 @@ class CrmContact {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -169,5 +169,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -37,10 +37,12 @@ class CrmReservation {
     required  this.version,
 
      this.contactName,
+
+     this.hamsterName,
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -52,7 +54,7 @@ class CrmReservation {
 
 
   @JsonKey(
-    
+
     name: r'contact_id',
     required: true,
     includeIfNull: false,
@@ -64,7 +66,7 @@ class CrmReservation {
 
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: false,
     includeIfNull: false,
@@ -76,7 +78,7 @@ class CrmReservation {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -88,7 +90,7 @@ class CrmReservation {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -100,7 +102,7 @@ class CrmReservation {
 
 
   @JsonKey(
-    
+
     name: r'reserved_at',
     required: true,
     includeIfNull: false,
@@ -112,7 +114,7 @@ class CrmReservation {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -125,7 +127,7 @@ class CrmReservation {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -137,7 +139,7 @@ class CrmReservation {
 
 
   @JsonKey(
-    
+
     name: r'contact_name',
     required: false,
     includeIfNull: false,
@@ -145,6 +147,18 @@ class CrmReservation {
 
 
   final String? contactName;
+
+
+
+  @JsonKey(
+
+    name: r'hamster_name',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? hamsterName;
 
 
 
@@ -160,7 +174,8 @@ class CrmReservation {
       other.reservedAt == reservedAt &&
       other.notes == notes &&
       other.version == version &&
-      other.contactName == contactName;
+      other.contactName == contactName &&
+      other.hamsterName == hamsterName;
 
     @override
     int get hashCode =>
@@ -172,7 +187,8 @@ class CrmReservation {
         reservedAt.hashCode +
         (notes == null ? 0 : notes.hashCode) +
         version.hashCode +
-        contactName.hashCode;
+        contactName.hashCode +
+        (hamsterName == null ? 0 : hamsterName.hashCode);
 
   factory CrmReservation.fromJson(Map<String, dynamic> json) => _$CrmReservationFromJson(json);
 
@@ -203,5 +219,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

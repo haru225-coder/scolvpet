@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'miniprogram_models.dart';
 
 abstract interface class MiniprogramRepository {
@@ -10,7 +11,11 @@ abstract interface class MiniprogramRepository {
   Future<List<MiniprogramRelease>> listReleases();
   Future<MiniprogramRelease> createRelease(MiniprogramReleaseDraft draft);
   Future<MiniprogramRelease> submit(String id);
-  Future<MiniprogramRelease> audit(String id, {required bool approve, String? note});
+  Future<MiniprogramRelease> audit(
+    String id, {
+    required bool approve,
+    String? note,
+  });
   Future<MiniprogramRelease> publish(String id);
   Future<MiniprogramRelease> rollback(String id);
 }
@@ -22,18 +27,11 @@ class MiniprogramRepositoryException implements Exception {
   String toString() => message;
 }
 
-String miniprogramErrorMessage(Object error) {
-  if (error is MiniprogramRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '小程序请求失败';
-  }
-  return error.toString();
-}
+String miniprogramErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '小程序请求失败',
+  mapLocal: (e) => e is MiniprogramRepositoryException ? e.message : null,
+);
 
 class MemoryMiniprogramRepository implements MiniprogramRepository {
   MiniprogramConfig _config = const MiniprogramConfig(
@@ -69,7 +67,9 @@ class MemoryMiniprogramRepository implements MiniprogramRepository {
       List<MiniprogramRelease>.from(_releases);
 
   @override
-  Future<MiniprogramRelease> createRelease(MiniprogramReleaseDraft draft) async {
+  Future<MiniprogramRelease> createRelease(
+    MiniprogramReleaseDraft draft,
+  ) async {
     final label = draft.versionLabel.trim().isEmpty
         ? 'v${_seq + 1}'
         : draft.versionLabel.trim();
@@ -113,8 +113,7 @@ class MemoryMiniprogramRepository implements MiniprogramRepository {
       return _copy(
         c,
         status: approve ? 'approved' : 'rejected',
-        auditNote: note ??
-            (approve ? '沙箱审核通过' : '沙箱审核驳回'),
+        auditNote: note ?? (approve ? '沙箱审核通过' : '沙箱审核驳回'),
         auditedAt: DateTime.now().toUtc(),
       );
     });
@@ -257,7 +256,9 @@ class DefaultApiMiniprogramRepository implements MiniprogramRepository {
   }
 
   @override
-  Future<MiniprogramRelease> createRelease(MiniprogramReleaseDraft draft) async {
+  Future<MiniprogramRelease> createRelease(
+    MiniprogramReleaseDraft draft,
+  ) async {
     final response = await client.dio.post<Map<String, dynamic>>(
       '/miniprogram/releases',
       data: {

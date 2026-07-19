@@ -104,7 +104,8 @@ func (s *Server) Handler() http.Handler {
 	s.registerP2MiniprogramRoutes(mux)
 	s.registerP2AssistantRoutes(mux)
 	s.registerP2StudRoutes(mux)
-	return requestIDMiddleware(s.Logger, mux)
+	s.registerP3GrowthRoutes(mux)
+	return requestIDMiddleware(s.Logger, s.rbacMiddleware(mux))
 }
 
 func (s *Server) health(w http.ResponseWriter, r *http.Request) {
@@ -167,11 +168,19 @@ func (s *Server) createSession(w http.ResponseWriter, r *http.Request) {
 		if err := s.Auth.VerifyCode(ctx, request.VerificationID, request.Phone, request.Code); err != nil {
 			return 0, nil, nil, err
 		}
-		organization, err := store.EnsureOrganizationTx(ctx, tx, ownerID)
+		principal, organization, err := store.ResolveLoginPrincipalTx(
+			ctx,
+			tx,
+			ownerID,
+			request.Phone,
+		)
 		if err != nil {
 			return 0, nil, nil, err
 		}
-		accessToken, refreshToken, err := s.Auth.CreateSession(ctx, ownerID)
+		accessToken, refreshToken, err := s.Auth.CreateSession(
+			ctx,
+			principal.AccountID,
+		)
 		if err != nil {
 			return 0, nil, nil, err
 		}
@@ -182,6 +191,8 @@ func (s *Server) createSession(w http.ResponseWriter, r *http.Request) {
 			"refresh_token":        refreshToken,
 			"account":              account,
 			"current_organization": organization,
+			"member_role":          principal.Role,
+			"capabilities":         principalCapabilities(principal.Role),
 		}), map[string]string{}, nil
 	})
 	if err != nil {
@@ -198,18 +209,22 @@ func (s *Server) refreshSession(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, validationError("refresh_token", "刷新令牌不能为空"))
 		return
 	}
-	ownerID, err := s.Auth.OwnerForRefresh(r.Context(), request.RefreshToken)
+	accountID, err := s.Auth.OwnerForRefresh(r.Context(), request.RefreshToken)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	account, err := s.Store.GetAccount(r.Context(), ownerID)
+	account, err := s.Store.GetAccount(r.Context(), accountID)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	result, err := s.Store.RunIdempotent(r.Context(), ownerID, r.Header.Get("Idempotency-Key"), http.MethodPost, r.URL.Path, payload, func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
-		organization, err := store.EnsureOrganizationTx(ctx, tx, ownerID)
+	result, err := s.Store.RunIdempotent(r.Context(), accountID, r.Header.Get("Idempotency-Key"), http.MethodPost, r.URL.Path, payload, func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
+		principal, organization, err := store.ResolvePrincipalContextTx(
+			ctx,
+			tx,
+			accountID,
+		)
 		if err != nil {
 			return 0, nil, nil, err
 		}
@@ -224,6 +239,8 @@ func (s *Server) refreshSession(w http.ResponseWriter, r *http.Request) {
 			"refresh_token":        nextRefreshToken,
 			"account":              account,
 			"current_organization": organization,
+			"member_role":          principal.Role,
+			"capabilities":         principalCapabilities(principal.Role),
 		}), map[string]string{}, nil
 	})
 	if err != nil {
@@ -261,7 +278,23 @@ func (s *Server) getMe(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, authRequired())
 		return
 	}
-	account, err := s.Store.GetAccount(r.Context(), ownerID)
+	principal, ok := principalFromRequest(r)
+	if !ok {
+		accountID, parseErr := s.Auth.ParseAccessToken(
+			strings.TrimSpace(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")),
+		)
+		if parseErr != nil {
+			writeAPIError(w, r, authRequired())
+			return
+		}
+		resolvedPrincipal, resolveErr := s.Store.ResolvePrincipal(r.Context(), accountID)
+		if resolveErr != nil {
+			writeAPIError(w, r, resolveErr)
+			return
+		}
+		principal = resolvedPrincipal
+	}
+	account, err := s.Store.GetAccount(r.Context(), principal.AccountID)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
@@ -274,7 +307,8 @@ func (s *Server) getMe(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, envelope(r, map[string]any{
 		"account":              account,
 		"current_organization": organization,
-		"capabilities":         []string{"owner_scope", "species_rules", "offline_read_cache"},
+		"member_role":          principal.Role,
+		"capabilities":         principalCapabilities(principal.Role),
 	}))
 }
 
@@ -415,8 +449,23 @@ func (s *Server) authenticate(r *http.Request) (uuid.UUID, string, bool) {
 		return uuid.Nil, "", false
 	}
 	token := strings.TrimSpace(value[7:])
-	ownerID, err := s.Auth.ParseAccessToken(token)
-	return ownerID, token, err == nil
+	accountID, err := s.Auth.ParseAccessToken(token)
+	if err != nil {
+		return uuid.Nil, token, false
+	}
+	principal, err := s.resolveRequestPrincipal(r, accountID)
+	if err != nil {
+		return uuid.Nil, token, false
+	}
+	if _, ok := principalFromRequest(r); !ok {
+		ctx := context.WithValue(
+			r.Context(),
+			requestPrincipalContextKey{},
+			principal,
+		)
+		*r = *r.WithContext(ctx)
+	}
+	return principal.OwnerID, token, true
 }
 
 func decodeBody(r *http.Request, target any) ([]byte, error) {
@@ -502,6 +551,15 @@ func validationError(field, message string) error {
 
 func authRequired() error {
 	return &apiError{Status: http.StatusUnauthorized, Code: "AUTHENTICATION_REQUIRED", Message: "请重新登录"}
+}
+
+func permissionDenied(role string) error {
+	return &apiError{
+		Status:  http.StatusForbidden,
+		Code:    "PERMISSION_DENIED",
+		Message: "当前角色没有执行此操作的权限",
+		Details: map[string]any{"member_role": role},
+	}
 }
 
 func writeAPIError(w http.ResponseWriter, r *http.Request, err error) {

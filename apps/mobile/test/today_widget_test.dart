@@ -25,27 +25,15 @@ CareTaskItem _task({
 void main() {
   test('TodayWidgetSnapshot.fromTasks ranks overdue and formats body', () {
     final now = DateTime(2026, 7, 17, 12);
-    final snapshot = TodayWidgetSnapshot.fromTasks(
-      [
-        _task(
-          id: '1',
-          title: '逾期清洁',
-          scheduledAt: now.subtract(const Duration(days: 1)),
-        ),
-        _task(
-          id: '2',
-          title: '今日称重',
-          scheduledAt: now,
-        ),
-        _task(
-          id: '3',
-          title: '已完成',
-          scheduledAt: now,
-          state: 'completed',
-        ),
-      ],
-      now: now,
-    );
+    final snapshot = TodayWidgetSnapshot.fromTasks([
+      _task(
+        id: '1',
+        title: '逾期清洁',
+        scheduledAt: now.subtract(const Duration(days: 1)),
+      ),
+      _task(id: '2', title: '今日称重', scheduledAt: now),
+      _task(id: '3', title: '已完成', scheduledAt: now, state: 'completed'),
+    ], now: now);
     expect(snapshot.overdueCount, 1);
     expect(snapshot.openCount, 2);
     expect(snapshot.bodyText, contains('逾期清洁'));
@@ -95,7 +83,7 @@ void main() {
     expect(find.text('今日待办组件'), findsOneWidget);
     await tester.tap(find.byKey(const Key('today-widget-sync')));
     await tester.pumpAndSettle();
-    expect(find.textContaining('已同步'), findsOneWidget);
+    expect(find.text('桌面待办已更新'), findsOneWidget);
     expect(find.byKey(const Key('today-widget-body')), findsOneWidget);
   });
 }

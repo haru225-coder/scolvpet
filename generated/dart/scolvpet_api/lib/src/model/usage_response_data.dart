@@ -31,7 +31,7 @@ class UsageResponseData {
 
       /// active_hamsters、active_litters、enclosures、media_bytes、video_minutes、backup_bytes 各一项
   @JsonKey(
-    
+
     name: r'metrics',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class UsageResponseData {
 
       /// updating/delayed 只影响展示，不阻止业务写入
   @JsonKey(
-    
+
     name: r'metering_status',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class UsageResponseData {
 
 
   @JsonKey(
-    
+
     name: r'entitlement',
     required: true,
     includeIfNull: false,
@@ -111,5 +111,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

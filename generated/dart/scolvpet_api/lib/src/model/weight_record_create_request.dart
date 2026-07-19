@@ -43,7 +43,7 @@ class WeightRecordCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: false,
     includeIfNull: false,
@@ -55,7 +55,7 @@ class WeightRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'pup_identity_id',
     required: false,
     includeIfNull: false,
@@ -67,7 +67,7 @@ class WeightRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: false,
     includeIfNull: false,
@@ -79,7 +79,7 @@ class WeightRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'measurement_kind',
     required: false,
     includeIfNull: false,
@@ -92,7 +92,7 @@ class WeightRecordCreateRequest {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'subject_count',
     required: false,
     includeIfNull: false,
@@ -106,7 +106,7 @@ class WeightRecordCreateRequest {
           // minimum: 0
           // maximum: 5000
   @JsonKey(
-    
+
     name: r'weight_g',
     required: true,
     includeIfNull: false,
@@ -118,7 +118,7 @@ class WeightRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'recorded_at',
     required: true,
     includeIfNull: false,
@@ -130,7 +130,7 @@ class WeightRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'source',
     required: true,
     includeIfNull: false,
@@ -142,7 +142,7 @@ class WeightRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'device_reading_id',
     required: false,
     includeIfNull: false,
@@ -154,7 +154,7 @@ class WeightRecordCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -238,5 +238,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

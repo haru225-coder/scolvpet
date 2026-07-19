@@ -26,7 +26,7 @@ class LitterMemberOneOf1 {
   });
 
   @JsonKey(
-    
+
     name: r'member_type',
     required: false,
     includeIfNull: false,
@@ -38,7 +38,7 @@ class LitterMemberOneOf1 {
 
 
   @JsonKey(
-    
+
     name: r'pup_identity_id',
     required: false,
     includeIfNull: false,
@@ -71,4 +71,3 @@ class LitterMemberOneOf1 {
   }
 
 }
-

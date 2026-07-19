@@ -34,7 +34,7 @@ class CreateGeneticProfileRequest {
   });
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: false,
     includeIfNull: false,
@@ -46,7 +46,7 @@ class CreateGeneticProfileRequest {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class CreateGeneticProfileRequest {
 
 
   @JsonKey(
-    
+
     name: r'phenotype',
     required: false,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class CreateGeneticProfileRequest {
 
 
   @JsonKey(
-    
+
     name: r'genotype',
     required: false,
     includeIfNull: false,
@@ -94,7 +94,7 @@ class CreateGeneticProfileRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -152,5 +152,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

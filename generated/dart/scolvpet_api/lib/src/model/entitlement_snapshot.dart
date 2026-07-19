@@ -44,7 +44,7 @@ class EntitlementSnapshot {
   });
 
   @JsonKey(
-    
+
     name: r'plan_code',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class EntitlementSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'plan_title',
     required: true,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class EntitlementSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'enforcement',
     required: true,
     includeIfNull: false,
@@ -80,7 +80,7 @@ class EntitlementSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'source',
     required: true,
     includeIfNull: false,
@@ -92,7 +92,7 @@ class EntitlementSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'effective_at',
     required: true,
     includeIfNull: false,
@@ -104,7 +104,7 @@ class EntitlementSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: false,
     includeIfNull: false,
@@ -116,7 +116,7 @@ class EntitlementSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'features',
     required: true,
     includeIfNull: false,
@@ -128,7 +128,7 @@ class EntitlementSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'limits',
     required: true,
     includeIfNull: false,
@@ -140,7 +140,7 @@ class EntitlementSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'over_limit',
     required: true,
     includeIfNull: false,
@@ -152,7 +152,7 @@ class EntitlementSnapshot {
 
 
   @JsonKey(
-    
+
     name: r'paywall_hint',
     required: false,
     includeIfNull: false,
@@ -218,5 +218,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

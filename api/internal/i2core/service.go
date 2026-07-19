@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/scolvpet/scolvpet/api/internal/geneticcore"
 )
 
 type Service struct {
@@ -787,6 +789,10 @@ func normalizeCreateHamster(input CreateHamsterInput) (CreateHamsterInput, error
 	if input.Tags == nil {
 		input.Tags = []string{}
 	}
+	// Align variety_code / phenotype with authority core table when possible.
+	if err := applyCorePhenotypeOnCreate(&input); err != nil {
+		return input, err
+	}
 	return input, nil
 }
 
@@ -811,7 +817,77 @@ func normalizeHamsterUpdate(input *UpdateHamsterInput) error {
 	if input.SexConfidence != nil && (*input.SexConfidence < 0 || *input.SexConfidence > 1) {
 		return validationError("sex_confidence must be between 0 and 1")
 	}
+	if err := applyCorePhenotypeOnUpdate(input); err != nil {
+		return err
+	}
 	return nil
+}
+
+// applyCorePhenotypeOnCreate aligns variety_code + phenotype JSON with the authority table.
+// Accepts variety_code as "poly|蜜波利" or bare unique labels, or phenotype.{series,label}.
+func applyCorePhenotypeOnCreate(input *CreateHamsterInput) error {
+	series, label, err := resolveCorePhenotype(input.VarietyCode, input.Phenotype)
+	if err != nil {
+		return err
+	}
+	if series == "" {
+		return nil
+	}
+	code := geneticcore.EncodeVarietyCode(series, label)
+	input.VarietyCode = &code
+	input.Phenotype = geneticcore.PhenotypeMapFromCore(series, label)
+	return nil
+}
+
+func applyCorePhenotypeOnUpdate(input *UpdateHamsterInput) error {
+	// Prefer explicit phenotype map, else variety_code.
+	var variety *string
+	if input.VarietyCode != nil {
+		variety = input.VarietyCode
+	}
+	series, label, err := resolveCorePhenotype(variety, input.Phenotype)
+	if err != nil {
+		return err
+	}
+	if series == "" {
+		return nil
+	}
+	code := geneticcore.EncodeVarietyCode(series, label)
+	input.VarietyCode = &code
+	input.ClearVariety = false
+	input.Phenotype = geneticcore.PhenotypeMapFromCore(series, label)
+	return nil
+}
+
+func resolveCorePhenotype(variety *string, phenotype map[string]any) (series, label string, err error) {
+	// Structured phenotype first.
+	if phenotype != nil {
+		s, _ := phenotype[geneticcore.PhenotypeKeySeries].(string)
+		l, _ := phenotype[geneticcore.PhenotypeKeyLabel].(string)
+		s = strings.TrimSpace(s)
+		l = strings.TrimSpace(l)
+		if s != "" || l != "" {
+			return geneticcore.ValidateCorePhenotype(s, l)
+		}
+	}
+	if variety == nil || strings.TrimSpace(*variety) == "" {
+		return "", "", nil
+	}
+	// Free-text variety: only enforce when it looks like core encoding or exact table label.
+	raw := strings.TrimSpace(*variety)
+	if strings.Contains(raw, geneticcore.VarietyCodeSep) {
+		s, l, ok := geneticcore.DecodeVarietyCode(raw)
+		if !ok {
+			return "", "", validationError("variety_code is not a valid core phenotype (series|label)")
+		}
+		return geneticcore.ValidateCorePhenotype(s, l)
+	}
+	// Bare label matching authority table
+	if s, l, ok := geneticcore.DecodeVarietyCode(raw); ok {
+		return s, l, nil
+	}
+	// Non-core free text allowed for backward compatibility
+	return "", "", nil
 }
 
 func normalizeCreateEnclosure(input CreateEnclosureInput) (CreateEnclosureInput, error) {

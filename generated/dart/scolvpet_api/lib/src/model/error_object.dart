@@ -36,7 +36,7 @@ class ErrorObject {
   });
 
   @JsonKey(
-    
+
     name: r'code',
     required: true,
     includeIfNull: false,
@@ -48,7 +48,7 @@ class ErrorObject {
 
 
   @JsonKey(
-    
+
     name: r'message',
     required: true,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class ErrorObject {
 
 
   @JsonKey(
-    
+
     name: r'field_errors',
     required: true,
     includeIfNull: false,
@@ -73,7 +73,7 @@ class ErrorObject {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'current_version',
     required: false,
     includeIfNull: false,
@@ -85,7 +85,7 @@ class ErrorObject {
 
 
   @JsonKey(
-    
+
     name: r'recovery_actions',
     required: true,
     includeIfNull: false,
@@ -97,7 +97,7 @@ class ErrorObject {
 
 
   @JsonKey(
-    
+
     name: r'details',
     required: false,
     includeIfNull: false,
@@ -138,4 +138,3 @@ class ErrorObject {
   }
 
 }
-

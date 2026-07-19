@@ -30,7 +30,7 @@ class BackupJobCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'include_media_manifest',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class BackupJobCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'include_checksums',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class BackupJobCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class BackupJobCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'encryption_hint',
     required: false,
     includeIfNull: false,
@@ -130,5 +130,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

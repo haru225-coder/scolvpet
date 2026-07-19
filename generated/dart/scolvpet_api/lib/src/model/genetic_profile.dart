@@ -40,7 +40,7 @@ class GeneticProfile {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class GeneticProfile {
 
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: false,
     includeIfNull: false,
@@ -64,7 +64,7 @@ class GeneticProfile {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: true,
     includeIfNull: false,
@@ -76,7 +76,7 @@ class GeneticProfile {
 
 
   @JsonKey(
-    
+
     name: r'phenotype',
     required: true,
     includeIfNull: false,
@@ -88,7 +88,7 @@ class GeneticProfile {
 
 
   @JsonKey(
-    
+
     name: r'genotype',
     required: true,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class GeneticProfile {
 
 
   @JsonKey(
-    
+
     name: r'confidence',
     required: true,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class GeneticProfile {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -125,7 +125,7 @@ class GeneticProfile {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -137,7 +137,7 @@ class GeneticProfile {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -201,5 +201,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -8,10 +8,8 @@ import 'package:scolvpet_api/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**hamsterId** | **String** |  | 
-**paths** | **int** |  | 
-**minimumGeneration** | **int** |  | 
+**hamsterId** | **String** |  |
+**paths** | **int** |  |
+**minimumGeneration** | **int** |  |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

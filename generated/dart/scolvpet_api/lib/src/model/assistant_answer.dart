@@ -33,7 +33,7 @@ class AssistantAnswer {
   });
 
   @JsonKey(
-    
+
     name: r'answer',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class AssistantAnswer {
 
 
   @JsonKey(
-    
+
     name: r'intent',
     required: true,
     includeIfNull: false,
@@ -57,7 +57,7 @@ class AssistantAnswer {
 
 
   @JsonKey(
-    
+
     name: r'mode',
     required: true,
     includeIfNull: false,
@@ -69,7 +69,7 @@ class AssistantAnswer {
 
 
   @JsonKey(
-    
+
     name: r'facts',
     required: true,
     includeIfNull: false,
@@ -81,7 +81,7 @@ class AssistantAnswer {
 
 
   @JsonKey(
-    
+
     name: r'disclaimer',
     required: true,
     includeIfNull: false,
@@ -135,5 +135,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

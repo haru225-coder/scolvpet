@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'push_models.dart';
 
 abstract interface class PushRepository {
@@ -21,18 +22,11 @@ class PushRepositoryException implements Exception {
   String toString() => message;
 }
 
-String pushErrorMessage(Object error) {
-  if (error is PushRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '推送请求失败';
-  }
-  return error.toString();
-}
+String pushErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '推送请求失败',
+  mapLocal: (e) => e is PushRepositoryException ? e.message : null,
+);
 
 /// Local token for PARTIAL builds without FCM/APNs SDK.
 String generateDevPushToken({String? platform}) {

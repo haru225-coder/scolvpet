@@ -38,7 +38,7 @@ class WeanLitterResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: true,
     includeIfNull: false,
@@ -50,7 +50,7 @@ class WeanLitterResponseData {
 
 
   @JsonKey(
-    
+
     name: r'litter_state',
     required: true,
     includeIfNull: false,
@@ -62,7 +62,7 @@ class WeanLitterResponseData {
 
 
   @JsonKey(
-    
+
     name: r'weaned_at',
     required: true,
     includeIfNull: false,
@@ -75,7 +75,7 @@ class WeanLitterResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'processed_count',
     required: true,
     includeIfNull: false,
@@ -87,7 +87,7 @@ class WeanLitterResponseData {
 
 
   @JsonKey(
-    
+
     name: r'item_results',
     required: true,
     includeIfNull: false,
@@ -99,7 +99,7 @@ class WeanLitterResponseData {
 
 
   @JsonKey(
-    
+
     name: r'created_task_ids',
     required: true,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class WeanLitterResponseData {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -155,4 +155,3 @@ class WeanLitterResponseData {
   }
 
 }
-

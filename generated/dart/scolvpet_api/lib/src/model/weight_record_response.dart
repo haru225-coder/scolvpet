@@ -28,7 +28,7 @@ class WeightRecordResponse {
   });
 
   @JsonKey(
-    
+
     name: r'data',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class WeightRecordResponse {
 
 
   @JsonKey(
-    
+
     name: r'meta',
     required: true,
     includeIfNull: false,
@@ -73,4 +73,3 @@ class WeightRecordResponse {
   }
 
 }
-

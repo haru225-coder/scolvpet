@@ -52,7 +52,7 @@ class PublicSite {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: false,
     includeIfNull: false,
@@ -64,7 +64,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'slug',
     required: true,
     includeIfNull: false,
@@ -76,7 +76,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -88,7 +88,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'tagline',
     required: false,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'about',
     required: false,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'contact_wechat',
     required: false,
     includeIfNull: false,
@@ -124,7 +124,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'contact_phone',
     required: false,
     includeIfNull: false,
@@ -136,7 +136,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'theme_color',
     required: true,
     includeIfNull: false,
@@ -148,7 +148,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'show_stats',
     required: true,
     includeIfNull: false,
@@ -160,7 +160,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'show_contact',
     required: true,
     includeIfNull: false,
@@ -172,7 +172,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'published',
     required: true,
     includeIfNull: false,
@@ -184,7 +184,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'published_at',
     required: false,
     includeIfNull: false,
@@ -197,7 +197,7 @@ class PublicSite {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: false,
     includeIfNull: false,
@@ -209,7 +209,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: false,
     includeIfNull: false,
@@ -221,7 +221,7 @@ class PublicSite {
 
 
   @JsonKey(
-    
+
     name: r'public_url_path',
     required: false,
     includeIfNull: false,
@@ -280,4 +280,3 @@ class PublicSite {
   }
 
 }
-

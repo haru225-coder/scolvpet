@@ -46,7 +46,7 @@ class StudListing {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class StudListing {
 
 
   @JsonKey(
-    
+
     name: r'owner_id',
     required: true,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class StudListing {
 
 
   @JsonKey(
-    
+
     name: r'sire_label',
     required: true,
     includeIfNull: false,
@@ -82,7 +82,7 @@ class StudListing {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -95,7 +95,7 @@ class StudListing {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'fee_cents',
     required: true,
     includeIfNull: false,
@@ -107,7 +107,7 @@ class StudListing {
 
 
   @JsonKey(
-    
+
     name: r'currency',
     required: true,
     includeIfNull: false,
@@ -119,7 +119,7 @@ class StudListing {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -131,7 +131,7 @@ class StudListing {
 
 
   @JsonKey(
-    
+
     name: r'published',
     required: true,
     includeIfNull: false,
@@ -144,7 +144,7 @@ class StudListing {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -156,7 +156,7 @@ class StudListing {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -168,7 +168,7 @@ class StudListing {
 
 
   @JsonKey(
-    
+
     name: r'cattery_name',
     required: false,
     includeIfNull: false,
@@ -180,7 +180,7 @@ class StudListing {
 
 
   @JsonKey(
-    
+
     name: r'is_mine',
     required: true,
     includeIfNull: false,
@@ -233,4 +233,3 @@ class StudListing {
   }
 
 }
-

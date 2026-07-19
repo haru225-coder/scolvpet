@@ -3,6 +3,7 @@ import 'package:scolvpet_api/scolvpet_api.dart' as api;
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'breeding_models.dart';
 
 abstract interface class BreedingRepository {
@@ -451,18 +452,13 @@ class DefaultApiBreedingRepository implements BreedingRepository {
   }
 }
 
-String breedingErrorMessage(Object error) {
-  if (error is BreedingRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final msg = (data['error'] as Map)['message'];
-      if (msg is String && msg.isNotEmpty) return msg;
-    }
-    if (error.type == DioExceptionType.connectionError) {
-      return '网络不可用，请稍后重试';
-    }
-    return '请求失败（${error.response?.statusCode ?? error.type.name}）';
-  }
-  return error.toString();
-}
+String breedingErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '请求失败',
+  nonDioFallback: '繁育操作暂时未完成，请稍后重试',
+  mapLocal: (e) => e is BreedingRepositoryException ? e.message : null,
+  mapDio: (e) {
+    if (e.type == DioExceptionType.connectionError) return '网络不可用，请稍后重试';
+    return '请求失败（${e.response?.statusCode ?? e.type.name}）';
+  },
+);

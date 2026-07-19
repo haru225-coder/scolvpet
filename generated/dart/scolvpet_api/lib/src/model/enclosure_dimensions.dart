@@ -31,7 +31,7 @@ class EnclosureDimensions {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'length',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class EnclosureDimensions {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'width',
     required: true,
     includeIfNull: false,
@@ -57,7 +57,7 @@ class EnclosureDimensions {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'height',
     required: true,
     includeIfNull: false,
@@ -69,7 +69,7 @@ class EnclosureDimensions {
 
 
   @JsonKey(
-    
+
     name: r'unit',
     required: false,
     includeIfNull: false,
@@ -119,5 +119,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

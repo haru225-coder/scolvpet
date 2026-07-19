@@ -29,7 +29,7 @@ class WeanLitterRequest {
   });
 
   @JsonKey(
-    
+
     name: r'weaned_at',
     required: true,
     includeIfNull: false,
@@ -41,7 +41,7 @@ class WeanLitterRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -53,7 +53,7 @@ class WeanLitterRequest {
 
 
   @JsonKey(
-    
+
     name: r'items',
     required: true,
     includeIfNull: false,
@@ -88,4 +88,3 @@ class WeanLitterRequest {
   }
 
 }
-

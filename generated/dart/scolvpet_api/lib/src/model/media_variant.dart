@@ -36,7 +36,7 @@ class MediaVariant {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -48,7 +48,7 @@ class MediaVariant {
 
 
   @JsonKey(
-    
+
     name: r'kind',
     required: true,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class MediaVariant {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -72,7 +72,7 @@ class MediaVariant {
 
 
   @JsonKey(
-    
+
     name: r'url',
     required: false,
     includeIfNull: false,
@@ -85,7 +85,7 @@ class MediaVariant {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'width',
     required: false,
     includeIfNull: false,
@@ -98,7 +98,7 @@ class MediaVariant {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'height',
     required: false,
     includeIfNull: false,
@@ -111,7 +111,7 @@ class MediaVariant {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'duration_seconds',
     required: false,
     includeIfNull: false,
@@ -197,5 +197,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

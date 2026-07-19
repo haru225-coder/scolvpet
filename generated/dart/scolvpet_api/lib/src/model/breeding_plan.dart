@@ -64,7 +64,7 @@ class BreedingPlan {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -76,7 +76,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'owner_id',
     required: true,
     includeIfNull: false,
@@ -88,7 +88,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: false,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'sire_id',
     required: true,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'dam_id',
     required: true,
     includeIfNull: false,
@@ -124,7 +124,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'rule_version_id',
     required: true,
     includeIfNull: false,
@@ -136,7 +136,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'state',
     required: true,
     includeIfNull: false,
@@ -148,7 +148,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'planned_pairing_at',
     required: false,
     includeIfNull: false,
@@ -160,7 +160,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'mating_baseline_at',
     required: false,
     includeIfNull: false,
@@ -172,7 +172,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'expected_birth_start',
     required: false,
     includeIfNull: false,
@@ -184,7 +184,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'expected_birth_end',
     required: false,
     includeIfNull: false,
@@ -196,7 +196,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'actual_birth_at',
     required: false,
     includeIfNull: false,
@@ -208,7 +208,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'active_pairing_attempt_id',
     required: false,
     includeIfNull: false,
@@ -220,7 +220,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: false,
     includeIfNull: false,
@@ -232,7 +232,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'objective_traits',
     required: false,
     includeIfNull: false,
@@ -244,7 +244,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'kinship_check',
     required: false,
     includeIfNull: false,
@@ -256,7 +256,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -269,7 +269,7 @@ class BreedingPlan {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -281,7 +281,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -293,7 +293,7 @@ class BreedingPlan {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -362,4 +362,3 @@ class BreedingPlan {
   }
 
 }
-

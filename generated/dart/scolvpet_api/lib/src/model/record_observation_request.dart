@@ -38,7 +38,7 @@ class RecordObservationRequest {
   });
 
   @JsonKey(
-    
+
     name: r'observed_at',
     required: true,
     includeIfNull: false,
@@ -50,7 +50,7 @@ class RecordObservationRequest {
 
 
   @JsonKey(
-    
+
     name: r'type',
     required: true,
     includeIfNull: false,
@@ -63,7 +63,7 @@ class RecordObservationRequest {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'duration_seconds',
     required: false,
     includeIfNull: false,
@@ -75,7 +75,7 @@ class RecordObservationRequest {
 
 
   @JsonKey(
-    
+
     name: r'severity',
     required: false,
     includeIfNull: false,
@@ -89,7 +89,7 @@ class RecordObservationRequest {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'confidence',
     required: false,
     includeIfNull: false,
@@ -101,7 +101,7 @@ class RecordObservationRequest {
 
 
   @JsonKey(
-    
+
     name: r'media_ids',
     required: false,
     includeIfNull: false,
@@ -113,7 +113,7 @@ class RecordObservationRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -156,4 +156,3 @@ class RecordObservationRequest {
   }
 
 }
-

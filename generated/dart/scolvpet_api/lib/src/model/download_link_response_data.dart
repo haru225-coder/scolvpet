@@ -32,7 +32,7 @@ class DownloadLinkResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'download_url',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class DownloadLinkResponseData {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class DownloadLinkResponseData {
 
 
   @JsonKey(
-    
+
     name: r'file_name',
     required: true,
     includeIfNull: false,
@@ -69,7 +69,7 @@ class DownloadLinkResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'size_bytes',
     required: true,
     includeIfNull: false,
@@ -81,7 +81,7 @@ class DownloadLinkResponseData {
 
 
   @JsonKey(
-    
+
     name: r'sha256',
     required: true,
     includeIfNull: false,
@@ -120,4 +120,3 @@ class DownloadLinkResponseData {
   }
 
 }
-

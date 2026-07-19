@@ -30,7 +30,7 @@ class CreatePushMessageRequest {
   });
 
   @JsonKey(
-    
+
     name: r'title',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class CreatePushMessageRequest {
 
 
   @JsonKey(
-    
+
     name: r'body',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class CreatePushMessageRequest {
 
 
   @JsonKey(
-    
+
     name: r'data',
     required: false,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class CreatePushMessageRequest {
 
 
   @JsonKey(
-    
+
     name: r'target_device_id',
     required: false,
     includeIfNull: false,
@@ -103,4 +103,3 @@ class CreatePushMessageRequest {
   }
 
 }
-

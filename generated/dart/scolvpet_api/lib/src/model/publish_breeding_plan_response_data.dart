@@ -28,7 +28,7 @@ class PublishBreedingPlanResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'breeding_plan',
     required: true,
     includeIfNull: false,
@@ -40,7 +40,7 @@ class PublishBreedingPlanResponseData {
 
 
   @JsonKey(
-    
+
     name: r'created_tasks',
     required: true,
     includeIfNull: false,
@@ -73,4 +73,3 @@ class PublishBreedingPlanResponseData {
   }
 
 }
-

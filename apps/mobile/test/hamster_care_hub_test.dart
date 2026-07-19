@@ -124,6 +124,7 @@ void main() {
     );
     final healthController = HealthController(repository: healthRepo);
     await healthController.loadForHamster('h1');
+    expect(healthController.listState.data, isNotEmpty);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -141,12 +142,20 @@ void main() {
     await healthController.loadForHamster('h1');
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const Key('hamster-detail-profile')), findsOneWidget);
+    expect(
+      find.byKey(const Key('hamster-detail-health-overview')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('hamster-detail-recent')), findsOneWidget);
     expect(find.byKey(const Key('hamster-care-tasks-title')), findsOneWidget);
     expect(find.textContaining('雪团复查'), findsOneWidget);
     expect(find.byKey(const Key('hamster-health-title')), findsOneWidget);
     expect(find.text('日常检查'), findsWidgets);
     expect(find.textContaining('精神可'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('完成').first);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('完成').first);
     await tester.pumpAndSettle();
     final remaining = CareTaskItem.openForHamster(
@@ -154,5 +163,64 @@ void main() {
       'h1',
     );
     expect(remaining.where((t) => t.displayTitle.contains('雪团复查')), isEmpty);
+  });
+
+  testWidgets('HamsterDetailPage follows light theme on small scaled layout', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final controller = I2Controller(
+      repository: MemoryI2Repository(
+        snapshot: const I2Snapshot(
+          hamsters: [
+            I2Hamster(
+              id: 'h-small',
+              internalCode: 'H-SMALL-001',
+              name: '长名字雪团宝宝',
+              sex: 'female',
+              varietyCode: 'poly|蜜波利',
+              lifecycleStatus: 'active',
+              breedingStatus: 'candidate',
+              birthDate: null,
+              currentEnclosureId: null,
+              litterId: null,
+              notes: null,
+              version: 1,
+            ),
+          ],
+          litters: [],
+          enclosures: [],
+          lastSyncedAt: null,
+        ),
+      ),
+    );
+    await controller.restore();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.light(),
+        home: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(320, 900),
+            textScaler: TextScaler.linear(1.3),
+          ),
+          child: HamsterDetailPage(
+            controller: controller,
+            hamsterId: 'h-small',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final titleContext = tester.element(find.text('仓鼠详情'));
+    expect(Theme.of(titleContext).brightness, Brightness.light);
+    expect(find.byKey(const Key('hamster-detail-profile')), findsOneWidget);
+    expect(
+      find.byKey(const Key('hamster-detail-health-overview')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 }

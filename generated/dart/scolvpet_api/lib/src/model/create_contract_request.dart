@@ -36,7 +36,7 @@ class CreateContractRequest {
   });
 
   @JsonKey(
-    
+
     name: r'template_id',
     required: true,
     includeIfNull: false,
@@ -48,7 +48,7 @@ class CreateContractRequest {
 
 
   @JsonKey(
-    
+
     name: r'contact_id',
     required: false,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class CreateContractRequest {
 
 
   @JsonKey(
-    
+
     name: r'handover_id',
     required: false,
     includeIfNull: false,
@@ -72,7 +72,7 @@ class CreateContractRequest {
 
 
   @JsonKey(
-    
+
     name: r'title',
     required: false,
     includeIfNull: false,
@@ -84,7 +84,7 @@ class CreateContractRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -96,7 +96,7 @@ class CreateContractRequest {
 
 
   @JsonKey(
-    
+
     name: r'contact_name',
     required: false,
     includeIfNull: false,
@@ -108,7 +108,7 @@ class CreateContractRequest {
 
 
   @JsonKey(
-    
+
     name: r'hamster_name',
     required: false,
     includeIfNull: false,
@@ -151,4 +151,3 @@ class CreateContractRequest {
   }
 
 }
-

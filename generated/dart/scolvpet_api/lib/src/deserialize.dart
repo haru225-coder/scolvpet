@@ -126,6 +126,22 @@ import 'package:scolvpet_api/src/model/genetic_profile_response.dart';
 import 'package:scolvpet_api/src/model/genetic_simulation_request.dart';
 import 'package:scolvpet_api/src/model/genetic_simulation_response.dart';
 import 'package:scolvpet_api/src/model/genetic_simulation_result.dart';
+import 'package:scolvpet_api/src/model/growth_campaign.dart';
+import 'package:scolvpet_api/src/model/growth_campaign_generate_request.dart';
+import 'package:scolvpet_api/src/model/growth_campaign_list_response.dart';
+import 'package:scolvpet_api/src/model/growth_campaign_response.dart';
+import 'package:scolvpet_api/src/model/growth_lead.dart';
+import 'package:scolvpet_api/src/model/growth_lead_list_response.dart';
+import 'package:scolvpet_api/src/model/growth_opportunity.dart';
+import 'package:scolvpet_api/src/model/growth_opportunity_list_response.dart';
+import 'package:scolvpet_api/src/model/growth_public_fact.dart';
+import 'package:scolvpet_api/src/model/growth_public_hamster.dart';
+import 'package:scolvpet_api/src/model/growth_public_hamster_list_response.dart';
+import 'package:scolvpet_api/src/model/growth_public_hamster_request.dart';
+import 'package:scolvpet_api/src/model/growth_public_hamster_response.dart';
+import 'package:scolvpet_api/src/model/growth_public_media.dart';
+import 'package:scolvpet_api/src/model/growth_script.dart';
+import 'package:scolvpet_api/src/model/growth_script_section.dart';
 import 'package:scolvpet_api/src/model/hamster.dart';
 import 'package:scolvpet_api/src/model/hamster_batch_create_request.dart';
 import 'package:scolvpet_api/src/model/hamster_batch_create_request_items_inner.dart';
@@ -221,8 +237,16 @@ import 'package:scolvpet_api/src/model/pedigree_parentage.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage_create_request.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage_list_response.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage_response.dart';
+import 'package:scolvpet_api/src/model/phenotype_table_outcome.dart';
 import 'package:scolvpet_api/src/model/phone_code_login_request.dart';
 import 'package:scolvpet_api/src/model/plan_catalog_entry.dart';
+import 'package:scolvpet_api/src/model/public_growth_catalog.dart';
+import 'package:scolvpet_api/src/model/public_growth_catalog_response.dart';
+import 'package:scolvpet_api/src/model/public_growth_consult_request.dart';
+import 'package:scolvpet_api/src/model/public_growth_consult_response.dart';
+import 'package:scolvpet_api/src/model/public_growth_consult_response_data.dart';
+import 'package:scolvpet_api/src/model/public_growth_lead_request.dart';
+import 'package:scolvpet_api/src/model/public_growth_lead_response.dart';
 import 'package:scolvpet_api/src/model/public_share_response.dart';
 import 'package:scolvpet_api/src/model/public_share_response_data.dart';
 import 'package:scolvpet_api/src/model/public_site.dart';
@@ -398,11 +422,11 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'BackupJobResponse':
           return BackupJobResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'BatchItemStatus':
-          
-          
+
+
         case 'BatchTransactionStatus':
-          
-          
+
+
         case 'BreedingPlan':
           return BreedingPlan.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'BreedingPlanCreateRequest':
@@ -412,8 +436,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'BreedingPlanResponse':
           return BreedingPlanResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'BreedingPlanState':
-          
-          
+
+
         case 'BreedingPlanUpdateRequest':
           return BreedingPlanUpdateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CareTask':
@@ -427,8 +451,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'CareTaskUpdateRequest':
           return CareTaskUpdateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CleanlinessState':
-          
-          
+
+
         case 'CompleteBreedingPlanRequest':
           return CompleteBreedingPlanRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CompleteBreedingPlanResponse':
@@ -538,8 +562,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'EnclosureCleaningResponse':
           return EnclosureCleaningResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'EnclosureCleaningType':
-          
-          
+
+
         case 'EnclosureCreateRequest':
           return EnclosureCreateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'EnclosureDimensions':
@@ -549,8 +573,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'EnclosureResponse':
           return EnclosureResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'EnclosureState':
-          
-          
+
+
         case 'EnclosureStay':
           return EnclosureStay.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'EnclosureStayCreateRequest':
@@ -611,6 +635,38 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return GeneticSimulationResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'GeneticSimulationResult':
           return GeneticSimulationResult.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthCampaign':
+          return GrowthCampaign.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthCampaignGenerateRequest':
+          return GrowthCampaignGenerateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthCampaignListResponse':
+          return GrowthCampaignListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthCampaignResponse':
+          return GrowthCampaignResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthLead':
+          return GrowthLead.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthLeadListResponse':
+          return GrowthLeadListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthOpportunity':
+          return GrowthOpportunity.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthOpportunityListResponse':
+          return GrowthOpportunityListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthPublicFact':
+          return GrowthPublicFact.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthPublicHamster':
+          return GrowthPublicHamster.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthPublicHamsterListResponse':
+          return GrowthPublicHamsterListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthPublicHamsterRequest':
+          return GrowthPublicHamsterRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthPublicHamsterResponse':
+          return GrowthPublicHamsterResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthPublicMedia':
+          return GrowthPublicMedia.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthScript':
+          return GrowthScript.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'GrowthScriptSection':
+          return GrowthScriptSection.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'Hamster':
           return Hamster.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'HamsterBatchCreateRequest':
@@ -624,20 +680,20 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'HamsterBatchCreateResponseDataItemsInner':
           return HamsterBatchCreateResponseDataItemsInner.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'HamsterBreedingStatus':
-          
-          
+
+
         case 'HamsterCreateRequest':
           return HamsterCreateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'HamsterLifecycleStatus':
-          
-          
+
+
         case 'HamsterListResponse':
           return HamsterListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'HamsterResponse':
           return HamsterResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'HamsterSourceType':
-          
-          
+
+
         case 'HamsterUpdateRequest':
           return HamsterUpdateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'HealthRecord':
@@ -649,8 +705,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'HealthRecordResponse':
           return HealthRecordResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'HealthRecordType':
-          
-          
+
+
         case 'HealthRecordUpdateRequest':
           return HealthRecordUpdateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ImportCommitRequest':
@@ -678,8 +734,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'ImportRowResultListResponse':
           return ImportRowResultListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ImportRowStatus':
-          
-          
+
+
         case 'ImportTemplateResponse':
           return ImportTemplateResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ImportTemplateResponseData':
@@ -689,8 +745,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'ImportTemplateResponseDataColumnsInnerExample':
           return ImportTemplateResponseDataColumnsInnerExample.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ImportTemplateType':
-          
-          
+
+
         case 'ImportUploadCreateRequest':
           return ImportUploadCreateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ImportUploadResponse':
@@ -714,8 +770,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'InviteOrganizationMemberRequest':
           return InviteOrganizationMemberRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'JobStatus':
-          
-          
+
+
         case 'KinshipCheck':
           return KinshipCheck.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'Litter':
@@ -745,8 +801,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'LitterResponseData':
           return LitterResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'LitterState':
-          
-          
+
+
         case 'MatingObservation':
           return MatingObservation.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'MediaAsset':
@@ -792,8 +848,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'MiniprogramReleaseResponse':
           return MiniprogramReleaseResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ObservationType':
-          
-          
+
+
         case 'Organization':
           return Organization.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'OrganizationMember':
@@ -815,11 +871,11 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'PairingAttemptResponse':
           return PairingAttemptResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PairingAttemptStatus':
-          
-          
+
+
         case 'PairingResult':
-          
-          
+
+
         case 'PedigreeGraphResponse':
           return PedigreeGraphResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PedigreeGraphResponseData':
@@ -834,10 +890,26 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return PedigreeParentageListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PedigreeParentageResponse':
           return PedigreeParentageResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PhenotypeTableOutcome':
+          return PhenotypeTableOutcome.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PhoneCodeLoginRequest':
           return PhoneCodeLoginRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PlanCatalogEntry':
           return PlanCatalogEntry.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicGrowthCatalog':
+          return PublicGrowthCatalog.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicGrowthCatalogResponse':
+          return PublicGrowthCatalogResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicGrowthConsultRequest':
+          return PublicGrowthConsultRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicGrowthConsultResponse':
+          return PublicGrowthConsultResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicGrowthConsultResponseData':
+          return PublicGrowthConsultResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicGrowthLeadRequest':
+          return PublicGrowthLeadRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicGrowthLeadResponse':
+          return PublicGrowthLeadResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublicShareResponse':
           return PublicShareResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublicShareResponseData':
@@ -861,11 +933,11 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'PupIdentityListResponse':
           return PupIdentityListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PupOutcomeStatus':
-          
-          
+
+
         case 'PupProfileStatus':
-          
-          
+
+
         case 'PushDevice':
           return PushDevice.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PushDeviceListResponse':
@@ -899,8 +971,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'ReminderResponse':
           return ReminderResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ReminderState':
-          
-          
+
+
         case 'ResponseMeta':
           return ResponseMeta.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'RetryImportRequest':
@@ -924,11 +996,11 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'SessionResponseData':
           return SessionResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'Severity':
-          
-          
+
+
         case 'Sex':
-          
-          
+
+
         case 'SexAndSeparateRequest':
           return SexAndSeparateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'SexAndSeparateRequestItemsInner':
@@ -946,8 +1018,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'SharePageResponse':
           return SharePageResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'SharePublicField':
-          
-          
+
+
         case 'ShareRevocationResponse':
           return ShareRevocationResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ShareRevocationResponseData':
@@ -955,8 +1027,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'ShareRevocationResponseDataCacheInvalidation':
           return ShareRevocationResponseDataCacheInvalidation.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'ShareStatus':
-          
-          
+
+
         case 'SpeciesRuleVersion':
           return SpeciesRuleVersion.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'SpeciesRuleVersionCreateRequest':
@@ -992,11 +1064,11 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'StudListingResponse':
           return StudListingResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'TaskPriority':
-          
-          
+
+
         case 'TaskState':
-          
-          
+
+
         case 'UpdateOrganizationMemberRequest':
           return UpdateOrganizationMemberRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'UploadSession':

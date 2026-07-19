@@ -39,10 +39,12 @@ class CrmHandover {
     required  this.version,
 
      this.contactName,
+
+     this.hamsterName,
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -54,7 +56,7 @@ class CrmHandover {
 
 
   @JsonKey(
-    
+
     name: r'contact_id',
     required: true,
     includeIfNull: false,
@@ -66,7 +68,7 @@ class CrmHandover {
 
 
   @JsonKey(
-    
+
     name: r'reservation_id',
     required: false,
     includeIfNull: false,
@@ -78,7 +80,7 @@ class CrmHandover {
 
 
   @JsonKey(
-    
+
     name: r'hamster_id',
     required: false,
     includeIfNull: false,
@@ -90,7 +92,7 @@ class CrmHandover {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -102,7 +104,7 @@ class CrmHandover {
 
 
   @JsonKey(
-    
+
     name: r'scheduled_at',
     required: true,
     includeIfNull: false,
@@ -114,7 +116,7 @@ class CrmHandover {
 
 
   @JsonKey(
-    
+
     name: r'completed_at',
     required: false,
     includeIfNull: false,
@@ -126,7 +128,7 @@ class CrmHandover {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -139,7 +141,7 @@ class CrmHandover {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -151,7 +153,7 @@ class CrmHandover {
 
 
   @JsonKey(
-    
+
     name: r'contact_name',
     required: false,
     includeIfNull: false,
@@ -159,6 +161,18 @@ class CrmHandover {
 
 
   final String? contactName;
+
+
+
+  @JsonKey(
+
+    name: r'hamster_name',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? hamsterName;
 
 
 
@@ -175,7 +189,8 @@ class CrmHandover {
       other.completedAt == completedAt &&
       other.notes == notes &&
       other.version == version &&
-      other.contactName == contactName;
+      other.contactName == contactName &&
+      other.hamsterName == hamsterName;
 
     @override
     int get hashCode =>
@@ -188,7 +203,8 @@ class CrmHandover {
         (completedAt == null ? 0 : completedAt.hashCode) +
         (notes == null ? 0 : notes.hashCode) +
         version.hashCode +
-        contactName.hashCode;
+        contactName.hashCode +
+        (hamsterName == null ? 0 : hamsterName.hashCode);
 
   factory CrmHandover.fromJson(Map<String, dynamic> json) => _$CrmHandoverFromJson(json);
 
@@ -217,5 +233,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

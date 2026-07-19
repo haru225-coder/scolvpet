@@ -30,7 +30,7 @@ class ShareRevocationResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'share',
     required: true,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class ShareRevocationResponseData {
 
 
   @JsonKey(
-    
+
     name: r'revoked_at',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class ShareRevocationResponseData {
 
 
   @JsonKey(
-    
+
     name: r'cache_invalidation',
     required: true,
     includeIfNull: false,
@@ -89,4 +89,3 @@ class ShareRevocationResponseData {
   }
 
 }
-

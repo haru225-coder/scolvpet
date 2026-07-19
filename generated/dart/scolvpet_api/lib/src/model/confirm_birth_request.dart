@@ -43,7 +43,7 @@ class ConfirmBirthRequest {
   });
 
   @JsonKey(
-    
+
     name: r'born_at',
     required: true,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class ConfirmBirthRequest {
 
       /// initial_alive_count > 0 时必填；N=0 时必须省略或为 null
   @JsonKey(
-    
+
     name: r'enclosure_id',
     required: false,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class ConfirmBirthRequest {
           // minimum: 0
           // maximum: 100
   @JsonKey(
-    
+
     name: r'initial_alive_count',
     required: true,
     includeIfNull: false,
@@ -84,7 +84,7 @@ class ConfirmBirthRequest {
           // minimum: 0
           // maximum: 100
   @JsonKey(
-    
+
     name: r'initial_other_count',
     required: true,
     includeIfNull: false,
@@ -96,7 +96,7 @@ class ConfirmBirthRequest {
 
 
   @JsonKey(
-    
+
     name: r'dam_condition',
     required: true,
     includeIfNull: false,
@@ -109,7 +109,7 @@ class ConfirmBirthRequest {
 
       /// 生产结果原因；N=0 时必须明确无活仔原因
   @JsonKey(
-    
+
     name: r'outcome_reason',
     required: true,
     includeIfNull: false,
@@ -121,7 +121,7 @@ class ConfirmBirthRequest {
 
 
   @JsonKey(
-    
+
     name: r'temporary_code_prefix',
     required: false,
     includeIfNull: false,
@@ -134,7 +134,7 @@ class ConfirmBirthRequest {
 
       /// 若提供，数量必须等于 initial_alive_count
   @JsonKey(
-    
+
     name: r'temporary_codes',
     required: false,
     includeIfNull: false,
@@ -146,7 +146,7 @@ class ConfirmBirthRequest {
 
 
   @JsonKey(
-    
+
     name: r'timezone',
     required: true,
     includeIfNull: false,
@@ -158,7 +158,7 @@ class ConfirmBirthRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -207,4 +207,3 @@ class ConfirmBirthRequest {
   }
 
 }
-

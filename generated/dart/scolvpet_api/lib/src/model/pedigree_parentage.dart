@@ -46,7 +46,7 @@ class PedigreeParentage {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class PedigreeParentage {
 
 
   @JsonKey(
-    
+
     name: r'owner_id',
     required: true,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class PedigreeParentage {
 
 
   @JsonKey(
-    
+
     name: r'child_hamster_id',
     required: true,
     includeIfNull: false,
@@ -82,7 +82,7 @@ class PedigreeParentage {
 
 
   @JsonKey(
-    
+
     name: r'parent_hamster_id',
     required: true,
     includeIfNull: false,
@@ -94,7 +94,7 @@ class PedigreeParentage {
 
 
   @JsonKey(
-    
+
     name: r'role',
     required: true,
     includeIfNull: false,
@@ -106,7 +106,7 @@ class PedigreeParentage {
 
 
   @JsonKey(
-    
+
     name: r'evidence_type',
     required: true,
     includeIfNull: false,
@@ -120,7 +120,7 @@ class PedigreeParentage {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'confidence',
     required: true,
     includeIfNull: false,
@@ -132,7 +132,7 @@ class PedigreeParentage {
 
 
   @JsonKey(
-    
+
     name: r'valid_from',
     required: true,
     includeIfNull: false,
@@ -144,7 +144,7 @@ class PedigreeParentage {
 
 
   @JsonKey(
-    
+
     name: r'valid_to',
     required: false,
     includeIfNull: false,
@@ -156,7 +156,7 @@ class PedigreeParentage {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -169,7 +169,7 @@ class PedigreeParentage {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -181,7 +181,7 @@ class PedigreeParentage {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -271,5 +271,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

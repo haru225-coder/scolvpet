@@ -30,7 +30,7 @@ class WeightRecordOneOf {
   });
 
   @JsonKey(
-    
+
     name: r'pup_identity_id',
     required: false,
     includeIfNull: false,
@@ -42,7 +42,7 @@ class WeightRecordOneOf {
 
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: false,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class WeightRecordOneOf {
 
 
   @JsonKey(
-    
+
     name: r'measurement_kind',
     required: false,
     includeIfNull: false,
@@ -66,7 +66,7 @@ class WeightRecordOneOf {
 
 
   @JsonKey(
-    
+
     name: r'subject_count',
     required: false,
     includeIfNull: false,
@@ -116,5 +116,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

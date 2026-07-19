@@ -64,7 +64,7 @@ class Hamster {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -76,7 +76,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'owner_id',
     required: true,
     includeIfNull: false,
@@ -88,7 +88,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'internal_code',
     required: true,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'name',
     required: false,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'species_rule_version_id',
     required: true,
     includeIfNull: false,
@@ -124,7 +124,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'variety_code',
     required: false,
     includeIfNull: false,
@@ -136,7 +136,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'sex',
     required: true,
     includeIfNull: false,
@@ -150,7 +150,7 @@ class Hamster {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'sex_confidence',
     required: false,
     includeIfNull: false,
@@ -162,7 +162,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'birth_date',
     required: false,
     includeIfNull: false,
@@ -174,7 +174,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: false,
     includeIfNull: false,
@@ -186,7 +186,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'source_type',
     required: true,
     includeIfNull: false,
@@ -198,7 +198,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'lifecycle_status',
     required: true,
     includeIfNull: false,
@@ -210,7 +210,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'breeding_status',
     required: true,
     includeIfNull: false,
@@ -222,7 +222,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'current_enclosure_id',
     required: false,
     includeIfNull: false,
@@ -234,7 +234,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'cover_media_id',
     required: false,
     includeIfNull: false,
@@ -246,7 +246,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -259,7 +259,7 @@ class Hamster {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -271,7 +271,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -283,7 +283,7 @@ class Hamster {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -350,4 +350,3 @@ class Hamster {
   }
 
 }
-

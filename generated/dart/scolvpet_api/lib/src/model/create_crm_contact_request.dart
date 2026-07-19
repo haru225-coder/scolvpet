@@ -32,7 +32,7 @@ class CreateCrmContactRequest {
   });
 
   @JsonKey(
-    
+
     name: r'name',
     required: true,
     includeIfNull: false,
@@ -44,7 +44,7 @@ class CreateCrmContactRequest {
 
 
   @JsonKey(
-    
+
     name: r'phone',
     required: false,
     includeIfNull: false,
@@ -56,7 +56,7 @@ class CreateCrmContactRequest {
 
 
   @JsonKey(
-    
+
     name: r'wechat',
     required: false,
     includeIfNull: false,
@@ -68,7 +68,7 @@ class CreateCrmContactRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -136,5 +136,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

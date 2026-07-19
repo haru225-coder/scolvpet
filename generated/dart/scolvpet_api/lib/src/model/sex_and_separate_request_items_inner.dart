@@ -35,7 +35,7 @@ class SexAndSeparateRequestItemsInner {
   });
 
   @JsonKey(
-    
+
     name: r'pup_identity_id',
     required: true,
     includeIfNull: false,
@@ -47,7 +47,7 @@ class SexAndSeparateRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'sex',
     required: true,
     includeIfNull: false,
@@ -61,7 +61,7 @@ class SexAndSeparateRequestItemsInner {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'sex_confidence',
     required: false,
     includeIfNull: false,
@@ -73,7 +73,7 @@ class SexAndSeparateRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'destination_enclosure_id',
     required: true,
     includeIfNull: false,
@@ -85,7 +85,7 @@ class SexAndSeparateRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'requires_recheck',
     required: true,
     includeIfNull: false,
@@ -97,7 +97,7 @@ class SexAndSeparateRequestItemsInner {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -138,4 +138,3 @@ class SexAndSeparateRequestItemsInner {
   }
 
 }
-

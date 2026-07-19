@@ -34,7 +34,7 @@ class KinshipCheck {
   });
 
   @JsonKey(
-    
+
     name: r'checked_at',
     required: true,
     includeIfNull: false,
@@ -47,7 +47,7 @@ class KinshipCheck {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'common_ancestor_count',
     required: true,
     includeIfNull: false,
@@ -59,7 +59,7 @@ class KinshipCheck {
 
 
   @JsonKey(
-    
+
     name: r'risk_level',
     required: true,
     includeIfNull: false,
@@ -73,7 +73,7 @@ class KinshipCheck {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'coefficient',
     required: false,
     includeIfNull: false,
@@ -85,7 +85,7 @@ class KinshipCheck {
 
 
   @JsonKey(
-    
+
     name: r'rule_version',
     required: true,
     includeIfNull: false,
@@ -97,7 +97,7 @@ class KinshipCheck {
 
 
   @JsonKey(
-    
+
     name: r'warnings',
     required: false,
     includeIfNull: false,
@@ -159,5 +159,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

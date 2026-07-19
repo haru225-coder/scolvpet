@@ -18,9 +18,11 @@ class StudController extends ChangeNotifier {
     await Future.wait([refreshListings(), refreshDeals()]);
   }
 
-  Future<void> refreshListings() async {
-    listingsState = const I2AsyncState.loading();
-    notifyListeners();
+  Future<void> refreshListings({bool showLoading = true}) async {
+    if (showLoading || !listingsState.hasValue) {
+      listingsState = const I2AsyncState.loading();
+      notifyListeners();
+    }
     try {
       final items = await repository.listListings();
       listingsState = items.isEmpty
@@ -32,9 +34,11 @@ class StudController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> refreshDeals() async {
-    dealsState = const I2AsyncState.loading();
-    notifyListeners();
+  Future<void> refreshDeals({bool showLoading = true}) async {
+    if (showLoading || !dealsState.hasValue) {
+      dealsState = const I2AsyncState.loading();
+      notifyListeners();
+    }
     try {
       final items = await repository.listDeals();
       dealsState = items.isEmpty
@@ -49,43 +53,43 @@ class StudController extends ChangeNotifier {
   Future<bool> createListing(StudListingDraft draft) => _run(() async {
     await repository.createListing(draft);
     lastMessage = '挂牌已发布';
-    await refreshListings();
+    await refreshListings(showLoading: false);
   });
 
   Future<bool> unpublishListing(StudListing item) => _run(() async {
     await repository.unpublishListing(item.id);
     lastMessage = '已下架挂牌';
-    await refreshListings();
+    await refreshListings(showLoading: false);
   });
 
   Future<bool> createDeal(StudDealDraft draft) => _run(() async {
     await repository.createDeal(draft);
     lastMessage = '借配单已创建';
-    await refreshDeals();
+    await refreshDeals(showLoading: false);
   });
 
   Future<bool> confirm(StudDeal item) => _run(() async {
     await repository.confirm(item.id);
     lastMessage = '已确认';
-    await refreshDeals();
+    await refreshDeals(showLoading: false);
   });
 
   Future<bool> start(StudDeal item) => _run(() async {
     await repository.start(item.id);
     lastMessage = '已开始借配';
-    await refreshDeals();
+    await refreshDeals(showLoading: false);
   });
 
   Future<bool> complete(StudDeal item) => _run(() async {
     await repository.complete(item.id);
     lastMessage = '借配已完成';
-    await refreshDeals();
+    await refreshDeals(showLoading: false);
   });
 
   Future<bool> cancel(StudDeal item) => _run(() async {
     await repository.cancel(item.id);
     lastMessage = '已取消';
-    await refreshDeals();
+    await refreshDeals(showLoading: false);
   });
 
   Future<bool> _run(Future<void> Function() body) async {

@@ -1,3 +1,40 @@
+String formatAccountingAmount(
+  int cents, {
+  String currency = 'CNY',
+  bool showPositiveSign = false,
+}) {
+  final negative = cents < 0;
+  final absolute = cents.abs();
+  final whole = (absolute ~/ 100).toString();
+  final fraction = (absolute % 100).toString().padLeft(2, '0');
+  final grouped = whole.replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (_) => ',',
+  );
+  final sign = negative ? '-' : (showPositiveSign ? '+' : '');
+  final symbol = currency.toUpperCase() == 'CNY' ? '¥' : '$currency ';
+  return '$sign$symbol$grouped.$fraction';
+}
+
+class AccountingContactOption {
+  const AccountingContactOption({
+    required this.id,
+    required this.name,
+    this.status,
+  });
+
+  final String id;
+  final String name;
+  final String? status;
+
+  factory AccountingContactOption.fromJson(Map<String, dynamic> json) =>
+      AccountingContactOption(
+        id: json['id'] as String? ?? '',
+        name: json['name'] as String? ?? '',
+        status: json['status'] as String?,
+      );
+}
+
 class AccountingCategory {
   const AccountingCategory({
     required this.id,
@@ -59,9 +96,11 @@ class AccountingRecord {
   String get entryTypeLabel => isIncome ? '收入' : '支出';
 
   String get amountLabel {
-    final yuan = amountCents / 100.0;
-    final sign = isIncome ? '+' : '-';
-    return '$sign${yuan.toStringAsFixed(2)} $currency';
+    return formatAccountingAmount(
+      isIncome ? amountCents : -amountCents,
+      currency: currency,
+      showPositiveSign: isIncome,
+    );
   }
 
   factory AccountingRecord.fromJson(Map<String, dynamic> json) =>
@@ -99,8 +138,7 @@ class AccountingCategorySum {
   final int count;
 
   String get amountLabel {
-    final yuan = amountCents / 100.0;
-    return '${yuan.toStringAsFixed(2)} CNY';
+    return formatAccountingAmount(amountCents);
   }
 
   factory AccountingCategorySum.fromJson(Map<String, dynamic> json) =>
@@ -134,11 +172,11 @@ class AccountingSummary {
   final int recordCount;
   final List<AccountingCategorySum> byCategory;
 
-  String _fmt(int cents) => (cents / 100.0).toStringAsFixed(2);
-
-  String get incomeLabel => '${_fmt(incomeCents)} $currency';
-  String get expenseLabel => '${_fmt(expenseCents)} $currency';
-  String get netLabel => '${_fmt(netCents)} $currency';
+  String get incomeLabel =>
+      formatAccountingAmount(incomeCents, currency: currency);
+  String get expenseLabel =>
+      formatAccountingAmount(expenseCents, currency: currency);
+  String get netLabel => formatAccountingAmount(netCents, currency: currency);
 
   factory AccountingSummary.fromJson(Map<String, dynamic> json) {
     final by = json['by_category'];
@@ -157,9 +195,11 @@ class AccountingSummary {
       byCategory: by is List
           ? by
                 .whereType<Map>()
-                .map((e) => AccountingCategorySum.fromJson(
-                      Map<String, dynamic>.from(e),
-                    ))
+                .map(
+                  (e) => AccountingCategorySum.fromJson(
+                    Map<String, dynamic>.from(e),
+                  ),
+                )
                 .toList()
           : const [],
     );
@@ -178,6 +218,17 @@ class AccountingCategoryDraft {
   final int sortOrder;
 }
 
+/// 首次使用财务模块时的起步分类，实际写入当前账号后仍可继续自定义。
+const defaultAccountingCategoryDrafts = <AccountingCategoryDraft>[
+  AccountingCategoryDraft(entryType: 'expense', name: '饲料', sortOrder: 10),
+  AccountingCategoryDraft(entryType: 'expense', name: '垫料', sortOrder: 20),
+  AccountingCategoryDraft(entryType: 'expense', name: '医疗', sortOrder: 30),
+  AccountingCategoryDraft(entryType: 'expense', name: '设备', sortOrder: 40),
+  AccountingCategoryDraft(entryType: 'income', name: '交付收入', sortOrder: 10),
+  AccountingCategoryDraft(entryType: 'income', name: '配对 / 服务', sortOrder: 20),
+  AccountingCategoryDraft(entryType: 'income', name: '其他收入', sortOrder: 30),
+];
+
 class AccountingRecordDraft {
   const AccountingRecordDraft({
     required this.entryType,
@@ -187,6 +238,7 @@ class AccountingRecordDraft {
     this.currency = 'CNY',
     this.notes,
     this.contactId,
+    this.occurredAt,
   });
 
   final String entryType;
@@ -196,4 +248,5 @@ class AccountingRecordDraft {
   final String currency;
   final String? notes;
   final String? contactId;
+  final DateTime? occurredAt;
 }

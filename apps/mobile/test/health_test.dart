@@ -30,6 +30,45 @@ void main() {
     expect(list.single.notes, '精神不佳');
   });
 
+  test(
+    'health repository enforces anomaly severity and medication plan',
+    () async {
+      final repo = MemoryHealthRepository();
+      await expectLater(
+        repo.createRecord(
+          HealthRecordDraft(
+            hamsterId: 'h1',
+            type: 'anomaly',
+            observedAt: DateTime.utc(2026, 7, 19),
+          ),
+        ),
+        throwsA(
+          isA<HealthRepositoryException>().having(
+            (error) => error.message,
+            'message',
+            contains('严重度'),
+          ),
+        ),
+      );
+      await expectLater(
+        repo.createRecord(
+          HealthRecordDraft(
+            hamsterId: 'h1',
+            type: 'medication',
+            observedAt: DateTime.utc(2026, 7, 19),
+          ),
+        ),
+        throwsA(
+          isA<HealthRepositoryException>().having(
+            (error) => error.message,
+            'message',
+            contains('用药方案'),
+          ),
+        ),
+      );
+    },
+  );
+
   test('HealthController creates follow-up care task when requested', () async {
     final health = MemoryHealthRepository();
     final tasks = MemoryTaskRepository();
@@ -45,6 +84,7 @@ void main() {
         observedAt: DateTime.utc(2026, 7, 17),
         followUpAt: DateTime.utc(2026, 7, 20),
         notes: '恩诺沙星',
+        medication: const {'plan': '恩诺沙星，每日一次'},
         createFollowUpTask: true,
       ),
     );
@@ -54,6 +94,34 @@ void main() {
     final open = await tasks.listTasks();
     expect(open.where((t) => t.taskType == 'medication'), isNotEmpty);
   });
+
+  test(
+    'HealthController reports partial success without duplicating record',
+    () async {
+      final health = MemoryHealthRepository();
+      final controller = HealthController(
+        repository: health,
+        taskRepository: _FailingTaskRepository(),
+      );
+      await controller.loadForHamster('h1');
+      final ok = await controller.create(
+        HealthRecordDraft(
+          hamsterId: 'h1',
+          type: 'anomaly',
+          observedAt: DateTime.utc(2026, 7, 19, 9),
+          severity: 'high',
+          followUpAt: DateTime.utc(2026, 7, 20, 9),
+          createFollowUpTask: true,
+        ),
+      );
+
+      expect(ok, isTrue);
+      expect(controller.hadPartialSuccess, isTrue);
+      expect(controller.lastMessage, contains('健康记录已保存'));
+      expect(controller.lastMessage, contains('复查任务未创建'));
+      expect(await health.listRecords(hamsterId: 'h1'), hasLength(1));
+    },
+  );
 
   test('breedingTasksForTransition seeds birth and weaning tasks', () {
     final before = BreedingPlan(
@@ -114,6 +182,10 @@ void main() {
   });
 
   testWidgets('HealthQuickPage creates a daily check record', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(800, 1200);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final health = MemoryHealthRepository();
     final controller = HealthController(repository: health);
 
@@ -134,7 +206,13 @@ void main() {
 
     expect(find.text('快捷健康记录'), findsOneWidget);
     await tester.tap(find.byKey(const Key('health-type-daily_check')));
+    await tester.tap(find.byKey(const Key('health-observed-at')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('health-observed-at-picker')), findsOneWidget);
+    await tester.tap(find.text('完成'));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('health-notes')), '食欲正常');
+    await tester.ensureVisible(find.byKey(const Key('health-save')));
     await tester.tap(find.byKey(const Key('health-save')));
     await tester.pumpAndSettle();
 
@@ -143,4 +221,126 @@ void main() {
     expect(list, hasLength(1));
     expect(list.single.notes, '食欲正常');
   });
+
+  testWidgets(
+    'HealthCreatePage validates anomaly and medication fields inline',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(800, 1200);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        const MaterialApp(home: HealthCreatePage(hamsterId: 'h1')),
+      );
+
+      await tester.tap(find.byKey(const Key('health-type-anomaly')));
+      await tester.ensureVisible(find.byKey(const Key('health-save')));
+      await tester.tap(find.byKey(const Key('health-save')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('health-severity-error')), findsOneWidget);
+      expect(find.byType(HealthCreatePage), findsOneWidget);
+
+      await tester.ensureVisible(
+        find.byKey(const Key('health-type-medication')),
+      );
+      await tester.tap(find.byKey(const Key('health-type-medication')));
+      await tester.ensureVisible(find.byKey(const Key('health-save')));
+      await tester.tap(find.byKey(const Key('health-save')));
+      await tester.pumpAndSettle();
+      expect(find.text('请填写药品、剂量或处理方案'), findsOneWidget);
+      expect(find.byType(HealthCreatePage), findsOneWidget);
+    },
+  );
+
+  testWidgets('Health read-only empty state does not prompt creation', (
+    tester,
+  ) async {
+    final controller = HealthController(repository: MemoryHealthRepository());
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HealthQuickPage(
+          controller: controller,
+          hamsterId: 'h1',
+          canWrite: false,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('health-quick-add')), findsNothing);
+    expect(find.text('暂无健康记录'), findsOneWidget);
+    expect(find.textContaining('点右下角'), findsNothing);
+  });
+
+  testWidgets('Health record opens readable detail', (tester) async {
+    final health = MemoryHealthRepository(
+      seed: [
+        HealthRecordItem(
+          id: 'health-1',
+          hamsterId: 'h1',
+          type: 'medication',
+          observedAt: DateTime.utc(2026, 7, 19, 8),
+          severity: 'medium',
+          notes: '精神恢复，继续观察',
+          medication: const {'plan': '恩诺沙星，每日一次'},
+          version: 1,
+        ),
+      ],
+    );
+    final controller = HealthController(repository: health);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HealthQuickPage(
+          controller: controller,
+          hamsterId: 'h1',
+          hamsterLabel: '雪团',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('health-card-health-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('健康记录详情'), findsOneWidget);
+    expect(find.text('恩诺沙星，每日一次'), findsWidgets);
+    expect(find.text('精神恢复，继续观察'), findsWidgets);
+  });
+
+  testWidgets('Health partial success is shown as a persistent banner', (
+    tester,
+  ) async {
+    final health = MemoryHealthRepository();
+    final controller = HealthController(
+      repository: health,
+      taskRepository: _FailingTaskRepository(),
+    );
+    await controller.loadForHamster('h1');
+    await controller.create(
+      HealthRecordDraft(
+        hamsterId: 'h1',
+        type: 'anomaly',
+        observedAt: DateTime.utc(2026, 7, 19, 9),
+        severity: 'high',
+        followUpAt: DateTime.utc(2026, 7, 20, 9),
+        createFollowUpTask: true,
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HealthQuickPage(controller: controller, hamsterId: 'h1'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('health-partial-success')), findsOneWidget);
+    expect(find.textContaining('复查任务未创建'), findsOneWidget);
+    expect(await health.listRecords(hamsterId: 'h1'), hasLength(1));
+  });
+}
+
+class _FailingTaskRepository extends MemoryTaskRepository {
+  @override
+  Future<CareTaskItem> createTask(CreateCareTaskDraft draft) {
+    throw const TaskRepositoryException('任务服务暂时不可用');
+  }
 }

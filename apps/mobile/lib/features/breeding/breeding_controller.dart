@@ -18,9 +18,11 @@ class BreedingController extends ChangeNotifier {
   PairingAttempt? activeAttempt;
   String? lastMessage;
 
-  Future<void> refresh() async {
-    listState = const I2AsyncState.loading();
-    notifyListeners();
+  Future<void> refresh({bool showLoading = true}) async {
+    if (showLoading || !listState.hasValue) {
+      listState = const I2AsyncState.loading();
+      notifyListeners();
+    }
     try {
       final plans = await repository.listPlans();
       listState = plans.isEmpty
@@ -51,7 +53,7 @@ class BreedingController extends ChangeNotifier {
       final plan = await repository.createPlan(input);
       selected = plan;
       lastMessage = '已创建草稿计划';
-      await refresh();
+      await refresh(showLoading: false);
       select(plan);
     });
   }
@@ -161,7 +163,7 @@ class BreedingController extends ChangeNotifier {
       if (taskCount > 0) {
         lastMessage = '${lastMessage ?? '状态已更新'} · 已生成 $taskCount 条任务';
       }
-      await refresh();
+      await refresh(showLoading: false);
     });
   }
 

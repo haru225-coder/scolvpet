@@ -1,8 +1,8 @@
-import 'package:dio/dio.dart';
 import 'package:scolvpet_api/scolvpet_api.dart' as api;
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'health_models.dart';
 
 abstract interface class HealthRepository {
@@ -21,17 +21,29 @@ class HealthRepositoryException implements Exception {
   String toString() => message;
 }
 
-String healthErrorMessage(Object error) {
-  if (error is HealthRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '健康记录请求失败，请稍后重试';
+String healthErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '健康记录请求失败，请稍后重试',
+  mapLocal: (e) => e is HealthRepositoryException ? e.message : null,
+);
+
+void _validateHealthDraft(HealthRecordDraft draft) {
+  if ((draft.hamsterId == null || draft.hamsterId!.isEmpty) &&
+      (draft.litterId == null || draft.litterId!.isEmpty)) {
+    throw const HealthRepositoryException('必须关联仓鼠或窝次');
   }
-  return error.toString();
+  if (healthTypeRequiresSeverity(draft.type) &&
+      (draft.severity == null || draft.severity!.trim().isEmpty)) {
+    throw const HealthRepositoryException('异常记录必须选择严重度');
+  }
+  if (healthTypeRequiresMedicationPlan(draft.type)) {
+    final plan = (draft.medication['plan'] ?? draft.medication['name'])
+        ?.toString()
+        .trim();
+    if (plan == null || plan.isEmpty) {
+      throw const HealthRepositoryException('用药记录必须填写用药方案');
+    }
+  }
 }
 
 class MemoryHealthRepository implements HealthRepository {
@@ -59,10 +71,7 @@ class MemoryHealthRepository implements HealthRepository {
 
   @override
   Future<HealthRecordItem> createRecord(HealthRecordDraft draft) async {
-    if ((draft.hamsterId == null || draft.hamsterId!.isEmpty) &&
-        (draft.litterId == null || draft.litterId!.isEmpty)) {
-      throw const HealthRepositoryException('必须关联仓鼠或窝次');
-    }
+    _validateHealthDraft(draft);
     final record = HealthRecordItem(
       id: 'health-${_seq++}',
       hamsterId: draft.hamsterId,
@@ -96,8 +105,11 @@ class DefaultApiHealthRepository implements HealthRepository {
     );
   }
 
-  api.HealthRecordType _type(String value) => api.HealthRecordType.values
-      .firstWhere((t) => t.value == value, orElse: () => api.HealthRecordType.dailyCheck);
+  api.HealthRecordType _type(String value) =>
+      api.HealthRecordType.values.firstWhere(
+        (t) => t.value == value,
+        orElse: () => api.HealthRecordType.dailyCheck,
+      );
 
   api.Severity? _severity(String? value) {
     if (value == null || value.isEmpty) return null;
@@ -122,6 +134,7 @@ class DefaultApiHealthRepository implements HealthRepository {
 
   @override
   Future<HealthRecordItem> createRecord(HealthRecordDraft draft) async {
+    _validateHealthDraft(draft);
     final response = await _api.createHealthRecord(
       idempotencyKey: _key(),
       healthRecordCreateRequest: api.HealthRecordCreateRequest(

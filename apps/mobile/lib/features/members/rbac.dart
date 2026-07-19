@@ -21,6 +21,24 @@ String memberRoleLabel(String role) => switch (role) {
   _ => role,
 };
 
+String memberRoleDescription(String role) => switch (role) {
+  'owner' => '管理熊舍资料、成员、经营和全部饲养记录。',
+  'breeder' => '负责繁育、窝次、仓鼠档案、体重、健康和任务。',
+  'caretaker' => '负责日常饲养、笼舍、称重、健康、窝次和任务。',
+  'staff' => '负责客户交付、合同回执、获客内容和基础仓鼠资料，不参与繁育与笼舍操作。',
+  'viewer' => '可以查看熊舍记录，不显示任何写入入口。',
+  _ => '使用该角色允许的熊舍能力。',
+};
+
+List<String> memberRolePermissionLabels(String role) => switch (role) {
+  'owner' => const ['全部记录', '成员与权限', '经营与交付', '数据导入导出'],
+  'breeder' => const ['繁育与窝次', '仓鼠档案', '称重与健康', '任务与媒体'],
+  'caretaker' => const ['笼舍与清洁', '称重与健康', '窝次护理', '日常任务'],
+  'staff' => const ['客户与交付', '合同与回执', '获客内容', '仓鼠基础资料'],
+  'viewer' => const ['只读浏览'],
+  _ => const ['按角色授权'],
+};
+
 String memberStatusLabel(String status) => switch (status) {
   'invited' => '已邀请',
   'active' => '已加入',
@@ -40,6 +58,10 @@ enum MemberCapability {
   writeHealth,
   writeImport,
   writeMedia,
+  writeCrm,
+  writeDocuments,
+  writeAccounting,
+  writeGrowth,
 }
 
 /// Whether [role] may perform [capability].
@@ -56,7 +78,13 @@ bool memberCan(String role, MemberCapability capability) {
     case 'viewer':
       return false;
     case 'staff':
-      return capability == MemberCapability.writeHamster;
+      return switch (capability) {
+        MemberCapability.writeHamster ||
+        MemberCapability.writeCrm ||
+        MemberCapability.writeDocuments ||
+        MemberCapability.writeGrowth => true,
+        _ => false,
+      };
     case 'breeder':
       return switch (capability) {
         MemberCapability.manageMembers => false,
@@ -69,6 +97,10 @@ bool memberCan(String role, MemberCapability capability) {
         MemberCapability.writeHealth => true,
         MemberCapability.writeImport => false,
         MemberCapability.writeMedia => true,
+        MemberCapability.writeCrm => false,
+        MemberCapability.writeDocuments => false,
+        MemberCapability.writeAccounting => false,
+        MemberCapability.writeGrowth => false,
       };
     case 'caretaker':
       return switch (capability) {
@@ -82,6 +114,10 @@ bool memberCan(String role, MemberCapability capability) {
         MemberCapability.writeHealth => true,
         MemberCapability.writeImport => false,
         MemberCapability.writeMedia => true,
+        MemberCapability.writeCrm => false,
+        MemberCapability.writeDocuments => false,
+        MemberCapability.writeAccounting => false,
+        MemberCapability.writeGrowth => false,
       };
     default:
       return false;

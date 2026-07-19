@@ -1,5 +1,6 @@
-// Package aicore implements a read-only assistant driven by structured facts (T-P2-03).
-// Optional xAI (SpaceXAI) polish when XAI_API_KEY is set; never performs writes.
+// Package aicore implements the structured-data layer for the 熊舍 AI Agent (T-P2-03).
+// Optional LLM polish via Grok2API (gk.scolv.com) when AI_API_KEY/XAI_API_KEY is set;
+// write operations remain explicit confirmation flows in the app.
 package aicore
 
 import (
@@ -17,10 +18,10 @@ import (
 
 // Fact is one structured data point used to answer.
 type Fact struct {
-	Key     string `json:"key"`
-	Label   string `json:"label"`
-	Value   string `json:"value"`
-	Source  string `json:"source"`
+	Key    string `json:"key"`
+	Label  string `json:"label"`
+	Value  string `json:"value"`
+	Source string `json:"source"`
 }
 
 // Snapshot is owner-scoped readonly metrics for answering.
@@ -39,24 +40,35 @@ type Snapshot struct {
 
 // Answer is the assistant response.
 type Answer struct {
-	Answer   string `json:"answer"`
-	Intent   string `json:"intent"`
-	Mode     string `json:"mode"` // rules | llm
-	Facts    []Fact `json:"facts"`
-	Disclaimer string `json:"disclaimer"`
+	Answer     string        `json:"answer"`
+	Intent     string        `json:"intent"`
+	Mode       string        `json:"mode"` // rules | llm
+	Facts      []Fact        `json:"facts"`
+	Actions    []AgentAction `json:"actions,omitempty"`
+	Disclaimer string        `json:"disclaimer"`
+}
+
+// AgentAction is an owner-confirmed application operation proposed by the LLM.
+// The API validates every action and never executes writes during chat.
+type AgentAction struct {
+	Type                 string         `json:"type"`
+	Label                string         `json:"label"`
+	Summary              string         `json:"summary"`
+	RequiresConfirmation bool           `json:"requires_confirmation"`
+	Payload              map[string]any `json:"payload,omitempty"`
 }
 
 // Intents.
 const (
-	IntentHelp       = "help"
-	IntentOverview   = "overview"
-	IntentHamsters   = "hamsters"
-	IntentTasks      = "tasks"
-	IntentOverdue    = "overdue"
-	IntentBreeding   = "breeding"
-	IntentUsage      = "usage"
-	IntentPlan       = "plan"
-	IntentUnknown    = "unknown"
+	IntentHelp     = "help"
+	IntentOverview = "overview"
+	IntentHamsters = "hamsters"
+	IntentTasks    = "tasks"
+	IntentOverdue  = "overdue"
+	IntentBreeding = "breeding"
+	IntentUsage    = "usage"
+	IntentPlan     = "plan"
+	IntentUnknown  = "unknown"
 )
 
 // DetectIntent maps free text to a structured intent (Chinese + English keywords).
@@ -141,7 +153,7 @@ func AnswerFromSnapshot(question string, snap Snapshot) Answer {
 	}
 }
 
-// OptionalLLMClient polishes a rules answer with xAI when configured.
+// OptionalLLMClient polishes a rules answer via Grok2API when configured.
 type OptionalLLMClient struct {
 	APIKey  string
 	BaseURL string
@@ -149,18 +161,28 @@ type OptionalLLMClient struct {
 	HTTP    *http.Client
 }
 
+func firstEnv(keys ...string) string {
+	for _, key := range keys {
+		if value := strings.TrimSpace(os.Getenv(key)); value != "" {
+			return value
+		}
+	}
+	return ""
+}
+
+// NewOptionalLLMFromEnv reads AI_* then XAI_*; defaults to Grok2API (gk.scolv.com) + grok-build-0.1.
 func NewOptionalLLMFromEnv() *OptionalLLMClient {
-	key := strings.TrimSpace(os.Getenv("XAI_API_KEY"))
+	key := firstEnv("AI_API_KEY", "XAI_API_KEY")
 	if key == "" {
 		return nil
 	}
-	base := strings.TrimSpace(os.Getenv("XAI_BASE_URL"))
+	base := firstEnv("AI_BASE_URL", "XAI_BASE_URL")
 	if base == "" {
-		base = "https://api.x.ai/v1"
+		base = "https://gk.scolv.com:8443/v1"
 	}
-	model := strings.TrimSpace(os.Getenv("XAI_MODEL"))
+	model := firstEnv("AI_MODEL", "XAI_MODEL")
 	if model == "" {
-		model = "grok-4.5"
+		model = "grok-build-0.1"
 	}
 	return &OptionalLLMClient{
 		APIKey:  key,
@@ -176,7 +198,7 @@ func (c *OptionalLLMClient) Polish(ctx context.Context, question string, rules A
 		return rules, nil
 	}
 	factsJSON, _ := json.Marshal(rules.Facts)
-	system := "你是熊舍管家只读助手。只能依据给出的 facts 回答，禁止编造数字或建议写操作。用简洁中文。"
+	system := "你是熊舍管家 AI Agent。只能依据给出的 facts 回答，禁止编造数字；涉及写操作时只说明需要用户确认，不要假装已经执行。用简洁中文。"
 	user := fmt.Sprintf("用户问题：%s\n规则答案：%s\nfacts JSON：%s\n请润色规则答案，保持数字一致。", question, rules.Answer, string(factsJSON))
 	payload := map[string]any{
 		"model": c.Model,
@@ -200,7 +222,7 @@ func (c *OptionalLLMClient) Polish(ctx context.Context, question string, rules A
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode >= 300 {
-		return rules, fmt.Errorf("xai status %d: %s", resp.StatusCode, truncate(string(raw), 200))
+		return rules, fmt.Errorf("llm status %d: %s", resp.StatusCode, truncate(string(raw), 200))
 	}
 	var parsed struct {
 		Choices []struct {

@@ -48,7 +48,7 @@ class SharePage {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class SharePage {
 
 
   @JsonKey(
-    
+
     name: r'owner_id',
     required: true,
     includeIfNull: false,
@@ -72,7 +72,7 @@ class SharePage {
 
 
   @JsonKey(
-    
+
     name: r'subject_type',
     required: true,
     includeIfNull: false,
@@ -84,7 +84,7 @@ class SharePage {
 
 
   @JsonKey(
-    
+
     name: r'subject_id',
     required: true,
     includeIfNull: false,
@@ -96,7 +96,7 @@ class SharePage {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -108,7 +108,7 @@ class SharePage {
 
 
   @JsonKey(
-    
+
     name: r'fields',
     required: true,
     includeIfNull: false,
@@ -120,7 +120,7 @@ class SharePage {
 
 
   @JsonKey(
-    
+
     name: r'media_ids',
     required: true,
     includeIfNull: false,
@@ -132,7 +132,7 @@ class SharePage {
 
 
   @JsonKey(
-    
+
     name: r'public_url',
     required: true,
     includeIfNull: false,
@@ -144,7 +144,7 @@ class SharePage {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: false,
     includeIfNull: false,
@@ -156,7 +156,7 @@ class SharePage {
 
 
   @JsonKey(
-    
+
     name: r'revoked_at',
     required: false,
     includeIfNull: false,
@@ -169,7 +169,7 @@ class SharePage {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -181,7 +181,7 @@ class SharePage {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -249,5 +249,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

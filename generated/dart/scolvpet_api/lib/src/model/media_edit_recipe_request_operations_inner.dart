@@ -26,7 +26,7 @@ class MediaEditRecipeRequestOperationsInner {
   });
 
   @JsonKey(
-    
+
     name: r'type',
     required: true,
     includeIfNull: false,
@@ -38,7 +38,7 @@ class MediaEditRecipeRequestOperationsInner {
 
 
   @JsonKey(
-    
+
     name: r'parameters',
     required: true,
     includeIfNull: false,
@@ -90,5 +90,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

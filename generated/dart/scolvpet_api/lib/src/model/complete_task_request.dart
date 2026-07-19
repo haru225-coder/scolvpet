@@ -29,7 +29,7 @@ class CompleteTaskRequest {
   });
 
   @JsonKey(
-    
+
     name: r'completed_at',
     required: true,
     includeIfNull: false,
@@ -41,7 +41,7 @@ class CompleteTaskRequest {
 
 
   @JsonKey(
-    
+
     name: r'subject_results',
     required: true,
     includeIfNull: false,
@@ -53,7 +53,7 @@ class CompleteTaskRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -88,4 +88,3 @@ class CompleteTaskRequest {
   }
 
 }
-

@@ -1,7 +1,7 @@
-import 'package:dio/dio.dart';
 import 'package:scolvpet_api/scolvpet_api.dart' as api;
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'pedigree_models.dart';
 
 abstract interface class PedigreeRepository {
@@ -15,19 +15,13 @@ class PedigreeRepositoryException implements Exception {
   String toString() => message;
 }
 
-String pedigreeErrorMessage(Object error) {
-  if (error is PedigreeRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    if (error.response?.statusCode == 404) return '未找到该仓鼠的谱系';
-    return '谱系加载失败，请稍后重试';
-  }
-  return error.toString();
-}
+String pedigreeErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '谱系加载失败，请稍后重试',
+  nonDioFallback: '谱系暂时无法加载，请稍后重试',
+  mapLocal: (e) => e is PedigreeRepositoryException ? e.message : null,
+  mapDio: (e) => e.response?.statusCode == 404 ? '未找到该仓鼠的谱系' : null,
+);
 
 class MemoryPedigreeRepository implements PedigreeRepository {
   MemoryPedigreeRepository({Map<String, PedigreeGraph>? graphs})

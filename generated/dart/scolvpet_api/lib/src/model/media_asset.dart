@@ -49,7 +49,7 @@ class MediaAsset {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -61,7 +61,7 @@ class MediaAsset {
 
 
   @JsonKey(
-    
+
     name: r'owner_id',
     required: true,
     includeIfNull: false,
@@ -73,7 +73,7 @@ class MediaAsset {
 
 
   @JsonKey(
-    
+
     name: r'media_type',
     required: true,
     includeIfNull: false,
@@ -85,7 +85,7 @@ class MediaAsset {
 
 
   @JsonKey(
-    
+
     name: r'content_type',
     required: true,
     includeIfNull: false,
@@ -98,7 +98,7 @@ class MediaAsset {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'size_bytes',
     required: true,
     includeIfNull: false,
@@ -110,7 +110,7 @@ class MediaAsset {
 
 
   @JsonKey(
-    
+
     name: r'sha256',
     required: true,
     includeIfNull: false,
@@ -122,7 +122,7 @@ class MediaAsset {
 
 
   @JsonKey(
-    
+
     name: r'status',
     required: true,
     includeIfNull: false,
@@ -134,7 +134,7 @@ class MediaAsset {
 
 
   @JsonKey(
-    
+
     name: r'original_url',
     required: false,
     includeIfNull: false,
@@ -146,7 +146,7 @@ class MediaAsset {
 
 
   @JsonKey(
-    
+
     name: r'cover_variant_id',
     required: false,
     includeIfNull: false,
@@ -158,7 +158,7 @@ class MediaAsset {
 
 
   @JsonKey(
-    
+
     name: r'variants',
     required: true,
     includeIfNull: false,
@@ -171,7 +171,7 @@ class MediaAsset {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -183,7 +183,7 @@ class MediaAsset {
 
 
   @JsonKey(
-    
+
     name: r'created_at',
     required: true,
     includeIfNull: false,
@@ -195,7 +195,7 @@ class MediaAsset {
 
 
   @JsonKey(
-    
+
     name: r'updated_at',
     required: true,
     includeIfNull: false,
@@ -283,5 +283,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -40,7 +40,7 @@ class PushDevice {
   });
 
   @JsonKey(
-    
+
     name: r'id',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class PushDevice {
 
 
   @JsonKey(
-    
+
     name: r'platform',
     required: true,
     includeIfNull: false,
@@ -64,7 +64,7 @@ class PushDevice {
 
 
   @JsonKey(
-    
+
     name: r'provider',
     required: true,
     includeIfNull: false,
@@ -76,7 +76,7 @@ class PushDevice {
 
 
   @JsonKey(
-    
+
     name: r'token',
     required: true,
     includeIfNull: false,
@@ -88,7 +88,7 @@ class PushDevice {
 
 
   @JsonKey(
-    
+
     name: r'device_name',
     required: false,
     includeIfNull: false,
@@ -100,7 +100,7 @@ class PushDevice {
 
 
   @JsonKey(
-    
+
     name: r'app_version',
     required: false,
     includeIfNull: false,
@@ -112,7 +112,7 @@ class PushDevice {
 
 
   @JsonKey(
-    
+
     name: r'enabled',
     required: true,
     includeIfNull: false,
@@ -124,7 +124,7 @@ class PushDevice {
 
 
   @JsonKey(
-    
+
     name: r'last_seen_at',
     required: true,
     includeIfNull: false,
@@ -137,7 +137,7 @@ class PushDevice {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'version',
     required: true,
     includeIfNull: false,
@@ -221,5 +221,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

@@ -33,7 +33,7 @@ class PublicShareResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'share_id',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class PublicShareResponseData {
 
 
   @JsonKey(
-    
+
     name: r'subject_type',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class PublicShareResponseData {
 
       /// 仅包含创建分享时显式选择的公开字段
   @JsonKey(
-    
+
     name: r'display',
     required: true,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class PublicShareResponseData {
 
 
   @JsonKey(
-    
+
     name: r'media',
     required: true,
     includeIfNull: false,
@@ -82,7 +82,7 @@ class PublicShareResponseData {
 
 
   @JsonKey(
-    
+
     name: r'expires_at',
     required: false,
     includeIfNull: false,
@@ -136,5 +136,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

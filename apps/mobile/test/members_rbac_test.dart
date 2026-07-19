@@ -11,7 +11,12 @@ void main() {
     expect(memberCan('caretaker', MemberCapability.writeEnclosure), isTrue);
     expect(memberCan('caretaker', MemberCapability.writeBreeding), isFalse);
     expect(memberCan('staff', MemberCapability.writeHamster), isTrue);
+    expect(memberCan('staff', MemberCapability.writeCrm), isTrue);
+    expect(memberCan('staff', MemberCapability.writeDocuments), isTrue);
+    expect(memberCan('staff', MemberCapability.writeGrowth), isTrue);
     expect(memberCan('staff', MemberCapability.writeBreeding), isFalse);
+    expect(memberCan('breeder', MemberCapability.writeCrm), isFalse);
+    expect(memberCan('caretaker', MemberCapability.writeDocuments), isFalse);
   });
 
   test('MemoryMemberRepository invite update revoke happy path', () async {
@@ -82,10 +87,7 @@ void main() {
       find.byKey(const Key('member-invite-phone')),
       '13700001111',
     );
-    await tester.enterText(
-      find.byKey(const Key('member-invite-name')),
-      '饲养甲',
-    );
+    await tester.enterText(find.byKey(const Key('member-invite-name')), '饲养甲');
     await tester.tap(find.byKey(const Key('member-invite-submit')));
     await tester.pumpAndSettle();
 

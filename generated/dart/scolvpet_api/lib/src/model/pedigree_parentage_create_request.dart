@@ -36,7 +36,7 @@ class PedigreeParentageCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'child_hamster_id',
     required: true,
     includeIfNull: false,
@@ -48,7 +48,7 @@ class PedigreeParentageCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'parent_hamster_id',
     required: true,
     includeIfNull: false,
@@ -60,7 +60,7 @@ class PedigreeParentageCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'role',
     required: true,
     includeIfNull: false,
@@ -72,7 +72,7 @@ class PedigreeParentageCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'evidence_type',
     required: true,
     includeIfNull: false,
@@ -86,7 +86,7 @@ class PedigreeParentageCreateRequest {
           // minimum: 0
           // maximum: 1
   @JsonKey(
-    
+
     name: r'confidence',
     required: true,
     includeIfNull: false,
@@ -98,7 +98,7 @@ class PedigreeParentageCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'valid_from',
     required: true,
     includeIfNull: false,
@@ -110,7 +110,7 @@ class PedigreeParentageCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -190,5 +190,3 @@ final String value;
 @override
 String toString() => value;
 }
-
-

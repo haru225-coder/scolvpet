@@ -55,7 +55,7 @@ Method | HTTP request | Description
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final EntitlementCheckRequest entitlementCheckRequest = ; // EntitlementCheckRequest | 
+final EntitlementCheckRequest entitlementCheckRequest = ; // EntitlementCheckRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -70,8 +70,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **entitlementCheckRequest** | [**EntitlementCheckRequest**](EntitlementCheckRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **entitlementCheckRequest** | [**EntitlementCheckRequest**](EntitlementCheckRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -100,7 +100,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final CreateAccountingCategoryRequest createAccountingCategoryRequest = ; // CreateAccountingCategoryRequest | 
+final CreateAccountingCategoryRequest createAccountingCategoryRequest = ; // CreateAccountingCategoryRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -115,8 +115,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createAccountingCategoryRequest** | [**CreateAccountingCategoryRequest**](CreateAccountingCategoryRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createAccountingCategoryRequest** | [**CreateAccountingCategoryRequest**](CreateAccountingCategoryRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -145,7 +145,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final CreateAccountingRecordRequest createAccountingRecordRequest = ; // CreateAccountingRecordRequest | 
+final CreateAccountingRecordRequest createAccountingRecordRequest = ; // CreateAccountingRecordRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -160,8 +160,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createAccountingRecordRequest** | [**CreateAccountingRecordRequest**](CreateAccountingRecordRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createAccountingRecordRequest** | [**CreateAccountingRecordRequest**](CreateAccountingRecordRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -190,7 +190,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final CreateContractRequest createContractRequest = ; // CreateContractRequest | 
+final CreateContractRequest createContractRequest = ; // CreateContractRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -205,8 +205,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createContractRequest** | [**CreateContractRequest**](CreateContractRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createContractRequest** | [**CreateContractRequest**](CreateContractRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -235,7 +235,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final CreateDocumentTemplateRequest createDocumentTemplateRequest = ; // CreateDocumentTemplateRequest | 
+final CreateDocumentTemplateRequest createDocumentTemplateRequest = ; // CreateDocumentTemplateRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -250,8 +250,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createDocumentTemplateRequest** | [**CreateDocumentTemplateRequest**](CreateDocumentTemplateRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createDocumentTemplateRequest** | [**CreateDocumentTemplateRequest**](CreateDocumentTemplateRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -280,7 +280,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final CreateGeneticProfileRequest createGeneticProfileRequest = ; // CreateGeneticProfileRequest | 
+final CreateGeneticProfileRequest createGeneticProfileRequest = ; // CreateGeneticProfileRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -295,8 +295,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createGeneticProfileRequest** | [**CreateGeneticProfileRequest**](CreateGeneticProfileRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createGeneticProfileRequest** | [**CreateGeneticProfileRequest**](CreateGeneticProfileRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -325,7 +325,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final CreatePushMessageRequest createPushMessageRequest = ; // CreatePushMessageRequest | 
+final CreatePushMessageRequest createPushMessageRequest = ; // CreatePushMessageRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -340,8 +340,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createPushMessageRequest** | [**CreatePushMessageRequest**](CreatePushMessageRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createPushMessageRequest** | [**CreatePushMessageRequest**](CreatePushMessageRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -370,7 +370,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final CreateReceiptRequest createReceiptRequest = ; // CreateReceiptRequest | 
+final CreateReceiptRequest createReceiptRequest = ; // CreateReceiptRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -385,8 +385,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createReceiptRequest** | [**CreateReceiptRequest**](CreateReceiptRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createReceiptRequest** | [**CreateReceiptRequest**](CreateReceiptRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -415,7 +415,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final CreateDocumentTemplateRequest createDocumentTemplateRequest = ; // CreateDocumentTemplateRequest | 
+final CreateDocumentTemplateRequest createDocumentTemplateRequest = ; // CreateDocumentTemplateRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -430,8 +430,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **createDocumentTemplateRequest** | [**CreateDocumentTemplateRequest**](CreateDocumentTemplateRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **createDocumentTemplateRequest** | [**CreateDocumentTemplateRequest**](CreateDocumentTemplateRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -475,8 +475,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **deviceId** | **String**| 设备 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **deviceId** | **String**| 设备 ID |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -521,9 +521,9 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **entryType** | **String**| 按收支类型筛选 | [optional] 
- **from** | **DateTime**| 起始时间 | [optional] 
- **to** | **DateTime**| 结束时间 | [optional] 
+ **entryType** | **String**| 按收支类型筛选 | [optional]
+ **from** | **DateTime**| 起始时间 | [optional]
+ **to** | **DateTime**| 结束时间 | [optional]
 
 ### Return type
 
@@ -630,7 +630,7 @@ This endpoint does not need any parameter.
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final InviteOrganizationMemberRequest inviteOrganizationMemberRequest = ; // InviteOrganizationMemberRequest | 
+final InviteOrganizationMemberRequest inviteOrganizationMemberRequest = ; // InviteOrganizationMemberRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -645,8 +645,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **inviteOrganizationMemberRequest** | [**InviteOrganizationMemberRequest**](InviteOrganizationMemberRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **inviteOrganizationMemberRequest** | [**InviteOrganizationMemberRequest**](InviteOrganizationMemberRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -691,9 +691,9 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **documentId** | **String**| 合同单据 ID | 
- **ifMatch** | **String**| 可选的当前资源版本 ETag；传入时用于乐观并发控制。 | [optional] 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **documentId** | **String**| 合同单据 ID |
+ **ifMatch** | **String**| 可选的当前资源版本 ETag；传入时用于乐观并发控制。 | [optional]
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -738,9 +738,9 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **documentId** | **String**| 回执单据 ID | 
- **ifMatch** | **String**| 可选的当前资源版本 ETag；传入时用于乐观并发控制。 | [optional] 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **documentId** | **String**| 回执单据 ID |
+ **ifMatch** | **String**| 可选的当前资源版本 ETag；传入时用于乐观并发控制。 | [optional]
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -783,7 +783,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **entryType** | **String**| 按收入或支出筛选 | [optional] 
+ **entryType** | **String**| 按收入或支出筛选 | [optional]
 
 ### Return type
 
@@ -828,9 +828,9 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **entryType** | **String**| 按收支类型筛选 | [optional] 
- **from** | **DateTime**| 起始时间 | [optional] 
- **to** | **DateTime**| 结束时间 | [optional] 
+ **entryType** | **String**| 按收支类型筛选 | [optional]
+ **from** | **DateTime**| 起始时间 | [optional]
+ **to** | **DateTime**| 结束时间 | [optional]
 
 ### Return type
 
@@ -1199,7 +1199,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **revokeOrganizationMember**
-> OrganizationMemberResponse revokeOrganizationMember(memberId, idempotencyKey)
+> OrganizationMemberResponse revokeOrganizationMember(memberId, ifMatch, idempotencyKey)
 
 撤销熊舍成员
 
@@ -1211,10 +1211,11 @@ import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
 final String memberId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 成员 ID
+final String ifMatch = ifMatch_example; // String | 可选的当前资源版本 ETag；传入时用于乐观并发控制。
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
-    final response = api.revokeOrganizationMember(memberId, idempotencyKey);
+    final response = api.revokeOrganizationMember(memberId, ifMatch, idempotencyKey);
     print(response);
 } on DioException catch (e) {
     print('Exception when calling P1Api->revokeOrganizationMember: $e\n');
@@ -1225,8 +1226,9 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **memberId** | **String**| 成员 ID | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **memberId** | **String**| 成员 ID |
+ **ifMatch** | **String**| 可选的当前资源版本 ETag；传入时用于乐观并发控制。 | [optional]
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -1255,7 +1257,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final SandboxActivatePlanRequest sandboxActivatePlanRequest = ; // SandboxActivatePlanRequest | 
+final SandboxActivatePlanRequest sandboxActivatePlanRequest = ; // SandboxActivatePlanRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -1270,8 +1272,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **sandboxActivatePlanRequest** | [**SandboxActivatePlanRequest**](SandboxActivatePlanRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **sandboxActivatePlanRequest** | [**SandboxActivatePlanRequest**](SandboxActivatePlanRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -1300,7 +1302,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final GeneticSimulationRequest geneticSimulationRequest = ; // GeneticSimulationRequest | 
+final GeneticSimulationRequest geneticSimulationRequest = ; // GeneticSimulationRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -1315,8 +1317,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **geneticSimulationRequest** | [**GeneticSimulationRequest**](GeneticSimulationRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **geneticSimulationRequest** | [**GeneticSimulationRequest**](GeneticSimulationRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -1346,7 +1348,7 @@ import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
 final String memberId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 成员 ID
-final UpdateOrganizationMemberRequest updateOrganizationMemberRequest = ; // UpdateOrganizationMemberRequest | 
+final UpdateOrganizationMemberRequest updateOrganizationMemberRequest = ; // UpdateOrganizationMemberRequest |
 final String ifMatch = ifMatch_example; // String | 可选的当前资源版本 ETag；传入时用于乐观并发控制。
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
@@ -1362,10 +1364,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **memberId** | **String**| 成员 ID | 
- **updateOrganizationMemberRequest** | [**UpdateOrganizationMemberRequest**](UpdateOrganizationMemberRequest.md)|  | 
- **ifMatch** | **String**| 可选的当前资源版本 ETag；传入时用于乐观并发控制。 | [optional] 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **memberId** | **String**| 成员 ID |
+ **updateOrganizationMemberRequest** | [**UpdateOrganizationMemberRequest**](UpdateOrganizationMemberRequest.md)|  |
+ **ifMatch** | **String**| 可选的当前资源版本 ETag；传入时用于乐观并发控制。 | [optional]
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -1394,7 +1396,7 @@ Name | Type | Description  | Notes
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
-final UpsertPushDeviceRequest upsertPushDeviceRequest = ; // UpsertPushDeviceRequest | 
+final UpsertPushDeviceRequest upsertPushDeviceRequest = ; // UpsertPushDeviceRequest |
 final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
 
 try {
@@ -1409,8 +1411,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **upsertPushDeviceRequest** | [**UpsertPushDeviceRequest**](UpsertPushDeviceRequest.md)|  | 
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional] 
+ **upsertPushDeviceRequest** | [**UpsertPushDeviceRequest**](UpsertPushDeviceRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
 
 ### Return type
 
@@ -1426,4 +1428,3 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

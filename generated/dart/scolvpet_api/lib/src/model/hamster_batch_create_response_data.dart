@@ -32,7 +32,7 @@ class HamsterBatchCreateResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'transaction_status',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class HamsterBatchCreateResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'succeeded_count',
     required: true,
     includeIfNull: false,
@@ -58,7 +58,7 @@ class HamsterBatchCreateResponseData {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'failed_count',
     required: true,
     includeIfNull: false,
@@ -70,7 +70,7 @@ class HamsterBatchCreateResponseData {
 
 
   @JsonKey(
-    
+
     name: r'items',
     required: true,
     includeIfNull: false,
@@ -107,4 +107,3 @@ class HamsterBatchCreateResponseData {
   }
 
 }
-

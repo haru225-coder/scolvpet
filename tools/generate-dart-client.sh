@@ -23,7 +23,13 @@ fi
 
 cd "$ROOT"
 rm -rf "$OUTPUT_DIR/test"
-"$TIMEOUT_SCRIPT" "$COMMAND_TIMEOUT_SECONDS" npx --yes @openapitools/openapi-generator-cli@2.25.0 generate \
+GENERATOR_JAR="$ROOT/.cache/openapi-generator/$VERSION.jar"
+if [[ -f "$GENERATOR_JAR" ]]; then
+  GENERATOR=(java -jar "$GENERATOR_JAR")
+else
+  GENERATOR=(npx --yes @openapitools/openapi-generator-cli@2.25.0)
+fi
+"$TIMEOUT_SCRIPT" "$COMMAND_TIMEOUT_SECONDS" "${GENERATOR[@]}" generate \
   -i specs/api/openapi.yaml \
   -g dart-dio \
   -o "$OUTPUT_DIR" \

@@ -5,10 +5,7 @@ import 'assistant_models.dart';
 import 'assistant_repository.dart';
 
 class AssistantChatTurn {
-  const AssistantChatTurn({
-    required this.question,
-    required this.answer,
-  });
+  const AssistantChatTurn({required this.question, required this.answer});
 
   final String question;
   final AssistantAnswer answer;
@@ -24,7 +21,8 @@ class AssistantController extends ChangeNotifier {
   I2AsyncState<void> askingState = const I2AsyncState.idle();
   final List<AssistantChatTurn> turns = [];
   String? lastMessage;
-  bool preferLlm = false;
+  // 有可用的 Grok2API 时默认走 Agent 润色；服务端无 Key 会自动回退规则模式。
+  bool preferLlm = true;
 
   Future<void> refreshCapabilities() async {
     capabilitiesState = const I2AsyncState.loading();
@@ -32,6 +30,7 @@ class AssistantController extends ChangeNotifier {
     try {
       final caps = await repository.capabilities();
       capabilitiesState = I2AsyncState.data(caps);
+      if (!caps.llmAvailable) preferLlm = false;
     } catch (error) {
       capabilitiesState = I2AsyncState.error(assistantErrorMessage(error));
     }

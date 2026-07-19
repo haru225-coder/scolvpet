@@ -28,7 +28,7 @@ class VerificationCodeChallengeResponseData {
   });
 
   @JsonKey(
-    
+
     name: r'verification_id',
     required: true,
     includeIfNull: false,
@@ -41,7 +41,7 @@ class VerificationCodeChallengeResponseData {
 
           // minimum: 60
   @JsonKey(
-    
+
     name: r'expires_in_seconds',
     required: true,
     includeIfNull: false,
@@ -54,7 +54,7 @@ class VerificationCodeChallengeResponseData {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'retry_after_seconds',
     required: true,
     includeIfNull: false,
@@ -89,4 +89,3 @@ class VerificationCodeChallengeResponseData {
   }
 
 }
-

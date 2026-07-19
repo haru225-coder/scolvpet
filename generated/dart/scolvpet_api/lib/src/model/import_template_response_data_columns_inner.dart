@@ -33,7 +33,7 @@ class ImportTemplateResponseDataColumnsInner {
   });
 
   @JsonKey(
-    
+
     name: r'key',
     required: true,
     includeIfNull: false,
@@ -45,7 +45,7 @@ class ImportTemplateResponseDataColumnsInner {
 
 
   @JsonKey(
-    
+
     name: r'label',
     required: true,
     includeIfNull: false,
@@ -57,7 +57,7 @@ class ImportTemplateResponseDataColumnsInner {
 
 
   @JsonKey(
-    
+
     name: r'required',
     required: true,
     includeIfNull: false,
@@ -69,7 +69,7 @@ class ImportTemplateResponseDataColumnsInner {
 
 
   @JsonKey(
-    
+
     name: r'data_type',
     required: true,
     includeIfNull: false,
@@ -81,7 +81,7 @@ class ImportTemplateResponseDataColumnsInner {
 
 
   @JsonKey(
-    
+
     name: r'example',
     required: false,
     includeIfNull: false,
@@ -120,4 +120,3 @@ class ImportTemplateResponseDataColumnsInner {
   }
 
 }
-

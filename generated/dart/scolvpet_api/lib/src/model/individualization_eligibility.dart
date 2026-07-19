@@ -39,7 +39,7 @@ class IndividualizationEligibility {
   });
 
   @JsonKey(
-    
+
     name: r'litter_id',
     required: true,
     includeIfNull: false,
@@ -52,7 +52,7 @@ class IndividualizationEligibility {
 
           // minimum: 1
   @JsonKey(
-    
+
     name: r'litter_version',
     required: true,
     includeIfNull: false,
@@ -65,7 +65,7 @@ class IndividualizationEligibility {
 
       /// 绑定 litter version、完整 eligible 身份集合和关键守卫事实的不透明令牌
   @JsonKey(
-    
+
     name: r'eligible_set_token',
     required: true,
     includeIfNull: false,
@@ -77,7 +77,7 @@ class IndividualizationEligibility {
 
 
   @JsonKey(
-    
+
     name: r'eligible_pup_identity_ids',
     required: true,
     includeIfNull: false,
@@ -90,7 +90,7 @@ class IndividualizationEligibility {
 
           // minimum: 0
   @JsonKey(
-    
+
     name: r'eligible_count',
     required: true,
     includeIfNull: false,
@@ -102,7 +102,7 @@ class IndividualizationEligibility {
 
 
   @JsonKey(
-    
+
     name: r'blockers',
     required: true,
     includeIfNull: false,
@@ -114,7 +114,7 @@ class IndividualizationEligibility {
 
 
   @JsonKey(
-    
+
     name: r'can_individualize',
     required: true,
     includeIfNull: false,
@@ -126,7 +126,7 @@ class IndividualizationEligibility {
 
 
   @JsonKey(
-    
+
     name: r'computed_at',
     required: true,
     includeIfNull: false,
@@ -171,4 +171,3 @@ class IndividualizationEligibility {
   }
 
 }
-

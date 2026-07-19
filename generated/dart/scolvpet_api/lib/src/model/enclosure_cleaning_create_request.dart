@@ -35,7 +35,7 @@ class EnclosureCleaningCreateRequest {
   });
 
   @JsonKey(
-    
+
     name: r'cleaning_type',
     required: true,
     includeIfNull: false,
@@ -47,7 +47,7 @@ class EnclosureCleaningCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'performed_at',
     required: true,
     includeIfNull: false,
@@ -59,7 +59,7 @@ class EnclosureCleaningCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'supplies',
     required: false,
     includeIfNull: false,
@@ -71,7 +71,7 @@ class EnclosureCleaningCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'notes',
     required: false,
     includeIfNull: false,
@@ -83,7 +83,7 @@ class EnclosureCleaningCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'corrects_cleaning_record_id',
     required: false,
     includeIfNull: false,
@@ -95,7 +95,7 @@ class EnclosureCleaningCreateRequest {
 
 
   @JsonKey(
-    
+
     name: r'correction_reason',
     required: false,
     includeIfNull: false,
@@ -136,4 +136,3 @@ class EnclosureCleaningCreateRequest {
   }
 
 }
-

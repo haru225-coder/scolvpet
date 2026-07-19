@@ -1,7 +1,7 @@
 name: scolvpet_mobile
 description: 熊舍管家 I1 Flutter 客户端
 publish_to: none
-version: 0.1.0+1
+version: 0.0.3+3
 
 environment:
   sdk: '>=3.8.0 <4.0.0'
@@ -10,15 +10,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  connectivity_plus: ^6.1.0
   dio: ^5.7.0
+  crypto: ^3.0.6
+  image_picker: ^1.1.2
   flutter_secure_storage: ^9.2.2
   shared_preferences: ^2.3.5
   uuid: ^4.5.1
+  share_plus: ^10.1.4
   scolvpet_api:
     path: ../../generated/dart/scolvpet_api
   flutter_local_notifications: ^22.0.1
   timezone: ^0.11.1
+  pdf: ^3.13.0
+  printing: ^5.15.0
 
 dev_dependencies:
   flutter_test:
@@ -27,3 +31,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/brand/
+    - assets/fonts/
+    - assets/genetic/
+    - assets/icons/
+    - assets/illustrations/

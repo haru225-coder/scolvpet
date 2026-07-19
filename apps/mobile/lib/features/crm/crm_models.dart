@@ -46,6 +46,7 @@ class CrmReservation {
     this.notes,
     required this.version,
     this.contactName,
+    this.hamsterName,
   });
 
   final String id;
@@ -57,6 +58,7 @@ class CrmReservation {
   final String? notes;
   final int version;
   final String? contactName;
+  final String? hamsterName;
 
   String get statusLabel => switch (status) {
     'held' => '锁定中',
@@ -80,6 +82,7 @@ class CrmReservation {
     notes: json['notes'] as String?,
     version: (json['version'] as num?)?.toInt() ?? 1,
     contactName: json['contact_name'] as String?,
+    hamsterName: json['hamster_name'] as String?,
   );
 }
 
@@ -95,6 +98,7 @@ class CrmHandover {
     this.notes,
     required this.version,
     this.contactName,
+    this.hamsterName,
   });
 
   final String id;
@@ -107,6 +111,7 @@ class CrmHandover {
   final String? notes;
   final int version;
   final String? contactName;
+  final String? hamsterName;
 
   String get statusLabel => switch (status) {
     'scheduled' => '待交付',
@@ -116,6 +121,11 @@ class CrmHandover {
   };
 
   bool get isOpen => status == 'scheduled';
+
+  String get scheduledLabel => _crmDateTimeLabel(scheduledAt);
+
+  String? get completedLabel =>
+      completedAt == null ? null : _crmDateTimeLabel(completedAt!);
 
   factory CrmHandover.fromJson(Map<String, dynamic> json) => CrmHandover(
     id: json['id'] as String? ?? '',
@@ -132,6 +142,7 @@ class CrmHandover {
     notes: json['notes'] as String?,
     version: (json['version'] as num?)?.toInt() ?? 1,
     contactName: json['contact_name'] as String?,
+    hamsterName: json['hamster_name'] as String?,
   );
 }
 
@@ -171,10 +182,19 @@ class CrmHandoverDraft {
     this.reservationId,
     this.hamsterId,
     this.notes,
+    this.scheduledAt,
   });
 
   final String contactId;
   final String? reservationId;
   final String? hamsterId;
   final String? notes;
+  final DateTime? scheduledAt;
+}
+
+String _crmDateTimeLabel(DateTime value) {
+  final local = value.toLocal();
+  String two(int number) => number.toString().padLeft(2, '0');
+  return '${local.year}-${two(local.month)}-${two(local.day)} '
+      '${two(local.hour)}:${two(local.minute)}';
 }

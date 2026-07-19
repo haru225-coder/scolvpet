@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/api_error.dart';
 import 'member_models.dart';
 import 'rbac.dart';
 
@@ -30,18 +31,11 @@ class MemberRepositoryException implements Exception {
   String toString() => message;
 }
 
-String memberErrorMessage(Object error) {
-  if (error is MemberRepositoryException) return error.message;
-  if (error is DioException) {
-    final data = error.response?.data;
-    if (data is Map && data['error'] is Map) {
-      final message = (data['error'] as Map)['message'];
-      if (message is String && message.isNotEmpty) return message;
-    }
-    return '成员请求失败，请稍后重试';
-  }
-  return error.toString();
-}
+String memberErrorMessage(Object error) => apiErrorMessage(
+  error,
+  fallback: '成员请求失败，请稍后重试',
+  mapLocal: (e) => e is MemberRepositoryException ? e.message : null,
+);
 
 class MemoryMemberRepository implements MemberRepository {
   MemoryMemberRepository({
@@ -94,9 +88,7 @@ class MemoryMemberRepository implements MemberRepository {
     if (!inviteableRoles.contains(draft.role)) {
       throw const MemberRepositoryException('角色无效');
     }
-    if (_members.any(
-      (m) => m.phone == phone && m.status != 'revoked',
-    )) {
+    if (_members.any((m) => m.phone == phone && m.status != 'revoked')) {
       throw const MemberRepositoryException('该手机号已在成员列表中');
     }
     final member = OrganizationMember(
@@ -183,9 +175,8 @@ class DefaultApiMemberRepository implements MemberRepository {
     return data
         .whereType<Map>()
         .map(
-          (item) => OrganizationMember.fromJson(
-            Map<String, dynamic>.from(item),
-          ),
+          (item) =>
+              OrganizationMember.fromJson(Map<String, dynamic>.from(item)),
         )
         .toList();
   }
@@ -222,10 +213,7 @@ class DefaultApiMemberRepository implements MemberRepository {
         if (displayName != null) 'display_name': displayName,
       },
       options: Options(
-        headers: {
-          'Idempotency-Key': _key(),
-          'If-Match': '"$version"',
-        },
+        headers: {'Idempotency-Key': _key(), 'If-Match': '"$version"'},
       ),
     );
     final data = response.data?['data'];
@@ -243,10 +231,7 @@ class DefaultApiMemberRepository implements MemberRepository {
     final response = await client.dio.post<Map<String, dynamic>>(
       '/organization-members/$memberId/revoke',
       options: Options(
-        headers: {
-          'Idempotency-Key': _key(),
-          'If-Match': '"$version"',
-        },
+        headers: {'Idempotency-Key': _key(), 'If-Match': '"$version"'},
       ),
     );
     final data = response.data?['data'];
