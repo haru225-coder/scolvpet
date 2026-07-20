@@ -113,18 +113,16 @@ void main() {
           findsNothing,
         );
       }
-      expect(find.text('快捷操作'), findsOneWidget);
+      expect(find.text('今日待办'), findsOneWidget);
+      expect(find.text('经营概览'), findsOneWidget);
+      expect(find.text('繁育动态'), findsOneWidget);
       expect(find.text('在养'), findsOneWidget);
       expect(
         find.byKey(const Key('home-quick-create-hamster')),
         findsOneWidget,
       );
-      expect(find.byKey(const Key('home-quick-enclosures')), findsOneWidget);
-      final moreToggle = find.byKey(const Key('home-quick-more-toggle'));
-      await tester.ensureVisible(moreToggle);
-      await tester.tap(moreToggle);
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('home-quick-litters')), findsOneWidget);
+      expect(find.byKey(const Key('home-quick-enclosures')), findsNothing);
+      expect(find.byKey(const Key('home-quick-more-toggle')), findsNothing);
       await tester.tap(
         find.descendant(
           of: find.byType(NavigationBar),

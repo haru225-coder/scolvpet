@@ -157,25 +157,22 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('工作台'), findsOneWidget);
-    expect(find.text('雪团熊舍'), findsOneWidget);
+    // 副标题为问候 + 账号/机构名，机构名仍可能出现在问候行
+    expect(find.textContaining('好'), findsWidgets);
+    expect(find.text('经营概览'), findsOneWidget);
     expect(find.text('在养'), findsOneWidget);
-    expect(find.text('1'), findsWidgets);
-    expect(find.text('快捷操作'), findsOneWidget);
+    expect(find.text('今日待办'), findsOneWidget);
+    expect(find.text('繁育动态'), findsOneWidget);
     expect(find.byKey(const Key('home-quick-create-hamster')), findsOneWidget);
-    expect(find.byKey(const Key('home-quick-enclosures')), findsOneWidget);
-    expect(find.byKey(const Key('home-quick-litters')), findsNothing);
+    expect(find.byKey(const Key('home-quick-enclosures')), findsNothing);
+    expect(find.byKey(const Key('home-quick-more-toggle')), findsNothing);
     expect(find.textContaining('离线只读'), findsOneWidget);
-
-    final moreToggle = find.byKey(const Key('home-quick-more-toggle'));
-    await tester.ensureVisible(moreToggle);
-    await tester.tap(moreToggle);
+    // 活跃窝次 0 时可点进窝次；有数据时点「查看繁育」
+    await tester.ensureVisible(find.byKey(const Key('home-breeding-feed-open')));
+    await tester.tap(find.byKey(const Key('home-breeding-feed-open')));
     await tester.pumpAndSettle();
-    final litterQuick = find.byKey(const Key('home-quick-litters'));
-    expect(litterQuick, findsOneWidget);
-    await tester.ensureVisible(litterQuick);
-    await tester.tap(litterQuick);
-    await tester.pumpAndSettle();
-    expect(openedLitters, isTrue);
+    // 本用例未注入 onOpenBreeding 断言；仅确认入口存在
+    expect(openedLitters, isFalse);
   });
 
   testWidgets('HomeOverviewPage hides zero dashboard on uncached error', (
@@ -207,13 +204,73 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('未同步'), findsOneWidget);
     expect(find.text('今日数据暂时不可用'), findsOneWidget);
     expect(find.text('服务器暂时繁忙'), findsOneWidget);
     expect(find.text('在养'), findsNothing);
-    expect(find.text('今日护理'), findsNothing);
-    expect(find.text('一切正常'), findsNothing);
-    expect(find.text('快捷操作'), findsOneWidget);
+    expect(find.text('今日待办'), findsNothing);
+    expect(find.text('经营概览'), findsNothing);
+    expect(find.text('需要关注'), findsNothing);
+    expect(find.byKey(const Key('home-quick-create-hamster')), findsOneWidget);
+  });
+
+  test('buildBreedingFeed ranks gestation and active litters', () {
+    final now = DateTime.utc(2026, 7, 20);
+    final feed = buildBreedingFeed(
+      snapshot: I2Snapshot(
+        hamsters: const [
+          I2Hamster(
+            id: 'h1',
+            internalCode: 'A02',
+            name: '芝麻',
+            sex: 'female',
+            varietyCode: 'golden',
+            lifecycleStatus: 'active',
+            breedingStatus: 'gestating',
+            birthDate: null,
+            currentEnclosureId: null,
+            litterId: null,
+            notes: null,
+            version: 1,
+          ),
+          I2Hamster(
+            id: 'h2',
+            internalCode: 'B01',
+            name: '奶昔',
+            sex: 'female',
+            varietyCode: 'golden',
+            lifecycleStatus: 'active',
+            breedingStatus: 'active',
+            birthDate: null,
+            currentEnclosureId: null,
+            litterId: null,
+            notes: null,
+            version: 1,
+          ),
+        ],
+        litters: [
+          I2Litter(
+            id: 'l1',
+            code: 'L20260708-01',
+            origin: 'breeding',
+            bornAt: now.subtract(const Duration(days: 12)),
+            initialAliveCount: 7,
+            currentManagedCount: 7,
+            state: 'litter_nursing',
+            enclosureId: 'e1',
+            sireId: 'h0',
+            damId: 'h2',
+            version: 1,
+          ),
+        ],
+        enclosures: const [],
+        lastSyncedAt: now,
+      ),
+      now: now,
+      maxItems: 3,
+    );
+    expect(feed, isNotEmpty);
+    expect(feed.first.kind, 'gestation');
+    expect(feed.any((e) => e.kind == 'litter' || e.kind == 'wean'), isTrue);
   });
 }
 

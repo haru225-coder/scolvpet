@@ -130,6 +130,109 @@ class HomeOverviewMetrics {
   }
 }
 
+/// P0-2: 轻量问候 + 日期（纯表现，不引新数据源）。
+String workbenchGreeting(DateTime now) {
+  final hour = now.hour;
+  if (hour < 5) return '夜深了';
+  if (hour < 11) return '早上好';
+  if (hour < 14) return '中午好';
+  if (hour < 18) return '下午好';
+  return '晚上好';
+}
+
+String workbenchDateLabel(DateTime now) {
+  const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  final local = now.toLocal();
+  final wd = weekdays[local.weekday - 1];
+  return '${local.month}月${local.day}日 · $wd';
+}
+
+/// 工作台「繁育动态」条目：只聚合 I2 快照已有字段。
+class BreedingFeedItem {
+  const BreedingFeedItem({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.kind,
+  });
+
+  final String id;
+  final String title;
+  final String subtitle;
+  final String kind; // gestation | litter | wean
+}
+
+/// 从仓鼠/窝次快照抽出最多 [maxItems] 条繁育动态（不调 API）。
+List<BreedingFeedItem> buildBreedingFeed({
+  I2Snapshot? snapshot,
+  DateTime? now,
+  int maxItems = 3,
+}) {
+  final clock = now ?? DateTime.now();
+  final hamsters = snapshot?.hamsters ?? const <I2Hamster>[];
+  final litters = snapshot?.litters ?? const <I2Litter>[];
+  final byId = {for (final h in hamsters) h.id: h};
+  final items = <BreedingFeedItem>[];
+
+  for (final h in hamsters) {
+    final b = h.breedingStatus.toLowerCase();
+    if (b.contains('gestat') || b.contains('pregnan') || b == 'expecting') {
+      items.add(
+        BreedingFeedItem(
+          id: 'gest-${h.id}',
+          title: h.displayName,
+          subtitle: '孕期观察 · ${h.breedingStatus}',
+          kind: 'gestation',
+        ),
+      );
+    }
+  }
+
+  for (final litter in litters) {
+    if (!HomeOverviewMetrics._isActiveLitter(litter)) continue;
+    final ageDays = clock.difference(litter.bornAt).inDays;
+    final dam = byId[litter.damId]?.displayName;
+    final sire = byId[litter.sireId]?.displayName;
+    final parents = [
+      if (sire != null && sire.isNotEmpty) sire,
+      if (dam != null && dam.isNotEmpty) dam,
+    ].join(' × ');
+    final rawCode = litter.code?.trim() ?? '';
+    final code = rawCode.isEmpty ? '窝次' : rawCode;
+    final title = parents.isEmpty ? code : '$code · $parents';
+    final state = litter.state.toLowerCase();
+    final needsWean =
+        state.contains('wean') ||
+        state.contains('sex') ||
+        state.contains('separat') ||
+        ageDays >= 18;
+    items.add(
+      BreedingFeedItem(
+        id: 'litter-${litter.id}',
+        title: title,
+        subtitle: needsWean
+            ? '育仔 $ageDays 日龄 · 待断奶/分性跟进'
+            : '育仔 $ageDays 日龄 · ${litter.currentManagedCount} 只在管',
+        kind: needsWean ? 'wean' : 'litter',
+      ),
+    );
+  }
+
+  // 孕期优先，再窝次；截断
+  items.sort((a, b) {
+    int rank(String k) => switch (k) {
+      'gestation' => 0,
+      'wean' => 1,
+      _ => 2,
+    };
+    final byKind = rank(a.kind).compareTo(rank(b.kind));
+    if (byKind != 0) return byKind;
+    return a.title.compareTo(b.title);
+  });
+  if (items.length <= maxItems) return items;
+  return items.sublist(0, maxItems);
+}
+
 class HomeOverviewPage extends StatelessWidget {
   const HomeOverviewPage({
     super.key,
@@ -230,7 +333,14 @@ class HomeOverviewPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: IosLargeTitle(
                       '工作台',
-                      subtitle: metrics.organizationName ?? '我的熊舍',
+                      subtitle: () {
+                        final now = DateTime.now();
+                        final name = state.account?.displayName?.trim();
+                        final who = (name != null && name.isNotEmpty)
+                            ? name
+                            : (metrics.organizationName ?? '熊舍');
+                        return '${workbenchGreeting(now)}，$who\n${workbenchDateLabel(now)}';
+                      }(),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -268,14 +378,6 @@ class HomeOverviewPage extends StatelessWidget {
                                 color: ScolvPalette.of(context).label,
                               ),
                             ),
-                          const SizedBox(width: 4),
-                          _HomeStatusPill(
-                            offline: metrics.offline,
-                            failed: hasUncachedError,
-                            attention: metrics.attentionWithTasks(
-                              taskController?.openCount ?? 0,
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -317,27 +419,13 @@ class HomeOverviewPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: IosMetrics.sectionGap),
-                    _QuickActionsSection(
+                    _PrimaryActionsSection(
                       onCreateHamster: onCreateHamster,
-                      onOpenEnclosures: onOpenEnclosures,
-                      onOpenLitters: onOpenLitters,
-                      onOpenBreeding: onOpenBreeding,
-                      onOpenDataCenter: onOpenDataCenter,
-                      onOpenHamsters: onOpenHamsters,
-                      onOpenBatchWeight: onOpenBatchWeight,
                       onOpenTasks: onOpenTasks,
-                      onOpenCalendar: onOpenCalendar,
                     ),
                   ] else ...[
-                    const SizedBox(height: 14),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: _StatGrid(
-                        metrics: metrics,
-                        openTaskCount: taskController?.openCount ?? 0,
-                      ),
-                    ),
-                    const SizedBox(height: IosMetrics.sectionGap),
+                    // P0-2 信息优先级：待办 → 概览 → 繁育动态 → 精简快捷
+                    const SizedBox(height: 10),
                     _TodayCareQueueSection(
                       items: careQueue,
                       taskController: taskController,
@@ -347,28 +435,28 @@ class HomeOverviewPage extends StatelessWidget {
                       onOpenLitters: onOpenLitters,
                     ),
                     const SizedBox(height: IosMetrics.sectionGap),
-                    _AttentionSection(
-                      metrics: metrics,
-                      openTaskCount: taskController?.openCount ?? 0,
-                      overdueTaskCount: taskController?.overdueCount ?? 0,
-                      onOpenLitters: onOpenLitters,
-                      onOpenEnclosures: onOpenEnclosures,
-                      onOpenBreeding: onOpenBreeding,
-                      onOpenHamsters: onOpenHamsters,
-                      onOpenBatchWeight: onOpenBatchWeight,
-                      onOpenTasks: onOpenTasks,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _OpsOverviewStrip(
+                        metrics: metrics,
+                        openTaskCount: taskController?.openCount ?? 0,
+                        onOpenHamsters: onOpenHamsters,
+                        onOpenLitters: onOpenLitters,
+                        onOpenBreeding: onOpenBreeding,
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    _QuickActionsSection(
-                      onCreateHamster: onCreateHamster,
-                      onOpenEnclosures: onOpenEnclosures,
-                      onOpenLitters: onOpenLitters,
+                    const SizedBox(height: IosMetrics.sectionGap),
+                    _BreedingFeedSection(
+                      items: buildBreedingFeed(snapshot: snapshot),
+                      gestatingCount: metrics.gestatingDamCount,
+                      activeLitterCount: metrics.activeLitterCount,
                       onOpenBreeding: onOpenBreeding,
-                      onOpenDataCenter: onOpenDataCenter,
-                      onOpenHamsters: onOpenHamsters,
-                      onOpenBatchWeight: onOpenBatchWeight,
+                      onOpenLitters: onOpenLitters,
+                    ),
+                    const SizedBox(height: IosMetrics.sectionGap),
+                    _PrimaryActionsSection(
+                      onCreateHamster: onCreateHamster,
                       onOpenTasks: onOpenTasks,
-                      onOpenCalendar: onOpenCalendar,
                     ),
                     if (metrics.lastSyncLabel != null) ...[
                       const SizedBox(height: 18),
@@ -390,52 +478,6 @@ class HomeOverviewPage extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _HomeStatusPill extends StatelessWidget {
-  const _HomeStatusPill({
-    required this.offline,
-    required this.attention,
-    this.failed = false,
-  });
-
-  final bool offline;
-  final int attention;
-  final bool failed;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color color;
-    final String label;
-    if (failed) {
-      color = IosColors.systemRed;
-      label = '未同步';
-    } else if (offline) {
-      color = IosColors.systemOrange;
-      label = '离线';
-    } else if (attention > 0) {
-      color = IosColors.systemRed;
-      label = '关注 $attention';
-    } else {
-      color = IosColors.systemGreen;
-      label = '正常';
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(IosMetrics.pillRadius),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
-      ),
     );
   }
 }
@@ -463,84 +505,54 @@ class _HomeUnavailableState extends StatelessWidget {
   );
 }
 
-class _StatGrid extends StatelessWidget {
-  const _StatGrid({required this.metrics, this.openTaskCount = 0});
+/// P0-2 经营概览：单层 4 指标，不造厚 Card。
+class _OpsOverviewStrip extends StatelessWidget {
+  const _OpsOverviewStrip({
+    required this.metrics,
+    required this.onOpenHamsters,
+    required this.onOpenLitters,
+    required this.onOpenBreeding,
+    this.openTaskCount = 0,
+  });
 
   final HomeOverviewMetrics metrics;
   final int openTaskCount;
+  final VoidCallback onOpenHamsters;
+  final VoidCallback onOpenLitters;
+  final VoidCallback onOpenBreeding;
 
   @override
   Widget build(BuildContext context) {
     final p = ScolvPalette.of(context);
     final attention = metrics.attentionWithTasks(openTaskCount);
     final hasAttention = attention > 0;
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: p.secondaryGroupedBackground,
-        borderRadius: BorderRadius.circular(IosMetrics.largeRadius),
-        border: Border.all(color: p.separator),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              const BearIconTile(
-                asset: BearAssets.icHamster,
-                size: 44,
-                padding: 7,
-                selected: true,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '在养',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: p.secondaryLabel,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '${metrics.hamsterCount}',
-                          style: Theme.of(context).textTheme.headlineLarge
-                              ?.copyWith(
-                                color: p.label,
-                                height: 1,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 6, bottom: 2),
-                          child: Text(
-                            '只仓鼠',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: p.secondaryLabel),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              _HomeStatusPill(offline: metrics.offline, attention: attention),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '经营概览',
+          key: const Key('home-ops-overview-title'),
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: p.label,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
           ),
-          const SizedBox(height: 16),
-          IosHairline(color: p.separator),
-          const SizedBox(height: 14),
-          Row(
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+          decoration: BoxDecoration(
+            color: p.secondaryGroupedBackground,
+            borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+            border: Border.all(color: p.separator, width: IosMetrics.hairline),
+          ),
+          child: Row(
             children: [
               Expanded(
                 child: _MiniMetric(
-                  label: '笼盒',
-                  value: '${metrics.enclosureCount}',
+                  label: '在养',
+                  value: '${metrics.hamsterCount}',
+                  onTap: onOpenHamsters,
                 ),
               ),
               _MetricDivider(color: p.separator),
@@ -548,6 +560,15 @@ class _StatGrid extends StatelessWidget {
                 child: _MiniMetric(
                   label: '活跃窝次',
                   value: '${metrics.activeLitterCount}',
+                  onTap: onOpenLitters,
+                ),
+              ),
+              _MetricDivider(color: p.separator),
+              Expanded(
+                child: _MiniMetric(
+                  label: '孕期',
+                  value: '${metrics.gestatingDamCount}',
+                  onTap: onOpenBreeding,
                 ),
               ),
               _MetricDivider(color: p.separator),
@@ -556,10 +577,145 @@ class _StatGrid extends StatelessWidget {
                   label: '需关注',
                   value: '$attention',
                   alert: hasAttention,
+                  onTap: hasAttention ? onOpenHamsters : null,
                 ),
               ),
             ],
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BreedingFeedSection extends StatelessWidget {
+  const _BreedingFeedSection({
+    required this.items,
+    required this.gestatingCount,
+    required this.activeLitterCount,
+    required this.onOpenBreeding,
+    required this.onOpenLitters,
+  });
+
+  final List<BreedingFeedItem> items;
+  final int gestatingCount;
+  final int activeLitterCount;
+  final VoidCallback onOpenBreeding;
+  final VoidCallback onOpenLitters;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
+    final summary = <String>[
+      if (gestatingCount > 0) '孕期 $gestatingCount',
+      if (activeLitterCount > 0) '育仔窝 $activeLitterCount',
+    ].join(' · ');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '繁育动态',
+                  key: const Key('home-breeding-feed-title'),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: p.label,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+              TextButton(
+                key: const Key('home-breeding-feed-open'),
+                onPressed: onOpenBreeding,
+                child: const Text('查看繁育'),
+              ),
+            ],
+          ),
+        ),
+        if (summary.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Text(
+              summary,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: p.secondaryLabel,
+              ),
+            ),
+          ),
+        if (items.isEmpty)
+          BearEmptyCard(
+            key: const Key('home-breeding-feed-empty'),
+            title: '暂无进行中的繁育节点',
+            subtitle: '有配对、孕期或育仔窝次时，会在这里按优先级展示。',
+            mood: BearMood.sleepy,
+            illustration: BearAssets.emptyList,
+            actionLabel: '打开繁育',
+            onAction: onOpenBreeding,
+          )
+        else
+          IosGroupedSection(
+            children: [
+              for (final item in items)
+                IosListTile(
+                  key: Key('home-breeding-item-${item.id}'),
+                  leading: Icon(
+                    item.kind == 'gestation'
+                        ? CupertinoIcons.heart_fill
+                        : CupertinoIcons.square_favorites_alt,
+                    size: 22,
+                    color: p.accent,
+                  ),
+                  title: item.title,
+                  subtitle: item.subtitle,
+                  onTap: item.kind == 'litter' || item.kind == 'wean'
+                      ? onOpenLitters
+                      : onOpenBreeding,
+                ),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+class _PrimaryActionsSection extends StatelessWidget {
+  const _PrimaryActionsSection({
+    required this.onCreateHamster,
+    this.onOpenTasks,
+  });
+
+  final VoidCallback onCreateHamster;
+  final VoidCallback? onOpenTasks;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: _QuickChip(
+              buttonKey: const Key('home-quick-create-hamster'),
+              icon: CupertinoIcons.plus,
+              label: '新建仓鼠',
+              onTap: onCreateHamster,
+            ),
+          ),
+          if (onOpenTasks != null) ...[
+            const SizedBox(width: 10),
+            Expanded(
+              child: _QuickChip(
+                buttonKey: const Key('home-quick-tasks'),
+                icon: CupertinoIcons.checkmark_circle,
+                label: '全部任务',
+                onTap: onOpenTasks!,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -571,17 +727,19 @@ class _MiniMetric extends StatelessWidget {
     required this.label,
     required this.value,
     this.alert = false,
+    this.onTap,
   });
 
   final String label;
   final String value;
   final bool alert;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final p = ScolvPalette.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final child = Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           label,
@@ -592,16 +750,25 @@ class _MiniMetric extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           value,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: alert ? IosColors.systemRed : p.label,
+            color: alert ? IosColors.systemOrange : p.label,
             fontWeight: FontWeight.w700,
             height: 1,
           ),
         ),
       ],
+    );
+    if (onTap == null) return child;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: child,
+      ),
     );
   }
 }
@@ -665,14 +832,6 @@ class _TodayCareQueueSection extends StatelessWidget {
     }
   }
 
-  String _assetFor(TodayCareKind kind) => switch (kind) {
-    TodayCareKind.overdueTask => BearAssets.icTasks,
-    TodayCareKind.dueTodayTask => BearAssets.icCalendar,
-    TodayCareKind.weightAlert => BearAssets.icWeight,
-    TodayCareKind.dirtyEnclosure => BearAssets.icEnclosure,
-    TodayCareKind.pendingWean => BearAssets.icLitter,
-  };
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -684,13 +843,12 @@ class _TodayCareQueueSection extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '今日护理',
+                  items.isEmpty ? '今日待办' : '今日待办  ${items.length}',
                   key: const Key('home-today-care-title'),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: ScolvPalette.of(context).secondaryLabel,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.08,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: ScolvPalette.of(context).label,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
@@ -706,8 +864,8 @@ class _TodayCareQueueSection extends StatelessWidget {
         if (items.isEmpty)
           const BearEmptyCard(
             key: Key('home-today-care-empty'),
-            title: '今天没有待办',
-            subtitle: '小仓鼠都乖乖的，熊舍状态良好',
+            title: '今天没有待处理事项',
+            subtitle: '当前护理与关注队列为空，繁育与笼舍状态可继续观察。',
             mood: BearMood.happy,
             illustration: BearAssets.emptyCare,
           )
@@ -717,13 +875,21 @@ class _TodayCareQueueSection extends StatelessWidget {
               for (final item in items)
                 IosListTile(
                   key: Key('home-care-item-${item.id}'),
-                  leading: BearIconTile(
-                    asset: _assetFor(item.kind),
-                    size: 32,
-                    padding: 4,
-                    selected:
+                  leading: Icon(
+                    switch (item.kind) {
+                      TodayCareKind.overdueTask =>
+                        CupertinoIcons.exclamationmark_circle,
+                      TodayCareKind.dueTodayTask => CupertinoIcons.clock,
+                      TodayCareKind.weightAlert => CupertinoIcons.graph_square,
+                      TodayCareKind.dirtyEnclosure => CupertinoIcons.square_grid_2x2,
+                      TodayCareKind.pendingWean => CupertinoIcons.heart,
+                    },
+                    size: 22,
+                    color:
                         item.kind == TodayCareKind.overdueTask ||
-                        item.kind == TodayCareKind.weightAlert,
+                            item.kind == TodayCareKind.weightAlert
+                        ? IosColors.systemOrange
+                        : ScolvPalette.of(context).secondaryLabel,
                   ),
                   title: item.title,
                   subtitle: item.subtitle,
@@ -733,7 +899,23 @@ class _TodayCareQueueSection extends StatelessWidget {
                           onPressed: () => _complete(context, item.task!),
                           child: const Text('完成'),
                         )
-                      : null,
+                      : Text(
+                          switch (item.kind) {
+                            TodayCareKind.overdueTask => '逾期',
+                            TodayCareKind.dueTodayTask => '待完成',
+                            TodayCareKind.weightAlert => '需关注',
+                            TodayCareKind.dirtyEnclosure => '需关注',
+                            TodayCareKind.pendingWean => '跟进',
+                          },
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color:
+                                    item.kind == TodayCareKind.overdueTask
+                                    ? IosColors.systemRed
+                                    : ScolvPalette.of(context).secondaryLabel,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
                   onTap: _tapFor(item),
                 ),
             ],
@@ -743,301 +925,18 @@ class _TodayCareQueueSection extends StatelessWidget {
   }
 }
 
-class _AttentionSection extends StatelessWidget {
-  const _AttentionSection({
-    required this.metrics,
-    required this.onOpenLitters,
-    required this.onOpenEnclosures,
-    required this.onOpenBreeding,
-    required this.onOpenHamsters,
-    this.openTaskCount = 0,
-    this.overdueTaskCount = 0,
-    this.onOpenBatchWeight,
-    this.onOpenTasks,
-  });
-
-  final HomeOverviewMetrics metrics;
-  final int openTaskCount;
-  final int overdueTaskCount;
-  final VoidCallback onOpenLitters;
-  final VoidCallback onOpenEnclosures;
-  final VoidCallback onOpenBreeding;
-  final VoidCallback onOpenHamsters;
-  final VoidCallback? onOpenBatchWeight;
-  final VoidCallback? onOpenTasks;
-
-  @override
-  Widget build(BuildContext context) {
-    final rows = <Widget>[];
-    if (openTaskCount > 0) {
-      rows.add(
-        _AttentionRow(
-          title: '待办任务',
-          subtitle: overdueTaskCount > 0
-              ? '$openTaskCount 条待办 · $overdueTaskCount 条逾期'
-              : '$openTaskCount 条待办',
-          asset: BearAssets.icTasks,
-          alert: overdueTaskCount > 0,
-          onTap: onOpenTasks ?? onOpenHamsters,
-        ),
-      );
-    }
-    if (metrics.pendingWeanOrSexCount > 0) {
-      rows.add(
-        _AttentionRow(
-          title: '待断奶/分性窝次',
-          subtitle: '${metrics.pendingWeanOrSexCount} 窝需跟进',
-          asset: BearAssets.icLitter,
-          onTap: onOpenLitters,
-        ),
-      );
-    }
-    if (metrics.gestatingDamCount > 0) {
-      rows.add(
-        _AttentionRow(
-          title: '孕期观察',
-          subtitle: '${metrics.gestatingDamCount} 只疑似孕期个体',
-          asset: BearAssets.icBreeding,
-          onTap: onOpenBreeding,
-        ),
-      );
-    }
-    if (metrics.dirtyEnclosureCount > 0) {
-      rows.add(
-        _AttentionRow(
-          title: '待清洁笼盒',
-          subtitle: '${metrics.dirtyEnclosureCount} 个笼盒清洁状态异常',
-          asset: BearAssets.icEnclosure,
-          onTap: onOpenEnclosures,
-        ),
-      );
-    }
-    if (metrics.draftCount > 0) {
-      rows.add(
-        _AttentionRow(
-          title: '本地草稿',
-          subtitle: '${metrics.draftCount} 条离线草稿待提交',
-          asset: BearAssets.icData,
-          onTap: onOpenHamsters,
-        ),
-      );
-    }
-    if (metrics.weightAlertCount > 0) {
-      final sample = metrics.weightAlerts
-          .take(2)
-          .map((a) => a.summary)
-          .join('；');
-      rows.add(
-        _AttentionRow(
-          title: '体重异常',
-          subtitle: '${metrics.weightAlertCount} 只 · $sample',
-          asset: BearAssets.icWeight,
-          alert: true,
-          onTap: onOpenBatchWeight ?? onOpenHamsters,
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const IosSectionHeader('需要关注'),
-        if (rows.isEmpty)
-          const BearEmptyCard(
-            title: '一切正常',
-            subtitle: '窝次、孕期与笼盒都安好，可以去喝口水啦',
-            mood: BearMood.sleepy,
-            illustration: BearAssets.emptyAttention,
-          )
-        else
-          IosGroupedSection(children: rows),
-      ],
-    );
-  }
-}
-
-class _AttentionRow extends StatelessWidget {
-  const _AttentionRow({
-    required this.title,
-    required this.subtitle,
-    required this.asset,
-    required this.onTap,
-    this.alert = false,
-  });
-
-  final String title;
-  final String subtitle;
-  final String asset;
-  final VoidCallback onTap;
-  final bool alert;
-
-  @override
-  Widget build(BuildContext context) {
-    return IosListTile(
-      leading: BearIconTile(
-        asset: asset,
-        size: 32,
-        padding: 4,
-        selected: alert,
-      ),
-      title: title,
-      subtitle: subtitle,
-      onTap: onTap,
-    );
-  }
-}
-
-class _QuickActionsSection extends StatefulWidget {
-  const _QuickActionsSection({
-    required this.onCreateHamster,
-    required this.onOpenEnclosures,
-    required this.onOpenLitters,
-    required this.onOpenBreeding,
-    required this.onOpenDataCenter,
-    required this.onOpenHamsters,
-    this.onOpenBatchWeight,
-    this.onOpenTasks,
-    this.onOpenCalendar,
-  });
-
-  final VoidCallback onCreateHamster;
-  final VoidCallback onOpenEnclosures;
-  final VoidCallback onOpenLitters;
-  final VoidCallback onOpenBreeding;
-  final VoidCallback onOpenDataCenter;
-  final VoidCallback onOpenHamsters;
-  final VoidCallback? onOpenBatchWeight;
-  final VoidCallback? onOpenTasks;
-  final VoidCallback? onOpenCalendar;
-
-  @override
-  State<_QuickActionsSection> createState() => _QuickActionsSectionState();
-}
-
-class _QuickActionsSectionState extends State<_QuickActionsSection> {
-  bool _showMore = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const IosSectionHeader('快捷操作'),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: _QuickChip(
-                  buttonKey: const Key('home-quick-create-hamster'),
-                  asset: BearAssets.icHamster,
-                  label: '新建仓鼠',
-                  onTap: widget.onCreateHamster,
-                ),
-              ),
-              const SizedBox(height: 10),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final columns = constraints.maxWidth < 360 ? 3 : 4;
-                  final width =
-                      (constraints.maxWidth - 8 * (columns - 1)) / columns;
-                  return Wrap(
-                    spacing: 8,
-                    runSpacing: 10,
-                    children: [
-                      if (widget.onOpenBatchWeight != null)
-                        _QuickActionTile(
-                          buttonKey: const Key('home-quick-batch-weight'),
-                          asset: BearAssets.icWeight,
-                          label: '批量称重',
-                          onTap: widget.onOpenBatchWeight!,
-                          width: width,
-                        ),
-                      if (widget.onOpenTasks != null)
-                        _QuickActionTile(
-                          buttonKey: const Key('home-quick-tasks'),
-                          asset: BearAssets.icTasks,
-                          label: '任务',
-                          onTap: widget.onOpenTasks!,
-                          width: width,
-                        ),
-                      _QuickActionTile(
-                        buttonKey: const Key('home-quick-enclosures'),
-                        asset: BearAssets.icEnclosure,
-                        label: '笼舍',
-                        onTap: widget.onOpenEnclosures,
-                        width: width,
-                      ),
-                      if (_showMore) ...[
-                        _QuickActionTile(
-                          buttonKey: const Key('home-quick-litters'),
-                          asset: BearAssets.icLitter,
-                          label: '窝次',
-                          onTap: widget.onOpenLitters,
-                          width: width,
-                        ),
-                        _QuickActionTile(
-                          buttonKey: const Key('home-quick-breeding'),
-                          asset: BearAssets.icBreeding,
-                          label: '繁育',
-                          onTap: widget.onOpenBreeding,
-                          width: width,
-                        ),
-                        _QuickActionTile(
-                          buttonKey: const Key('home-quick-data-center'),
-                          asset: BearAssets.icData,
-                          label: '数据中心',
-                          onTap: widget.onOpenDataCenter,
-                          width: width,
-                        ),
-                        _QuickActionTile(
-                          buttonKey: const Key('home-quick-hamsters'),
-                          asset: BearAssets.icHamster,
-                          label: '仓鼠列表',
-                          onTap: widget.onOpenHamsters,
-                          width: width,
-                        ),
-                        if (widget.onOpenCalendar != null)
-                          _QuickActionTile(
-                            buttonKey: const Key('home-quick-calendar'),
-                            asset: BearAssets.icCalendar,
-                            label: '日历',
-                            onTap: widget.onOpenCalendar!,
-                            width: width,
-                          ),
-                      ],
-                      _QuickActionTile(
-                        buttonKey: const Key('home-quick-more-toggle'),
-                        icon: _showMore
-                            ? CupertinoIcons.chevron_up
-                            : CupertinoIcons.ellipsis,
-                        label: _showMore ? '收起' : '更多',
-                        onTap: () => setState(() => _showMore = !_showMore),
-                        width: width,
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _QuickChip extends StatelessWidget {
   const _QuickChip({
     this.buttonKey,
-    required this.asset,
+    this.asset,
+    this.icon,
     required this.label,
     required this.onTap,
-  });
+  }) : assert(asset != null || icon != null);
 
   final Key? buttonKey;
-  final String asset;
+  final String? asset;
+  final IconData? icon;
   final String label;
   final VoidCallback onTap;
 
@@ -1052,7 +951,7 @@ class _QuickChip extends StatelessWidget {
         foregroundColor: p.groupedBackground,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
-        minimumSize: const Size(0, 50),
+        minimumSize: const Size(0, 48),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
         ),
@@ -1064,69 +963,15 @@ class _QuickChip extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(asset, width: 24, height: 24, fit: BoxFit.contain),
-          const SizedBox(width: 10),
-          Text(label),
+          if (icon != null)
+            Icon(icon, size: 20, color: p.groupedBackground)
+          else
+            Image.asset(asset!, width: 22, height: 22, fit: BoxFit.contain),
+          const SizedBox(width: 8),
+          Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
         ],
       ),
     );
   }
 }
 
-class _QuickActionTile extends StatelessWidget {
-  const _QuickActionTile({
-    this.buttonKey,
-    this.asset,
-    this.icon,
-    required this.label,
-    required this.onTap,
-    required this.width,
-  }) : assert((asset == null) != (icon == null));
-
-  final Key? buttonKey;
-  final String? asset;
-  final IconData? icon;
-  final String label;
-  final VoidCallback onTap;
-  final double width;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = ScolvPalette.of(context);
-    return SizedBox(
-      width: width,
-      child: IosPressable(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
-        child: Padding(
-          key: buttonKey,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            children: [
-              if (icon != null)
-                BearGlyphTile(
-                  icon: icon!,
-                  semanticLabel: label,
-                  size: 42,
-                  padding: 9,
-                )
-              else
-                BearIconTile(asset: asset!, size: 42, padding: 7),
-              const SizedBox(height: 7),
-              Text(
-                label,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: p.label,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
