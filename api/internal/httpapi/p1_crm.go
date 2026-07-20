@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -247,19 +248,26 @@ func (s *Server) createCrmReservation(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		hamsterID = &parsed
-		if err := s.ensureCrmHamsterOwned(r.Context(), ownerID, parsed); err != nil {
-			writeAPIError(w, r, err)
-			return
-		}
 	}
-	var id uuid.UUID
-	err = s.Store.Pool.QueryRow(r.Context(), `
-		INSERT INTO crm_reservation (
-			owner_id, organization_id, contact_id, hamster_id, title, status, notes
-		) VALUES ($1,$2,$3,$4,$5,'held',$6)
-		RETURNING id
-	`, ownerID, orgID, contactID, hamsterID, title, emptyToNil(request.Notes)).Scan(&id)
+	tx, err := s.Store.Pool.Begin(r.Context())
 	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	defer tx.Rollback(r.Context())
+	id, err := s.createCrmReservationTx(r.Context(), tx, ownerID, orgID, createCrmReservationInput{
+		ContactID: contactID,
+		HamsterID: hamsterID,
+		Title:     title,
+		Notes:     request.Notes,
+		// 后台创建：校验仓鼠归属与 lifecycle，不强制公开 profile。
+		RequirePublic: false,
+	})
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	if err := tx.Commit(r.Context()); err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
@@ -574,6 +582,150 @@ func (s *Server) ensureCrmHamsterOwned(ctx context.Context, ownerID, hamsterID u
 		return validationError("hamster_id", "所选仓鼠不存在")
 	}
 	return nil
+}
+
+type createCrmReservationInput struct {
+	ContactID     uuid.UUID
+	HamsterID     *uuid.UUID
+	Title         string
+	Notes         *string
+	RequirePublic bool
+}
+
+// createCrmReservationTx 创建 held 预订；hamster 级开放预订排他（held/confirmed）。
+func (s *Server) createCrmReservationTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	ownerID, orgID uuid.UUID,
+	input createCrmReservationInput,
+) (uuid.UUID, error) {
+	if input.ContactID == uuid.Nil {
+		return uuid.Nil, validationError("contact_id", "客户无效")
+	}
+	title := strings.TrimSpace(input.Title)
+	if title == "" {
+		title = "预订"
+	}
+	if utf8.RuneCountInString(title) > 200 {
+		return uuid.Nil, validationError("title", "标题过长")
+	}
+
+	if input.HamsterID != nil {
+		if err := s.lockAndAssertHamsterReservableTx(ctx, tx, ownerID, *input.HamsterID, input.RequirePublic); err != nil {
+			return uuid.Nil, err
+		}
+		open, err := s.hasOpenReservationForHamsterTx(ctx, tx, ownerID, *input.HamsterID)
+		if err != nil {
+			return uuid.Nil, err
+		}
+		if open {
+			return uuid.Nil, conflictError("hamster_id", "该仓鼠已被预订，请选择其他个体")
+		}
+	}
+
+	var id uuid.UUID
+	err := tx.QueryRow(ctx, `
+		INSERT INTO crm_reservation (
+			owner_id, organization_id, contact_id, hamster_id, title, status, notes
+		) VALUES ($1,$2,$3,$4,$5,'held',$6)
+		RETURNING id
+	`, ownerID, orgID, input.ContactID, input.HamsterID, title, emptyToNil(input.Notes)).Scan(&id)
+	if err != nil {
+		// Unique index 兜底并发。
+		if strings.Contains(strings.ToLower(err.Error()), "ux_crm_reservation_open_hamster") ||
+			strings.Contains(strings.ToLower(err.Error()), "duplicate") {
+			return uuid.Nil, conflictError("hamster_id", "该仓鼠已被预订，请选择其他个体")
+		}
+		return uuid.Nil, err
+	}
+	return id, nil
+}
+
+func (s *Server) lockAndAssertHamsterReservableTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	ownerID, hamsterID uuid.UUID,
+	requirePublic bool,
+) error {
+	var (
+		lifecycle string
+		deleted   *time.Time
+	)
+	err := tx.QueryRow(ctx, `
+		SELECT lifecycle_status::text, deleted_at
+		FROM hamster
+		WHERE owner_id=$1 AND id=$2
+		FOR UPDATE
+	`, ownerID, hamsterID).Scan(&lifecycle, &deleted)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return validationError("hamster_id", "所选仓鼠不存在")
+	}
+	if err != nil {
+		return err
+	}
+	if deleted != nil {
+		return validationError("hamster_id", "所选仓鼠不存在")
+	}
+	if lifecycle != "active" {
+		return conflictError("hamster_id", "该仓鼠当前不可预订")
+	}
+	if !requirePublic {
+		return nil
+	}
+	var published, consultable bool
+	err = tx.QueryRow(ctx, `
+		SELECT published, consultable
+		FROM hamster_public_profile
+		WHERE owner_id=$1 AND hamster_id=$2
+	`, ownerID, hamsterID).Scan(&published, &consultable)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return conflictError("hamster_id", "该仓鼠未开放公开预订")
+	}
+	if err != nil {
+		return err
+	}
+	if !published || !consultable {
+		return conflictError("hamster_id", "该仓鼠当前不接受预订")
+	}
+	return nil
+}
+
+func (s *Server) hasOpenReservationForHamsterTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	ownerID, hamsterID uuid.UUID,
+) (bool, error) {
+	var exists bool
+	err := tx.QueryRow(ctx, `
+		SELECT EXISTS(
+			SELECT 1 FROM crm_reservation
+			WHERE owner_id=$1 AND hamster_id=$2 AND status IN ('held','confirmed')
+		)
+	`, ownerID, hamsterID).Scan(&exists)
+	return exists, err
+}
+
+func (s *Server) openReservedHamsterIDs(ctx context.Context, ownerID uuid.UUID) (map[uuid.UUID]struct{}, error) {
+	rows, err := s.Store.Pool.Query(ctx, `
+		SELECT DISTINCT hamster_id
+		FROM crm_reservation
+		WHERE owner_id=$1
+		  AND hamster_id IS NOT NULL
+		  AND status IN ('held','confirmed')
+	`, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make(map[uuid.UUID]struct{})
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		out[id] = struct{}{}
+	}
+	return out, rows.Err()
 }
 
 // resolveCrmContactInput 客户身份解析输入。

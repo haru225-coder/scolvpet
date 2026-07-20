@@ -27,6 +27,8 @@ type PublicHamster struct {
 	FilmingStatus string        `json:"filming_status"`
 	Published     bool          `json:"published"`
 	Consultable   bool          `json:"consultable"`
+	// Reservable is decided by Backend only (profile + exclusive open reservation).
+	Reservable    bool          `json:"reservable"`
 	CTAText       string        `json:"cta_text,omitempty"`
 	PriceLabel    string        `json:"price_label,omitempty"`
 	Media         []PublicMedia `json:"media,omitempty"`

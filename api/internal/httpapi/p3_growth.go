@@ -36,6 +36,15 @@ func (s *Server) registerP3GrowthRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v1/public/sites/{slug}/media/{media_id}", s.getGrowthPublicMedia)
 	mux.HandleFunc("POST /v1/public/sites/{slug}/consult", s.postGrowthPublicConsultation)
 	mux.HandleFunc("POST /v1/public/sites/{slug}/leads", s.postGrowthPublicLead)
+	mux.HandleFunc("POST /v1/public/sites/{slug}/reservations", s.postGrowthPublicReservation)
+}
+
+type growthPublicReservationRequest struct {
+	HamsterID string `json:"hamster_id"`
+	Name      string `json:"name"`
+	Phone     string `json:"phone"`
+	Wechat    string `json:"wechat"`
+	Notes     string `json:"notes"`
 }
 
 type growthProfileRequest struct {
@@ -665,6 +674,98 @@ func (s *Server) postGrowthPublicLead(w http.ResponseWriter, r *http.Request) {
 	writeStored(w, r, result)
 }
 
+// postGrowthPublicReservation 客户从前台提交真实 hamster 预订 → 统一 crm_reservation。
+func (s *Server) postGrowthPublicReservation(w http.ResponseWriter, r *http.Request) {
+	site, ownerID, err := s.findPublishedGrowthSite(r.Context(), r.PathValue("slug"))
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	var request growthPublicReservationRequest
+	payload, err := decodeGrowthPublicBody(r, &request)
+	if err != nil {
+		writeAPIError(w, r, validationError("body", "预订请求格式不正确"))
+		return
+	}
+	request.Name = strings.TrimSpace(request.Name)
+	request.Phone = strings.TrimSpace(request.Phone)
+	request.Wechat = strings.TrimSpace(request.Wechat)
+	request.Notes = strings.TrimSpace(request.Notes)
+	if request.Name == "" || utf8.RuneCountInString(request.Name) > 120 {
+		writeAPIError(w, r, validationError("name", "称呼必填且不能超过 120 字"))
+		return
+	}
+	if request.Phone == "" && request.Wechat == "" {
+		writeAPIError(w, r, validationError("phone/wechat", "手机号或微信至少填写一项"))
+		return
+	}
+	hamsterID, err := uuid.Parse(strings.TrimSpace(request.HamsterID))
+	if err != nil || hamsterID == uuid.Nil {
+		writeAPIError(w, r, validationError("hamster_id", "请选择要预订的仓鼠"))
+		return
+	}
+	orgID, err := s.currentOrganizationID(r.Context(), ownerID)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+
+	result, err := s.Store.RunIdempotent(r.Context(), ownerID, r.Header.Get("Idempotency-Key"), http.MethodPost, r.URL.Path, payload, func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
+		// 公开侧只允许已公开+可咨询个体；排他在 createCrmReservationTx。
+		pub, err := s.queryGrowthPublicHamster(ctx, tx, ownerID, hamsterID)
+		if err != nil {
+			return 0, nil, nil, err
+		}
+		if !pub.Published || !pub.Consultable {
+			return 0, nil, nil, conflictError("hamster_id", "该仓鼠当前不接受预订")
+		}
+		resolved, err := s.resolveOrCreateCrmContactTx(ctx, tx, ownerID, orgID, resolveCrmContactInput{
+			Name:   request.Name,
+			Phone:  request.Phone,
+			Wechat: request.Wechat,
+			Notes:  emptyToNil(&request.Notes),
+			Status: "lead",
+		})
+		if err != nil {
+			return 0, nil, nil, err
+		}
+		title := strings.TrimSpace(pub.PublicName)
+		if title == "" {
+			title = "预订"
+		} else {
+			title = "预订 " + title
+		}
+		if utf8.RuneCountInString(title) > 200 {
+			title = string([]rune(title)[:200])
+		}
+		reservationID, err := s.createCrmReservationTx(ctx, tx, ownerID, orgID, createCrmReservationInput{
+			ContactID:     resolved.ID,
+			HamsterID:     &hamsterID,
+			Title:         title,
+			Notes:         emptyToNil(&request.Notes),
+			RequirePublic: true,
+		})
+		if err != nil {
+			return 0, nil, nil, err
+		}
+		return http.StatusCreated, envelope(r, map[string]any{
+			"reservation_id": reservationID,
+			"contact_id":     resolved.ID,
+			"contact_reused": !resolved.Created,
+			"hamster_id":     hamsterID,
+			"status":         "held",
+			"title":          title,
+			"site_id":        site["id"],
+		}), map[string]string{}, nil
+	})
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	writeStored(w, r, result)
+}
+
 func (s *Server) loadGrowthPublicHamsters(ctx context.Context, ownerID uuid.UUID, consultableOnly bool) ([]growthcore.PublicHamster, error) {
 	query := `
 		SELECT h.id, COALESCE(p.public_name, h.name, ''), COALESCE(p.summary,''), p.traits,
@@ -682,11 +783,23 @@ func (s *Server) loadGrowthPublicHamsters(ctx context.Context, ownerID uuid.UUID
 	}
 	defer rows.Close()
 	slug := s.ownerPublicSiteSlug(ctx, ownerID)
+	blocked, err := s.openReservedHamsterIDs(ctx, ownerID)
+	if err != nil {
+		return nil, err
+	}
 	items := make([]growthcore.PublicHamster, 0)
 	for rows.Next() {
 		item, err := scanGrowthPublicHamster(rows)
 		if err != nil {
 			return nil, err
+		}
+		// Backend 唯一判定：公开可咨询 + 无 held/confirmed 预订。
+		hid, parseErr := uuid.Parse(item.ID)
+		item.Reservable = item.Published && item.Consultable && parseErr == nil
+		if item.Reservable {
+			if _, taken := blocked[hid]; taken {
+				item.Reservable = false
+			}
 		}
 		attachGrowthMediaPath(&item, slug)
 		items = append(items, item)

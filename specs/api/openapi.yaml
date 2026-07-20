@@ -6111,6 +6111,43 @@ paths:
         '422':
           "$ref": "#/components/responses/ValidationError"
 
+  "/v1/public/sites/{slug}/reservations":
+    post:
+      tags:
+      - public-growth
+      operationId: createPublicGrowthReservation
+      summary: 客户提交公开仓鼠预订
+      description: |
+        客户从前台对真实 hamster 创建统一 crm_reservation（status=held）。
+        必须传 hamster_id；Backend 校验公开可订与排他；禁止手填品种/毛色。
+      security: []
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - *1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PublicGrowthReservationRequest"
+      responses:
+        '201':
+          description: 预订已创建，宠舍 App CRM 可见
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicGrowthReservationResponse"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -13854,6 +13891,9 @@ components:
           type: boolean
         consultable:
           type: boolean
+        reservable:
+          type: boolean
+          description: Backend 唯一可订判定（公开可咨询且无 held/confirmed 预订）
         cta_text:
           type: string
         price_label:
@@ -13868,6 +13908,7 @@ components:
       - filming_status
       - published
       - consultable
+      - reservable
       additionalProperties: false
     GrowthPublicMedia:
       type: object
@@ -14294,6 +14335,64 @@ components:
       properties:
         data:
           type: object
+          additionalProperties: true
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    PublicGrowthReservationRequest:
+      type: object
+      properties:
+        hamster_id:
+          type: string
+          format: uuid
+          description: 真实仓鼠 ID；禁止客户端自造商品 ID
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        phone:
+          type: string
+          maxLength: 32
+        wechat:
+          type: string
+          maxLength: 64
+        notes:
+          type: string
+          maxLength: 2000
+      required: [hamster_id, name]
+      description: 手机号和微信至少填写一个；品种/毛色由 Backend 关联 hamster 继承。
+      additionalProperties: false
+    PublicGrowthReservationResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            reservation_id:
+              type: string
+              format: uuid
+            contact_id:
+              type: string
+              format: uuid
+            contact_reused:
+              type: boolean
+            hamster_id:
+              type: string
+              format: uuid
+            status:
+              type: string
+              enum: [held]
+            title:
+              type: string
+            site_id:
+              type: string
+              format: uuid
+          required:
+          - reservation_id
+          - contact_id
+          - hamster_id
+          - status
           additionalProperties: true
         meta:
           "$ref": "#/components/schemas/ResponseMeta"

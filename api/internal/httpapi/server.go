@@ -549,6 +549,10 @@ func validationError(field, message string) error {
 	return &apiError{Status: http.StatusUnprocessableEntity, Code: "VALIDATION_ERROR", Message: message, Details: map[string]any{"field": field}}
 }
 
+func conflictError(field, message string) error {
+	return &apiError{Status: http.StatusConflict, Code: "CONFLICT", Message: message, Details: map[string]any{"field": field}}
+}
+
 func authRequired() error {
 	return &apiError{Status: http.StatusUnauthorized, Code: "AUTHENTICATION_REQUIRED", Message: "请重新登录"}
 }
