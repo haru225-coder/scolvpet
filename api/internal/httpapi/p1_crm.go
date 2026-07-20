@@ -142,22 +142,40 @@ func (s *Server) createCrmContact(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, err)
 		return
 	}
-	var id uuid.UUID
-	err = s.Store.Pool.QueryRow(r.Context(), `
-		INSERT INTO crm_contact (owner_id, organization_id, name, phone, wechat, notes, status)
-		VALUES ($1,$2,$3,$4,$5,$6,$7::crm_contact_status)
-		RETURNING id
-	`, ownerID, orgID, name, emptyToNil(request.Phone), emptyToNil(request.Wechat), emptyToNil(request.Notes), status).Scan(&id)
+	phone := normalizeCrmPhone(derefString(request.Phone))
+	wechat := normalizeCrmWechat(derefString(request.Wechat))
+	tx, err := s.Store.Pool.Begin(r.Context())
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	item, err := s.getCrmContact(r.Context(), ownerID, id)
+	defer tx.Rollback(r.Context())
+	resolved, err := s.resolveOrCreateCrmContactTx(r.Context(), tx, ownerID, orgID, resolveCrmContactInput{
+		Name:   name,
+		Phone:  phone,
+		Wechat: wechat,
+		Notes:  request.Notes,
+		Status: status,
+	})
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	writeJSON(w, r, http.StatusCreated, map[string]any{"data": item, "meta": responseMeta(r)})
+	if err := tx.Commit(r.Context()); err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	item, err := s.getCrmContact(r.Context(), ownerID, resolved.ID)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	// 201 新建；200 复用已有客户（同一 phone/wechat）。
+	statusCode := http.StatusCreated
+	if !resolved.Created {
+		statusCode = http.StatusOK
+	}
+	writeJSON(w, r, statusCode, map[string]any{"data": item, "meta": responseMeta(r)})
 }
 
 func (s *Server) listCrmReservations(w http.ResponseWriter, r *http.Request) {
@@ -556,6 +574,154 @@ func (s *Server) ensureCrmHamsterOwned(ctx context.Context, ownerID, hamsterID u
 		return validationError("hamster_id", "所选仓鼠不存在")
 	}
 	return nil
+}
+
+// resolveCrmContactInput 客户身份解析输入。
+// phone / wechat 应已 normalize；至少一项非空时才能稳定去重。
+type resolveCrmContactInput struct {
+	Name   string
+	Phone  string
+	Wechat string
+	Notes  *string
+	// Status 仅在新建时使用；复用已有客户时不降级 active→lead。
+	Status string
+}
+
+type resolveCrmContactResult struct {
+	ID      uuid.UUID
+	Created bool
+}
+
+// normalizeCrmPhone 去掉空白与常见分隔，保留数字与前导 +。
+func normalizeCrmPhone(raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return ""
+	}
+	var b strings.Builder
+	for i, r := range raw {
+		if r >= '0' && r <= '9' {
+			b.WriteRune(r)
+			continue
+		}
+		if r == '+' && i == 0 {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}
+
+func normalizeCrmWechat(raw string) string {
+	return strings.TrimSpace(raw)
+}
+
+func derefString(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
+}
+
+// resolveOrCreateCrmContactTx 同宠舍下按 phone 优先、其次 wechat 复用客户，避免重复 crm_contact。
+// 不发明第二套 Customer；公开留资与后台建客共用。
+func (s *Server) resolveOrCreateCrmContactTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	ownerID, orgID uuid.UUID,
+	input resolveCrmContactInput,
+) (resolveCrmContactResult, error) {
+	name := strings.TrimSpace(input.Name)
+	if name == "" {
+		return resolveCrmContactResult{}, validationError("name", "客户名称必填")
+	}
+	phone := normalizeCrmPhone(input.Phone)
+	wechat := normalizeCrmWechat(input.Wechat)
+	status := strings.TrimSpace(input.Status)
+	if status == "" {
+		status = "lead"
+	}
+	if status != "lead" && status != "active" && status != "archived" {
+		return resolveCrmContactResult{}, validationError("status", "客户状态无效")
+	}
+
+	if phone != "" || wechat != "" {
+		var (
+			id            uuid.UUID
+			existingPhone *string
+			existingWechat *string
+			existingNotes *string
+			existingStatus string
+			version       int
+		)
+		// 优先 phone 精确命中；其次 wechat；非归档优先；最近更新优先。
+		err := tx.QueryRow(ctx, `
+			SELECT id, phone, wechat, notes, status::text, version
+			FROM crm_contact
+			WHERE owner_id=$1
+			  AND (
+			    ($2::text <> '' AND phone = $2)
+			    OR ($3::text <> '' AND wechat = $3)
+			  )
+			ORDER BY
+			  CASE WHEN status = 'archived' THEN 1 ELSE 0 END,
+			  CASE
+			    WHEN $2::text <> '' AND phone = $2 THEN 0
+			    ELSE 1
+			  END,
+			  updated_at DESC,
+			  id DESC
+			LIMIT 1
+			FOR UPDATE
+		`, ownerID, phone, wechat).Scan(&id, &existingPhone, &existingWechat, &existingNotes, &existingStatus, &version)
+		if err == nil {
+			nextPhone := existingPhone
+			if (nextPhone == nil || strings.TrimSpace(*nextPhone) == "") && phone != "" {
+				nextPhone = &phone
+			}
+			nextWechat := existingWechat
+			if (nextWechat == nil || strings.TrimSpace(*nextWechat) == "") && wechat != "" {
+				nextWechat = &wechat
+			}
+			nextNotes := existingNotes
+			if notes := emptyToNil(input.Notes); notes != nil && (nextNotes == nil || strings.TrimSpace(*nextNotes) == "") {
+				nextNotes = notes
+			}
+			nextStatus := existingStatus
+			if existingStatus == "archived" {
+				// 归档客户再次触达：恢复为 lead（公开）或请求状态（后台）。
+				if status == "archived" {
+					nextStatus = "lead"
+				} else {
+					nextStatus = status
+				}
+			}
+			_, err = tx.Exec(ctx, `
+				UPDATE crm_contact
+				SET phone=$3, wechat=$4, notes=$5,
+				    status=$6::crm_contact_status,
+				    version=version+1, updated_at=now()
+				WHERE owner_id=$1 AND id=$2 AND version=$7
+			`, ownerID, id, nextPhone, nextWechat, nextNotes, nextStatus, version)
+			if err != nil {
+				return resolveCrmContactResult{}, err
+			}
+			return resolveCrmContactResult{ID: id, Created: false}, nil
+		}
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return resolveCrmContactResult{}, err
+		}
+	}
+
+	var id uuid.UUID
+	err := tx.QueryRow(ctx, `
+		INSERT INTO crm_contact (owner_id, organization_id, name, phone, wechat, notes, status)
+		VALUES ($1,$2,$3,$4,$5,$6,$7::crm_contact_status)
+		RETURNING id
+	`, ownerID, orgID, name, emptyToNil(&phone), emptyToNil(&wechat), emptyToNil(input.Notes), status).Scan(&id)
+	if err != nil {
+		return resolveCrmContactResult{}, err
+	}
+	return resolveCrmContactResult{ID: id, Created: true}, nil
 }
 
 func emptyToNil(value *string) *string {

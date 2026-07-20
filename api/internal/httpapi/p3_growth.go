@@ -619,11 +619,18 @@ func (s *Server) postGrowthPublicLead(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	result, err := s.Store.RunIdempotent(r.Context(), ownerID, r.Header.Get("Idempotency-Key"), http.MethodPost, r.URL.Path, payload, func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
-		var contactID uuid.UUID
-		err := tx.QueryRow(ctx, `INSERT INTO crm_contact (owner_id, organization_id, name, phone, wechat, notes, status) VALUES ($1,$2,$3,$4,$5,$6,'lead') RETURNING id`, ownerID, orgID, request.Name, emptyToNil(&request.Phone), emptyToNil(&request.Wechat), emptyToNil(&request.IntentSummary)).Scan(&contactID)
+		// 同一 phone/wechat 复用 crm_contact，禁止重复客户孤岛。
+		resolved, err := s.resolveOrCreateCrmContactTx(ctx, tx, ownerID, orgID, resolveCrmContactInput{
+			Name:   request.Name,
+			Phone:  request.Phone,
+			Wechat: request.Wechat,
+			Notes:  emptyToNil(&request.IntentSummary),
+			Status: "lead",
+		})
 		if err != nil {
 			return 0, nil, nil, err
 		}
+		contactID := resolved.ID
 		var attributionID uuid.UUID
 		err = tx.QueryRow(ctx, `
 			INSERT INTO crm_contact_attribution (owner_id, contact_id, campaign_id, consultation_id, source_channel, landing_path, interest_hamster_id, intent_summary, metadata)
@@ -640,7 +647,15 @@ func (s *Server) postGrowthPublicLead(w http.ResponseWriter, r *http.Request) {
 		if consultationID != nil {
 			_, _ = tx.Exec(ctx, `UPDATE public_consultation SET status='lead_created', last_message_at=now() WHERE owner_id=$1 AND id=$2`, ownerID, *consultationID)
 		}
-		return http.StatusCreated, envelope(r, map[string]any{"contact_id": contactID, "attribution_id": attributionID, "site_id": site["id"], "campaign_id": campaignID, "consultation_id": consultationID, "interest_hamster_id": interestedID}), map[string]string{}, nil
+		return http.StatusCreated, envelope(r, map[string]any{
+			"contact_id":           contactID,
+			"contact_reused":       !resolved.Created,
+			"attribution_id":       attributionID,
+			"site_id":              site["id"],
+			"campaign_id":          campaignID,
+			"consultation_id":      consultationID,
+			"interest_hamster_id":  interestedID,
+		}), map[string]string{}, nil
 	})
 	if err != nil {
 		writeAPIError(w, r, err)
