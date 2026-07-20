@@ -16,6 +16,7 @@ class CrmHubPage extends StatefulWidget {
     required this.controller,
     this.hamsters = const <I2Hamster>[],
     this.onOpenDocuments,
+    this.onOpenContractFromReservation,
     this.canWrite = true,
   });
 
@@ -27,6 +28,9 @@ class CrmHubPage extends StatefulWidget {
     I2Hamster? hamster,
   )?
   onOpenDocuments;
+  /// 从已确认/锁定中的预订一键生成合同（继承客户与仓鼠）。
+  final void Function(CrmReservation reservation, I2Hamster? hamster)?
+  onOpenContractFromReservation;
   final bool canWrite;
 
   @override
@@ -178,6 +182,12 @@ class _CrmHubPageState extends State<CrmHubPage>
                       onCancel: (item) => _snack(
                         () => widget.controller.cancelReservation(item),
                       ),
+                      onScheduleDelivery: widget.canWrite
+                          ? _scheduleDeliveryFromReservation
+                          : null,
+                      onOpenContract: widget.canWrite
+                          ? widget.onOpenContractFromReservation
+                          : null,
                       canWrite: widget.canWrite,
                     ),
                     _HandoversTab(
@@ -226,7 +236,7 @@ class _CrmHubPageState extends State<CrmHubPage>
     await _snack(() => widget.controller.createReservation(draft));
   }
 
-  Future<void> _createHandover() async {
+  Future<void> _createHandover({CrmReservation? fromReservation}) async {
     final contacts =
         widget.controller.contactsState.data ?? const <CrmContact>[];
     if (contacts.isEmpty) {
@@ -244,10 +254,16 @@ class _CrmHubPageState extends State<CrmHubPage>
         contacts: contacts,
         reservations: reservations,
         hamsters: widget.hamsters,
+        initialReservation: fromReservation,
       ),
     );
     if (draft == null || !mounted) return;
     await _snack(() => widget.controller.createHandover(draft));
+  }
+
+  Future<void> _scheduleDeliveryFromReservation(CrmReservation reservation) async {
+    _tabs.animateTo(2);
+    await _createHandover(fromReservation: reservation);
   }
 }
 
@@ -312,6 +328,8 @@ class _ReservationsTab extends StatelessWidget {
     required this.hamsters,
     required this.onConfirm,
     required this.onCancel,
+    this.onScheduleDelivery,
+    this.onOpenContract,
     required this.canWrite,
   });
 
@@ -319,6 +337,9 @@ class _ReservationsTab extends StatelessWidget {
   final List<I2Hamster> hamsters;
   final ValueChanged<CrmReservation> onConfirm;
   final ValueChanged<CrmReservation> onCancel;
+  final ValueChanged<CrmReservation>? onScheduleDelivery;
+  final void Function(CrmReservation reservation, I2Hamster? hamster)?
+  onOpenContract;
   final bool canWrite;
 
   @override
@@ -395,10 +416,13 @@ class _ReservationsTab extends StatelessWidget {
                   onTap: () => _showReservationDetails(
                     context,
                     r,
+                    hamster: _findHamster(hamsters, r.hamsterId),
                     hamsterName:
                         _hamsterName(hamsters, r.hamsterId) ?? r.hamsterName,
                     onConfirm: onConfirm,
                     onCancel: onCancel,
+                    onScheduleDelivery: onScheduleDelivery,
+                    onOpenContract: onOpenContract,
                     canWrite: canWrite,
                   ),
                   showChevron: false,
@@ -409,6 +433,14 @@ class _ReservationsTab extends StatelessWidget {
       ),
     );
   }
+}
+
+I2Hamster? _findHamster(List<I2Hamster> hamsters, String? id) {
+  if (id == null || id.isEmpty) return null;
+  for (final item in hamsters) {
+    if (item.id == id) return item;
+  }
+  return null;
 }
 
 class _HandoversTab extends StatelessWidget {
@@ -738,11 +770,13 @@ class _HandoverFormSheet extends StatefulWidget {
     required this.contacts,
     required this.reservations,
     required this.hamsters,
+    this.initialReservation,
   });
 
   final List<CrmContact> contacts;
   final List<CrmReservation> reservations;
   final List<I2Hamster> hamsters;
+  final CrmReservation? initialReservation;
 
   @override
   State<_HandoverFormSheet> createState() => _HandoverFormSheetState();
@@ -758,7 +792,13 @@ class _HandoverFormSheetState extends State<_HandoverFormSheet> {
   @override
   void initState() {
     super.initState();
-    _contactId = widget.contacts.first.id;
+    final seed = widget.initialReservation;
+    _contactId = seed?.contactId ?? widget.contacts.first.id;
+    _reservationId = seed?.id;
+    _hamsterId = seed?.hamsterId;
+    if (seed?.notes != null && seed!.notes!.trim().isNotEmpty) {
+      _notes.text = seed.notes!;
+    }
     final now = DateTime.now();
     _scheduledAt = DateTime(now.year, now.month, now.day + 1, 10);
   }
@@ -980,9 +1020,12 @@ Future<void> _showContactDetails(
 Future<void> _showReservationDetails(
   BuildContext context,
   CrmReservation reservation, {
+  I2Hamster? hamster,
   String? hamsterName,
   required ValueChanged<CrmReservation> onConfirm,
   required ValueChanged<CrmReservation> onCancel,
+  ValueChanged<CrmReservation>? onScheduleDelivery,
+  void Function(CrmReservation reservation, I2Hamster? hamster)? onOpenContract,
   required bool canWrite,
 }) async {
   await showModalBottomSheet<void>(
@@ -1031,15 +1074,44 @@ Future<void> _showReservationDetails(
               _CrmDetailLine(label: '约定', value: reservation.notes!),
             if (reservation.isOpen && canWrite) ...[
               const SizedBox(height: 20),
-              FilledButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  onConfirm(reservation);
-                },
-                icon: const Icon(CupertinoIcons.checkmark_circle),
-                label: const Text('确认预订'),
-              ),
-              const SizedBox(height: 8),
+              if (reservation.status == 'held') ...[
+                FilledButton.icon(
+                  key: const Key('crm-reservation-confirm-action'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    onConfirm(reservation);
+                  },
+                  icon: const Icon(CupertinoIcons.checkmark_circle),
+                  label: const Text('确认预订'),
+                ),
+                const SizedBox(height: 8),
+              ],
+              if (reservation.status == 'confirmed') ...[
+                FilledButton.icon(
+                  key: const Key('crm-reservation-schedule-delivery'),
+                  onPressed: onScheduleDelivery == null
+                      ? null
+                      : () {
+                          Navigator.pop(context);
+                          onScheduleDelivery(reservation);
+                        },
+                  icon: const Icon(CupertinoIcons.cube_box),
+                  label: const Text('安排交付'),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  key: const Key('crm-reservation-open-contract'),
+                  onPressed: onOpenContract == null
+                      ? null
+                      : () {
+                          Navigator.pop(context);
+                          onOpenContract(reservation, hamster);
+                        },
+                  icon: const Icon(CupertinoIcons.doc_text),
+                  label: const Text('生成合同'),
+                ),
+                const SizedBox(height: 8),
+              ],
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);

@@ -601,6 +601,17 @@ class _HomeShellState extends State<HomeShell> {
               ),
             );
           },
+          onOpenContractFromReservation: (reservation, hamster) {
+            _openContracts(
+              launchContext: ContractsLaunchContext(
+                contactId: reservation.contactId,
+                contactName: reservation.contactName,
+                reservationId: reservation.id,
+                hamsterId: reservation.hamsterId,
+                hamsterName: hamster?.displayName ?? reservation.hamsterName,
+              ),
+            );
+          },
         ),
       ),
     );

@@ -50,6 +50,21 @@ class _ContractsHubPageState extends State<ContractsHubPage>
     );
     widget.controller.refreshAll(installStarterTemplates: widget.canWrite);
     widget.crmController?.refreshAll();
+    // 从预订/交付跳转时自动打开生成表单，避免再猜 Hub 入口。
+    if (widget.launchContext != null && widget.canWrite) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        await widget.controller.refreshAll(
+          installStarterTemplates: widget.canWrite,
+        );
+        if (!mounted) return;
+        if (widget.launchContext?.kind == 'receipt') {
+          await _createReceipt();
+        } else {
+          await _createContract();
+        }
+      });
+    }
   }
 
   @override
@@ -384,7 +399,10 @@ class _ContractFormSheetState extends State<_ContractFormSheet> {
     _contactId = widget.initial?.contactId;
     _handoverId = widget.initial?.handoverId;
     _hamsterId = widget.initial?.hamsterId;
-    _title = TextEditingController(text: '');
+    final seedHamster = widget.initial?.hamsterName?.trim() ?? '';
+    _title = TextEditingController(
+      text: seedHamster.isEmpty ? '' : '交接协议 · $seedHamster',
+    );
     _contactName = TextEditingController(
       text: widget.initial?.contactName ?? '',
     );
@@ -434,6 +452,7 @@ class _ContractFormSheetState extends State<_ContractFormSheet> {
         templateId: _templateId,
         contactId: _contactId,
         handoverId: _handoverId,
+        reservationId: widget.initial?.reservationId,
         title: _title.text.trim(),
         contactName: contactName,
         hamsterName: hamsterName.isEmpty ? null : hamsterName,

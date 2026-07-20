@@ -108,6 +108,7 @@ class DefaultApiContractsRepository implements ContractsRepository {
         'template_id': draft.templateId,
         if (draft.contactId != null) 'contact_id': draft.contactId,
         if (draft.handoverId != null) 'handover_id': draft.handoverId,
+        if (draft.reservationId != null) 'reservation_id': draft.reservationId,
         if (draft.title.trim().isNotEmpty) 'title': draft.title,
         if (draft.notes != null) 'notes': draft.notes,
         if (draft.contactName != null) 'contact_name': draft.contactName,

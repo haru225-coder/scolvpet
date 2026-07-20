@@ -104,6 +104,7 @@ class ContractDraft {
     required this.templateId,
     this.contactId,
     this.handoverId,
+    this.reservationId,
     this.title = '',
     this.notes,
     this.contactName,
@@ -113,6 +114,7 @@ class ContractDraft {
   final String templateId;
   final String? contactId;
   final String? handoverId;
+  final String? reservationId;
   final String title;
   final String? notes;
   final String? contactName;
@@ -149,6 +151,7 @@ class ContractsLaunchContext {
     this.contactId,
     this.contactName,
     this.handoverId,
+    this.reservationId,
     this.hamsterId,
     this.hamsterName,
   });
@@ -157,6 +160,7 @@ class ContractsLaunchContext {
   final String? contactId;
   final String? contactName;
   final String? handoverId;
+  final String? reservationId;
   final String? hamsterId;
   final String? hamsterName;
 }

@@ -122,9 +122,18 @@ void main() {
 
     await tester.tap(find.text('预订 奶茶'));
     await tester.pumpAndSettle();
-    expect(find.text('确认预订'), findsWidgets);
+    expect(find.byKey(const Key('crm-reservation-confirm-action')), findsOneWidget);
     expect(find.text('取消预订'), findsWidgets);
     expect(find.text('登记时间'), findsOneWidget);
+    // 确认后下一步：安排交付 / 生成合同
+    await tester.tap(find.byKey(const Key('crm-reservation-confirm-action')));
+    await tester.pumpAndSettle();
+    expect(controller.reservationsState.data!.single.status, 'confirmed');
+
+    await tester.tap(find.text('预订 奶茶'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('crm-reservation-schedule-delivery')), findsOneWidget);
+    expect(find.byKey(const Key('crm-reservation-open-contract')), findsOneWidget);
   });
 
   testWidgets('CrmHubPage creates contact and shows it', (tester) async {
