@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:scolvpet_mobile/data/i2_repository.dart';
 import 'package:scolvpet_mobile/features/health/health.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/i2/i2_hamsters.dart';
 import 'package:scolvpet_mobile/features/i2/i2_models.dart';
 import 'package:scolvpet_mobile/features/shell/home_overview.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   test('CareTaskItem.relatesToHamster matches target and subjects', () {

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/breeding/breeding.dart';
 import 'package:scolvpet_mobile/features/health/health.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   test('healthTypeLabel covers quick types', () {

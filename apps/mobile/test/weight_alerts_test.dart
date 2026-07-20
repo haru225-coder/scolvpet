@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:scolvpet_mobile/data/i2_repository.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/i2/i2_models.dart';
 import 'package:scolvpet_mobile/features/shell/home_overview.dart';
 import 'package:scolvpet_mobile/features/weight/weight_alerts.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   final t0 = DateTime.utc(2026, 7, 1, 10);

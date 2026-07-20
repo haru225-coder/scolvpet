@@ -22,40 +22,6 @@ String assistantErrorMessage(Object error) => apiErrorMessage(
   fallback: '助手请求失败',
   mapLocal: (e) => e is AssistantRepositoryException ? e.message : null,
 );
-
-class MemoryAssistantRepository implements AssistantRepository {
-  MemoryAssistantRepository({this.snapshot = const AssistantSnapshot()});
-
-  final AssistantSnapshot snapshot;
-
-  @override
-  Future<AssistantCapabilities> capabilities() async =>
-      const AssistantCapabilities(
-        intents: [
-          'overview',
-          'hamsters',
-          'tasks',
-          'overdue',
-          'breeding',
-          'usage',
-          'plan',
-          'help',
-        ],
-        modeDefault: 'rules',
-        llmAvailable: false,
-        disclaimer: '只读：不修改业务数据',
-      );
-
-  @override
-  Future<AssistantAnswer> ask(String question, {bool preferLlm = false}) async {
-    final q = question.trim();
-    if (q.isEmpty) {
-      throw const AssistantRepositoryException('问题不能为空');
-    }
-    return answerFromSnapshot(q, snapshot);
-  }
-}
-
 class DefaultApiAssistantRepository implements AssistantRepository {
   DefaultApiAssistantRepository({required this.client});
 

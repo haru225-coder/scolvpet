@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/members/members.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   test('memberCan matrix covers owner/viewer/breeder/caretaker', () {

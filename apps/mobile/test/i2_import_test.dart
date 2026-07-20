@@ -9,6 +9,7 @@ import 'package:scolvpet_mobile/data/i2_repository.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/i2/i2_import.dart';
 import 'package:scolvpet_mobile/features/i2/i2_models.dart';
+import 'support/memory_repositories.dart';
 
 class ImportRepository extends MemoryI2Repository {
   ImportRepository({this.blocking = false, this.rowFailuresBeforeSuccess = 0});

@@ -9,6 +9,7 @@ import 'package:scolvpet_mobile/data/i2_repository.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/i2/i2_models.dart';
 import 'package:scolvpet_mobile/features/shell/home_overview.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   final now = DateTime.utc(2026, 7, 17);

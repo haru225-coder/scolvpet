@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/pedigree/pedigree.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   test('buildAncestorGenerations expands at least three generations', () {

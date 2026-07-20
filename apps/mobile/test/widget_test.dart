@@ -3,32 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_api/scolvpet_api.dart';
 
+import 'package:scolvpet_mobile/core/app_services.dart';
 import 'package:scolvpet_mobile/core/app_state.dart';
 import 'package:scolvpet_mobile/core/session_store.dart';
 import 'package:scolvpet_mobile/data/i1_repository.dart';
-import 'package:scolvpet_mobile/data/i2_repository.dart';
 import 'package:scolvpet_mobile/features/breeding/breeding.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/litter/litter.dart';
-import 'package:scolvpet_mobile/features/health/health.dart';
-import 'package:scolvpet_mobile/features/accounting/accounting.dart';
-import 'package:scolvpet_mobile/features/contracts/contracts.dart';
-import 'package:scolvpet_mobile/features/crm/crm.dart';
-import 'package:scolvpet_mobile/features/genetic/genetic.dart';
-import 'package:scolvpet_mobile/features/home_widget/home_widget.dart';
-import 'package:scolvpet_mobile/features/members/members.dart';
-import 'package:scolvpet_mobile/features/pedigree/pedigree.dart';
-import 'package:scolvpet_mobile/features/assistant/assistant.dart';
-import 'package:scolvpet_mobile/features/growth/growth.dart';
-import 'package:scolvpet_mobile/features/miniprogram/miniprogram.dart';
-import 'package:scolvpet_mobile/features/paywall/paywall.dart';
-import 'package:scolvpet_mobile/features/public_site/public_site.dart';
-import 'package:scolvpet_mobile/features/push/push.dart';
-import 'package:scolvpet_mobile/features/stud/stud.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
 import 'package:scolvpet_mobile/ui/screens.dart';
 import 'package:scolvpet_mobile/ui/theme/ios_theme.dart';
 import 'package:scolvpet_mobile/main.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   test(
@@ -76,26 +62,28 @@ void main() {
 
       await tester.pumpWidget(
         ScolvPetApp(
-          state: state,
-          i2Controller: i2Controller,
-          breedingController: breedingController,
-          litterBoardController: litterBoardController,
-          taskController: taskController,
-          pedigreeRepository: MemoryPedigreeRepository(),
-          healthRepository: MemoryHealthRepository(),
-          memberRepository: MemoryMemberRepository(),
-          crmRepository: MemoryCrmRepository(),
-          contractsRepository: MemoryContractsRepository(),
-          accountingRepository: MemoryAccountingRepository(),
-          geneticRepository: MemoryGeneticRepository(),
-          pushRepository: MemoryPushRepository(),
-          paywallRepository: MemoryPaywallRepository(),
-          publicSiteRepository: MemoryPublicSiteRepository(),
-          miniprogramRepository: MemoryMiniprogramRepository(),
-          assistantRepository: MemoryAssistantRepository(),
-          studRepository: MemoryStudRepository(),
-          growthRepository: MemoryGrowthRepository(),
-          todayWidgetPublisher: todayWidgetPublisher,
+          services: AppServices(
+            state: state,
+            i2Controller: i2Controller,
+            breedingController: breedingController,
+            litterBoardController: litterBoardController,
+            taskController: taskController,
+            pedigreeRepository: MemoryPedigreeRepository(),
+            healthRepository: MemoryHealthRepository(),
+            memberRepository: MemoryMemberRepository(),
+            crmRepository: MemoryCrmRepository(),
+            contractsRepository: MemoryContractsRepository(),
+            accountingRepository: MemoryAccountingRepository(),
+            geneticRepository: MemoryGeneticRepository(),
+            pushRepository: MemoryPushRepository(),
+            paywallRepository: MemoryPaywallRepository(),
+            publicSiteRepository: MemoryPublicSiteRepository(),
+            miniprogramRepository: MemoryMiniprogramRepository(),
+            assistantRepository: MemoryAssistantRepository(),
+            studRepository: MemoryStudRepository(),
+            growthRepository: MemoryGrowthRepository(),
+            todayWidgetPublisher: todayWidgetPublisher,
+          ),
         ),
       );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);

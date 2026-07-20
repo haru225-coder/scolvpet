@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/genetic/genetic.dart';
 import 'package:scolvpet_mobile/features/i2/i2_models.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

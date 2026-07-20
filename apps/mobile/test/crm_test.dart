@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/crm/crm.dart';
 import 'package:scolvpet_mobile/features/i2/i2_models.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   test(

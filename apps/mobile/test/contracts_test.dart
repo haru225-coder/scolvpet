@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/contracts/contracts.dart';
 import 'package:scolvpet_mobile/features/contracts/document_pdf.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

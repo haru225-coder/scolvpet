@@ -10,20 +10,6 @@ abstract interface class TodayWidgetPublisher {
   Future<TodayWidgetSnapshot?> loadLast();
 }
 
-/// In-memory publisher for tests / offline preview.
-class MemoryTodayWidgetPublisher implements TodayWidgetPublisher {
-  TodayWidgetSnapshot? last;
-
-  @override
-  Future<void> publish(TodayWidgetSnapshot snapshot) async {
-    last = snapshot;
-  }
-
-  @override
-  Future<TodayWidgetSnapshot?> loadLast() async => last;
-}
-
-/// Writes SharedPreferences (Android FlutterSharedPreferences) and pings native.
 class SharedPreferencesTodayWidgetPublisher implements TodayWidgetPublisher {
   SharedPreferencesTodayWidgetPublisher({
     SharedPreferences? preferences,

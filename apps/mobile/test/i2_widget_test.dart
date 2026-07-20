@@ -4,6 +4,7 @@ import 'package:scolvpet_mobile/data/i2_repository.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/i2/i2_hamsters.dart';
 import 'package:scolvpet_mobile/features/i2/i2_models.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   testWidgets('hamster list renders cached data and offline banner', (

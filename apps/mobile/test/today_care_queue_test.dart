@@ -11,6 +11,7 @@ import 'package:scolvpet_mobile/features/i2/i2_models.dart';
 import 'package:scolvpet_mobile/features/shell/home_overview.dart';
 import 'package:scolvpet_mobile/features/shell/today_care_queue.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   final now = DateTime.utc(2026, 7, 17, 12);

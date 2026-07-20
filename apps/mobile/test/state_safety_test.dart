@@ -9,6 +9,7 @@ import 'package:scolvpet_mobile/data/i2_repository.dart';
 import 'package:scolvpet_mobile/features/assistant/assistant.dart';
 import 'package:scolvpet_mobile/features/health/health.dart';
 import 'package:scolvpet_mobile/features/i2/i2.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

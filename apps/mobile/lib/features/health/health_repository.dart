@@ -45,51 +45,6 @@ void _validateHealthDraft(HealthRecordDraft draft) {
     }
   }
 }
-
-class MemoryHealthRepository implements HealthRepository {
-  MemoryHealthRepository({List<HealthRecordItem>? seed})
-    : _records = [...?seed];
-
-  final List<HealthRecordItem> _records;
-  int _seq = 0;
-
-  @override
-  Future<List<HealthRecordItem>> listRecords({
-    String? hamsterId,
-    String? litterId,
-  }) async {
-    var values = List<HealthRecordItem>.from(_records);
-    if (hamsterId != null) {
-      values = values.where((r) => r.hamsterId == hamsterId).toList();
-    }
-    if (litterId != null) {
-      values = values.where((r) => r.litterId == litterId).toList();
-    }
-    values.sort((a, b) => b.observedAt.compareTo(a.observedAt));
-    return values;
-  }
-
-  @override
-  Future<HealthRecordItem> createRecord(HealthRecordDraft draft) async {
-    _validateHealthDraft(draft);
-    final record = HealthRecordItem(
-      id: 'health-${_seq++}',
-      hamsterId: draft.hamsterId,
-      litterId: draft.litterId,
-      type: draft.type,
-      observedAt: draft.observedAt.toUtc(),
-      severity: draft.severity,
-      notes: draft.notes,
-      followUpAt: draft.followUpAt?.toUtc(),
-      structuredChecks: draft.structuredChecks,
-      medication: draft.medication,
-      version: 1,
-    );
-    _records.insert(0, record);
-    return record;
-  }
-}
-
 class DefaultApiHealthRepository implements HealthRepository {
   DefaultApiHealthRepository({required this.client});
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/miniprogram/miniprogram.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   test('MemoryMiniprogramRepository full audit publish path', () async {

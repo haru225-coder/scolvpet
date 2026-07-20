@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/tasks/tasks.dart';
+import 'support/memory_repositories.dart';
 
 class _DelayedTaskRepository extends MemoryTaskRepository {
   final completeGate = Completer<void>();

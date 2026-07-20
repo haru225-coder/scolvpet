@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/growth/growth.dart';
 import 'package:scolvpet_mobile/ui/widgets/ios_widgets.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   test(

@@ -1,0 +1,20 @@
+// Test-only Memory* doubles.
+export 'memory_i2_repository.dart';
+export 'memory_accounting_repository.dart';
+export 'memory_assistant_repository.dart';
+export 'memory_breeding_repository.dart';
+export 'memory_contracts_repository.dart';
+export 'memory_crm_repository.dart';
+export 'memory_genetic_repository.dart';
+export 'memory_growth_repository.dart';
+export 'memory_health_repository.dart';
+export 'memory_today_widget_publisher.dart';
+export 'memory_litter_board_repository.dart';
+export 'memory_member_repository.dart';
+export 'memory_miniprogram_repository.dart';
+export 'memory_paywall_repository.dart';
+export 'memory_pedigree_repository.dart';
+export 'memory_public_site_repository.dart';
+export 'memory_push_repository.dart';
+export 'memory_stud_repository.dart';
+export 'memory_task_repository.dart';

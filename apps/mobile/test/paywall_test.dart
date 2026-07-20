@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/paywall/paywall.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   test('MemoryPaywallRepository sandbox upgrade', () async {

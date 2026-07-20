@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scolvpet_mobile/features/assistant/assistant.dart';
 import 'package:scolvpet_mobile/features/tasks/task_models.dart';
+import 'support/memory_repositories.dart';
 
 void main() {
   test('detectAssistantIntent and answerFromSnapshot', () {
