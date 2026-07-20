@@ -63,8 +63,8 @@ class BearMascot extends StatelessWidget {
   }
 }
 
-/// 仓鼠头像：有远端头像时展示图片，缺失/加载失败时回退到稳定的首字占位。
-/// 统一在列表、详情和笼舍看板复用，后续接入媒体上传时只需传入 imageUrl。
+/// 仓鼠头像：真实媒体优先；缺失/失败时优先品牌中性占位，首字仅为最终 fallback。
+/// 统一在列表、详情和笼舍看板复用。
 class HamsterAvatar extends StatelessWidget {
   const HamsterAvatar({
     super.key,
@@ -73,6 +73,7 @@ class HamsterAvatar extends StatelessWidget {
     this.imageBytes,
     this.size = 44,
     this.statusColor,
+    this.preferBrandPlaceholder = false,
   });
 
   final String label;
@@ -80,6 +81,8 @@ class HamsterAvatar extends StatelessWidget {
   final Uint8List? imageBytes;
   final double size;
   final Color? statusColor;
+  /// true：无图时用品牌 mascot，不用首字（列表默认）
+  final bool preferBrandPlaceholder;
 
   @override
   Widget build(BuildContext context) {
@@ -89,11 +92,17 @@ class HamsterAvatar extends StatelessWidget {
     final initial = trimmed.isEmpty
         ? ''
         : String.fromCharCode(trimmed.runes.first);
-    final fallback = _HamsterAvatarFallback(
+    final brand = _HamsterBrandPlaceholder(size: size, color: ring);
+    final letter = _HamsterAvatarFallback(
       initial: initial,
       size: size,
       color: ring,
     );
+    // 列表：品牌占位 → 首字；详情等：可仍用首字路径
+    final softFallback = preferBrandPlaceholder ? brand : letter;
+    final hardFallback = preferBrandPlaceholder
+        ? (initial.isEmpty ? brand : letter)
+        : letter;
     final image = imageUrl?.trim();
     return Semantics(
       image: true,
@@ -113,18 +122,43 @@ class HamsterAvatar extends StatelessWidget {
                   imageBytes!,
                   fit: BoxFit.cover,
                   filterQuality: FilterQuality.high,
-                  errorBuilder: (_, __, ___) => fallback,
+                  errorBuilder: (_, __, ___) => hardFallback,
                 )
               : image == null || image.isEmpty
-              ? fallback
+              ? softFallback
               : Image.network(
                   image,
                   fit: BoxFit.cover,
                   filterQuality: FilterQuality.high,
-                  errorBuilder: (_, __, ___) => fallback,
+                  errorBuilder: (_, __, ___) => hardFallback,
                   loadingBuilder: (context, child, progress) =>
-                      progress == null ? child : fallback,
+                      progress == null ? child : softFallback,
                 ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 中性品牌占位：不暗示具体毛色/品种，仅作无媒体时的视觉锚点。
+class _HamsterBrandPlaceholder extends StatelessWidget {
+  const _HamsterBrandPlaceholder({required this.size, required this.color});
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: color.withValues(alpha: 0.10),
+      child: Image.asset(
+        BearAssets.mascotHappy,
+        fit: BoxFit.cover,
+        filterQuality: FilterQuality.high,
+        errorBuilder: (_, __, ___) => Icon(
+          CupertinoIcons.paw,
+          size: size * 0.42,
+          color: color,
         ),
       ),
     );
