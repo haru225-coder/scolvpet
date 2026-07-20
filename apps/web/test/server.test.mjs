@@ -186,6 +186,9 @@ test('SSR growth page fetches catalog, hides internals, and proxies consult/lead
           birth_date: '2026-04-18',
           summary: '亲人、活动规律',
           traits: ['亲人', '活动规律'],
+          published: true,
+          consultable: true,
+          reservable: true,
           media: [{ id: 'media-1', kind: 'cover', status: 'ready', url: '/v1/public/sites/snow-cattery/media/media-1' }],
         },
       ],
@@ -208,6 +211,17 @@ test('SSR growth page fetches catalog, hides internals, and proxies consult/lead
       if (String(url).includes('/leads')) {
         return jsonResponse({ data: { contact_id: 'c1', attribution_id: 'a1' } }, 201);
       }
+      if (String(url).includes('/reservations')) {
+        return jsonResponse({
+          data: {
+            reservation_id: 'r1',
+            contact_id: 'c1',
+            hamster_id: 'h1',
+            status: 'held',
+            title: '预订 奶茶',
+          },
+        }, 201);
+      }
       return jsonResponse({}, 404);
     },
   });
@@ -222,6 +236,9 @@ test('SSR growth page fetches catalog, hides internals, and proxies consult/lead
   assert.match(html, /奶茶｜成长记录/);
   assert.match(html, /snow-house/);
   assert.match(html, /src="\/p\/snow-cattery\/media\/media-1"/);
+  assert.match(html, /可预订/);
+  assert.match(html, /action="\/p\/snow-cattery\/reserve"/);
+  assert.match(html, /name="hamster_id" value="h1"/);
   assert.doesNotMatch(html, /internal_code|owner_id|H-SECRET|postgres|api\.example\.test|WEB-01|GROWTH/);
   assert.ok(requests.some((item) => item.url.includes('/catalog?campaign=c_demo')));
 
@@ -249,6 +266,23 @@ test('SSR growth page fetches catalog, hides internals, and proxies consult/lead
   const leadHtml = await leadPage.text();
   assert.equal(leadPage.status, 200);
   assert.match(leadHtml, /已收到你的联系方式/);
+
+  const reserve = await fetch(`http://127.0.0.1:${port}/p/snow-cattery/reserve`, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'name=阿雪&wechat=snow123&hamster_id=h1&campaign_code=c_demo',
+  });
+  assert.equal(reserve.status, 303);
+  assert.ok(requests.some((item) => item.url.includes('/reservations') && item.method === 'POST'));
+  const reserveBody = requests.find((item) => item.url.includes('/reservations'))?.body;
+  assert.match(String(reserveBody), /"hamster_id":"h1"/);
+  assert.doesNotMatch(String(reserveBody), /variety|毛色|金丝熊/);
+  const reservePage = await fetch(new URL(reserve.headers.get('location'), `http://127.0.0.1:${port}`));
+  const reserveHtml = await reservePage.text();
+  assert.equal(reservePage.status, 200);
+  assert.match(reserveHtml, /预订已提交/);
+  assert.match(reserveHtml, /预订 奶茶/);
 
   const rendered = renderPublicGrowthPage(catalog.data, { campaignCode: 'c_demo' });
   assert.match(rendered, /name="campaign_code" value="c_demo"/);

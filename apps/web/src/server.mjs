@@ -113,6 +113,12 @@ export function renderShell(title, body, options = {}) {
       .growth-card h3 { margin: 0 0 8px; font-size: 19px; }
       .growth-card p { margin-top: 6px; }
       .traits { margin-top: 10px; color: var(--accent-strong); font-size: 13px; font-weight: 650; }
+      .growth-card__title-row { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
+      .growth-card__title-row h3 { margin: 0; flex: 1; }
+      .status-badge { display: inline-flex; flex-shrink: 0; padding: 5px 9px; border-radius: 999px; background: var(--surface); color: var(--quiet); border: 1px solid var(--line); font-size: 12px; font-weight: 700; }
+      .status-badge--ok { color: var(--success-text); background: var(--success-soft); border-color: transparent; }
+      .growth-card__reserve { margin-top: 14px; padding: 14px; }
+      .price { margin-top: 6px; color: var(--accent-strong); font-weight: 700; }
       .campaign { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; margin-top: 28px; padding: 18px; color: var(--accent-strong); background: var(--accent-soft); border-radius: var(--radius); }
       .campaign span { color: var(--muted); font-size: 13px; }
       .answer { margin-bottom: 16px; padding: 18px; background: var(--surface-muted); border-left: 4px solid var(--accent); border-radius: 0 14px 14px 0; }
@@ -225,9 +231,6 @@ export function renderPublicGrowthPage(catalog, state = {}) {
   const campaign = isRecord(catalog?.campaign) ? catalog.campaign : null;
   const slug = typeof site.slug === 'string' ? site.slug : '';
   const campaignCode = typeof state.campaignCode === 'string' ? state.campaignCode : campaign?.campaign_code || '';
-  const hamsterCards = hamsters.length
-    ? hamsters.map((item, index) => renderGrowthHamsterCard(item, { slug, index })).join('')
-    : '<p class="muted">当前暂无公开且接受咨询的仓鼠。</p>';
   const recommendations = Array.isArray(state.recommendations) ? state.recommendations : [];
   const recommendationHtml = recommendations.length
     ? `<div class="recommendations">${recommendations.map((item) => `<div class="subject-field"><strong>${escapeHtml(item.public_name || '公开仓鼠')}</strong><p>${escapeHtml(item.reason || item.summary || '当前资料已公开并接受咨询。')}</p></div>`).join('')}</div>`
@@ -238,20 +241,36 @@ export function renderPublicGrowthPage(catalog, state = {}) {
   const leadMessage = state.leadSuccess
     ? '<div class="answer" role="status"><strong>已收到你的联系方式</strong><p>熊舍会根据你的咨询尽快联系你。</p></div>'
     : '';
+  const reserveMessage = state.reserveSuccess
+    ? `<div class="answer" role="status"><strong>预订已提交</strong><p>熊舍已收到你对「${escapeHtml(state.reserveTitle || '仓鼠')}」的预订，会尽快联系确认。</p></div>`
+    : '';
   const consultError = state.form === 'consult' && state.error
     ? `<p class="form-error" role="alert">${escapeHtml(state.error)}</p>`
     : '';
   const leadError = state.form === 'lead' && state.error
     ? `<p class="form-error" role="alert">${escapeHtml(state.error)}</p>`
     : '';
+  const reserveError = state.form === 'reserve' && state.error
+    ? `<p class="form-error" role="alert">${escapeHtml(state.error)}</p>`
+    : '';
   const consultValues = isRecord(state.consultValues) ? state.consultValues : {};
   const leadValues = isRecord(state.leadValues) ? state.leadValues : {};
+  const reserveValues = isRecord(state.reserveValues) ? state.reserveValues : {};
   const consultationToken = state.sessionToken || state.consultationToken || '';
   const interestID = state.interestedHamsterId || '';
   const contacts = [
     site.contact_wechat ? `微信 ${site.contact_wechat}` : '',
     site.contact_phone ? `电话 ${site.contact_phone}` : '',
   ].filter(Boolean);
+  const hamsterCardsWithForms = hamsters.length
+    ? hamsters.map((item, index) => renderGrowthHamsterCard(item, {
+      slug,
+      index,
+      campaignCode,
+      reserveValues: interestID && item?.hamster_id === interestID ? reserveValues : {},
+      reserveError: interestID && item?.hamster_id === interestID ? reserveError : '',
+    })).join('')
+    : '<p class="muted">当前暂无公开且接受咨询的仓鼠。</p>';
   return renderShell(
     site.title || '熊舍公开主页',
     `<header class="site-header">
@@ -262,7 +281,8 @@ export function renderPublicGrowthPage(catalog, state = {}) {
        ${contacts.length ? `<div class="contact-row">${contacts.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>` : ''}
      </header>
      ${campaign ? `<div class="campaign"><strong>${escapeHtml(campaign.title || '本次内容')}</strong><span>${escapeHtml(platformLabel(campaign.platform))}</span></div>` : ''}
-     <section aria-labelledby="catalog-heading"><h2 id="catalog-heading">公开仓鼠</h2><div class="growth-grid">${hamsterCards}</div></section>
+     ${reserveMessage}
+     <section aria-labelledby="catalog-heading"><h2 id="catalog-heading">公开仓鼠</h2><div class="growth-grid">${hamsterCardsWithForms}</div></section>
      <section aria-labelledby="consult-heading"><h2 id="consult-heading">问问 AI 顾问</h2>${answerHtml}
        <div class="form-panel">${consultError}
        <form method="post" action="/p/${encodeURIComponent(slug)}/consult">
@@ -345,7 +365,7 @@ export function createServer(options = {}) {
     }
 
     const growthPath = url.pathname.match(/^\/p\/([^/]+)$/);
-    const growthAction = url.pathname.match(/^\/p\/([^/]+)\/(consult|lead)$/);
+    const growthAction = url.pathname.match(/^\/p\/([^/]+)\/(consult|lead|reserve)$/);
     const growthMedia = url.pathname.match(/^\/p\/([^/]+)\/media\/([^/]+)$/);
     if (growthMedia && request.method === 'GET') {
       const slug = decodePathPart(growthMedia[1]);
@@ -372,16 +392,19 @@ export function createServer(options = {}) {
       const form = await readFormBody(request);
       if (!form) return sendHtml(response, 413, renderGrowthBoundary());
       const campaignCode = form.campaign_code || '';
-      const endpoint = growthAction[2] === 'consult' ? 'consult' : 'leads';
+      const action = growthAction[2];
+      const endpoint = action === 'consult' ? 'consult' : action === 'reserve' ? 'reservations' : 'leads';
       let catalog = null;
       try { catalog = await fetchPublicGrowthCatalog({ apiBaseUrl, fetchImpl, slug, campaignCode }); } catch { /* friendly boundary below */ }
       if (!catalog) return sendHtml(response, 404, renderGrowthBoundary());
       const result = await proxyPublicGrowthAction({ apiBaseUrl, fetchImpl, slug, endpoint, form });
-      if (!result.ok && (result.status === 400 || result.status === 422)) {
+      if (!result.ok && (result.status === 400 || result.status === 409 || result.status === 422)) {
         const state = endpoint === 'consult'
           ? { campaignCode, form: 'consult', error: publicFormError(result, '请检查咨询内容后再提交。'), consultValues: form, sessionToken: form.session_token, interestedHamsterId: form.interested_hamster_id }
-          : { campaignCode, form: 'lead', error: publicFormError(result, '请检查联系方式后再提交。'), leadValues: form, consultationToken: form.consultation_token, interestedHamsterId: form.interested_hamster_id };
-        return sendHtml(response, result.status, renderPublicGrowthPage(catalog, state));
+          : endpoint === 'reservations'
+            ? { campaignCode, form: 'reserve', error: publicFormError(result, '预订未能提交，请检查联系方式或选择其他个体。'), reserveValues: form, interestedHamsterId: form.hamster_id }
+            : { campaignCode, form: 'lead', error: publicFormError(result, '请检查联系方式后再提交。'), leadValues: form, consultationToken: form.consultation_token, interestedHamsterId: form.interested_hamster_id };
+        return sendHtml(response, result.status === 409 ? 409 : result.status, renderPublicGrowthPage(catalog, state));
       }
       if (!result.ok) {
         return sendHtml(response, result.status === 404 ? 404 : 502, renderGrowthBoundary());
@@ -389,7 +412,9 @@ export function createServer(options = {}) {
       const data = result.data?.data || {};
       const state = endpoint === 'consult'
         ? { campaignCode, answer: data.answer, recommendations: data.recommendations, sessionToken: data.session_token, interestedHamsterId: data.recommendations?.[0]?.hamster_id }
-        : { campaignCode, leadSuccess: true, consultationToken: form.consultation_token };
+        : endpoint === 'reservations'
+          ? { campaignCode, reserveSuccess: true, reserveTitle: data.title || '', interestedHamsterId: form.hamster_id }
+          : { campaignCode, leadSuccess: true, consultationToken: form.consultation_token };
       const resultId = rememberFlash(slug, state);
       const query = new URLSearchParams();
       if (campaignCode) query.set('campaign', campaignCode);
@@ -496,7 +521,9 @@ async function proxyPublicGrowthAction({ apiBaseUrl, fetchImpl = globalThis.fetc
   base.hash = '';
   const body = endpoint === 'consult'
     ? { message: form.message || '', session_token: form.session_token || '', campaign_code: form.campaign_code || '', interested_hamster_id: form.interested_hamster_id || '', landing_path: `/p/${slug}` }
-    : { name: form.name || '', phone: form.phone || '', wechat: form.wechat || '', campaign_code: form.campaign_code || '', consultation_token: form.consultation_token || '', interested_hamster_id: form.interested_hamster_id || '', intent_summary: form.intent_summary || '', landing_path: `/p/${slug}` };
+    : endpoint === 'reservations'
+      ? { hamster_id: form.hamster_id || '', name: form.name || '', phone: form.phone || '', wechat: form.wechat || '', notes: form.notes || '' }
+      : { name: form.name || '', phone: form.phone || '', wechat: form.wechat || '', campaign_code: form.campaign_code || '', consultation_token: form.consultation_token || '', interested_hamster_id: form.interested_hamster_id || '', intent_summary: form.intent_summary || '', landing_path: `/p/${slug}` };
   try {
     const response = await fetchImpl(base.toString(), {
       method: 'POST',
@@ -515,15 +542,47 @@ async function proxyPublicGrowthAction({ apiBaseUrl, fetchImpl = globalThis.fetc
   }
 }
 
-function renderGrowthHamsterCard(item, { slug, index }) {
+function renderGrowthHamsterCard(item, {
+  slug,
+  index,
+  campaignCode = '',
+  reserveValues = {},
+  reserveError = '',
+} = {}) {
   const traits = Array.isArray(item.traits) ? item.traits.filter(Boolean).join(' · ') : '';
   const facts = [item.variety, SEX_LABELS[item.sex] || item.sex, item.birth_date].filter(Boolean).join(' · ');
   const title = item.public_name || '公开仓鼠';
+  const hamsterId = typeof item.hamster_id === 'string' ? item.hamster_id : '';
   const mediaUrl = publicGrowthMediaUrl(item.media, slug);
   const media = mediaUrl
     ? `<img class="growth-card__media" src="${escapeHtml(mediaUrl)}" alt="${escapeHtml(`${title}的公开照片`)}" width="720" height="540" loading="${index === 0 ? 'eager' : 'lazy'}"${index === 0 ? ' fetchpriority="high"' : ''}>`
     : `<div class="growth-card__media-empty" role="img" aria-label="${escapeHtml(`${title}暂无公开照片`)}"><span>暂无公开照片</span></div>`;
-  return `<article class="growth-card">${media}<div class="growth-card__body"><h3>${escapeHtml(title)}</h3>${facts ? `<p>${escapeHtml(facts)}</p>` : ''}${item.summary ? `<p>${escapeHtml(item.summary)}</p>` : ''}${traits ? `<div class="traits">${escapeHtml(traits)}</div>` : ''}</div></article>`;
+  const price = item.price_label ? `<p class="price">${escapeHtml(item.price_label)}</p>` : '';
+  const reservable = item.reservable === true;
+  const statusBadge = reservable
+    ? '<span class="status-badge status-badge--ok">可预订</span>'
+    : '<span class="status-badge">暂不可订</span>';
+  const formId = `reserve-${hamsterId || index}`;
+  const reserveForm = reservable && hamsterId
+    ? `<div class="form-panel growth-card__reserve">
+         ${reserveError}
+         <form method="post" action="/p/${encodeURIComponent(slug)}/reserve">
+           <input type="hidden" name="campaign_code" value="${escapeHtml(campaignCode)}">
+           <input type="hidden" name="hamster_id" value="${escapeHtml(hamsterId)}">
+           <label for="${formId}-name">怎么称呼</label>
+           <input id="${formId}-name" name="name" maxlength="120" autocomplete="name" required value="${escapeHtml(reserveValues.name || '')}">
+           <label for="${formId}-phone">手机号</label>
+           <input id="${formId}-phone" name="phone" maxlength="32" inputmode="tel" autocomplete="tel" value="${escapeHtml(reserveValues.phone || '')}">
+           <label for="${formId}-wechat">微信</label>
+           <input id="${formId}-wechat" name="wechat" maxlength="64" autocomplete="off" value="${escapeHtml(reserveValues.wechat || '')}">
+           <p class="helper">手机号和微信至少填写一项。提交后宠舍会在经营后台看到此预订。</p>
+           <label for="${formId}-notes">备注（可选）</label>
+           <textarea id="${formId}-notes" name="notes" maxlength="2000">${escapeHtml(reserveValues.notes || '')}</textarea>
+           <button type="submit">提交预订</button>
+         </form>
+       </div>`
+    : '';
+  return `<article class="growth-card" data-hamster-id="${escapeHtml(hamsterId)}" data-reservable="${reservable ? 'true' : 'false'}">${media}<div class="growth-card__body"><div class="growth-card__title-row"><h3>${escapeHtml(title)}</h3>${statusBadge}</div>${facts ? `<p>${escapeHtml(facts)}</p>` : ''}${price}${item.summary ? `<p>${escapeHtml(item.summary)}</p>` : ''}${traits ? `<div class="traits">${escapeHtml(traits)}</div>` : ''}${reserveForm}</div></article>`;
 }
 
 function publicGrowthMediaUrl(media, slug) {
@@ -531,10 +590,11 @@ function publicGrowthMediaUrl(media, slug) {
   const preferred = [...media].sort((left, right) => mediaKindPriority(left?.kind) - mediaKindPriority(right?.kind));
   for (const item of preferred) {
     if (!isRecord(item) || (item.status && item.status !== 'ready')) continue;
-    const absolute = safeMediaUrl(item.url);
-    if (absolute) return absolute;
+    // 同源 /p 代理优先，避免把 API 路径直接暴露给浏览器。
     const id = typeof item.id === 'string' ? item.id : '';
     if (id && slug) return `/p/${encodeURIComponent(slug)}/media/${encodeURIComponent(id)}`;
+    const absolute = safeMediaUrl(item.url);
+    if (absolute) return absolute;
   }
   return null;
 }
@@ -641,6 +701,10 @@ function subjectTypeLabel(subjectType) {
 function safeMediaUrl(value) {
   if (typeof value !== 'string' || !value) {
     return null;
+  }
+  // Relative media paths are valid; the browser resolves them against the page host.
+  if (value.startsWith('/v1/') || value.startsWith('/p/') || value.startsWith('/s/')) {
+    return value;
   }
   try {
     const url = new URL(value);
