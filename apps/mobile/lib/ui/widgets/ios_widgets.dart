@@ -84,6 +84,11 @@ class IosModuleIntro extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = ScolvPalette.of(context);
+    // UI V2：经营模块头卡统一奶油暖面
+    final surface = Color.alphaBlend(
+      palette.accentSoft.withValues(alpha: 0.4),
+      palette.secondaryGroupedBackground,
+    );
     return Container(
       margin: const EdgeInsets.fromLTRB(
         IosMetrics.pagePadding,
@@ -93,10 +98,10 @@ class IosModuleIntro extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(IosMetrics.cardPadding),
       decoration: BoxDecoration(
-        color: palette.secondaryGroupedBackground,
+        color: surface,
         borderRadius: BorderRadius.circular(IosMetrics.largeRadius),
         border: Border.all(
-          color: palette.separator,
+          color: palette.accent.withValues(alpha: 0.12),
           width: IosMetrics.hairline,
         ),
       ),
@@ -106,7 +111,7 @@ class IosModuleIntro extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IosGlyph(icon: icon, size: 40),
+              IosGlyph(icon: icon, size: 40, color: palette.accent),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

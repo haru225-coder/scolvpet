@@ -143,17 +143,26 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('hamster-detail-profile')), findsOneWidget);
+    expect(find.byKey(const Key('hamster-detail-archive')), findsOneWidget);
+    // 健康分段：顶栏 chip 切换后可见护理待办
+    await tester.tap(find.byKey(const Key('hamster-detail-section-health')));
+    await tester.pumpAndSettle();
     expect(
       find.byKey(const Key('hamster-detail-health-overview')),
       findsOneWidget,
     );
-    expect(find.byKey(const Key('hamster-detail-recent')), findsOneWidget);
     expect(find.byKey(const Key('hamster-care-tasks-title')), findsOneWidget);
     expect(find.textContaining('雪团复查'), findsOneWidget);
     expect(find.byKey(const Key('hamster-health-title')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('hamster-detail-section-records')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('hamster-detail-recent')), findsOneWidget);
     expect(find.text('日常检查'), findsWidgets);
     expect(find.textContaining('精神可'), findsOneWidget);
 
+    await tester.tap(find.byKey(const Key('hamster-detail-section-health')));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('完成').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('完成').first);
@@ -217,11 +226,11 @@ void main() {
     final titleContext = tester.element(find.text('个体档案'));
     expect(Theme.of(titleContext).brightness, Brightness.light);
     expect(find.byKey(const Key('hamster-detail-profile')), findsOneWidget);
+    expect(find.byKey(const Key('hamster-detail-archive')), findsOneWidget);
     expect(
-      find.byKey(const Key('hamster-detail-health-overview')),
+      find.byKey(const Key('hamster-detail-section-overview')),
       findsOneWidget,
     );
-    expect(find.byKey(const Key('hamster-detail-archive')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

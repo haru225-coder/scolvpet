@@ -45,44 +45,45 @@ class ScolvPalette extends ThemeExtension<ScolvPalette> {
   final Color tabBarBackground;
   final Color navBarBackground;
 
+  /// UI V2 视觉草稿：奶油底 × 金丝熊暖橙 × 深咖字。
   static const light = ScolvPalette(
-    groupedBackground: Color(0xfff5f4f2),
-    secondaryGroupedBackground: Color(0xfffffdfb),
-    systemBackground: Color(0xfff5f4f2),
-    secondarySystemBackground: Color(0xfffffdfb),
-    label: Color(0xff24211f),
-    secondaryLabel: Color(0xff706a66),
-    tertiaryLabel: Color(0xff96908b),
-    quaternaryLabel: Color(0xffbbb5b0),
-    separator: Color(0xffded9d5),
-    opaqueSeparator: Color(0xffd2ccc7),
-    fill: Color(0x2424211f),
-    secondaryFill: Color(0x1724211f),
-    tertiaryFill: Color(0x0f24211f),
-    accent: Color(0xffc77852),
-    accentSoft: Color(0xffffeee4),
-    tabBarBackground: Color(0xf7fffdfb),
-    navBarBackground: Color(0xf7fffdfb),
+    groupedBackground: Color(0xffFFF8EF),
+    secondaryGroupedBackground: Color(0xffffffff),
+    systemBackground: Color(0xffFFF8EF),
+    secondarySystemBackground: Color(0xffffffff),
+    label: Color(0xff3A2F29),
+    secondaryLabel: Color(0xff7A6E66),
+    tertiaryLabel: Color(0xffA0958C),
+    quaternaryLabel: Color(0xffC4BAB2),
+    separator: Color(0xffE8DFD6),
+    opaqueSeparator: Color(0xffD9CFC5),
+    fill: Color(0x243A2F29),
+    secondaryFill: Color(0x173A2F29),
+    tertiaryFill: Color(0x0F3A2F29),
+    accent: Color(0xffD98B55),
+    accentSoft: Color(0xffFBE8D8),
+    tabBarBackground: Color(0xF7FFFDF9),
+    navBarBackground: Color(0xF7FFFDF9),
   );
 
   static const dark = ScolvPalette(
-    groupedBackground: Color(0xff090b0c),
-    secondaryGroupedBackground: Color(0xff151718),
-    systemBackground: Color(0xff090b0c),
-    secondarySystemBackground: Color(0xff151718),
-    label: Color(0xfff5eee2),
-    secondaryLabel: Color(0xffaaa49c),
-    tertiaryLabel: Color(0xff76716a),
-    quaternaryLabel: Color(0xff4c4944),
-    separator: Color(0x263b3d3d),
-    opaqueSeparator: Color(0xff3b3d3d),
-    fill: Color(0x35f5eee2),
-    secondaryFill: Color(0x24f5eee2),
-    tertiaryFill: Color(0x14f5eee2),
-    accent: Color(0xffd4926a),
-    accentSoft: Color(0x24d4926a),
-    tabBarBackground: Color(0xf0090b0c),
-    navBarBackground: Color(0xee090b0c),
+    groupedBackground: Color(0xff14110F),
+    secondaryGroupedBackground: Color(0xff1E1A17),
+    systemBackground: Color(0xff14110F),
+    secondarySystemBackground: Color(0xff1E1A17),
+    label: Color(0xffF5EEE2),
+    secondaryLabel: Color(0xffAFA69C),
+    tertiaryLabel: Color(0xff7A726A),
+    quaternaryLabel: Color(0xff524C46),
+    separator: Color(0x263B3D3D),
+    opaqueSeparator: Color(0xff3B3834),
+    fill: Color(0x35F5EEE2),
+    secondaryFill: Color(0x24F5EEE2),
+    tertiaryFill: Color(0x14F5EEE2),
+    accent: Color(0xffE0A070),
+    accentSoft: Color(0x33D98B55),
+    tabBarBackground: Color(0xF014110F),
+    navBarBackground: Color(0xEE14110F),
   );
 
   static ScolvPalette of(BuildContext context) {
@@ -184,12 +185,13 @@ abstract final class IosColors {
   static const Color secondaryFill = Color(0x29787880);
   static const Color tertiaryFill = Color(0x1f787880);
 
-  static const Color accent = Color(0xffc77852);
-  static const Color accentSoft = Color(0xfffff1e8);
+  // 与 ScolvPalette.light / 视觉草稿对齐（状态色两模式共用）
+  static const Color accent = Color(0xffD98B55);
+  static const Color accentSoft = Color(0xffFBE8D8);
   static const Color systemBlue = Color(0xff007aff);
-  static const Color systemGreen = Color(0xff34c759);
-  static const Color systemRed = Color(0xffff3b30);
-  static const Color systemOrange = Color(0xffff9500);
+  static const Color systemGreen = Color(0xff6B7D6B); // 柔和绿 success
+  static const Color systemRed = Color(0xffE2685B); // 克制砖红 danger
+  static const Color systemOrange = Color(0xffD98B55); // 琥珀/品牌橙 warning
   static const Color systemTeal = Color(0xff5ac8fa);
   static const Color systemIndigo = Color(0xff5856d6);
   static const Color systemPurple = Color(0xffaf52de);
@@ -201,18 +203,27 @@ abstract final class IosColors {
   static const Color navBarBackground = Color(0xf9f9f9f9);
 }
 
+/// 间距 / 圆角 rhythm（任务书 §10.3–10.4：3 档圆角 + 4/8/12/16/24/32）。
 abstract final class IosMetrics {
-  static const double continuousRadius = 18;
+  // radius: small / medium / large
+  static const double smallRadius = 8;
+  static const double continuousRadius = 16; // medium
   static const double largeRadius = 24;
   static const double pillRadius = 980;
-  static const double pagePadding = 16;
-  // Taste §4.7: 增加呼吸感，分组间距放宽一档。
-  static const double sectionGap = 28;
-  static const double listGap = 14;
-  static const double tilePadding = 18;
-  static const double tileVerticalPadding = 14;
-  static const double cardPadding = 18;
-  static const double bottomSafePadding = 36;
+  // spacing scale
+  static const double space4 = 4;
+  static const double space8 = 8;
+  static const double space12 = 12;
+  static const double space16 = 16;
+  static const double space24 = 24;
+  static const double space32 = 32;
+  static const double pagePadding = space16;
+  static const double sectionGap = space24;
+  static const double listGap = space12;
+  static const double tilePadding = space16;
+  static const double tileVerticalPadding = space12;
+  static const double cardPadding = space16;
+  static const double bottomSafePadding = space32;
   static const double rowMinHeight = 48;
   static const double hairline = 0.5;
   static const Duration spring = Duration(milliseconds: 280);

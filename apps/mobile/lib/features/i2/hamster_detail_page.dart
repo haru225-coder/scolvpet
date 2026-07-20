@@ -32,6 +32,18 @@ class HamsterDetailPage extends StatefulWidget {
 
 class _HamsterDetailPageState extends State<HamsterDetailPage> {
   final ImagePicker _imagePicker = ImagePicker();
+
+  /// UI V2 草稿：概览 / 繁育 / 健康 / 谱系 / 记录（纯表现分段，不改领域）
+  int _section = 0;
+
+  static const _sections = <(String, String)>[
+    ('overview', '概览'),
+    ('breeding', '繁育'),
+    ('health', '健康'),
+    ('pedigree', '谱系'),
+    ('records', '记录'),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -360,6 +372,8 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
       weights: detail.weights,
     );
 
+    final sectionKey = _sections[_section].$1;
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 36),
@@ -381,184 +395,309 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
             onAvatarTap: () => _manageAvatar(hamster),
             avatarLoading:
                 widget.controller.avatarState.status == I2AsyncStatus.loading,
+            onEdit: widget.onEdit == null
+                ? null
+                : () {
+                    if (widget.controller.hasWritePermission) {
+                      widget.onEdit!();
+                    } else {
+                      showIosMessage(context, '当前角色没有编辑仓鼠档案的权限');
+                    }
+                  },
           ),
-          const SizedBox(height: 16),
-          _HamsterDetailArchiveSection(
-            key: const Key('hamster-detail-archive'),
-            hamster: hamster,
-            enclosureLabel: enclosureLabel,
-            latestWeight: latestWeight,
-          ),
-          const SizedBox(height: 16),
-          _HamsterDetailBreedingSection(
-            key: const Key('hamster-detail-breeding'),
-            litterCount: detail.litters.length,
-            breedingStatus: hamster.breedingStatus,
-            onOpenPedigree: widget.onOpenPedigree,
-            onOpenGenetic: widget.onOpenGenetic,
-          ),
-          const SizedBox(height: 16),
-          _HamsterDetailPanel(
-            key: const Key('hamster-detail-health-overview'),
-            child: Column(
+          const SizedBox(height: 12),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
               children: [
-                _HamsterDetailSectionTitle(
-                  key: const Key('hamster-health-title'),
-                  icon: CupertinoIcons.heart,
-                  title: '健康',
-                  trailing: widget.onOpenHealth == null
-                      ? null
-                      : _HamsterDetailLink(
-                          label: '健康记录',
-                          onTap: widget.onOpenHealth!,
-                        ),
-                ),
-                const SizedBox(height: 12),
-                _HamsterDetailFieldTable(
-                  rows: [
-                    (
-                      '健康记录',
-                      healthRecords.isEmpty
-                          ? '暂无'
-                          : '${healthRecords.length} 条',
+                for (var i = 0; i < _sections.length; i++)
+                  Padding(
+                    padding: EdgeInsets.only(
+                      right: i == _sections.length - 1 ? 0 : 8,
                     ),
-                    (
-                      '体重状态',
-                      latestWeight == null
-                          ? '暂无'
-                          : (weightFlags.isEmpty ? '正常' : '需关注'),
+                    child: _DetailSectionChip(
+                      key: Key('hamster-detail-section-${_sections[i].$1}'),
+                      label: _sections[i].$2,
+                      selected: _section == i,
+                      onTap: () => setState(() => _section = i),
                     ),
-                    (
-                      '护理待办',
-                      relatedTasks.isEmpty
-                          ? '无'
-                          : '${relatedTasks.length} 项',
-                    ),
-                    ('综合', healthGood ? '良好' : '需关注'),
-                  ],
-                ),
+                  ),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          _HamsterDetailPanel(
-            key: const Key('hamster-detail-recent'),
-            child: Column(
-              children: [
-                _HamsterDetailSectionTitle(
-                  icon: CupertinoIcons.doc_text,
-                  title: '记录',
-                  trailing: widget.onOpenHealth == null
-                      ? null
-                      : _HamsterDetailLink(
-                          label: '全部',
-                          onTap: widget.onOpenHealth!,
-                        ),
-                ),
-                const SizedBox(height: 8),
-                if (events.isEmpty)
-                  const _HamsterDetailEmptyRow(text: '还没有健康、体重或护理记录')
-                else
-                  for (final event in events.take(4))
-                    _HamsterDetailRecentRow(event: event),
-              ],
+          if (sectionKey == 'overview') ...[
+            _HamsterDetailArchiveSection(
+              key: const Key('hamster-detail-archive'),
+              hamster: hamster,
+              enclosureLabel: enclosureLabel,
+              latestWeight: latestWeight,
             ),
-          ),
-          if (widget.taskController != null) ...[
             const SizedBox(height: 16),
             _HamsterDetailPanel(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const _HamsterDetailSectionTitle(
+                    icon: CupertinoIcons.heart,
+                    title: '繁育表现',
+                  ),
+                  const SizedBox(height: 12),
+                  _HamsterDetailFieldTable(
+                    rows: [
+                      (
+                        '当前状态',
+                        i2BreedingStatusLabel(hamster.breedingStatus),
+                      ),
+                      ('关联窝次', '${detail.litters.length}'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ] else if (sectionKey == 'breeding') ...[
+            _HamsterDetailBreedingSection(
+              key: const Key('hamster-detail-breeding'),
+              litterCount: detail.litters.length,
+              breedingStatus: hamster.breedingStatus,
+              onOpenPedigree: widget.onOpenPedigree,
+              onOpenGenetic: widget.onOpenGenetic,
+            ),
+          ] else if (sectionKey == 'health') ...[
+            _HamsterDetailPanel(
+              key: const Key('hamster-detail-health-overview'),
+              child: Column(
                 children: [
                   _HamsterDetailSectionTitle(
-                    icon: CupertinoIcons.checkmark_circle,
-                    title: '护理待办',
-                    trailing: Text(
-                      '${relatedTasks.length} 项',
+                    key: const Key('hamster-health-title'),
+                    icon: CupertinoIcons.heart,
+                    title: '健康',
+                    trailing: widget.onOpenHealth == null
+                        ? null
+                        : _HamsterDetailLink(
+                            label: '健康记录',
+                            onTap: widget.onOpenHealth!,
+                          ),
+                  ),
+                  const SizedBox(height: 12),
+                  _HamsterDetailFieldTable(
+                    rows: [
+                      (
+                        '健康记录',
+                        healthRecords.isEmpty
+                            ? '暂无'
+                            : '${healthRecords.length} 条',
+                      ),
+                      (
+                        '体重状态',
+                        latestWeight == null
+                            ? '暂无'
+                            : (weightFlags.isEmpty ? '正常' : '需关注'),
+                      ),
+                      (
+                        '护理待办',
+                        relatedTasks.isEmpty
+                            ? '无'
+                            : '${relatedTasks.length} 项',
+                      ),
+                      ('综合', healthGood ? '良好' : '需关注'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            if (widget.taskController != null) ...[
+              const SizedBox(height: 16),
+              _HamsterDetailPanel(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _HamsterDetailSectionTitle(
+                      icon: CupertinoIcons.checkmark_circle,
+                      title: '护理待办',
+                      trailing: Text(
+                        '${relatedTasks.length} 项',
+                        style: TextStyle(
+                          color: ScolvPalette.of(context).secondaryLabel,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '护理与复查安排',
+                      key: const Key('hamster-care-tasks-title'),
                       style: TextStyle(
                         color: ScolvPalette.of(context).secondaryLabel,
                         fontSize: 13,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '护理与复查安排',
-                    key: const Key('hamster-care-tasks-title'),
-                    style: TextStyle(
-                      color: ScolvPalette.of(context).secondaryLabel,
-                      fontSize: 13,
+                    const SizedBox(height: 8),
+                    if (relatedTasks.isEmpty)
+                      const _HamsterDetailEmptyRow(text: '暂无与此个体相关的待办')
+                    else
+                      for (final task in relatedTasks)
+                        _HamsterDetailTaskRow(
+                          task: task,
+                          enabled: widget.controller.canWrite,
+                          onComplete: () => _completeTask(task),
+                        ),
+                  ],
+                ),
+              ),
+            ],
+            if (widget.onAddWeight != null || detail.weights.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _HamsterDetailPanel(
+                child: Column(
+                  children: [
+                    _HamsterDetailSectionTitle(
+                      icon: CupertinoIcons.gauge,
+                      title: '体重历史',
+                      trailing: widget.onAddWeight == null
+                          ? null
+                          : _HamsterDetailLink(
+                              label: '录入',
+                              onTap: widget.controller.canWrite
+                                  ? widget.onAddWeight!
+                                  : null,
+                            ),
                     ),
+                    const SizedBox(height: 8),
+                    if (detail.weights.isEmpty)
+                      const _HamsterDetailEmptyRow(text: '暂无体重记录')
+                    else
+                      for (final weight in detail.weights.take(4))
+                        _HamsterDetailWeightRow(weight: weight),
+                  ],
+                ),
+              ),
+            ],
+            if (widget.onAddWeight != null || widget.onOpenHealth != null) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  if (widget.onAddWeight != null)
+                    Expanded(
+                      child: FilledButton.tonal(
+                        key: const Key('hamster-detail-primary-weight'),
+                        onPressed: widget.controller.canWrite
+                            ? widget.onAddWeight
+                            : null,
+                        child: const Text('记录体重'),
+                      ),
+                    ),
+                  if (widget.onAddWeight != null &&
+                      widget.onOpenHealth != null)
+                    const SizedBox(width: 10),
+                  if (widget.onOpenHealth != null)
+                    Expanded(
+                      child: OutlinedButton(
+                        key: const Key('hamster-open-health'),
+                        onPressed: widget.onOpenHealth,
+                        child: const Text('记录观察'),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ] else if (sectionKey == 'pedigree') ...[
+            _HamsterDetailPanel(
+              key: const Key('hamster-detail-pedigree'),
+              child: Column(
+                children: [
+                  const _HamsterDetailSectionTitle(
+                    icon: CupertinoIcons.arrow_branch,
+                    title: '谱系',
                   ),
                   const SizedBox(height: 8),
-                  if (relatedTasks.isEmpty)
-                    const _HamsterDetailEmptyRow(text: '暂无与此个体相关的待办')
-                  else
-                    for (final task in relatedTasks)
-                      _HamsterDetailTaskRow(
-                        task: task,
-                        enabled: widget.controller.canWrite,
-                        onComplete: () => _completeTask(task),
+                  const _HamsterDetailEmptyRow(
+                    text: '父母与祖代关系在谱系页查看；确认父母并完成个体化后会自动展开。',
+                  ),
+                  if (widget.onOpenPedigree != null) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        key: const Key('hamster-detail-open-pedigree-tab'),
+                        onPressed: widget.onOpenPedigree,
+                        child: const Text('打开谱系'),
                       ),
+                    ),
+                  ],
+                  if (widget.onOpenGenetic != null)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: widget.onOpenGenetic,
+                        child: const Text('配对推算'),
+                      ),
+                    ),
                 ],
               ),
             ),
-          ],
-          if (widget.onAddWeight != null || detail.weights.isNotEmpty) ...[
-            const SizedBox(height: 16),
+          ] else ...[
             _HamsterDetailPanel(
+              key: const Key('hamster-detail-recent'),
               child: Column(
                 children: [
                   _HamsterDetailSectionTitle(
-                    icon: CupertinoIcons.gauge,
-                    title: '体重历史',
-                    trailing: widget.onAddWeight == null
+                    icon: CupertinoIcons.doc_text,
+                    title: '记录',
+                    trailing: widget.onOpenHealth == null
                         ? null
                         : _HamsterDetailLink(
-                            label: '录入',
-                            onTap: widget.controller.canWrite
-                                ? widget.onAddWeight!
-                                : null,
+                            label: '全部',
+                            onTap: widget.onOpenHealth!,
                           ),
                   ),
                   const SizedBox(height: 8),
-                  if (detail.weights.isEmpty)
-                    const _HamsterDetailEmptyRow(text: '暂无体重记录')
+                  if (events.isEmpty)
+                    const _HamsterDetailEmptyRow(text: '还没有健康、体重或护理记录')
                   else
-                    for (final weight in detail.weights.take(4))
-                      _HamsterDetailWeightRow(weight: weight),
+                    for (final event in events.take(8))
+                      _HamsterDetailRecentRow(event: event),
                 ],
               ),
             ),
           ],
-          if (widget.onAddWeight != null || widget.onOpenHealth != null) ...[
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                if (widget.onAddWeight != null)
-                  Expanded(
-                    child: FilledButton.tonal(
-                      key: const Key('hamster-detail-primary-weight'),
-                      onPressed: widget.controller.canWrite
-                          ? widget.onAddWeight
-                          : null,
-                      child: const Text('记录体重'),
-                    ),
-                  ),
-                if (widget.onAddWeight != null && widget.onOpenHealth != null)
-                  const SizedBox(width: 10),
-                if (widget.onOpenHealth != null)
-                  Expanded(
-                    child: OutlinedButton(
-                      key: const Key('hamster-open-health'),
-                      onPressed: widget.onOpenHealth,
-                      child: const Text('记录观察'),
-                    ),
-                  ),
-              ],
-            ),
-          ],
         ],
+      ),
+    );
+  }
+}
+
+/// 详情顶部分段 chip（草稿：概览/繁育/健康/谱系/记录）
+class _DetailSectionChip extends StatelessWidget {
+  const _DetailSectionChip({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
+    return Material(
+      color: selected ? p.accent.withValues(alpha: 0.14) : p.tertiaryFill,
+      borderRadius: BorderRadius.circular(IosMetrics.pillRadius),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(IosMetrics.pillRadius),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: selected ? p.accent : p.secondaryLabel,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+            ),
+          ),
+        ),
       ),
     );
   }

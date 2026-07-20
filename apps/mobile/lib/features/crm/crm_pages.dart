@@ -265,7 +265,8 @@ class _ContactsTab extends StatelessWidget {
           child: const BearEmptyCard(
             title: '还没有客户记录',
             subtitle: '先记录称呼与联系方式，后续预订、交付和回执都会自动关联。',
-            illustration: BearAssets.onboardingSetup,
+            illustration: BearAssets.emptyList,
+            mood: BearMood.sleepy,
           ),
         ),
       ),
@@ -278,9 +279,9 @@ class _ContactsTab extends StatelessWidget {
               for (final c in items)
                 IosListTile(
                   key: Key('crm-contact-${c.id}'),
-                  leading: const IosGlyph(
+                  leading: IosGlyph(
                     icon: CupertinoIcons.person_fill,
-                    color: IosColors.systemBlue,
+                    color: ScolvPalette.of(context).accent,
                   ),
                   title: c.name,
                   subtitle: [
@@ -331,6 +332,7 @@ class _ReservationsTab extends StatelessWidget {
             title: '还没有预订',
             subtitle: '从客户发起预订，并选择真实仓鼠或待定意向。',
             illustration: BearAssets.emptyList,
+            mood: BearMood.sleepy,
           ),
         ),
       ),
@@ -439,6 +441,7 @@ class _HandoversTab extends StatelessWidget {
             title: '还没有交付安排',
             subtitle: '确认预订后安排交接时间，完成时可继续生成合同和收款回执。',
             illustration: BearAssets.emptyCare,
+            mood: BearMood.happy,
           ),
         ),
       ),

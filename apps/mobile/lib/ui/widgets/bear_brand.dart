@@ -524,8 +524,13 @@ class BearSoftBackdrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = ScolvPalette.of(context);
+    // UI V2 奶油底 + 暖橙顶部光晕
     final glow = Color.alphaBlend(
-      p.accent.withValues(alpha: 0.08),
+      p.accent.withValues(alpha: 0.12),
+      p.groupedBackground,
+    );
+    final mid = Color.alphaBlend(
+      p.accentSoft.withValues(alpha: 0.45),
       p.groupedBackground,
     );
     return Stack(
@@ -534,10 +539,10 @@ class BearSoftBackdrop extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: RadialGradient(
-                center: const Alignment(0.2, -0.8),
-                radius: 1.2,
-                colors: [glow, p.groupedBackground],
-                stops: const [0, 0.86],
+                center: const Alignment(0.15, -0.85),
+                radius: 1.25,
+                colors: [glow, mid, p.groupedBackground],
+                stops: const [0, 0.42, 1],
               ),
             ),
           ),
@@ -548,7 +553,7 @@ class BearSoftBackdrop extends StatelessWidget {
   }
 }
 
-/// 暖萌空态卡
+/// 暖萌空态卡（UI V2：奶油面 + 手绘插画 + 品牌 CTA）
 class BearEmptyCard extends StatelessWidget {
   const BearEmptyCard({
     super.key,
@@ -571,22 +576,29 @@ class BearEmptyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final art = illustration;
     final p = ScolvPalette.of(context);
+    final surface = Color.alphaBlend(
+      p.accentSoft.withValues(alpha: 0.35),
+      p.secondaryGroupedBackground,
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(IosMetrics.space16),
         decoration: BoxDecoration(
-          color: p.secondaryGroupedBackground,
+          color: surface,
           borderRadius: BorderRadius.circular(IosMetrics.largeRadius),
-          border: Border.all(color: p.separator, width: IosMetrics.hairline),
+          border: Border.all(
+            color: p.accent.withValues(alpha: 0.12),
+            width: IosMetrics.hairline,
+          ),
         ),
         child: Row(
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
               child: SizedBox(
-                width: 96,
-                height: 96,
+                width: 92,
+                height: 92,
                 child: art != null
                     ? Image.asset(
                         art,
@@ -595,10 +607,13 @@ class BearEmptyCard extends StatelessWidget {
                         errorBuilder: (_, __, ___) =>
                             BearMascot(size: 64, mood: mood),
                       )
-                    : BearMascot(size: 64, mood: mood),
+                    : ColoredBox(
+                        color: p.accentSoft,
+                        child: Center(child: BearMascot(size: 64, mood: mood)),
+                      ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: IosMetrics.space16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -608,9 +623,10 @@ class BearEmptyCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.3,
+                      color: p.label,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: IosMetrics.space4 + 1),
                   Text(
                     subtitle,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -619,13 +635,16 @@ class BearEmptyCard extends StatelessWidget {
                     ),
                   ),
                   if (actionLabel != null && onAction != null) ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: IosMetrics.space8),
                     TextButton(
                       onPressed: onAction,
                       style: TextButton.styleFrom(
+                        foregroundColor: p.accent,
                         minimumSize: Size.zero,
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        textStyle: Theme.of(context).textTheme.labelLarge
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       child: Text(actionLabel!),
                     ),

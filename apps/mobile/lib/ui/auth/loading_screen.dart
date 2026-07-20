@@ -37,11 +37,21 @@ class LoadingScreen extends StatelessWidget {
                 color: ScolvPalette.of(context).secondaryLabel,
               ),
             ),
+            const SizedBox(height: 8),
+            Text(
+              '专业数据 × 行业深度 × 温暖陪伴',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: ScolvPalette.of(context).tertiaryLabel,
+              ),
+            ),
             const SizedBox(height: 20),
-            const SizedBox(
+            SizedBox(
               width: 28,
               height: 28,
-              child: CircularProgressIndicator(strokeWidth: 2.4),
+              child: CircularProgressIndicator(
+                strokeWidth: 2.4,
+                color: ScolvPalette.of(context).accent,
+              ),
             ),
           ],
         ),

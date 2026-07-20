@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../ui/theme/ios_theme.dart';
+import '../../ui/widgets/bear_brand.dart';
 import '../../ui/widgets/ios_widgets.dart';
 import '../i2/i2_models.dart';
 import '../i2/i2_widgets.dart';
@@ -112,6 +113,9 @@ class _LitterBoardListPageState extends State<LitterBoardListPage> {
         return const I2StateMessage(
           icon: CupertinoIcons.person_3,
           message: '暂无窝次记录',
+          subtitle: '产仔确认后，窝次会按日龄与阶段出现在这里。',
+          mood: BearMood.sleepy,
+          illustration: BearAssets.emptyList,
         );
       case I2AsyncStatus.data:
         final litters = state.data ?? const <LitterBoard>[];

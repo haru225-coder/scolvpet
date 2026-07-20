@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../ui/theme/ios_theme.dart';
+import '../../ui/widgets/bear_brand.dart';
 import '../../ui/widgets/ios_widgets.dart';
 import '../i2/i2_models.dart';
 import '../i2/i2_widgets.dart';
@@ -72,6 +73,11 @@ class _AccountingHubPageState extends State<AccountingHubPage>
         final saving = widget.controller.isBusy;
         final refreshing = widget.controller.isRefreshing;
         final busy = saving || refreshing;
+        final records =
+            widget.controller.recordsState.data ?? const <AccountingRecord>[];
+        final categories =
+            widget.controller.categoriesState.data ??
+            const <AccountingCategory>[];
         return Scaffold(
           appBar: AppBar(
             title: const Text('财务收支'),
@@ -110,6 +116,19 @@ class _AccountingHubPageState extends State<AccountingHubPage>
               : null,
           body: Column(
             children: [
+              IosModuleIntro(
+                icon: CupertinoIcons.money_yen_circle_fill,
+                title: '本月收支台账',
+                description: '记录售出、成本与杂支，分类汇总一目了然，方便对账与复盘。',
+                metrics: [
+                  IosModuleMetric(label: '流水', value: '${records.length}'),
+                  IosModuleMetric(
+                    label: '分类',
+                    value: '${categories.length}',
+                    color: ScolvPalette.of(context).accent,
+                  ),
+                ],
+              ),
               if (widget.controller.actionState.status == I2AsyncStatus.error)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
@@ -715,31 +734,14 @@ class _AccountingEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = ScolvPalette.of(context);
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IosGlyph(icon: icon, size: 46),
-            const SizedBox(height: 14),
-            Text(
-              title,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              detail,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: palette.secondaryLabel,
-                height: 1.45,
-              ),
-            ),
-          ],
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: BearEmptyCard(
+          title: title,
+          subtitle: detail,
+          mood: BearMood.sleepy,
+          illustration: BearAssets.emptyList,
         ),
       ),
     );

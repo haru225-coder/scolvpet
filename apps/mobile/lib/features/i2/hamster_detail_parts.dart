@@ -55,6 +55,7 @@ class _HamsterDetailProfileCard extends StatelessWidget {
     required this.onCopyId,
     required this.onAvatarTap,
     required this.avatarLoading,
+    this.onEdit,
   });
 
   final I2Hamster hamster;
@@ -65,6 +66,7 @@ class _HamsterDetailProfileCard extends StatelessWidget {
   final VoidCallback onCopyId;
   final VoidCallback onAvatarTap;
   final bool avatarLoading;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -74,11 +76,20 @@ class _HamsterDetailProfileCard extends StatelessWidget {
     final title = name.isEmpty ? code : name;
     // Domain authority: reuse existing phenotype/series display paths as-is.
     final meta = <String>[
-      i2SexLabel(hamster.sex),
       if (hamster.coreSeriesCode != null) _seriesLabel(hamster.coreSeriesCode!),
       if (hamster.corePhenotypeLabel != null) hamster.corePhenotypeLabel!,
       if (hamster.birthDate != null) _hamsterAgeLabel(hamster.birthDate),
     ];
+    final sexIcon = switch (hamster.sex) {
+      'male' => Icons.male_rounded,
+      'female' => Icons.female_rounded,
+      _ => null,
+    };
+    final sexColor = switch (hamster.sex) {
+      'male' => const Color(0xff5B8DEF),
+      'female' => const Color(0xffE08BB0),
+      _ => p.tertiaryLabel,
+    };
     return Container(
       key: const Key('hamster-detail-profile'),
       padding: const EdgeInsets.fromLTRB(4, 8, 4, 4),
@@ -92,22 +103,34 @@ class _HamsterDetailProfileCard extends StatelessWidget {
                 hamster: hamster,
                 onTap: onAvatarTap,
                 loading: avatarLoading,
-                size: 72,
+                size: 88,
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.4,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.4,
+                                ),
                           ),
+                        ),
+                        if (sexIcon != null)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4, top: 4),
+                            child: Icon(sexIcon, size: 18, color: sexColor),
+                          ),
+                      ],
                     ),
                     if (name.isNotEmpty) ...[
                       const SizedBox(height: 2),
@@ -138,30 +161,36 @@ class _HamsterDetailProfileCard extends StatelessWidget {
                       runSpacing: 6,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: offline
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: (offline
                                     ? IosColors.systemOrange
                                     : (healthGood
                                           ? IosColors.systemGreen
-                                          : IosColors.systemOrange),
-                              ),
+                                          : IosColors.systemOrange))
+                                .withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(
+                              IosMetrics.pillRadius,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              offline
-                                  ? '离线'
-                                  : i2LifecycleLabel(hamster.lifecycleStatus),
-                              style: Theme.of(context).textTheme.labelLarge
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                          ],
+                          ),
+                          child: Text(
+                            offline
+                                ? '离线'
+                                : i2LifecycleLabel(hamster.lifecycleStatus),
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: offline
+                                      ? IosColors.systemOrange
+                                      : (healthGood
+                                            ? IosColors.systemGreen
+                                            : IosColors.systemOrange),
+                                ),
+                          ),
                         ),
                         Row(
                           mainAxisSize: MainAxisSize.min,
@@ -175,7 +204,7 @@ class _HamsterDetailProfileCard extends StatelessWidget {
                             ConstrainedBox(
                               constraints: const BoxConstraints(maxWidth: 120),
                               child: Text(
-                                enclosureLabel,
+                                '笼盒 $enclosureLabel',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.bodyMedium
@@ -201,6 +230,24 @@ class _HamsterDetailProfileCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (onEdit != null) ...[
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: FilledButton.tonal(
+                          key: const Key('hamster-detail-edit-profile'),
+                          onPressed: onEdit,
+                          style: FilledButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                          ),
+                          child: const Text('编辑档案'),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -303,7 +350,7 @@ class _HamsterDetailArchiveSection extends StatelessWidget {
       if (hamster.corePhenotypeLabel != null)
         ('表型', hamster.corePhenotypeLabel!),
       if (hamster.breedingStatus.trim().isNotEmpty)
-        ('繁育状态', hamster.breedingStatus),
+        ('繁育状态', i2BreedingStatusLabel(hamster.breedingStatus)),
     ];
     return _HamsterDetailPanel(
       child: Column(
@@ -351,7 +398,7 @@ class _HamsterDetailBreedingSection extends StatelessWidget {
             rows: [
               (
                 '当前繁育状态',
-                breedingStatus.trim().isEmpty ? '—' : breedingStatus,
+                i2BreedingStatusLabel(breedingStatus),
               ),
               ('关联窝次', '$litterCount'),
             ],

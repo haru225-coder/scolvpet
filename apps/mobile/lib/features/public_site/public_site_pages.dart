@@ -457,7 +457,7 @@ class PublicSitePreviewPage extends StatelessWidget {
 
   static Color _parseColor(String hex) {
     final cleaned = hex.replaceFirst('#', '');
-    if (cleaned.length != 6) return const Color(0xffc77852);
+    if (cleaned.length != 6) return const Color(0xffD98B55);
     return Color(int.parse('ff$cleaned', radix: 16));
   }
 

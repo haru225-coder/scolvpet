@@ -335,10 +335,14 @@ class HomeOverviewPage extends StatelessWidget {
                       '工作台',
                       subtitle: () {
                         final now = DateTime.now();
+                        // 视觉草稿：问候优先舍名（与账号页大标题一致）
+                        final org = metrics.organizationName?.trim();
                         final name = state.account?.displayName?.trim();
-                        final who = (name != null && name.isNotEmpty)
-                            ? name
-                            : (metrics.organizationName ?? '熊舍');
+                        final who = (org != null && org.isNotEmpty)
+                            ? org
+                            : ((name != null && name.isNotEmpty)
+                                  ? name
+                                  : '熊舍');
                         return '${workbenchGreeting(now)}，$who\n${workbenchDateLabel(now)}';
                       }(),
                       trailing: Row(
@@ -372,10 +376,10 @@ class HomeOverviewPage extends StatelessWidget {
                                 minHeight: 40,
                               ),
                               onPressed: onOpenAccount,
-                              icon: Icon(
-                                CupertinoIcons.person_crop_circle,
-                                size: 24,
-                                color: ScolvPalette.of(context).label,
+                              // 视觉草稿：右上角圆形头像入口（非齿轮）
+                              icon: const BearMascot(
+                                size: 28,
+                                mood: BearMood.happy,
                               ),
                             ),
                         ],
@@ -566,7 +570,7 @@ class _OpsOverviewStrip extends StatelessWidget {
               _MetricDivider(color: p.separator),
               Expanded(
                 child: _MiniMetric(
-                  label: '孕期',
+                  label: '孕期待产',
                   value: '${metrics.gestatingDamCount}',
                   onTap: onOpenBreeding,
                 ),
@@ -657,27 +661,85 @@ class _BreedingFeedSection extends StatelessWidget {
             onAction: onOpenBreeding,
           )
         else
-          IosGroupedSection(
-            children: [
-              for (final item in items)
-                IosListTile(
-                  key: Key('home-breeding-item-${item.id}'),
-                  leading: Icon(
-                    item.kind == 'gestation'
-                        ? CupertinoIcons.heart_fill
-                        : CupertinoIcons.square_favorites_alt,
-                    size: 22,
-                    color: p.accent,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                for (var i = 0; i < items.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 8),
+                  _BreedingFeedCard(
+                    item: items[i],
+                    onTap: items[i].kind == 'litter' || items[i].kind == 'wean'
+                        ? onOpenLitters
+                        : onOpenBreeding,
                   ),
-                  title: item.title,
-                  subtitle: item.subtitle,
-                  onTap: item.kind == 'litter' || item.kind == 'wean'
-                      ? onOpenLitters
-                      : onOpenBreeding,
-                ),
-            ],
+                ],
+              ],
+            ),
           ),
       ],
+    );
+  }
+}
+
+/// 草稿风格繁育动态卡：标题 + 副文案（不伪造 Day/进度百分比）。
+class _BreedingFeedCard extends StatelessWidget {
+  const _BreedingFeedCard({required this.item, required this.onTap});
+
+  final BreedingFeedItem item;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
+    return Material(
+      color: p.secondaryGroupedBackground,
+      borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+      child: InkWell(
+        key: Key('home-breeding-item-${item.id}'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+            border: Border.all(color: p.separator, width: IosMetrics.hairline),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: p.label,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.subtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: p.secondaryLabel,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Icon(
+                item.kind == 'gestation'
+                    ? CupertinoIcons.heart_fill
+                    : CupertinoIcons.square_favorites_alt_fill,
+                color: p.accent,
+                size: 28,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -856,7 +918,7 @@ class _TodayCareQueueSection extends StatelessWidget {
                 TextButton(
                   key: const Key('home-today-care-all-tasks'),
                   onPressed: onOpenTasks,
-                  child: const Text('全部任务'),
+                  child: const Text('查看全部'),
                 ),
             ],
           ),
@@ -870,57 +932,174 @@ class _TodayCareQueueSection extends StatelessWidget {
             illustration: BearAssets.emptyCare,
           )
         else
-          IosGroupedSection(
-            children: [
-              for (final item in items)
-                IosListTile(
-                  key: Key('home-care-item-${item.id}'),
-                  leading: Icon(
-                    switch (item.kind) {
-                      TodayCareKind.overdueTask =>
-                        CupertinoIcons.exclamationmark_circle,
-                      TodayCareKind.dueTodayTask => CupertinoIcons.clock,
-                      TodayCareKind.weightAlert => CupertinoIcons.graph_square,
-                      TodayCareKind.dirtyEnclosure => CupertinoIcons.square_grid_2x2,
-                      TodayCareKind.pendingWean => CupertinoIcons.heart,
-                    },
-                    size: 22,
-                    color:
-                        item.kind == TodayCareKind.overdueTask ||
-                            item.kind == TodayCareKind.weightAlert
-                        ? IosColors.systemOrange
-                        : ScolvPalette.of(context).secondaryLabel,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                for (var i = 0; i < items.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 8),
+                  _CareTodoCard(
+                    item: items[i],
+                    onTap: _tapFor(items[i]),
+                    onComplete:
+                        items[i].canComplete && taskController != null
+                        ? () => _complete(context, items[i].task!)
+                        : null,
                   ),
-                  title: item.title,
-                  subtitle: item.subtitle,
-                  trailing: item.canComplete && taskController != null
-                      ? TextButton(
-                          key: Key('home-care-complete-${item.task!.id}'),
-                          onPressed: () => _complete(context, item.task!),
-                          child: const Text('完成'),
-                        )
-                      : Text(
-                          switch (item.kind) {
-                            TodayCareKind.overdueTask => '逾期',
-                            TodayCareKind.dueTodayTask => '待完成',
-                            TodayCareKind.weightAlert => '需关注',
-                            TodayCareKind.dirtyEnclosure => '需关注',
-                            TodayCareKind.pendingWean => '跟进',
-                          },
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color:
-                                    item.kind == TodayCareKind.overdueTask
-                                    ? IosColors.systemRed
-                                    : ScolvPalette.of(context).secondaryLabel,
-                                fontWeight: FontWeight.w600,
-                              ),
+                ],
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// 草稿风格待办卡：时间 / 标题 / 状态 pill，可点完成。
+class _CareTodoCard extends StatelessWidget {
+  const _CareTodoCard({
+    required this.item,
+    this.onTap,
+    this.onComplete,
+  });
+
+  final TodayCareItem item;
+  final VoidCallback? onTap;
+  final VoidCallback? onComplete;
+
+  String? get _timeLabel {
+    final at = item.task?.scheduledAt;
+    if (at == null) return null;
+    final l = at.toLocal();
+    final h = l.hour.toString().padLeft(2, '0');
+    final m = l.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  String get _statusLabel => switch (item.kind) {
+    TodayCareKind.overdueTask => '逾期',
+    TodayCareKind.dueTodayTask => '待完成',
+    TodayCareKind.weightAlert => '需关注',
+    TodayCareKind.dirtyEnclosure => '需关注',
+    TodayCareKind.pendingWean => '跟进',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
+    final alert =
+        item.kind == TodayCareKind.overdueTask ||
+        item.kind == TodayCareKind.weightAlert;
+    final pillColor = item.kind == TodayCareKind.overdueTask
+        ? IosColors.systemRed
+        : (alert ? IosColors.systemOrange : p.accent);
+    final time = _timeLabel;
+    return Material(
+      color: p.secondaryGroupedBackground,
+      borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+      child: InkWell(
+        key: Key('home-care-item-${item.id}'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+            border: Border.all(color: p.separator, width: IosMetrics.hairline),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: p.accentSoft,
+                  borderRadius: BorderRadius.circular(IosMetrics.smallRadius),
+                ),
+                child: Icon(
+                  switch (item.kind) {
+                    TodayCareKind.overdueTask =>
+                      CupertinoIcons.exclamationmark_circle_fill,
+                    TodayCareKind.dueTodayTask => CupertinoIcons.clock_fill,
+                    TodayCareKind.weightAlert => CupertinoIcons.graph_square,
+                    TodayCareKind.dirtyEnclosure =>
+                      CupertinoIcons.square_grid_2x2_fill,
+                    TodayCareKind.pendingWean => CupertinoIcons.heart_fill,
+                  },
+                  size: 22,
+                  color: pillColor,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (time != null)
+                      Text(
+                        time,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: p.tertiaryLabel,
+                          fontWeight: FontWeight.w500,
                         ),
-                  onTap: _tapFor(item),
+                      ),
+                    if (time != null) const SizedBox(height: 2),
+                    Text(
+                      item.title,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: p.label,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.subtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: p.secondaryLabel,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (onComplete != null)
+                TextButton(
+                  key: Key('home-care-complete-${item.task!.id}'),
+                  onPressed: onComplete,
+                  style: TextButton.styleFrom(
+                    minimumSize: Size.zero,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text('完成'),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: pillColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(IosMetrics.pillRadius),
+                  ),
+                  child: Text(
+                    _statusLabel,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: pillColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
             ],
           ),
-      ],
+        ),
+      ),
     );
   }
 }

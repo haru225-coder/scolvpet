@@ -681,10 +681,11 @@ class _HomeShellState extends State<HomeShell> {
           selectedIndex: index,
           onDestinationSelected: _goTab,
           animationDuration: IosMetrics.spring,
+          // 视觉草稿 3 主导航：家 / 仓鼠爪印 / 心形（窝巢语义，线性 icon）
           destinations: const [
             NavigationDestination(
-              icon: Icon(CupertinoIcons.square_grid_2x2),
-              selectedIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
+              icon: Icon(CupertinoIcons.house),
+              selectedIcon: Icon(CupertinoIcons.house_fill),
               label: '工作台',
             ),
             NavigationDestination(

@@ -63,6 +63,7 @@ class I2StateMessage extends StatelessWidget {
     super.key,
     required this.icon,
     required this.message,
+    this.subtitle,
     this.actionLabel,
     this.onRetry,
     this.tone,
@@ -72,11 +73,29 @@ class I2StateMessage extends StatelessWidget {
 
   final IconData icon;
   final String message;
+  final String? subtitle;
   final String? actionLabel;
   final VoidCallback? onRetry;
   final Color? tone;
   final String? illustration;
   final BearMood mood;
+
+  String get _defaultSubtitle {
+    if (subtitle != null && subtitle!.trim().isNotEmpty) return subtitle!;
+    final action = actionLabel?.trim() ?? '';
+    if (action.contains('新建') || action.contains('创建')) {
+      return '点下方开始录入，或从数据中心导入。';
+    }
+    if (onRetry != null) return '下拉或点重试，同步最新记录。';
+    return '新建或同步记录后会显示在这里。';
+  }
+
+  String get _defaultIllustration {
+    if (illustration != null) return illustration!;
+    if (mood == BearMood.worried) return BearAssets.emptyAttention;
+    if (mood == BearMood.happy) return BearAssets.emptyCare;
+    return BearAssets.emptyList;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,9 +108,9 @@ class I2StateMessage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 24),
           child: BearEmptyCard(
             title: message,
-            subtitle: onRetry == null ? '新建或同步记录后会显示在这里' : '刷新后会再次检查',
+            subtitle: _defaultSubtitle,
             mood: mood,
-            illustration: illustration ?? BearAssets.emptyList,
+            illustration: _defaultIllustration,
             actionLabel: onRetry == null ? null : (actionLabel ?? '重试'),
             onAction: onRetry,
           ),
@@ -204,6 +223,23 @@ String i2LifecycleLabel(String value) => switch (value) {
   'deceased' => '已离世',
   _ => '状态待更新',
 };
+
+/// 繁育状态展示（领域码不变，仅中文标签）。
+String i2BreedingStatusLabel(String value) {
+  final v = value.trim().toLowerCase();
+  if (v.isEmpty) return '—';
+  return switch (v) {
+    'candidate' => '候选',
+    'pairing' || 'pair' || 'pair_ready' => '配对中',
+    'post_pair' => '配对后观察',
+    'gestating' || 'gestation' || 'pregnant' || 'expecting' => '孕期',
+    'nursing' || 'litter_nursing' => '育仔中',
+    'resting' || 'rest' => '休养',
+    'retired' => '繁育退役',
+    'hold' => '暂缓',
+    _ => value.trim(),
+  };
+}
 
 String i2EnclosureStateLabel(String value) => switch (value) {
   'vacant' => '空置',

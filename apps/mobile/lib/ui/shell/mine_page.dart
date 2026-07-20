@@ -57,8 +57,9 @@ class _MinePage extends StatelessWidget {
               header: const IosSectionHeader('数据'),
               children: [
                 IosListTile(
-                  leading: const BearIconTile(
-                    asset: BearAssets.icData,
+                  leading: const BearGlyphTile(
+                    icon: CupertinoIcons.square_stack_3d_up_fill,
+                    semanticLabel: '数据中心',
                     size: 32,
                     padding: 4,
                   ),

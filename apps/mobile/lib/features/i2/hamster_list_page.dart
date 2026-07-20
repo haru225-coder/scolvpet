@@ -22,20 +22,46 @@ class HamsterListPage extends StatefulWidget {
 
 class _HamsterListPageState extends State<HamsterListPage> {
   final TextEditingController _searchController = TextEditingController();
-  /// 生命周期筛选：all | active | retired | transferred | deceased
-  /// 文案与 i2LifecycleLabel 权威枚举一致，本页不改语义。
+  /// 筛选键：all | active | breeding | retired | transferred | deceased
+  /// lifecycle 键与 i2LifecycleLabel 权威枚举一致；breeding 为展示层派生（不改领域）。
   String _lifecycle = 'all';
 
   static const _primaryFilters = <(String, String)>[
     ('all', '全部'),
     ('active', '在养'),
+    ('breeding', '繁育中'),
+    ('transferred', '转出'),
   ];
 
   static const _moreFilters = <(String, String)>[
     ('retired', '已退役'),
-    ('transferred', '已转出'),
     ('deceased', '已离世'),
   ];
+
+  static bool _isBreedingActive(I2Hamster h) {
+    final b = h.breedingStatus.toLowerCase();
+    return b.contains('gestat') ||
+        b.contains('pregnan') ||
+        b.contains('pair') ||
+        b.contains('nurs') ||
+        b == 'expecting' ||
+        b == 'post_pair' ||
+        b == 'hold';
+  }
+
+  bool _matchesFilter(I2Hamster hamster) {
+    if (_lifecycle == 'all') return true;
+    if (_lifecycle == 'breeding') return _isBreedingActive(hamster);
+    return hamster.lifecycleStatus == _lifecycle;
+  }
+
+  int _countFor(List<I2Hamster> hamsters, String key) {
+    if (key == 'all') return hamsters.length;
+    if (key == 'breeding') {
+      return hamsters.where(_isBreedingActive).length;
+    }
+    return hamsters.where((h) => h.lifecycleStatus == key).length;
+  }
 
   @override
   void dispose() {
@@ -43,9 +69,12 @@ class _HamsterListPageState extends State<HamsterListPage> {
     super.dispose();
   }
 
-  String get _moreFilterLabel {
+  String _moreFilterLabel([List<I2Hamster>? hamsters]) {
     for (final item in _moreFilters) {
-      if (item.$1 == _lifecycle) return item.$2;
+      if (item.$1 == _lifecycle) {
+        if (hamsters == null) return item.$2;
+        return '${item.$2} ${_countFor(hamsters, item.$1)}';
+      }
     }
     return '筛选';
   }
@@ -205,28 +234,6 @@ class _HamsterListPageState extends State<HamsterListPage> {
                   onChanged: (_) => setState(() {}),
                 ),
               ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                child: Row(
-                  children: [
-                    for (final item in _primaryFilters)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: _LifecycleChip(
-                          label: item.$2,
-                          selected: _lifecycle == item.$1,
-                          onTap: () => setState(() => _lifecycle = item.$1),
-                        ),
-                      ),
-                    _LifecycleChip(
-                      label: _moreFilterLabel,
-                      selected: _moreFilterSelected,
-                      onTap: _openMoreFilters,
-                    ),
-                  ],
-                ),
-              ),
               Expanded(
                 child: I2AsyncStateView<I2Snapshot>(
                   state: state,
@@ -242,60 +249,50 @@ class _HamsterListPageState extends State<HamsterListPage> {
                     onRetry: hasWritePermission ? widget.onCreate : null,
                   ),
                   builder: (snapshot) {
+                    final allHamsters = snapshot.hamsters;
                     final query = _searchController.text.trim().toLowerCase();
-                    final values = snapshot.hamsters.where((hamster) {
+                    final values = allHamsters.where((hamster) {
                       final matchesQuery =
                           query.isEmpty ||
                           hamster.internalCode.toLowerCase().contains(query) ||
                           (hamster.name ?? '').toLowerCase().contains(query);
-                      final matchesLifecycle =
-                          _lifecycle == 'all' ||
-                          hamster.lifecycleStatus == _lifecycle;
-                      return matchesQuery && matchesLifecycle;
+                      return matchesQuery && _matchesFilter(hamster);
                     }).toList();
-                    if (values.isEmpty) {
-                      final hasFilter =
-                          _searchController.text.trim().isNotEmpty ||
-                          _lifecycle != 'all';
-                      return I2StateMessage(
-                        icon: CupertinoIcons.paw,
-                        message: hasFilter ? '没有匹配的仓鼠' : '还没有个体档案',
-                        illustration: BearAssets.emptyList,
-                        mood: BearMood.sleepy,
-                        actionLabel: hasFilter
-                            ? '清除筛选'
-                            : (hasWritePermission && widget.onCreate != null
-                                  ? '新建仓鼠'
-                                  : null),
-                        onRetry: hasFilter
-                            ? () {
-                                _searchController.clear();
-                                setState(() => _lifecycle = 'all');
-                              }
-                            : hasWritePermission
-                            ? widget.onCreate
-                            : null,
-                      );
-                    }
-                    return ListView.separated(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 88),
-                      itemCount: values.length,
-                      separatorBuilder: (_, __) => Divider(
-                        height: 1,
-                        thickness: IosMetrics.hairline,
-                        color: p.separator,
-                      ),
-                      itemBuilder: (context, index) {
-                        final hamster = values[index];
-                        return _HamsterListRow(
-                          hamster: hamster,
+                    // chips 放在 builder 内以便带实时计数
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                          child: Row(
+                            children: [
+                              for (final item in _primaryFilters)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: _LifecycleChip(
+                                    label:
+                                        '${item.$2} ${_countFor(allHamsters, item.$1)}',
+                                    selected: _lifecycle == item.$1,
+                                    onTap: () =>
+                                        setState(() => _lifecycle = item.$1),
+                                  ),
+                                ),
+                              _LifecycleChip(
+                                label: _moreFilterLabel(allHamsters),
+                                selected: _moreFilterSelected,
+                                onTap: _openMoreFilters,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(child: _buildListBody(
+                          values: values,
+                          hasWritePermission: hasWritePermission,
                           snapshot: snapshot,
-                          onTap: widget.onOpenDetail == null
-                              ? null
-                              : () => widget.onOpenDetail!(hamster),
-                        );
-                      },
+                          p: p,
+                        )),
+                      ],
                     );
                   },
                 ),
@@ -306,6 +303,55 @@ class _HamsterListPageState extends State<HamsterListPage> {
       );
     },
   );
+
+  Widget _buildListBody({
+    required List<I2Hamster> values,
+    required bool hasWritePermission,
+    required I2Snapshot snapshot,
+    required ScolvPalette p,
+  }) {
+    if (values.isEmpty) {
+      final hasFilter =
+          _searchController.text.trim().isNotEmpty || _lifecycle != 'all';
+      return I2StateMessage(
+        icon: CupertinoIcons.paw,
+        message: hasFilter ? '没有匹配的仓鼠' : '还没有个体档案',
+        illustration: BearAssets.emptyList,
+        mood: BearMood.sleepy,
+        actionLabel: hasFilter
+            ? '清除筛选'
+            : (hasWritePermission && widget.onCreate != null ? '新建仓鼠' : null),
+        onRetry: hasFilter
+            ? () {
+                _searchController.clear();
+                setState(() => _lifecycle = 'all');
+              }
+            : hasWritePermission
+            ? widget.onCreate
+            : null,
+      );
+    }
+    return ListView.separated(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 88),
+      itemCount: values.length,
+      separatorBuilder: (_, __) => Divider(
+        height: 1,
+        thickness: IosMetrics.hairline,
+        color: p.separator,
+      ),
+      itemBuilder: (context, index) {
+        final hamster = values[index];
+        return _HamsterListRow(
+          hamster: hamster,
+          snapshot: snapshot,
+          onTap: widget.onOpenDetail == null
+              ? null
+              : () => widget.onOpenDetail!(hamster),
+        );
+      },
+    );
+  }
 }
 
 class _LifecycleChip extends StatelessWidget {
@@ -375,6 +421,36 @@ String? _ageLabel(DateTime? birthDate, DateTime now) {
   return rem == 0 ? '$years岁' : '$years岁$rem月';
 }
 
+/// 父母行：仅当个体有 litterId 且快照含窝次/父母时展示（不另开 API）。
+String? _parentLine(I2Snapshot snapshot, I2Hamster hamster) {
+  final lid = hamster.litterId?.trim();
+  if (lid == null || lid.isEmpty) return null;
+  I2Litter? litter;
+  for (final item in snapshot.litters) {
+    if (item.id == lid) {
+      litter = item;
+      break;
+    }
+  }
+  if (litter == null) return null;
+  final byId = {for (final h in snapshot.hamsters) h.id: h};
+  String shortOf(String id) {
+    final h = byId[id];
+    if (h == null) return '';
+    final code = h.internalCode.trim();
+    if (code.isNotEmpty) return code;
+    return (h.name ?? '').trim();
+  }
+
+  final sire = shortOf(litter.sireId);
+  final dam = shortOf(litter.damId);
+  final parts = <String>[
+    if (sire.isNotEmpty) '父 $sire',
+    if (dam.isNotEmpty) '母 $dam',
+  ];
+  return parts.isEmpty ? null : parts.join(' · ');
+}
+
 class _HamsterListRow extends StatelessWidget {
   const _HamsterListRow({
     required this.hamster,
@@ -394,27 +470,34 @@ class _HamsterListRow extends StatelessWidget {
           ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
     final latest = weights.isEmpty ? null : weights.first;
     final abnormal = latest != null && evaluateWeightFlags(latest).isNotEmpty;
-    final lifecycle = i2LifecycleLabel(hamster.lifecycleStatus);
-    final sex = i2SexLabel(hamster.sex);
-    // 权威表型字段：corePhenotypeLabel（来自 variety_code / phenotype），原样展示
     final phenotype = hamster.corePhenotypeLabel?.trim();
     final age = _ageLabel(hamster.birthDate, DateTime.now());
     final enclosure = _enclosureLabel(snapshot, hamster.currentEnclosureId);
+    final parents = _parentLine(snapshot, hamster);
     final name = (hamster.name ?? '').trim();
     final code = hamster.internalCode.trim();
     final title = name.isEmpty ? code : name;
+    final breedingLabel = i2BreedingStatusLabel(hamster.breedingStatus);
+    final showBreedingPill =
+        breedingLabel != '候选' &&
+        breedingLabel != '—' &&
+        hamster.breedingStatus.trim().isNotEmpty;
 
     final metaParts = <String>[
-      sex,
       if (phenotype != null && phenotype.isNotEmpty) phenotype,
       if (age != null) age,
     ];
-    final statusParts = <String>[
-      lifecycle,
-      '笼盒 $enclosure',
-      if (latest != null) '${latest.weightG} g',
-      if (abnormal) '体重异常',
-    ];
+
+    final sexIcon = switch (hamster.sex) {
+      'male' => Icons.male_rounded,
+      'female' => Icons.female_rounded,
+      _ => null,
+    };
+    final sexColor = switch (hamster.sex) {
+      'male' => const Color(0xff5B8DEF),
+      'female' => const Color(0xffE08BB0),
+      _ => p.tertiaryLabel,
+    };
 
     return InkWell(
       onTap: onTap,
@@ -427,7 +510,7 @@ class _HamsterListRow extends StatelessWidget {
               label: name.isEmpty ? code : name,
               imageUrl: hamster.avatarUrl,
               imageBytes: hamster.avatarBytes,
-              size: 52,
+              size: 56,
               statusColor: abnormal ? IosColors.systemOrange : null,
               preferBrandPlaceholder: true,
             ),
@@ -439,15 +522,25 @@ class _HamsterListRow extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: -0.2,
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.2,
+                                    ),
                               ),
+                            ),
+                            if (sexIcon != null) ...[
+                              const SizedBox(width: 4),
+                              Icon(sexIcon, size: 14, color: sexColor),
+                            ],
+                          ],
                         ),
                       ),
                       if (name.isNotEmpty && code.isNotEmpty)
@@ -462,13 +555,24 @@ class _HamsterListRow extends StatelessWidget {
                     ],
                   ),
                   if (metaParts.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
                       metaParts.join(' · '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: p.secondaryLabel,
+                      ),
+                    ),
+                  ],
+                  if (parents != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      parents,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: p.tertiaryLabel,
                       ),
                     ),
                   ],
@@ -484,21 +588,36 @@ class _HamsterListRow extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      Expanded(
+                      Flexible(
                         child: Text(
-                          statusParts.join(' · '),
+                          i2LifecycleLabel(hamster.lifecycleStatus),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(color: p.secondaryLabel),
                         ),
                       ),
-                      if (abnormal)
+                      if (showBreedingPill) ...[
+                        const SizedBox(width: 6),
+                        _ListPill(
+                          label: breedingLabel,
+                          color: p.accent,
+                        ),
+                      ],
+                      if (abnormal) ...[
+                        const SizedBox(width: 4),
                         const Icon(
                           CupertinoIcons.exclamationmark_triangle_fill,
                           size: 14,
                           color: IosColors.systemOrange,
                         ),
+                      ],
+                      const Spacer(),
+                      _ListPill(
+                        label: '笼盒 $enclosure',
+                        color: p.secondaryLabel,
+                        soft: true,
+                      ),
                     ],
                   ),
                 ],
@@ -518,5 +637,35 @@ class _HamsterListRow extends StatelessWidget {
       'deceased' => p.tertiaryLabel,
       _ => p.secondaryLabel,
     };
+  }
+}
+
+class _ListPill extends StatelessWidget {
+  const _ListPill({
+    required this.label,
+    required this.color,
+    this.soft = false,
+  });
+
+  final String label;
+  final Color color;
+  final bool soft;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: soft ? 0.08 : 0.12),
+        borderRadius: BorderRadius.circular(IosMetrics.pillRadius),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
   }
 }

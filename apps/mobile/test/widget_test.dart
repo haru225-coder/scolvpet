@@ -130,13 +130,16 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      // P0-5: 默认繁育进度工作流，而非菜单式「向导/看板」
+      // P0-5 / P1: 默认繁育进度工作流；进度 / 窝次 / 计划 三段
       expect(find.text('进度'), findsWidgets);
+      expect(find.text('窝次'), findsWidgets);
       expect(find.text('计划'), findsWidgets);
       expect(
         find.byKey(const Key('breeding-hub-open-wizard')),
         findsOneWidget,
       );
+      await tester.tap(find.text('窝次').last);
+      await tester.pumpAndSettle();
       expect(
         find.byKey(const Key('breeding-hub-open-litters')),
         findsOneWidget,

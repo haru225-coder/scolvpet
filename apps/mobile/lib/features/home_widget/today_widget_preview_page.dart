@@ -183,7 +183,7 @@ class _WidgetCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xffc77852),
+                    color: const Color(0xffD98B55),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(

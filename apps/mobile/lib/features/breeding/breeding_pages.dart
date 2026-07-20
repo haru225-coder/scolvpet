@@ -46,7 +46,7 @@ class BreedingHubPage extends StatefulWidget {
 }
 
 class _BreedingHubPageState extends State<BreedingHubPage> {
-  /// 0 = 进度, 1 = 计划
+  /// 0 = 进度, 1 = 窝次, 2 = 计划（对齐视觉草稿三段）
   int _segment = 0;
 
   @override
@@ -95,30 +95,16 @@ class _BreedingHubPageState extends State<BreedingHubPage> {
                 child: IosLargeTitle(
                   '繁育',
                   subtitle: '当前进行中的配对、孕期与窝次',
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        key: const Key('breeding-hub-open-litters'),
-                        tooltip: '窝次看板',
-                        onPressed: widget.onOpenLitters,
-                        icon: Icon(
-                          CupertinoIcons.square_favorites_alt,
-                          color: p.secondaryLabel,
-                        ),
-                      ),
-                      IconButton(
-                        key: const Key('breeding-hub-open-wizard'),
-                        tooltip: widget.canWrite ? '新建繁育计划' : '打开繁育向导',
-                        onPressed: () => _openWizard(),
-                        icon: Icon(
-                          widget.canWrite
-                              ? CupertinoIcons.plus
-                              : CupertinoIcons.list_bullet,
-                          color: p.accent,
-                        ),
-                      ),
-                    ],
+                  trailing: IconButton(
+                    key: const Key('breeding-hub-open-wizard'),
+                    tooltip: widget.canWrite ? '新建繁育计划' : '打开繁育向导',
+                    onPressed: () => _openWizard(),
+                    icon: Icon(
+                      widget.canWrite
+                          ? CupertinoIcons.plus_circle
+                          : CupertinoIcons.calendar,
+                      color: p.accent,
+                    ),
                   ),
                 ),
               ),
@@ -137,13 +123,18 @@ class _BreedingHubPageState extends State<BreedingHubPage> {
                 child: SegmentedButton<int>(
                   segments: const [
                     ButtonSegment(value: 0, label: Text('进度')),
-                    ButtonSegment(value: 1, label: Text('计划')),
+                    ButtonSegment(value: 1, label: Text('窝次')),
+                    ButtonSegment(value: 2, label: Text('计划')),
                   ],
                   selected: {_segment},
                   onSelectionChanged: (s) => setState(() => _segment = s.first),
                 ),
               ),
-              if (listState.status == I2AsyncStatus.loading &&
+              if (_segment == 1)
+                _BreedingLittersSegment(
+                  onOpenLitters: widget.onOpenLitters,
+                )
+              else if (listState.status == I2AsyncStatus.loading &&
                   !listState.hasValue)
                 const Padding(
                   padding: EdgeInsets.only(top: 48),
@@ -180,6 +171,29 @@ class _BreedingHubPageState extends State<BreedingHubPage> {
           ),
         );
       },
+    );
+  }
+}
+
+/// 窝次分段：入口卡片，复用既有窝次看板（不重造领域）。
+class _BreedingLittersSegment extends StatelessWidget {
+  const _BreedingLittersSegment({required this.onOpenLitters});
+
+  final VoidCallback onOpenLitters;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: BearEmptyCard(
+        key: const Key('breeding-hub-open-litters'),
+        mood: BearMood.happy,
+        illustration: BearAssets.emptyList,
+        title: '窝次管理',
+        subtitle: '查看育仔进度、日龄与分窝节点；记录在窝次看板中维护。',
+        actionLabel: '打开窝次看板',
+        onAction: onOpenLitters,
+      ),
     );
   }
 }
@@ -331,23 +345,51 @@ class _BreedingProgressBody extends StatelessWidget {
         ),
         for (final key in keys) ...[
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
-            child: Text(
-              '${_progressGroupTitle(key)}  ${grouped[key]!.length}',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Row(
+              children: [
+                Text(
+                  _progressGroupTitle(key),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: ScolvPalette.of(context).label,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: ScolvPalette.of(context).accentSoft,
+                    borderRadius: BorderRadius.circular(IosMetrics.pillRadius),
+                  ),
+                  child: Text(
+                    '${grouped[key]!.length}',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: ScolvPalette.of(context).accent,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          IosGroupedSection(
-            children: [
-              for (final plan in grouped[key]!)
-                _BreedingPlanTile(
-                  plan: plan,
-                  hamsters: hamsters,
-                  onTap: () => onOpenPlan(plan),
-                ),
-            ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                for (var i = 0; i < grouped[key]!.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 8),
+                  _BreedingPlanTile(
+                    plan: grouped[key]![i],
+                    hamsters: hamsters,
+                    onTap: () => onOpenPlan(grouped[key]![i]),
+                  ),
+                ],
+              ],
+            ),
           ),
         ],
         Padding(
@@ -485,44 +527,99 @@ class _BreedingPlanTile extends StatelessWidget {
     final p = ScolvPalette.of(context);
     final sire = _breedingHamsterLabel(hamsters, plan.sireId, '父本');
     final dam = _breedingHamsterLabel(hamsters, plan.damId, '母本');
-    final subtitleParts = <String>[
-      '$sire × $dam',
-      breedingStateLabel(plan.state),
-    ];
-    // 仅展示真实日期字段，不计算 Day N / 不伪造预产。
+    final meta = <String>[breedingStateLabel(plan.state)];
+    // Day N 仅来自真实 planned_pairing_at 的日历差，不伪造预产。
     final planned = plan.plannedPairingAt;
     if (planned != null) {
-      subtitleParts.add('计划 ${i2DateLabel(planned)}');
+      final days = DateTime.now().toUtc().difference(planned.toUtc()).inDays;
+      if (days >= 0 && days < 400) meta.add('Day $days');
+      meta.add('计划 ${i2DateLabel(planned)}');
     }
     final expStart = plan.expectedBirthStart;
     final expEnd = plan.expectedBirthEnd;
     if (expStart != null && expEnd != null) {
-      subtitleParts.add(
-        '预产窗口 ${i2DateLabel(expStart)}–${i2DateLabel(expEnd)}',
-      );
+      meta.add('预产 ${i2DateLabel(expStart)}–${i2DateLabel(expEnd)}');
     } else if (expStart != null) {
-      subtitleParts.add('预产起 ${i2DateLabel(expStart)}');
+      meta.add('预产起 ${i2DateLabel(expStart)}');
     }
     final actual = plan.actualBirthAt;
-    if (actual != null) {
-      subtitleParts.add('产仔 ${i2DateLabel(actual)}');
-    }
+    if (actual != null) meta.add('产仔 ${i2DateLabel(actual)}');
     final next = nextActionLabel(plan.state);
 
-    return IosListTile(
-      key: Key('breeding-plan-${plan.id}'),
-      title: plan.displayName,
-      subtitle: subtitleParts.join(' · '),
-      trailing: next == null
-          ? null
-          : Text(
-              next,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: p.accent,
-                fontWeight: FontWeight.w600,
+    return Material(
+      color: p.secondaryGroupedBackground,
+      borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+      child: InkWell(
+        key: Key('breeding-plan-${plan.id}'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+            border: Border.all(color: p.separator, width: IosMetrics.hairline),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$sire × $dam',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: p.label,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      meta.join(' · '),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: p.secondaryLabel,
+                      ),
+                    ),
+                    if (plan.displayName != '$sire × $dam' &&
+                        (plan.name?.trim().isNotEmpty ?? false)) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        plan.displayName,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: p.tertiaryLabel,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ),
-      onTap: onTap,
+              if (next != null)
+                Container(
+                  margin: const EdgeInsets.only(left: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: p.accent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(IosMetrics.pillRadius),
+                  ),
+                  child: Text(
+                    next,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: p.accent,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              Icon(
+                CupertinoIcons.chevron_right,
+                size: 16,
+                color: p.tertiaryLabel,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -134,11 +134,12 @@ class _BrandPanel extends StatelessWidget {
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5,
               height: 1.08,
+              color: palette.label,
             ),
           ),
           const SizedBox(height: 5),
           Text(
-            '建档、繁育、谱系与备份，一处完成。',
+            '专业金丝熊繁育管理 · 专业数据 × 行业深度 × 温暖陪伴',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: palette.secondaryLabel,
               height: 1.4,

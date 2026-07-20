@@ -61,8 +61,9 @@ class EnclosureGridPage extends StatelessWidget {
                           onPressed: () => Navigator.of(context).maybePop(),
                           icon: const Icon(CupertinoIcons.chevron_back),
                         ),
-                      const BearIconTile(
-                        asset: BearAssets.icEnclosure,
+                      BearGlyphTile(
+                        icon: CupertinoIcons.square_grid_2x2_fill,
+                        semanticLabel: '笼舍',
                         size: 32,
                         padding: 4,
                       ),

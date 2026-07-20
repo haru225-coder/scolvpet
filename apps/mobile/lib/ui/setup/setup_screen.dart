@@ -73,7 +73,10 @@ class _SetupScreenState extends State<SetupScreen> {
                 padding: EdgeInsets.symmetric(
                   horizontal: IosMetrics.pagePadding,
                 ),
-                child: IosLargeTitle('创建个人熊舍', subtitle: '先把你的熊舍整理起来'),
+                child: IosLargeTitle(
+                  '创建个人熊舍',
+                  subtitle: '先安顿好舍名与基础资料，再进入繁殖者工作台',
+                ),
               ),
               const SizedBox(height: IosMetrics.listGap),
               Padding(
