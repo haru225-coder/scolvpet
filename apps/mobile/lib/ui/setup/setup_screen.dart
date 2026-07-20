@@ -274,7 +274,6 @@ class _SetupScreenState extends State<SetupScreen> {
 }
 
 @immutable
-
 class _SetupStep {
   const _SetupStep({required this.label, required this.subtitle});
   final String label;

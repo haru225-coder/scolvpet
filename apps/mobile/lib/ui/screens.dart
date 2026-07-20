@@ -33,10 +33,11 @@ import 'widgets/bear_brand.dart';
 import 'widgets/bear_motion.dart';
 import 'widgets/ios_widgets.dart';
 
-part 'screens/loading_screen.dart';
-part 'screens/login_screen.dart';
-part 'screens/code_screen.dart';
-part 'screens/setup_screen.dart';
-part 'screens/home_shell.dart';
-part 'screens/rule_page.dart';
-part 'screens/auth_widgets.dart';
+part 'auth/loading_screen.dart';
+part 'auth/login_screen.dart';
+part 'auth/code_screen.dart';
+part 'setup/setup_screen.dart';
+part 'shell/home_shell.dart';
+part 'shell/mine_page.dart';
+part 'shell/rule_page.dart';
+part 'screens_shared.dart';
