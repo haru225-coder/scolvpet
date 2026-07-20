@@ -18,6 +18,20 @@
 
 执行顺序：冻结增长 → 清重复 → 机械拆文件 → 调用链试点 → 按证据规模化。
 
+## API 契约冻结（P1 · 必须遵守）
+
+目标：**停止平行契约面扩大**，不是立刻清掉旧手写 DTO / `client.dio`。
+
+1. **新 endpoint**：移动端消费必须走 OpenAPI 生成客户端（`scolvpet_api` 的 `DefaultApi` / `P1*` / `P2*` / `Growth*` 等）。禁止为新能力新增 app 侧 `client.dio` 路径契约。
+2. **新 DTO**：禁止仅为镜像生成模型而手写平行类型。优先生成类型 + 有语义的 `extension` / mapper。
+3. **旧代码可留**：既有手写 DTO 与 direct-dio repository 允许存在。**不得**用它们承接新 endpoint，也不得当新 feature 模板复制。既有 endpoint 的兼容性修复（例如响应多一个字段必须读）允许，但不得借机拓宽平行契约面。
+4. **gen 不够用时**：先补 OpenAPI 并重新生成，再改 repository；禁止在 app 再写一套 path/JSON 契约。
+5. **direct HTTP 例外**：仅限生成 JSON 客户端无法合理表达的传输边界（如预签二进制上传），或清单已记录的暂时未覆盖 endpoint。例外须可说明理由。
+
+分类单位是**类型 / 契约**，不是整文件：同一 `*_models.dart` 里可并存 API 镜像（冻结/收敛）、UI state / 领域聚合（保留）。
+
+盘点基线（P1-1，只读）：I1 / breeding / health / litter / i6 / pedigree 已走 gen；CRM / accounting / paywall / public_site / assistant / stud / miniprogram / growth 等为 dio+手写镜像（冻结）；I2 / tasks 为混合。收敛样本优先小模块（如 assistant），不以 CRM 为第一刀。
+
 ## 其他
 
 - 不提交密钥与正式签名材料；凭据走环境变量。
