@@ -12036,6 +12036,12 @@ components:
           - string
           - 'null'
           format: uuid
+        reservation_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: 从统一预订继承客户与仓鼠；可同时关联已有交付
         title:
           type: string
           maxLength: 200

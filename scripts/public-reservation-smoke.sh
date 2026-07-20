@@ -239,5 +239,47 @@ FINAL_STATUS="$(printf '%s' "$FINAL_LIST" | jq -r --arg id "$RESERVATION_ID" \
   fi
 }
 
-printf 'public-reservation smoke PASS: reservation=%s contact=%s hamster=%s contract=%s handover=%s slug=%s\n' \
-  "$RESERVATION_ID" "$CONTACT_ID" "$HAMSTER_ID" "$CONTRACT_ID" "$HANDOVER_ID" "$SLUG"
+# --- Receipt from handover/reservation (inherit customer + hamster) ---
+RECEIPT_TPL="$(curl -fsS -X POST "$API_URL/v1/receipts/templates" \
+  "${AUTH[@]}" -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: pr-$RUN_ID-receipt-tpl" \
+  -d '{"name":"验收收款回执","body_text":"客户：{{contact_name}}\n项目：{{title}}\n个体：{{hamster_name}}\n金额：{{amount}}\n日期：{{date}}\n备注：{{notes}}"}')"
+RECEIPT_TPL_ID="$(printf '%s' "$RECEIPT_TPL" | json_field '.data.id')"
+[[ -n "$RECEIPT_TPL_ID" && "$RECEIPT_TPL_ID" != "null" ]] || {
+  printf 'receipt template failed: %s\n' "$RECEIPT_TPL" >&2
+  exit 1
+}
+
+RECEIPT="$(curl -fsS -X POST "$API_URL/v1/receipts" \
+  "${AUTH[@]}" -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: pr-$RUN_ID-receipt" \
+  -d "$(jq -cn --arg t "$RECEIPT_TPL_ID" --arg r "$RESERVATION_ID" --arg h "$HANDOVER_ID" \
+    '{template_id:$t,reservation_id:$r,handover_id:$h,amount_cents:50000,currency:"CNY",notes:"smoke 收款"}')")"
+RECEIPT_ID="$(printf '%s' "$RECEIPT" | json_field '.data.id')"
+RECEIPT_BODY="$(printf '%s' "$RECEIPT" | json_field '.data.body_filled')"
+[[ -n "$RECEIPT_ID" && "$RECEIPT_ID" != "null" ]] || {
+  printf 'receipt create failed: %s\n' "$RECEIPT" >&2
+  exit 1
+}
+printf '%s' "$RECEIPT_BODY" | grep -q '阿雪' || {
+  printf 'receipt missing contact: %s\n' "$RECEIPT_BODY" >&2
+  exit 1
+}
+printf '%s' "$RECEIPT_BODY" | grep -q '奶茶' || {
+  printf 'receipt missing hamster: %s\n' "$RECEIPT_BODY" >&2
+  exit 1
+}
+printf '%s' "$RECEIPT_BODY" | grep -q '500.00' || {
+  printf 'receipt missing amount: %s\n' "$RECEIPT_BODY" >&2
+  exit 1
+}
+
+RECEIPT_ISSUED="$(curl -fsS -X POST "$API_URL/v1/receipts/$RECEIPT_ID/issue" \
+  "${AUTH[@]}" -H "Idempotency-Key: pr-$RUN_ID-receipt-issue")"
+[[ "$(printf '%s' "$RECEIPT_ISSUED" | json_field '.data.status')" == "issued" ]] || {
+  printf 'receipt issue failed: %s\n' "$RECEIPT_ISSUED" >&2
+  exit 1
+}
+
+printf 'public-reservation smoke PASS: reservation=%s contact=%s hamster=%s contract=%s handover=%s receipt=%s slug=%s\n' \
+  "$RESERVATION_ID" "$CONTACT_ID" "$HAMSTER_ID" "$CONTRACT_ID" "$HANDOVER_ID" "$RECEIPT_ID" "$SLUG"

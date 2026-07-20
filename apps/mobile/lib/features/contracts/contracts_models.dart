@@ -126,6 +126,7 @@ class ReceiptDraft {
     required this.templateId,
     this.contactId,
     this.handoverId,
+    this.reservationId,
     this.title = '',
     required this.amountCents,
     this.currency = 'CNY',
@@ -137,6 +138,7 @@ class ReceiptDraft {
   final String templateId;
   final String? contactId;
   final String? handoverId;
+  final String? reservationId;
   final String title;
   final int amountCents;
   final String currency;

@@ -622,12 +622,16 @@ class _ReceiptFormSheetState extends State<_ReceiptFormSheet> {
     _contactId = widget.initial?.contactId;
     _handoverId = widget.initial?.handoverId;
     _hamsterId = widget.initial?.hamsterId;
+    final seedHamster = widget.initial?.hamsterName?.trim() ?? '';
     _contactName = TextEditingController(
       text: widget.initial?.contactName ?? '',
     );
     _hamsterName = TextEditingController(
       text: widget.initial?.hamsterName ?? '',
     );
+    if (seedHamster.isNotEmpty) {
+      _title.text = '收款回执 · $seedHamster';
+    }
   }
 
   @override
@@ -653,6 +657,10 @@ class _ReceiptFormSheetState extends State<_ReceiptFormSheet> {
           _docHamsterById(widget.hamsters, handover.hamsterId)?.displayName ??
           handover.hamsterName ??
           _hamsterName.text;
+      final name = _hamsterName.text.trim();
+      if (name.isNotEmpty && _title.text.trim().isEmpty) {
+        _title.text = '收款回执 · $name';
+      }
     });
   }
 
@@ -677,6 +685,7 @@ class _ReceiptFormSheetState extends State<_ReceiptFormSheet> {
         templateId: _templateId,
         contactId: _contactId,
         handoverId: _handoverId,
+        reservationId: widget.initial?.reservationId,
         title: _title.text.trim(),
         amountCents: (yuan * 100).round(),
         contactName: contactName,

@@ -590,12 +590,14 @@ class _HomeShellState extends State<HomeShell> {
           controller: CrmController(repository: widget.services.crmRepository),
           hamsters: snapshot?.hamsters ?? const <I2Hamster>[],
           canWrite: _canWrite(AppCapability.writeCrm),
-          onOpenDocuments: (handover, contact, hamster) {
+          onOpenDocuments: (handover, contact, hamster, [documentKind = 'contract']) {
             _openContracts(
               launchContext: ContractsLaunchContext(
+                kind: documentKind,
                 contactId: handover.contactId,
                 contactName: contact?.name ?? handover.contactName,
                 handoverId: handover.id,
+                reservationId: handover.reservationId,
                 hamsterId: handover.hamsterId,
                 hamsterName: hamster?.displayName ?? handover.hamsterName,
               ),

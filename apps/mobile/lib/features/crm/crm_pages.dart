@@ -22,11 +22,13 @@ class CrmHubPage extends StatefulWidget {
 
   final CrmController controller;
   final List<I2Hamster> hamsters;
+  /// [documentKind] 为 `contract` 或 `receipt`。
   final void Function(
     CrmHandover handover,
     CrmContact? contact,
-    I2Hamster? hamster,
-  )?
+    I2Hamster? hamster, [
+    String documentKind,
+  ])?
   onOpenDocuments;
   /// 从已确认/锁定中的预订一键生成合同（继承客户与仓鼠）。
   final void Function(CrmReservation reservation, I2Hamster? hamster)?
@@ -458,8 +460,9 @@ class _HandoversTab extends StatelessWidget {
   final void Function(
     CrmHandover handover,
     CrmContact? contact,
-    I2Hamster? hamster,
-  )?
+    I2Hamster? hamster, [
+    String documentKind,
+  ])?
   onOpenDocuments;
   final bool canWrite;
 
@@ -1136,7 +1139,12 @@ Future<void> _showHandoverDetails(
   CrmContact? contact,
   I2Hamster? hamster,
   required ValueChanged<CrmHandover> onComplete,
-  void Function(CrmHandover handover, CrmContact? contact, I2Hamster? hamster)?
+  void Function(
+    CrmHandover handover,
+    CrmContact? contact,
+    I2Hamster? hamster, [
+    String documentKind,
+  ])?
   onOpenDocuments,
   required bool canWrite,
 }) async {
@@ -1252,12 +1260,23 @@ Future<void> _showHandoverDetails(
                 if (onOpenDocuments != null) ...[
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
+                    key: Key('crm-handover-open-contract-${handover.id}'),
                     onPressed: () {
                       Navigator.pop(context);
-                      onOpenDocuments(handover, contact, hamster);
+                      onOpenDocuments(handover, contact, hamster, 'contract');
                     },
                     icon: const Icon(CupertinoIcons.doc_text_fill),
-                    label: const Text('合同与回执'),
+                    label: const Text('生成合同'),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    key: Key('crm-handover-open-receipt-${handover.id}'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      onOpenDocuments(handover, contact, hamster, 'receipt');
+                    },
+                    icon: const Icon(CupertinoIcons.money_yen_circle),
+                    label: const Text('生成回执'),
                   ),
                 ],
               ],

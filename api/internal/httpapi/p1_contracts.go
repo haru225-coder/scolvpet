@@ -71,15 +71,16 @@ type createContractRequest struct {
 }
 
 type createReceiptRequest struct {
-	TemplateID  string  `json:"template_id"`
-	ContactID   *string `json:"contact_id"`
-	HandoverID  *string `json:"handover_id"`
-	Title       string  `json:"title"`
-	AmountCents int64   `json:"amount_cents"`
-	Currency    string  `json:"currency"`
-	Notes       *string `json:"notes"`
-	ContactName *string `json:"contact_name"`
-	HamsterName *string `json:"hamster_name"`
+	TemplateID    string  `json:"template_id"`
+	ContactID     *string `json:"contact_id"`
+	HandoverID    *string `json:"handover_id"`
+	ReservationID *string `json:"reservation_id"`
+	Title         string  `json:"title"`
+	AmountCents   int64   `json:"amount_cents"`
+	Currency      string  `json:"currency"`
+	Notes         *string `json:"notes"`
+	ContactName   *string `json:"contact_name"`
+	HamsterName   *string `json:"hamster_name"`
 }
 
 func (s *Server) listContractTemplates(w http.ResponseWriter, r *http.Request) {
@@ -267,7 +268,33 @@ func (s *Server) createReceipt(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, validationError("handover_id", "交付单 ID 无效"))
 		return
 	}
+	reservationID, err := parseOptionalUUID(request.ReservationID)
+	if err != nil {
+		writeAPIError(w, r, validationError("reservation_id", "预订 ID 无效"))
+		return
+	}
 	hamsterName := stringOrEmpty(request.HamsterName)
+	// 预订优先：继承客户/个体，并尽量关联已有交付单。
+	if reservationID != nil {
+		context, contextErr := s.getDocReservationContext(r.Context(), ownerID, *reservationID)
+		if contextErr != nil {
+			writeAPIError(w, r, contextErr)
+			return
+		}
+		if contactID == nil {
+			contact := context.ContactID
+			contactID = &contact
+		}
+		if contactName == "" {
+			contactName = context.ContactName
+		}
+		if hamsterName == "" {
+			hamsterName = context.HamsterName
+		}
+		if handoverID == nil && context.HandoverID != nil {
+			handoverID = context.HandoverID
+		}
+	}
 	if handoverID != nil {
 		context, contextErr := s.getDocHandoverContext(r.Context(), ownerID, *handoverID)
 		if contextErr != nil {
@@ -287,7 +314,11 @@ func (s *Server) createReceipt(w http.ResponseWriter, r *http.Request) {
 	}
 	title := strings.TrimSpace(request.Title)
 	if title == "" {
-		title = tpl.Name
+		if hamsterName != "" {
+			title = "收款回执 · " + hamsterName
+		} else {
+			title = tpl.Name
+		}
 	}
 	amountYuan := fmt.Sprintf("%.2f", float64(request.AmountCents)/100.0)
 	filled := fillDocTemplate(tpl.Body, map[string]string{
