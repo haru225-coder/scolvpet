@@ -59,11 +59,12 @@ type createDocTemplateRequest struct {
 }
 
 type createContractRequest struct {
-	TemplateID string  `json:"template_id"`
-	ContactID  *string `json:"contact_id"`
-	HandoverID *string `json:"handover_id"`
-	Title      string  `json:"title"`
-	Notes      *string `json:"notes"`
+	TemplateID    string  `json:"template_id"`
+	ContactID     *string `json:"contact_id"`
+	HandoverID    *string `json:"handover_id"`
+	ReservationID *string `json:"reservation_id"`
+	Title         string  `json:"title"`
+	Notes         *string `json:"notes"`
 	// Optional overrides for variable fill.
 	ContactName *string `json:"contact_name"`
 	HamsterName *string `json:"hamster_name"`
@@ -131,7 +132,33 @@ func (s *Server) createContract(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, validationError("handover_id", "交付单 ID 无效"))
 		return
 	}
+	reservationID, err := parseOptionalUUID(request.ReservationID)
+	if err != nil {
+		writeAPIError(w, r, validationError("reservation_id", "预订 ID 无效"))
+		return
+	}
 	hamsterName := stringOrEmpty(request.HamsterName)
+	// 优先从 Reservation 继承客户/个体（Golden Path：确认预订后直接生成合同）。
+	if reservationID != nil {
+		context, contextErr := s.getDocReservationContext(r.Context(), ownerID, *reservationID)
+		if contextErr != nil {
+			writeAPIError(w, r, contextErr)
+			return
+		}
+		if contactID == nil {
+			contact := context.ContactID
+			contactID = &contact
+		}
+		if contactName == "" {
+			contactName = context.ContactName
+		}
+		if hamsterName == "" {
+			hamsterName = context.HamsterName
+		}
+		if handoverID == nil && context.HandoverID != nil {
+			handoverID = context.HandoverID
+		}
+	}
 	if handoverID != nil {
 		context, contextErr := s.getDocHandoverContext(r.Context(), ownerID, *handoverID)
 		if contextErr != nil {
@@ -155,7 +182,11 @@ func (s *Server) createContract(w http.ResponseWriter, r *http.Request) {
 	}
 	title := strings.TrimSpace(request.Title)
 	if title == "" {
-		title = tpl.Name
+		if hamsterName != "" {
+			title = "交接协议 · " + hamsterName
+		} else {
+			title = tpl.Name
+		}
 	}
 	filled := fillDocTemplate(tpl.Body, map[string]string{
 		"contact_name": contactName,
@@ -533,6 +564,14 @@ type docHandoverContext struct {
 	HamsterName string
 }
 
+type docReservationContext struct {
+	ContactID   uuid.UUID
+	ContactName string
+	HamsterName string
+	// 若该预订已有未取消交付单，附带便于合同关联。
+	HandoverID *uuid.UUID
+}
+
 func (s *Server) getDocHandoverContext(ctx context.Context, ownerID, handoverID uuid.UUID) (docHandoverContext, error) {
 	var value docHandoverContext
 	err := s.Store.Pool.QueryRow(ctx, `
@@ -551,6 +590,47 @@ func (s *Server) getDocHandoverContext(ctx context.Context, ownerID, handoverID 
 		return docHandoverContext{}, validationError("handover_id", "交付单不存在")
 	}
 	return value, err
+}
+
+func (s *Server) getDocReservationContext(ctx context.Context, ownerID, reservationID uuid.UUID) (docReservationContext, error) {
+	var value docReservationContext
+	var status string
+	err := s.Store.Pool.QueryRow(ctx, `
+		SELECT r.contact_id, c.name,
+			COALESCE(NULLIF(hamster.name,''), hamster.internal_code, ''),
+			r.status::text
+		FROM crm_reservation r
+		JOIN crm_contact c ON c.owner_id=r.owner_id AND c.id=r.contact_id
+		LEFT JOIN hamster ON hamster.owner_id=r.owner_id AND hamster.id=r.hamster_id AND hamster.deleted_at IS NULL
+		WHERE r.owner_id=$1 AND r.id=$2
+	`, ownerID, reservationID).Scan(
+		&value.ContactID,
+		&value.ContactName,
+		&value.HamsterName,
+		&status,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return docReservationContext{}, validationError("reservation_id", "预订不存在")
+	}
+	if err != nil {
+		return docReservationContext{}, err
+	}
+	if status == "cancelled" {
+		return docReservationContext{}, validationError("reservation_id", "已取消的预订不能生成合同")
+	}
+	var handoverID uuid.UUID
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT id FROM crm_handover
+		WHERE owner_id=$1 AND reservation_id=$2 AND status <> 'cancelled'
+		ORDER BY scheduled_at DESC, id DESC
+		LIMIT 1
+	`, ownerID, reservationID).Scan(&handoverID)
+	if err == nil {
+		value.HandoverID = &handoverID
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return docReservationContext{}, err
+	}
+	return value, nil
 }
 
 func fillDocTemplate(body string, vars map[string]string) string {
