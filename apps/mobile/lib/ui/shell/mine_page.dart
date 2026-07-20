@@ -47,9 +47,8 @@ class _MinePage extends StatelessWidget {
                 horizontal: IosMetrics.pagePadding,
               ),
               child: IosLargeTitle(
-                '我的',
-                subtitle:
-                    '${organization?.name ?? '熊舍'} · ${memberRoleLabel(state.currentMemberRole)}',
+                organization?.name ?? '熊舍',
+                subtitle: memberRoleLabel(state.currentMemberRole),
                 trailing: const BearMascot(size: 44, mood: BearMood.happy),
               ),
             ),

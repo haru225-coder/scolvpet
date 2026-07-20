@@ -37,7 +37,7 @@ void main() {
   );
 
   testWidgets(
-    'ScolvPetApp renders initialization, five navigation tabs and cached shell',
+    'ScolvPetApp renders initialization, three navigation tabs and cached shell',
     (tester) async {
       tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
       addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
@@ -94,13 +94,23 @@ void main() {
       final shellContext = tester.element(find.byType(HomeShell));
       expect(Theme.of(shellContext).brightness, Brightness.light);
       expect(ScolvPalette.of(shellContext).accent, ScolvPalette.light.accent);
-      for (final label in ['今日', '仓鼠', '管家', '繁育', '我的']) {
+      for (final label in ['工作台', '仓鼠', '繁育']) {
         expect(
           find.descendant(
             of: find.byType(NavigationBar),
             matching: find.text(label),
           ),
           findsOneWidget,
+        );
+      }
+      // P0-1: 管家 / 我的 已移出底栏
+      for (final gone in ['今日', '管家', '我的']) {
+        expect(
+          find.descendant(
+            of: find.byType(NavigationBar),
+            matching: find.text(gone),
+          ),
+          findsNothing,
         );
       }
       expect(find.text('快捷操作'), findsOneWidget);
@@ -124,15 +134,26 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('繁育向导'), findsOneWidget);
       expect(find.text('窝次看板'), findsOneWidget);
+      // 回到工作台，经右上角账号入口进入原「我的」能力
       await tester.tap(
         find.descendant(
           of: find.byType(NavigationBar),
-          matching: find.text('我的'),
+          matching: find.text('工作台'),
         ),
       );
       await tester.pumpAndSettle();
+      // 工作台是可滚动页，先滚回顶部再点 header 入口
+      final homeScroll = find.byType(Scrollable).first;
+      await tester.drag(homeScroll, const Offset(0, 2400));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('home-open-account')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('home-open-account')), findsOneWidget);
+      expect(find.byKey(const Key('home-open-assistant')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('home-open-account')));
+      await tester.pumpAndSettle();
       expect(find.textContaining('雪团熊舍'), findsOneWidget);
-      // Mine ListView is lazy — scroll each entry into view.
+      // Account ListView is lazy — scroll each entry into view.
       for (final key in [
         const Key('mine-open-crm'),
         const Key('mine-open-contracts'),
@@ -163,27 +184,17 @@ void main() {
       );
       await tester.tap(find.byKey(const Key('mine-open-assistant')));
       await tester.pumpAndSettle();
+      // 管家改为 push；遮罩路由下底栏 offstage，用 skipOffstage 校验仍停在工作台
       expect(
-        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        2,
+        tester
+            .widget<NavigationBar>(
+              find.byType(NavigationBar, skipOffstage: false),
+            )
+            .selectedIndex,
+        0,
       );
       expect(find.byKey(const Key('assistant-read-only-note')), findsOneWidget);
-      await tester.tap(
-        find.descendant(
-          of: find.byType(NavigationBar),
-          matching: find.text('我的'),
-        ),
-      );
-      await tester.pumpAndSettle();
-      // Mine list is long; assert key entries + 数据中心 only (species rule UI covered elsewhere).
-      await tester.drag(find.byType(ListView).first, const Offset(0, 2400));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('数据中心'));
-      await tester.pumpAndSettle();
-      expect(find.text('数据中心'), findsOneWidget);
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-      expect(find.textContaining('雪团熊舍'), findsOneWidget);
+      expect(find.text('问问管家'), findsWidgets);
     },
   );
 }

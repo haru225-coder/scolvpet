@@ -438,14 +438,15 @@ ThemeData buildIosTheme([Brightness brightness = Brightness.light]) {
       side: BorderSide.none,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      height: 68,
+      height: 64,
       elevation: 0,
       backgroundColor: palette.tabBarBackground,
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
-      indicatorColor: palette.accent.withValues(alpha: 0.16),
+      // P0-1: 轻量 selected，避免大面积胶囊抢视觉
+      indicatorColor: palette.accent.withValues(alpha: 0.10),
       indicatorShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(IosMetrics.pillRadius),
+        borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
       ),
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       labelTextStyle: WidgetStateProperty.resolveWith((states) {

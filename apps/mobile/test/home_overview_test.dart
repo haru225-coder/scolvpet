@@ -156,7 +156,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('今日'), findsOneWidget);
+    expect(find.text('工作台'), findsOneWidget);
     expect(find.text('雪团熊舍'), findsOneWidget);
     expect(find.text('在养'), findsOneWidget);
     expect(find.text('1'), findsWidgets);

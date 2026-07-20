@@ -23,6 +23,183 @@ class _HomeShellState extends State<HomeShell> {
     setState(() => index = value);
   }
 
+  /// P0-1: AI 移出底栏，保留可达入口（push，非一级 Tab）。
+  void _openAssistant() {
+    Navigator.of(context).push<void>(
+      iosPageRoute(
+        builder: (_) => AssistantPage(
+          controller: _assistantController,
+          i2Controller: widget.services.i2Controller,
+          taskController: widget.services.taskController,
+          onOpenTasks: () {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            _openTasks();
+          },
+          onCreateTask: _canWrite(AppCapability.writeTask)
+              ? () {
+                  final snapshot =
+                      widget.services.i2Controller.snapshotState.data;
+                  Navigator.of(context).push<void>(
+                    iosPageRoute(
+                      builder: (_) => TaskComposerPage(
+                        controller: widget.services.taskController,
+                        canWrite: true,
+                        organizationId: widget.services.state.organization?.id,
+                        hamsters: snapshot?.hamsters ?? const <I2Hamster>[],
+                        enclosures:
+                            snapshot?.enclosures ?? const <I2Enclosure>[],
+                      ),
+                    ),
+                  );
+                }
+              : null,
+          onOpenHamsters: () {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            _goTab(1);
+          },
+          onOpenHamsterDetail: (hamster) {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            _openHamsterDetail(hamster);
+          },
+          onOpenEnclosures: () {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            _openEnclosures();
+          },
+          onOpenEnclosureDetail: (enclosure) {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            _openEnclosureDetail(enclosure);
+          },
+          onOpenGrowth: () {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            _openGrowth();
+          },
+          onOpenDataCenter: () {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            _openDataCenter();
+          },
+          onOpenTaskDraft: _canWrite(AppCapability.writeTask)
+              ? (draft) {
+                  final snapshot =
+                      widget.services.i2Controller.snapshotState.data;
+                  Navigator.of(context).push<void>(
+                    iosPageRoute(
+                      builder: (_) => TaskComposerPage(
+                        controller: widget.services.taskController,
+                        canWrite: true,
+                        organizationId: widget.services.state.organization?.id,
+                        hamsters: snapshot?.hamsters ?? const <I2Hamster>[],
+                        enclosures:
+                            snapshot?.enclosures ?? const <I2Enclosure>[],
+                        initialDraft: draft,
+                      ),
+                    ),
+                  );
+                }
+              : null,
+        ),
+      ),
+    );
+  }
+
+  /// P0-1: 「我的」移出底栏，Account 菜单 push 可达；能力不删。
+  void _openAccount() {
+    Navigator.of(context).push<void>(
+      iosPageRoute(
+        builder: (pageContext) => Scaffold(
+          appBar: AppBar(
+            key: const Key('account-app-bar'),
+            title: const Text('账号'),
+            leading: IconButton(
+              key: const Key('account-back'),
+              tooltip: '返回',
+              icon: const Icon(CupertinoIcons.back),
+              onPressed: () => Navigator.of(pageContext).pop(),
+            ),
+          ),
+          body: _buildMinePage(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMinePage() {
+    return _MinePage(
+      state: widget.services.state,
+      onOpenDataCenter: _openDataCenter,
+      onOpenMembers: () {
+        Navigator.of(context).push<void>(
+          iosPageRoute(
+            builder: (_) => MemberListPage(
+              controller: MemberController(
+                repository: widget.services.memberRepository,
+                currentRole: widget.services.state.currentMemberRole,
+              ),
+            ),
+          ),
+        );
+      },
+      onOpenCrm: _openCrm,
+      onOpenContracts: _openContracts,
+      onOpenAccounting: () {
+        Navigator.of(context).push<void>(
+          iosPageRoute(
+            builder: (_) => AccountingHubPage(
+              controller: AccountingController(
+                repository: widget.services.accountingRepository,
+              ),
+              canWrite: _canWrite(AppCapability.writeAccounting),
+            ),
+          ),
+        );
+      },
+      onOpenTodayWidget: widget.services.todayWidgetPublisher == null
+          ? null
+          : () {
+              Navigator.of(context).push<void>(
+                iosPageRoute(
+                  builder: (_) => TodayWidgetPreviewPage(
+                    taskController: widget.services.taskController,
+                    publisher: widget.services.todayWidgetPublisher!,
+                  ),
+                ),
+              );
+            },
+      onOpenGenetic: () => _openGeneticHub(),
+      onOpenPaywall: () {
+        Navigator.of(context).push<void>(
+          iosPageRoute(
+            builder: (_) => PaywallPage(
+              controller: PaywallController(
+                repository: widget.services.paywallRepository,
+              ),
+            ),
+          ),
+        );
+      },
+      onOpenPublicSite: () {
+        Navigator.of(context).push<void>(
+          iosPageRoute(
+            builder: (_) => PublicSiteEditorPage(
+              controller: PublicSiteController(
+                repository: widget.services.publicSiteRepository,
+              ),
+            ),
+          ),
+        );
+      },
+      onOpenAssistant: _openAssistant,
+      onOpenStud: () {
+        Navigator.of(context).push<void>(
+          iosPageRoute(
+            builder: (_) => StudHubPage(
+              controller: StudController(repository: widget.services.studRepository),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -448,6 +625,7 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    // P0-1 Shell: 5 → 3 底栏。管家 / 我的 改为 push 可达，不删能力。
     final pages = [
       HomeOverviewPage(
         state: widget.services.state,
@@ -455,13 +633,15 @@ class _HomeShellState extends State<HomeShell> {
         taskController: widget.services.taskController,
         onOpenHamsters: () => _goTab(1),
         onOpenEnclosures: _openEnclosures,
-        onOpenBreeding: () => _goTab(3),
+        onOpenBreeding: () => _goTab(2),
         onOpenLitters: _openLitters,
         onOpenDataCenter: _openDataCenter,
         onOpenTasks: _openTasks,
         onOpenCalendar: _openCalendar,
         onCreateHamster: () => _openHamsterEditor(),
         onOpenBatchWeight: _openBatchWeight,
+        onOpenAccount: _openAccount,
+        onOpenAssistant: _openAssistant,
       ),
       HamsterListPage(
         controller: widget.services.i2Controller,
@@ -473,51 +653,6 @@ class _HomeShellState extends State<HomeShell> {
             ? _openBatchHamsterEditor
             : null,
         onOpenLitters: _openLitters,
-      ),
-      AssistantPage(
-        controller: _assistantController,
-        i2Controller: widget.services.i2Controller,
-        taskController: widget.services.taskController,
-        onOpenTasks: _openTasks,
-        onCreateTask: _canWrite(AppCapability.writeTask)
-            ? () {
-                final snapshot = widget.services.i2Controller.snapshotState.data;
-                Navigator.of(context).push<void>(
-                  iosPageRoute(
-                    builder: (_) => TaskComposerPage(
-                      controller: widget.services.taskController,
-                      canWrite: true,
-                      organizationId: widget.services.state.organization?.id,
-                      hamsters: snapshot?.hamsters ?? const <I2Hamster>[],
-                      enclosures: snapshot?.enclosures ?? const <I2Enclosure>[],
-                    ),
-                  ),
-                );
-              }
-            : null,
-        onOpenHamsters: () => _goTab(1),
-        onOpenHamsterDetail: _openHamsterDetail,
-        onOpenEnclosures: _openEnclosures,
-        onOpenEnclosureDetail: _openEnclosureDetail,
-        onOpenGrowth: _openGrowth,
-        onOpenDataCenter: _openDataCenter,
-        onOpenTaskDraft: _canWrite(AppCapability.writeTask)
-            ? (draft) {
-                final snapshot = widget.services.i2Controller.snapshotState.data;
-                Navigator.of(context).push<void>(
-                  iosPageRoute(
-                    builder: (_) => TaskComposerPage(
-                      controller: widget.services.taskController,
-                      canWrite: true,
-                      organizationId: widget.services.state.organization?.id,
-                      hamsters: snapshot?.hamsters ?? const <I2Hamster>[],
-                      enclosures: snapshot?.enclosures ?? const <I2Enclosure>[],
-                      initialDraft: draft,
-                    ),
-                  ),
-                );
-              }
-            : null,
       ),
       AnimatedBuilder(
         animation: widget.services.i2Controller,
@@ -535,81 +670,6 @@ class _HomeShellState extends State<HomeShell> {
           );
         },
       ),
-      _MinePage(
-        state: widget.services.state,
-        onOpenDataCenter: _openDataCenter,
-        onOpenMembers: () {
-          Navigator.of(context).push<void>(
-            iosPageRoute(
-              builder: (_) => MemberListPage(
-                controller: MemberController(
-                  repository: widget.services.memberRepository,
-                  currentRole: widget.services.state.currentMemberRole,
-                ),
-              ),
-            ),
-          );
-        },
-        onOpenCrm: _openCrm,
-        onOpenContracts: _openContracts,
-        onOpenAccounting: () {
-          Navigator.of(context).push<void>(
-            iosPageRoute(
-              builder: (_) => AccountingHubPage(
-                controller: AccountingController(
-                  repository: widget.services.accountingRepository,
-                ),
-                canWrite: _canWrite(AppCapability.writeAccounting),
-              ),
-            ),
-          );
-        },
-        onOpenTodayWidget: widget.services.todayWidgetPublisher == null
-            ? null
-            : () {
-                Navigator.of(context).push<void>(
-                  iosPageRoute(
-                    builder: (_) => TodayWidgetPreviewPage(
-                      taskController: widget.services.taskController,
-                      publisher: widget.services.todayWidgetPublisher!,
-                    ),
-                  ),
-                );
-              },
-        onOpenGenetic: () => _openGeneticHub(),
-        onOpenPaywall: () {
-          Navigator.of(context).push<void>(
-            iosPageRoute(
-              builder: (_) => PaywallPage(
-                controller: PaywallController(
-                  repository: widget.services.paywallRepository,
-                ),
-              ),
-            ),
-          );
-        },
-        onOpenPublicSite: () {
-          Navigator.of(context).push<void>(
-            iosPageRoute(
-              builder: (_) => PublicSiteEditorPage(
-                controller: PublicSiteController(
-                  repository: widget.services.publicSiteRepository,
-                ),
-              ),
-            ),
-          );
-        },
-        onOpenAssistant: () => _goTab(2),
-        onOpenStud: () {
-          Navigator.of(context).push<void>(
-            iosPageRoute(
-              builder: (_) => StudHubPage(
-                controller: StudController(repository: widget.services.studRepository),
-              ),
-            ),
-          );
-        },
-      ),
     ];
     return Scaffold(
       body: SafeArea(
@@ -623,41 +683,19 @@ class _HomeShellState extends State<HomeShell> {
           animationDuration: IosMetrics.spring,
           destinations: const [
             NavigationDestination(
-              icon: BearNavIcon(asset: BearAssets.icToday),
-              selectedIcon: BearNavIcon(
-                asset: BearAssets.icToday,
-                selected: true,
-              ),
-              label: '今日',
+              icon: Icon(CupertinoIcons.square_grid_2x2),
+              selectedIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
+              label: '工作台',
             ),
             NavigationDestination(
-              icon: BearNavIcon(asset: BearAssets.icHamster),
-              selectedIcon: BearNavIcon(
-                asset: BearAssets.icHamster,
-                selected: true,
-              ),
+              icon: Icon(CupertinoIcons.paw),
+              selectedIcon: Icon(CupertinoIcons.paw_solid),
               label: '仓鼠',
             ),
             NavigationDestination(
-              icon: Icon(CupertinoIcons.sparkles),
-              selectedIcon: Icon(CupertinoIcons.sparkles),
-              label: '管家',
-            ),
-            NavigationDestination(
-              icon: BearNavIcon(asset: BearAssets.icBreeding),
-              selectedIcon: BearNavIcon(
-                asset: BearAssets.icBreeding,
-                selected: true,
-              ),
+              icon: Icon(CupertinoIcons.heart),
+              selectedIcon: Icon(CupertinoIcons.heart_fill),
               label: '繁育',
-            ),
-            NavigationDestination(
-              icon: BearNavIcon(asset: BearAssets.icMine),
-              selectedIcon: BearNavIcon(
-                asset: BearAssets.icMine,
-                selected: true,
-              ),
-              label: '我的',
             ),
           ],
         ),

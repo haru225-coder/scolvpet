@@ -145,6 +145,8 @@ class HomeOverviewPage extends StatelessWidget {
     this.onOpenTasks,
     this.onOpenCalendar,
     this.onOpenBatchWeight,
+    this.onOpenAccount,
+    this.onOpenAssistant,
   });
 
   final AppState state;
@@ -159,6 +161,10 @@ class HomeOverviewPage extends StatelessWidget {
   final VoidCallback? onOpenTasks;
   final VoidCallback? onOpenCalendar;
   final VoidCallback? onOpenBatchWeight;
+  /// P0-1: Account menu (原「我的」能力入口)
+  final VoidCallback? onOpenAccount;
+  /// P0-1: AI 管家（原一级 Tab，现 push）
+  final VoidCallback? onOpenAssistant;
 
   @override
   Widget build(BuildContext context) {
@@ -223,14 +229,54 @@ class HomeOverviewPage extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: IosLargeTitle(
-                      '今日',
+                      '工作台',
                       subtitle: metrics.organizationName ?? '我的熊舍',
-                      trailing: _HomeStatusPill(
-                        offline: metrics.offline,
-                        failed: hasUncachedError,
-                        attention: metrics.attentionWithTasks(
-                          taskController?.openCount ?? 0,
-                        ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (onOpenAssistant != null)
+                            IconButton(
+                              key: const Key('home-open-assistant'),
+                              tooltip: '问问管家',
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 40,
+                                minHeight: 40,
+                              ),
+                              onPressed: onOpenAssistant,
+                              icon: Icon(
+                                CupertinoIcons.sparkles,
+                                size: 22,
+                                color: ScolvPalette.of(context).accent,
+                              ),
+                            ),
+                          if (onOpenAccount != null)
+                            IconButton(
+                              key: const Key('home-open-account'),
+                              tooltip: '账号与设置',
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 40,
+                                minHeight: 40,
+                              ),
+                              onPressed: onOpenAccount,
+                              icon: Icon(
+                                CupertinoIcons.person_crop_circle,
+                                size: 24,
+                                color: ScolvPalette.of(context).label,
+                              ),
+                            ),
+                          const SizedBox(width: 4),
+                          _HomeStatusPill(
+                            offline: metrics.offline,
+                            failed: hasUncachedError,
+                            attention: metrics.attentionWithTasks(
+                              taskController?.openCount ?? 0,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
