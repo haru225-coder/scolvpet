@@ -10,13 +10,6 @@ class AssistantFact {
   final String label;
   final String value;
   final String source;
-
-  factory AssistantFact.fromJson(Map<String, dynamic> json) => AssistantFact(
-    key: json['key'] as String? ?? '',
-    label: json['label'] as String? ?? '',
-    value: json['value'] as String? ?? '',
-    source: json['source'] as String? ?? '',
-  );
 }
 
 class AssistantAction {
@@ -33,17 +26,6 @@ class AssistantAction {
   final String summary;
   final bool requiresConfirmation;
   final Map<String, dynamic> payload;
-
-  factory AssistantAction.fromJson(Map<String, dynamic> json) =>
-      AssistantAction(
-        type: json['type'] as String? ?? '',
-        label: json['label'] as String? ?? '继续',
-        summary: json['summary'] as String? ?? '',
-        requiresConfirmation: json['requires_confirmation'] as bool? ?? false,
-        payload: json['payload'] is Map
-            ? Map<String, dynamic>.from(json['payload'] as Map)
-            : const <String, dynamic>{},
-      );
 }
 
 class AssistantAnswer {
@@ -62,36 +44,6 @@ class AssistantAnswer {
   final List<AssistantFact> facts;
   final String disclaimer;
   final List<AssistantAction> actions;
-
-  factory AssistantAnswer.fromJson(Map<String, dynamic> json) {
-    final facts = json['facts'];
-    final actions = json['actions'];
-    return AssistantAnswer(
-      answer: json['answer'] as String? ?? '',
-      intent: json['intent'] as String? ?? 'unknown',
-      mode: json['mode'] as String? ?? 'rules',
-      facts: facts is List
-          ? facts
-                .whereType<Map>()
-                .map(
-                  (e) => AssistantFact.fromJson(Map<String, dynamic>.from(e)),
-                )
-                .toList()
-          : const [],
-      disclaimer: json['disclaimer'] as String? ?? '',
-      actions: actions is List
-          ? actions
-                .whereType<Map>()
-                .map(
-                  (value) => AssistantAction.fromJson(
-                    Map<String, dynamic>.from(value),
-                  ),
-                )
-                .where((value) => value.type.isNotEmpty)
-                .toList()
-          : const <AssistantAction>[],
-    );
-  }
 }
 
 class AssistantCapabilities {
@@ -106,18 +58,6 @@ class AssistantCapabilities {
   final String modeDefault;
   final bool llmAvailable;
   final String disclaimer;
-
-  factory AssistantCapabilities.fromJson(Map<String, dynamic> json) {
-    final intents = json['intents'];
-    return AssistantCapabilities(
-      intents: intents is List
-          ? intents.map((e) => e.toString()).toList()
-          : const [],
-      modeDefault: json['mode_default'] as String? ?? 'rules',
-      llmAvailable: json['llm_available'] as bool? ?? false,
-      disclaimer: json['disclaimer'] as String? ?? '',
-    );
-  }
 }
 
 class AssistantSnapshot {
