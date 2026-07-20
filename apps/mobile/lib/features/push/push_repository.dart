@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
@@ -28,22 +27,6 @@ String pushErrorMessage(Object error) => apiErrorMessage(
   mapLocal: (e) => e is PushRepositoryException ? e.message : null,
 );
 
-/// Local token for PARTIAL builds without FCM/APNs SDK.
-String generateDevPushToken({String? platform}) {
-  final p = platform ?? defaultTargetPlatform.name.toLowerCase();
-  return 'dev-$p-${const Uuid().v4()}';
-}
-
-String detectPushPlatform() {
-  switch (defaultTargetPlatform) {
-    case TargetPlatform.iOS:
-      return 'ios';
-    case TargetPlatform.android:
-      return 'android';
-    default:
-      return 'unknown';
-  }
-}
 class DefaultApiPushRepository implements PushRepository {
   DefaultApiPushRepository({required this.client});
 

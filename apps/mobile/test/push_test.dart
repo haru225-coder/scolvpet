@@ -26,9 +26,8 @@ void main() {
   testWidgets('PushSettingsPage is a read-only availability notice', (
     tester,
   ) async {
-    final controller = PushController(repository: MemoryPushRepository());
     await tester.pumpWidget(
-      MaterialApp(home: PushSettingsPage(controller: controller)),
+      const MaterialApp(home: PushSettingsPage()),
     );
     await tester.pumpAndSettle();
     expect(find.text('通知说明'), findsOneWidget);
@@ -37,7 +36,5 @@ void main() {
     expect(find.byKey(const Key('push-register')), findsNothing);
     expect(find.byKey(const Key('push-send-test')), findsNothing);
     expect(find.textContaining('log'), findsNothing);
-    expect(controller.devicesState.status.name, 'idle');
-    expect(controller.messagesState.status.name, 'idle');
   });
 }

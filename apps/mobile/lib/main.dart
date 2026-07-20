@@ -24,7 +24,6 @@ import 'features/miniprogram/miniprogram.dart';
 import 'features/paywall/paywall.dart';
 import 'features/pedigree/pedigree.dart';
 import 'features/public_site/public_site.dart';
-import 'features/push/push.dart';
 import 'features/stud/stud.dart';
 import 'features/tasks/tasks.dart';
 import 'ui/screens.dart';
@@ -83,7 +82,6 @@ Future<void> main() async {
     contractsRepository: DefaultApiContractsRepository(client: apiClient),
     accountingRepository: DefaultApiAccountingRepository(client: apiClient),
     geneticRepository: DefaultApiGeneticRepository(client: apiClient),
-    pushRepository: DefaultApiPushRepository(client: apiClient),
     paywallRepository: DefaultApiPaywallRepository(client: apiClient),
     publicSiteRepository: DefaultApiPublicSiteRepository(client: apiClient),
     miniprogramRepository: DefaultApiMiniprogramRepository(client: apiClient),

@@ -4,13 +4,10 @@ import 'package:flutter/material.dart';
 import '../../ui/theme/ios_theme.dart';
 import '../../ui/widgets/bear_brand.dart';
 import '../../ui/widgets/ios_widgets.dart';
-import 'push_controller.dart';
 
 /// 系统通知通道尚未开放时的只读说明页。
 class PushSettingsPage extends StatelessWidget {
-  const PushSettingsPage({super.key, required this.controller});
-
-  final PushController controller;
+  const PushSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

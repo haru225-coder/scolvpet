@@ -15,7 +15,6 @@ import '../features/miniprogram/miniprogram_repository.dart';
 import '../features/paywall/paywall_repository.dart';
 import '../features/pedigree/pedigree_repository.dart';
 import '../features/public_site/public_site_repository.dart';
-import '../features/push/push_repository.dart';
 import '../features/stud/stud_repository.dart';
 import '../features/tasks/task_controller.dart';
 import 'app_state.dart';
@@ -39,7 +38,6 @@ class AppServices {
     required this.contractsRepository,
     required this.accountingRepository,
     required this.geneticRepository,
-    required this.pushRepository,
     required this.paywallRepository,
     required this.publicSiteRepository,
     required this.miniprogramRepository,
@@ -62,7 +60,6 @@ class AppServices {
   final ContractsRepository contractsRepository;
   final AccountingRepository accountingRepository;
   final GeneticRepository geneticRepository;
-  final PushRepository pushRepository;
   final PaywallRepository paywallRepository;
   final PublicSiteRepository publicSiteRepository;
   final MiniprogramRepository miniprogramRepository;

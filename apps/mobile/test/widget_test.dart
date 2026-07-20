@@ -75,7 +75,6 @@ void main() {
             contractsRepository: MemoryContractsRepository(),
             accountingRepository: MemoryAccountingRepository(),
             geneticRepository: MemoryGeneticRepository(),
-            pushRepository: MemoryPushRepository(),
             paywallRepository: MemoryPaywallRepository(),
             publicSiteRepository: MemoryPublicSiteRepository(),
             miniprogramRepository: MemoryMiniprogramRepository(),
