@@ -1,5 +1,7 @@
 part of 'i2_hamsters.dart';
 
+// P0-4-R1: Professional individual record surface (no Dark HUD palette).
+
 class _HamsterDetailOfflineBanner extends StatelessWidget {
   const _HamsterDetailOfflineBanner({this.lastSyncLabel});
 
@@ -9,32 +11,12 @@ class _HamsterDetailOfflineBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-      child: _HamsterDetailPanel(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-        color: const Color(0xff211b12),
-        borderColor: _HamsterDetailColors.gold.withValues(alpha: 0.08),
-        child: Row(
-          children: [
-            const Icon(
-              CupertinoIcons.cloud,
-              color: _HamsterDetailColors.gold,
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                lastSyncLabel == null
-                    ? '离线只读 · 最近同步未知'
-                    : '离线只读 · 最近同步 $lastSyncLabel',
-                style: const TextStyle(
-                  color: _HamsterDetailColors.goldBright,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
+      child: IosBanner(
+        icon: CupertinoIcons.cloud,
+        color: IosColors.systemOrange,
+        text: lastSyncLabel == null
+            ? '离线只读 · 最近同步未知'
+            : '离线只读 · 最近同步 $lastSyncLabel',
       ),
     );
   }
@@ -44,31 +26,19 @@ class _HamsterDetailPanel extends StatelessWidget {
   const _HamsterDetailPanel({
     required this.child,
     super.key,
-    this.padding = const EdgeInsets.all(16),
-    this.color = _HamsterDetailColors.panel,
-    this.borderColor = _HamsterDetailColors.line,
   });
 
   final Widget child;
-  final EdgeInsetsGeometry padding;
-  final Color color;
-  final Color borderColor;
 
   @override
   Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
     return Container(
-      padding: padding,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: borderColor),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 24,
-            offset: Offset(0, 12),
-          ),
-        ],
+        color: p.secondaryGroupedBackground,
+        borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+        border: Border.all(color: p.separator, width: IosMetrics.hairline),
       ),
       child: child,
     );
@@ -98,157 +68,140 @@ class _HamsterDetailProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tags = <String>{
-      '金丝熊',
+    final p = ScolvPalette.of(context);
+    final name = hamster.name?.trim() ?? '';
+    final code = hamster.internalCode.trim();
+    final title = name.isEmpty ? code : name;
+    // Domain authority: reuse existing phenotype/series display paths as-is.
+    final meta = <String>[
+      i2SexLabel(hamster.sex),
       if (hamster.coreSeriesCode != null) _seriesLabel(hamster.coreSeriesCode!),
       if (hamster.corePhenotypeLabel != null) hamster.corePhenotypeLabel!,
-    }.toList();
-    final identity = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(
-              hamster.name?.trim().isNotEmpty == true
-                  ? hamster.name!.trim()
-                  : hamster.internalCode,
-              style: const TextStyle(
-                color: _HamsterDetailColors.text,
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            _HamsterDetailChip(
-              label: offline ? '离线' : i2LifecycleLabel(hamster.lifecycleStatus),
-            ),
-          ],
-        ),
-        const SizedBox(height: 7),
-        Row(
-          children: [
-            Flexible(
-              child: Text(
-                'ID ${hamster.internalCode}',
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: _HamsterDetailColors.muted,
-                  fontSize: 15,
-                ),
-              ),
-            ),
-            IconButton(
-              tooltip: '复制编号',
-              onPressed: onCopyId,
-              padding: const EdgeInsets.all(4),
-              constraints: const BoxConstraints(),
-              icon: const Icon(
-                CupertinoIcons.doc_on_doc,
-                color: _HamsterDetailColors.muted,
-                size: 17,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 7),
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          children: [for (final tag in tags) _HamsterDetailTag(label: tag)],
-        ),
-      ],
-    );
-    return _HamsterDetailPanel(
+      if (hamster.birthDate != null) _hamsterAgeLabel(hamster.birthDate),
+    ];
+    return Container(
       key: const Key('hamster-detail-profile'),
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
-      color: const Color(0xff181a1a),
+      padding: const EdgeInsets.fromLTRB(4, 8, 4, 4),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final compact =
-                  constraints.maxWidth < 350 ||
-                  MediaQuery.textScalerOf(context).scale(1) > 1.2;
-              final avatar = _HamsterDetailAvatar(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _HamsterDetailAvatar(
                 hamster: hamster,
                 onTap: onAvatarTap,
                 loading: avatarLoading,
-                size: compact ? 84 : 104,
-              );
-              if (compact) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                size: 72,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.4,
+                          ),
+                    ),
+                    if (name.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        code,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: p.secondaryLabel,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                    if (meta.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        meta.join(' · '),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: p.secondaryLabel,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        avatar,
-                        const SizedBox(width: 12),
-                        Expanded(child: identity),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: offline
+                                    ? IosColors.systemOrange
+                                    : (healthGood
+                                          ? IosColors.systemGreen
+                                          : IosColors.systemOrange),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              offline
+                                  ? '离线'
+                                  : i2LifecycleLabel(hamster.lifecycleStatus),
+                              style: Theme.of(context).textTheme.labelLarge
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              CupertinoIcons.house,
+                              size: 14,
+                              color: p.secondaryLabel,
+                            ),
+                            const SizedBox(width: 4),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 120),
+                              child: Text(
+                                enclosureLabel,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: p.secondaryLabel),
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          tooltip: '复制编号',
+                          onPressed: onCopyId,
+                          visualDensity: VisualDensity.compact,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 32,
+                          ),
+                          icon: Icon(
+                            CupertinoIcons.doc_on_doc,
+                            size: 16,
+                            color: p.secondaryLabel,
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: _HamsterDetailHealthBadge(good: healthGood),
-                    ),
                   ],
-                );
-              }
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  avatar,
-                  const SizedBox(width: 14),
-                  Expanded(child: identity),
-                  const SizedBox(width: 8),
-                  _HamsterDetailHealthBadge(good: healthGood),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 20),
-          Container(height: 1, color: _HamsterDetailColors.line),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _HamsterDetailInfo(
-                  icon: hamster.sex == 'female'
-                      ? CupertinoIcons.person
-                      : CupertinoIcons.person_fill,
-                  label: '性别',
-                  value: i2SexLabel(hamster.sex),
-                ),
-              ),
-              Expanded(
-                child: _HamsterDetailInfo(
-                  icon: CupertinoIcons.gauge,
-                  label: '体重',
-                  value: latestWeight == null
-                      ? '待记录'
-                      : '${latestWeight!.weightG} g',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _HamsterDetailInfo(
-                  icon: CupertinoIcons.calendar,
-                  label: '年龄',
-                  value: _hamsterAgeLabel(hamster.birthDate),
-                ),
-              ),
-              Expanded(
-                child: _HamsterDetailInfo(
-                  icon: CupertinoIcons.house,
-                  label: '当前笼舍',
-                  value: enclosureLabel,
                 ),
               ),
             ],
@@ -264,7 +217,7 @@ class _HamsterDetailAvatar extends StatelessWidget {
     required this.hamster,
     required this.onTap,
     required this.loading,
-    this.size = 104,
+    this.size = 72,
   });
 
   final I2Hamster hamster;
@@ -274,34 +227,46 @@ class _HamsterDetailAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IosPressable(
+    return GestureDetector(
       key: const Key('hamster-avatar-manage'),
-      enabled: !loading,
       onTap: onTap,
-      haptic: false,
-      borderRadius: BorderRadius.circular(size / 2),
       child: Stack(
-        alignment: Alignment.center,
+        alignment: Alignment.bottomRight,
         children: [
           HamsterAvatar(
             label: hamster.name ?? hamster.internalCode,
             imageUrl: hamster.avatarUrl,
             imageBytes: hamster.avatarBytes,
             size: size,
-            statusColor: _HamsterDetailColors.gold,
+            preferBrandPlaceholder: true,
           ),
           if (loading)
-            const CircularProgressIndicator(
-              color: _HamsterDetailColors.goldBright,
-            ),
-          if (!loading)
-            const Positioned(
-              right: 2,
-              bottom: 2,
-              child: CircleAvatar(
-                radius: 15,
-                backgroundColor: _HamsterDetailColors.gold,
-                child: Icon(CupertinoIcons.camera_fill, size: 15),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              ),
+            )
+          else
+            Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: ScolvPalette.of(context).secondaryGroupedBackground,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                CupertinoIcons.camera_fill,
+                size: 12,
+                color: ScolvPalette.of(context).secondaryLabel,
               ),
             ),
         ],
@@ -310,179 +275,155 @@ class _HamsterDetailAvatar extends StatelessWidget {
   }
 }
 
-class _HamsterDetailChip extends StatelessWidget {
-  const _HamsterDetailChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: _HamsterDetailColors.goldSoft,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: _HamsterDetailColors.gold.withValues(alpha: 0.18),
-        ),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: _HamsterDetailColors.goldBright,
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _HamsterDetailTag extends StatelessWidget {
-  const _HamsterDetailTag({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0x1ff5eee2),
-        borderRadius: BorderRadius.circular(9),
-        border: Border.all(color: const Color(0x1ff5eee2)),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(color: _HamsterDetailColors.text, fontSize: 12),
-      ),
-    );
-  }
-}
-
-class _HamsterDetailHealthBadge extends StatelessWidget {
-  const _HamsterDetailHealthBadge({required this.good});
-
-  final bool good;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = good ? _HamsterDetailColors.green : _HamsterDetailColors.red;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: color.withValues(alpha: 0.22)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            good
-                ? CupertinoIcons.heart_fill
-                : CupertinoIcons.exclamationmark_triangle_fill,
-            color: color,
-            size: 16,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            good ? '健康良好' : '需关注',
-            style: TextStyle(color: color, fontWeight: FontWeight.w700),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HamsterDetailInfo extends StatelessWidget {
-  const _HamsterDetailInfo({
-    required this.icon,
-    required this.label,
-    required this.value,
+class _HamsterDetailArchiveSection extends StatelessWidget {
+  const _HamsterDetailArchiveSection({
+    super.key,
+    required this.hamster,
+    required this.enclosureLabel,
+    required this.latestWeight,
   });
 
-  final IconData icon;
-  final String label;
-  final String value;
+  final I2Hamster hamster;
+  final String enclosureLabel;
+  final I2WeightRecord? latestWeight;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: _HamsterDetailColors.gold, size: 18),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: _HamsterDetailColors.muted,
-                  fontSize: 12,
-                ),
+    final rows = <(String, String)>[
+      ('出生日期', i2DateLabel(hamster.birthDate)),
+      ('性别', i2SexLabel(hamster.sex)),
+      ('当前状态', i2LifecycleLabel(hamster.lifecycleStatus)),
+      ('笼盒', enclosureLabel),
+      (
+        '体重',
+        latestWeight == null ? '暂无' : '${latestWeight!.weightG} g',
+      ),
+      if (hamster.coreSeriesCode != null)
+        ('系列', _seriesLabel(hamster.coreSeriesCode!)),
+      if (hamster.corePhenotypeLabel != null)
+        ('表型', hamster.corePhenotypeLabel!),
+      if (hamster.breedingStatus.trim().isNotEmpty)
+        ('繁育状态', hamster.breedingStatus),
+    ];
+    return _HamsterDetailPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _HamsterDetailSectionTitle(
+            icon: CupertinoIcons.doc_person,
+            title: '基本档案',
+          ),
+          const SizedBox(height: 8),
+          _HamsterDetailFieldTable(rows: rows),
+        ],
+      ),
+    );
+  }
+}
+
+class _HamsterDetailBreedingSection extends StatelessWidget {
+  const _HamsterDetailBreedingSection({
+    super.key,
+    required this.litterCount,
+    required this.breedingStatus,
+    this.onOpenPedigree,
+    this.onOpenGenetic,
+  });
+
+  final int litterCount;
+  final String breedingStatus;
+  final VoidCallback? onOpenPedigree;
+  final VoidCallback? onOpenGenetic;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
+    return _HamsterDetailPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _HamsterDetailSectionTitle(
+            icon: CupertinoIcons.heart,
+            title: '繁育',
+          ),
+          const SizedBox(height: 8),
+          _HamsterDetailFieldTable(
+            rows: [
+              (
+                '当前繁育状态',
+                breedingStatus.trim().isEmpty ? '—' : breedingStatus,
               ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: _HamsterDetailColors.text,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              ('关联窝次', '$litterCount'),
             ],
           ),
-        ),
-      ],
+          if (onOpenPedigree != null || onOpenGenetic != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (onOpenPedigree != null)
+                  TextButton(
+                    key: const Key('hamster-detail-open-pedigree'),
+                    onPressed: onOpenPedigree,
+                    child: const Text('查看谱系'),
+                  ),
+                if (onOpenGenetic != null)
+                  TextButton(
+                    key: const Key('hamster-open-genetic'),
+                    onPressed: onOpenGenetic,
+                    child: Text(
+                      '配对推算',
+                      style: TextStyle(color: p.accent),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
 
-class _HamsterDetailMetric extends StatelessWidget {
-  const _HamsterDetailMetric({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.danger = false,
-  });
+class _HamsterDetailFieldTable extends StatelessWidget {
+  const _HamsterDetailFieldTable({required this.rows});
 
-  final IconData icon;
-  final String label;
-  final String value;
-  final bool danger;
+  final List<(String, String)> rows;
 
   @override
   Widget build(BuildContext context) {
-    final color = danger ? _HamsterDetailColors.red : _HamsterDetailColors.gold;
-    return _HamsterDetailPanel(
-      padding: const EdgeInsets.fromLTRB(10, 13, 10, 12),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 21),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: _HamsterDetailColors.muted,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              color: danger ? color : _HamsterDetailColors.text,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
+    final p = ScolvPalette.of(context);
+    return Column(
+      children: [
+        for (var i = 0; i < rows.length; i++) ...[
+          if (i > 0)
+            Divider(height: 1, thickness: IosMetrics.hairline, color: p.separator),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 96,
+                  child: Text(
+                    rows[i].$1,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: p.secondaryLabel,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    rows[i].$2,
+                    textAlign: TextAlign.right,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
-      ),
+      ],
     );
   }
 }
@@ -501,17 +442,17 @@ class _HamsterDetailSectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
     return Row(
       children: [
-        Icon(icon, color: _HamsterDetailColors.gold, size: 20),
-        const SizedBox(width: 9),
+        Icon(icon, size: 18, color: p.accent),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(
-              color: _HamsterDetailColors.text,
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.2,
             ),
           ),
         ),
@@ -529,93 +470,13 @@ class _HamsterDetailLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: _HamsterDetailColors.gold,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(width: 3),
-          const Icon(
-            CupertinoIcons.chevron_right,
-            color: _HamsterDetailColors.gold,
-            size: 14,
-          ),
-        ],
+    return TextButton(
+      onPressed: onTap,
+      style: TextButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
       ),
-    );
-  }
-}
-
-class _HamsterDetailHealthItem extends StatelessWidget {
-  const _HamsterDetailHealthItem({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.danger = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final bool danger;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = danger
-        ? _HamsterDetailColors.red
-        : _HamsterDetailColors.green;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      decoration: const BoxDecoration(
-        border: Border(left: BorderSide(color: _HamsterDetailColors.line)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: _HamsterDetailColors.gold, size: 20),
-          const SizedBox(height: 7),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: _HamsterDetailColors.text,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-              ),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+      child: Text(label),
     );
   }
 }
@@ -631,7 +492,9 @@ class _HamsterDetailEmptyRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Text(
         text,
-        style: const TextStyle(color: _HamsterDetailColors.muted, fontSize: 13),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: ScolvPalette.of(context).secondaryLabel,
+        ),
       ),
     );
   }
@@ -643,14 +506,14 @@ class _HamsterDetailEvent {
     required this.title,
     required this.at,
     this.subtitle,
-    this.color = _HamsterDetailColors.gold,
+    this.color,
   });
 
   final IconData icon;
   final String title;
   final DateTime at;
   final String? subtitle;
-  final Color color;
+  final Color? color;
 }
 
 class _HamsterDetailRecentRow extends StatelessWidget {
@@ -660,22 +523,12 @@ class _HamsterDetailRecentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: _HamsterDetailColors.line)),
-      ),
+    final p = ScolvPalette.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: event.color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(event.icon, color: event.color, size: 17),
-          ),
+          Icon(event.icon, size: 18, color: event.color ?? p.accent),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -683,41 +536,25 @@ class _HamsterDetailRecentRow extends StatelessWidget {
               children: [
                 Text(
                   event.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: _HamsterDetailColors.text,
-                    fontSize: 14,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (event.subtitle != null) ...[
-                  const SizedBox(height: 3),
+                if (event.subtitle != null && event.subtitle!.isNotEmpty)
                   Text(
                     event.subtitle!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: _HamsterDetailColors.muted,
-                      fontSize: 12,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: p.secondaryLabel,
                     ),
                   ),
-                ],
               ],
             ),
           ),
-          const SizedBox(width: 8),
           Text(
             _relativeDetailTime(event.at),
-            style: const TextStyle(
-              color: _HamsterDetailColors.muted,
-              fontSize: 12,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: p.secondaryLabel,
             ),
-          ),
-          const SizedBox(width: 3),
-          const Icon(
-            CupertinoIcons.chevron_right,
-            color: _HamsterDetailColors.muted,
-            size: 14,
           ),
         ],
       ),
@@ -738,55 +575,42 @@ class _HamsterDetailTaskRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      key: Key('hamster-care-task-${task.id}'),
-      padding: const EdgeInsets.symmetric(vertical: 9),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: _HamsterDetailColors.line)),
-      ),
+    final p = ScolvPalette.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Icon(
             task.isOverdue
-                ? CupertinoIcons.exclamationmark_triangle_fill
-                : CupertinoIcons.circle,
-            color: task.isOverdue
-                ? _HamsterDetailColors.red
-                : _HamsterDetailColors.gold,
+                ? CupertinoIcons.exclamationmark_circle
+                : CupertinoIcons.clock,
             size: 18,
+            color: task.isOverdue ? IosColors.systemOrange : p.secondaryLabel,
           ),
-          const SizedBox(width: 9),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   task.displayTitle,
-                  style: const TextStyle(
-                    color: _HamsterDetailColors.text,
-                    fontSize: 14,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 3),
                 Text(
-                  '${taskTypeLabel(task.taskType)} · ${task.isOverdue ? '已逾期 · ' : ''}${i2DateTimeLabel(task.scheduledAt)}',
-                  style: const TextStyle(
-                    color: _HamsterDetailColors.muted,
-                    fontSize: 12,
+                  taskTypeLabel(task.taskType),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: p.secondaryLabel,
                   ),
                 ),
               ],
             ),
           ),
-          if (enabled)
-            TextButton(
-              key: Key('hamster-complete-task-${task.id}'),
-              onPressed: onComplete,
-              style: TextButton.styleFrom(
-                foregroundColor: _HamsterDetailColors.gold,
-              ),
-              child: const Text('完成'),
-            ),
+          TextButton(
+            onPressed: enabled ? onComplete : null,
+            child: const Text('完成'),
+          ),
         ],
       ),
     );
@@ -800,201 +624,28 @@ class _HamsterDetailWeightRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
     final flags = evaluateWeightFlags(weight);
-    final abnormal = flags.isNotEmpty;
-    final delta = weight.changeFromPreviousG;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 9),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: _HamsterDetailColors.line)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(
-            CupertinoIcons.gauge,
-            color: abnormal
-                ? _HamsterDetailColors.red
-                : _HamsterDetailColors.gold,
-            size: 18,
-          ),
-          const SizedBox(width: 9),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${weight.weightG} g${abnormal ? ' · 异常' : ''}',
-                  style: const TextStyle(
-                    color: _HamsterDetailColors.text,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  '${i2DateTimeLabel(weight.recordedAt)} · ${weight.source}${flags.isEmpty ? '' : ' · ${flags.join(', ')}'}',
-                  style: const TextStyle(
-                    color: _HamsterDetailColors.muted,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            child: Text(
+              '${weight.weightG} g',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: flags.isEmpty ? p.label : IosColors.systemOrange,
+              ),
             ),
           ),
-          if (delta != null)
-            Text(
-              '${delta >= 0 ? '+' : ''}$delta g',
-              style: TextStyle(
-                color: delta < 0
-                    ? _HamsterDetailColors.red
-                    : _HamsterDetailColors.muted,
-                fontSize: 12,
-              ),
+          Text(
+            i2DateTimeLabel(weight.recordedAt),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: p.secondaryLabel,
             ),
+          ),
         ],
-      ),
-    );
-  }
-}
-
-class _HamsterDetailPedigreeCard extends StatelessWidget {
-  const _HamsterDetailPedigreeCard({
-    required this.litterCount,
-    required this.onTap,
-  });
-
-  final int litterCount;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return IosPressable(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: const Color(0x1b8bb55a),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0x1f8bb55a)),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              CupertinoIcons.tree,
-              color: _HamsterDetailColors.green,
-              size: 30,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    litterCount == 0 ? '谱系资料待补充' : '已关联 $litterCount 个窝次',
-                    style: const TextStyle(
-                      color: _HamsterDetailColors.text,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    '查看父母、后代与繁育记录',
-                    style: TextStyle(
-                      color: _HamsterDetailColors.muted,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              decoration: BoxDecoration(
-                color: const Color(0x4dbb8435),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '查看谱系',
-                    style: TextStyle(
-                      color: _HamsterDetailColors.goldBright,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(width: 3),
-                  Icon(
-                    CupertinoIcons.chevron_right,
-                    color: _HamsterDetailColors.goldBright,
-                    size: 14,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HamsterDetailAction extends StatelessWidget {
-  const _HamsterDetailAction({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return IosPressable(
-      onTap: onTap,
-      enabled: onTap != null,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 54),
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-        decoration: BoxDecoration(
-          color: onTap == null
-              ? const Color(0x0ff5eee2)
-              : const Color(0x14f5eee2),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0x14f5eee2)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: onTap == null
-                  ? _HamsterDetailColors.muted
-                  : _HamsterDetailColors.gold,
-              size: 20,
-            ),
-            const SizedBox(height: 5),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: onTap == null
-                    ? _HamsterDetailColors.muted
-                    : _HamsterDetailColors.text,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1018,7 +669,7 @@ List<_HamsterDetailEvent> _recentDetailEvents({
         subtitle: record.notes?.trim().isEmpty == true
             ? null
             : record.notes?.trim(),
-        color: _HamsterDetailColors.green,
+        color: IosColors.systemGreen,
       ),
     for (final weight in weights)
       _HamsterDetailEvent(

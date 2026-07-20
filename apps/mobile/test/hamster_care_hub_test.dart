@@ -214,13 +214,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final titleContext = tester.element(find.text('仓鼠详情'));
+    final titleContext = tester.element(find.text('个体档案'));
     expect(Theme.of(titleContext).brightness, Brightness.light);
     expect(find.byKey(const Key('hamster-detail-profile')), findsOneWidget);
     expect(
       find.byKey(const Key('hamster-detail-health-overview')),
       findsOneWidget,
     );
+    expect(find.byKey(const Key('hamster-detail-archive')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
