@@ -528,13 +528,11 @@ class _BreedingPlanTile extends StatelessWidget {
     final sire = _breedingHamsterLabel(hamsters, plan.sireId, '父本');
     final dam = _breedingHamsterLabel(hamsters, plan.damId, '母本');
     final meta = <String>[breedingStateLabel(plan.state)];
-    // Day N 仅来自真实 planned_pairing_at 的日历差，不伪造预产。
-    final planned = plan.plannedPairingAt;
-    if (planned != null) {
-      final days = DateTime.now().toUtc().difference(planned.toUtc()).inDays;
-      if (days >= 0 && days < 400) meta.add('Day $days');
-      meta.add('计划 ${i2DateLabel(planned)}');
-    }
+    // Day N 仅在 pairing/gestation 且具备权威起点时显示；草稿/计划显示计划配对日。
+    final plannedLabel = breedingPlannedPairingLabel(plan);
+    if (plannedLabel != null) meta.add(plannedLabel);
+    final dayLabel = breedingDayProgressLabel(plan);
+    if (dayLabel != null) meta.add(dayLabel);
     final expStart = plan.expectedBirthStart;
     final expEnd = plan.expectedBirthEnd;
     if (expStart != null && expEnd != null) {

@@ -10,6 +10,7 @@ class BreedingPlan {
     required this.version,
     this.name,
     this.plannedPairingAt,
+    this.matingBaselineAt,
     this.activePairingAttemptId,
     this.litterId,
     this.expectedBirthStart,
@@ -26,6 +27,8 @@ class BreedingPlan {
   final int version;
   final String? name;
   final DateTime? plannedPairingAt;
+  /// 进入孕期时的权威交配基准日（Backend `mating_baseline_at`）。
+  final DateTime? matingBaselineAt;
   final String? activePairingAttemptId;
   final String? litterId;
   final DateTime? expectedBirthStart;
@@ -46,6 +49,7 @@ class BreedingPlan {
     int? version,
     String? name,
     DateTime? plannedPairingAt,
+    DateTime? matingBaselineAt,
     String? activePairingAttemptId,
     String? litterId,
     DateTime? expectedBirthStart,
@@ -61,6 +65,7 @@ class BreedingPlan {
     version: version ?? this.version,
     name: name ?? this.name,
     plannedPairingAt: plannedPairingAt ?? this.plannedPairingAt,
+    matingBaselineAt: matingBaselineAt ?? this.matingBaselineAt,
     activePairingAttemptId:
         activePairingAttemptId ?? this.activePairingAttemptId,
     litterId: litterId ?? this.litterId,
@@ -79,6 +84,7 @@ class BreedingPlan {
     version: json['version'] as int? ?? 1,
     name: json['name'] as String?,
     plannedPairingAt: _dt(json['planned_pairing_at']),
+    matingBaselineAt: _dt(json['mating_baseline_at']),
     activePairingAttemptId: json['active_pairing_attempt_id'] as String?,
     litterId: json['litter_id'] as String?,
     expectedBirthStart: _dt(json['expected_birth_start']),
@@ -96,6 +102,7 @@ class BreedingPlan {
     'version': version,
     'name': name,
     'planned_pairing_at': plannedPairingAt?.toIso8601String(),
+    'mating_baseline_at': matingBaselineAt?.toIso8601String(),
     'active_pairing_attempt_id': activePairingAttemptId,
     'litter_id': litterId,
     'expected_birth_start': expectedBirthStart?.toIso8601String(),
@@ -215,6 +222,57 @@ String? nextActionLabel(String state) => switch (state) {
   'gestation' => '确认产仔',
   _ => null,
 };
+
+/// 本地日历日差（同一天 = 0）；起点晚于 now 时返回 null。
+int? breedingCalendarDayIndex(DateTime start, DateTime now) {
+  final s = DateTime(
+    start.toLocal().year,
+    start.toLocal().month,
+    start.toLocal().day,
+  );
+  final n = DateTime(now.toLocal().year, now.toLocal().month, now.toLocal().day);
+  if (n.isBefore(s)) return null;
+  return n.difference(s).inDays;
+}
+
+String formatBreedingDate(DateTime value) {
+  final local = value.toLocal();
+  return '${local.year}-${local.month.toString().padLeft(2, '0')}-'
+      '${local.day.toString().padLeft(2, '0')}';
+}
+
+/// Draft / Planned：展示计划配对日，不显示 Day N。
+String? breedingPlannedPairingLabel(BreedingPlan plan) {
+  if (plan.state != 'draft' && plan.state != 'pair_ready') return null;
+  final planned = plan.plannedPairingAt;
+  if (planned == null) return null;
+  return '计划配对日 ${formatBreedingDate(planned)}';
+}
+
+/// 真实进程 Day N。
+///
+/// 权威起点：
+/// - pairing：配对尝试 `started_at`（调用方传入 [pairingStartedAt]）
+/// - gestation：`mating_baseline_at`
+///
+/// 禁止用 `planned_pairing_at` 冒充进程日（陈旧计划会出 Day 201）。
+/// 完成/取消/无活仔等终态不显示 Day N。
+String? breedingDayProgressLabel(
+  BreedingPlan plan, {
+  DateTime? now,
+  DateTime? pairingStartedAt,
+}) {
+  final clock = now ?? DateTime.now();
+  final DateTime? origin = switch (plan.state) {
+    'pairing' => pairingStartedAt,
+    'gestation' => plan.matingBaselineAt,
+    _ => null,
+  };
+  if (origin == null) return null;
+  final day = breedingCalendarDayIndex(origin, clock);
+  if (day == null) return null;
+  return 'Day $day';
+}
 
 DateTime? _dt(Object? value) {
   if (value is DateTime) return value;

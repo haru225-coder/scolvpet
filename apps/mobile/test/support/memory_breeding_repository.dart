@@ -164,6 +164,7 @@ class MemoryBreedingRepository implements BreedingRepository {
     final next = plan.copyWith(
       state: 'gestation',
       version: plan.version + 1,
+      matingBaselineAt: baselineAt,
       expectedBirthStart: baselineAt.add(const Duration(days: 16)),
       expectedBirthEnd: baselineAt.add(const Duration(days: 18)),
     );
