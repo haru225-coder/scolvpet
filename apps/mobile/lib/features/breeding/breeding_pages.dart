@@ -18,7 +18,8 @@ String _breedingHamsterLabel(List<I2Hamster> hamsters, String id, String role) {
   return role;
 }
 
-class BreedingHubPage extends StatelessWidget {
+/// P0-5: 繁育工作流 Hub（进度 / 计划 + 窝次入口）。
+class BreedingHubPage extends StatefulWidget {
   const BreedingHubPage({
     super.key,
     required this.controller,
@@ -38,83 +39,490 @@ class BreedingHubPage extends StatelessWidget {
   final VoidCallback onOpenLitters;
   final bool canWrite;
   final GeneticRepository? geneticRepository;
+  final void Function({GeneticHubPrefill? prefill})? onOpenGenetic;
 
-  /// Open genetic hub; prefill may be null for default open.
+  @override
+  State<BreedingHubPage> createState() => _BreedingHubPageState();
+}
+
+class _BreedingHubPageState extends State<BreedingHubPage> {
+  /// 0 = 进度, 1 = 计划
+  int _segment = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.refresh();
+  }
+
+  void _openWizard({BreedingPlan? plan}) {
+    if (plan != null) widget.controller.select(plan);
+    Navigator.of(context).push<void>(
+      iosPageRoute(
+        builder: (_) => BreedingWizardPage(
+          controller: widget.controller,
+          hamsters: widget.hamsters,
+          enclosures: widget.enclosures,
+          ruleVersionId: widget.ruleVersionId,
+          canWrite: widget.canWrite,
+          onOpenLitters: widget.onOpenLitters,
+          geneticRepository: widget.geneticRepository,
+          onOpenGenetic: widget.onOpenGenetic,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
+    return AnimatedBuilder(
+      animation: widget.controller,
+      builder: (context, _) {
+        final listState = widget.controller.listState;
+        final plans = listState.data ?? const <BreedingPlan>[];
+        return RefreshIndicator(
+          color: p.accent,
+          onRefresh: () => widget.controller.refresh(),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 32),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 8, 0),
+                child: IosLargeTitle(
+                  '繁育',
+                  subtitle: '当前进行中的配对、孕期与窝次',
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        key: const Key('breeding-hub-open-litters'),
+                        tooltip: '窝次看板',
+                        onPressed: widget.onOpenLitters,
+                        icon: Icon(
+                          CupertinoIcons.square_favorites_alt,
+                          color: p.secondaryLabel,
+                        ),
+                      ),
+                      IconButton(
+                        key: const Key('breeding-hub-open-wizard'),
+                        tooltip: widget.canWrite ? '新建繁育计划' : '打开繁育向导',
+                        onPressed: () => _openWizard(),
+                        icon: Icon(
+                          widget.canWrite
+                              ? CupertinoIcons.plus
+                              : CupertinoIcons.list_bullet,
+                          color: p.accent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (!widget.canWrite) ...[
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: IosBanner(
+                    icon: CupertinoIcons.lock_shield,
+                    color: IosColors.systemOrange,
+                    text: '当前角色可查看繁育与窝次记录，新增计划和状态推进已设为只读。',
+                  ),
+                ),
+              ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: SegmentedButton<int>(
+                  segments: const [
+                    ButtonSegment(value: 0, label: Text('进度')),
+                    ButtonSegment(value: 1, label: Text('计划')),
+                  ],
+                  selected: {_segment},
+                  onSelectionChanged: (s) => setState(() => _segment = s.first),
+                ),
+              ),
+              if (listState.status == I2AsyncStatus.loading &&
+                  !listState.hasValue)
+                const Padding(
+                  padding: EdgeInsets.only(top: 48),
+                  child: IosLoading(showSkeleton: true),
+                )
+              else if (listState.status == I2AsyncStatus.error)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: IosBanner(
+                    icon: CupertinoIcons.exclamationmark_circle,
+                    color: IosColors.systemRed,
+                    text: listState.message ?? '繁育计划加载失败',
+                    actionLabel: '重试',
+                    onAction: () => widget.controller.refresh(),
+                  ),
+                )
+              else if (_segment == 0)
+                _BreedingProgressBody(
+                  plans: plans,
+                  hamsters: widget.hamsters,
+                  onOpenPlan: (plan) => _openWizard(plan: plan),
+                  onOpenLitters: widget.onOpenLitters,
+                  onCreate: widget.canWrite ? () => _openWizard() : null,
+                )
+              else
+                _BreedingPlansBody(
+                  plans: plans,
+                  hamsters: widget.hamsters,
+                  onOpenPlan: (plan) => _openWizard(plan: plan),
+                  onCreate: widget.canWrite ? () => _openWizard() : null,
+                  onOpenGenetic: widget.onOpenGenetic,
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+bool _isActiveBreedingState(String state) {
+  switch (state) {
+    case 'draft':
+    case 'pair_ready':
+    case 'pairing':
+    case 'post_pair':
+    case 'gestation':
+    case 'litter_nursing':
+    case 'weaning_due':
+    case 'sex_separation_due':
+    case 'individualizing':
+    case 'hold':
+      return true;
+    default:
+      return false;
+  }
+}
+
+/// 展示用分组：仅 UI 分组，state 文案走 breedingStateLabel（权威）。
+String _progressGroupKey(String state) {
+  switch (state) {
+    case 'draft':
+    case 'pair_ready':
+      return 'todo';
+    case 'pairing':
+      return 'pairing';
+    case 'post_pair':
+      return 'post_pair';
+    case 'gestation':
+      return 'gestation';
+    case 'litter_nursing':
+    case 'weaning_due':
+    case 'sex_separation_due':
+    case 'individualizing':
+      return 'litter';
+    case 'hold':
+      return 'hold';
+    default:
+      return 'other';
+  }
+}
+
+String _progressGroupTitle(String key) => switch (key) {
+  'todo' => '需要处理',
+  'pairing' => '配对中',
+  'post_pair' => '已分笼',
+  'gestation' => '孕期',
+  'litter' => '育仔 / 窝次阶段',
+  'hold' => '挂起',
+  _ => '其他进行中',
+};
+
+int _progressGroupOrder(String key) => switch (key) {
+  'todo' => 0,
+  'pairing' => 1,
+  'post_pair' => 2,
+  'gestation' => 3,
+  'litter' => 4,
+  'hold' => 5,
+  _ => 9,
+};
+
+class _BreedingProgressBody extends StatelessWidget {
+  const _BreedingProgressBody({
+    required this.plans,
+    required this.hamsters,
+    required this.onOpenPlan,
+    required this.onOpenLitters,
+    this.onCreate,
+  });
+
+  final List<BreedingPlan> plans;
+  final List<I2Hamster> hamsters;
+  final ValueChanged<BreedingPlan> onOpenPlan;
+  final VoidCallback onOpenLitters;
+  final VoidCallback? onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    final active = plans.where((p) => _isActiveBreedingState(p.state)).toList();
+    final grouped = <String, List<BreedingPlan>>{};
+    for (final plan in active) {
+      final key = _progressGroupKey(plan.state);
+      grouped.putIfAbsent(key, () => []).add(plan);
+    }
+    final keys = grouped.keys.toList()
+      ..sort((a, b) => _progressGroupOrder(a).compareTo(_progressGroupOrder(b)));
+
+    final pairing = active.where((p) => p.state == 'pairing').length;
+    final gestation = active.where((p) => p.state == 'gestation').length;
+    final litter = active
+        .where(
+          (p) => const {
+            'litter_nursing',
+            'weaning_due',
+            'sex_separation_due',
+            'individualizing',
+          }.contains(p.state),
+        )
+        .length;
+    final todo = active
+        .where((p) => p.state == 'draft' || p.state == 'pair_ready')
+        .length;
+
+    if (active.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: BearEmptyCard(
+          key: const Key('breeding-progress-empty'),
+          title: '当前没有进行中的繁育',
+          subtitle: '新建繁育计划后，这里会按配对、孕期和窝次阶段展示进度。',
+          mood: BearMood.sleepy,
+          illustration: BearAssets.emptyList,
+          actionLabel: onCreate == null ? '打开窝次看板' : '新建繁育计划',
+          onAction: onCreate ?? onOpenLitters,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+          child: Container(
+            key: const Key('breeding-progress-summary'),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: ScolvPalette.of(context).secondaryGroupedBackground,
+              borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+              border: Border.all(
+                color: ScolvPalette.of(context).separator,
+                width: IosMetrics.hairline,
+              ),
+            ),
+            child: Row(
+              children: [
+                _SummaryChip(label: '待处理', value: '$todo'),
+                _SummaryChip(label: '配对', value: '$pairing'),
+                _SummaryChip(label: '孕期', value: '$gestation'),
+                _SummaryChip(label: '育仔', value: '$litter'),
+              ],
+            ),
+          ),
+        ),
+        for (final key in keys) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
+            child: Text(
+              '${_progressGroupTitle(key)}  ${grouped[key]!.length}',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          IosGroupedSection(
+            children: [
+              for (final plan in grouped[key]!)
+                _BreedingPlanTile(
+                  plan: plan,
+                  hamsters: hamsters,
+                  onTap: () => onOpenPlan(plan),
+                ),
+            ],
+          ),
+        ],
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: OutlinedButton(
+            key: const Key('breeding-progress-open-litters'),
+            onPressed: onOpenLitters,
+            child: const Text('打开窝次看板'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SummaryChip extends StatelessWidget {
+  const _SummaryChip({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: p.secondaryLabel,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BreedingPlansBody extends StatelessWidget {
+  const _BreedingPlansBody({
+    required this.plans,
+    required this.hamsters,
+    required this.onOpenPlan,
+    this.onCreate,
+    this.onOpenGenetic,
+  });
+
+  final List<BreedingPlan> plans;
+  final List<I2Hamster> hamsters;
+  final ValueChanged<BreedingPlan> onOpenPlan;
+  final VoidCallback? onCreate;
   final void Function({GeneticHubPrefill? prefill})? onOpenGenetic;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, _) {
-        return ListView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(0, 12, 0, 32),
-          children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: IosLargeTitle(
-                '繁育',
-                subtitle: '从配对到产仔，一步一步陪你记',
-                trailing: BearMascot(size: 44, mood: BearMood.happy),
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (!canWrite) ...[
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: IosBanner(
-                  icon: CupertinoIcons.lock_shield,
-                  color: IosColors.systemOrange,
-                  text: '当前角色可查看繁育与窝次记录，新增计划和状态推进已设为只读。',
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
-            IosGroupedSection(
-              header: const IosSectionHeader('繁育'),
+    if (plans.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: BearEmptyCard(
+          title: '还没有繁育计划',
+          subtitle: '创建计划后，可从配对推进到产仔。',
+          mood: BearMood.happy,
+          illustration: BearAssets.emptyList,
+          actionLabel: onCreate == null ? null : '新建计划',
+          onAction: onCreate,
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (onCreate != null || onOpenGenetic != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+            child: Row(
               children: [
-                IosListTile(
-                  leading: const BearIconTile(
-                    asset: BearAssets.icBreeding,
-                    size: 32,
-                    padding: 4,
-                    selected: true,
+                if (onCreate != null)
+                  Expanded(
+                    child: FilledButton.tonal(
+                      key: const Key('breeding-plans-create'),
+                      onPressed: onCreate,
+                      child: const Text('新建计划'),
+                    ),
                   ),
-                  title: '繁育向导',
-                  subtitle: '创建计划并逐步推进到产仔',
-                  onTap: () {
-                    Navigator.of(context).push<void>(
-                      iosPageRoute(
-                        builder: (_) => BreedingWizardPage(
-                          controller: controller,
-                          hamsters: hamsters,
-                          enclosures: enclosures,
-                          ruleVersionId: ruleVersionId,
-                          canWrite: canWrite,
-                          onOpenLitters: onOpenLitters,
-                          geneticRepository: geneticRepository,
-                          onOpenGenetic: onOpenGenetic,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                IosListTile(
-                  leading: const BearIconTile(
-                    asset: BearAssets.icLitter,
-                    size: 32,
-                    padding: 4,
+                if (onCreate != null && onOpenGenetic != null)
+                  const SizedBox(width: 10),
+                if (onOpenGenetic != null)
+                  Expanded(
+                    child: OutlinedButton(
+                      key: const Key('breeding-plans-genetic'),
+                      onPressed: () => onOpenGenetic!(),
+                      child: const Text('配对推算'),
+                    ),
                   ),
-                  title: '窝次看板',
-                  subtitle: '查看产仔与带崽状态',
-                  onTap: onOpenLitters,
-                ),
               ],
             ),
+          ),
+        IosGroupedSection(
+          header: const IosSectionHeader('全部计划'),
+          children: [
+            for (final plan in plans)
+              _BreedingPlanTile(
+                plan: plan,
+                hamsters: hamsters,
+                onTap: () => onOpenPlan(plan),
+              ),
           ],
-        );
-      },
+        ),
+      ],
+    );
+  }
+}
+
+class _BreedingPlanTile extends StatelessWidget {
+  const _BreedingPlanTile({
+    required this.plan,
+    required this.hamsters,
+    required this.onTap,
+  });
+
+  final BreedingPlan plan;
+  final List<I2Hamster> hamsters;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
+    final sire = _breedingHamsterLabel(hamsters, plan.sireId, '父本');
+    final dam = _breedingHamsterLabel(hamsters, plan.damId, '母本');
+    final subtitleParts = <String>[
+      '$sire × $dam',
+      breedingStateLabel(plan.state),
+    ];
+    // 仅展示真实日期字段，不计算 Day N / 不伪造预产。
+    final planned = plan.plannedPairingAt;
+    if (planned != null) {
+      subtitleParts.add('计划 ${i2DateLabel(planned)}');
+    }
+    final expStart = plan.expectedBirthStart;
+    final expEnd = plan.expectedBirthEnd;
+    if (expStart != null && expEnd != null) {
+      subtitleParts.add(
+        '预产窗口 ${i2DateLabel(expStart)}–${i2DateLabel(expEnd)}',
+      );
+    } else if (expStart != null) {
+      subtitleParts.add('预产起 ${i2DateLabel(expStart)}');
+    }
+    final actual = plan.actualBirthAt;
+    if (actual != null) {
+      subtitleParts.add('产仔 ${i2DateLabel(actual)}');
+    }
+    final next = nextActionLabel(plan.state);
+
+    return IosListTile(
+      key: Key('breeding-plan-${plan.id}'),
+      title: plan.displayName,
+      subtitle: subtitleParts.join(' · '),
+      trailing: next == null
+          ? null
+          : Text(
+              next,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: p.accent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+      onTap: onTap,
     );
   }
 }

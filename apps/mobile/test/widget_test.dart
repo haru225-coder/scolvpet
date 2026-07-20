@@ -130,8 +130,17 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('繁育向导'), findsOneWidget);
-      expect(find.text('窝次看板'), findsOneWidget);
+      // P0-5: 默认繁育进度工作流，而非菜单式「向导/看板」
+      expect(find.text('进度'), findsWidgets);
+      expect(find.text('计划'), findsWidgets);
+      expect(
+        find.byKey(const Key('breeding-hub-open-wizard')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('breeding-hub-open-litters')),
+        findsOneWidget,
+      );
       // 回到工作台，经右上角账号入口进入原「我的」能力
       await tester.tap(
         find.descendant(
