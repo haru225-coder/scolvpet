@@ -67,6 +67,66 @@ void main() {
     },
   );
 
+  testWidgets('public-style reservation shows customer hamster time and actions', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(900, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = MemoryCrmRepository();
+    final contact = await repository.createContact(
+      const CrmContactDraft(
+        name: '阿雪',
+        phone: '13800138000',
+        wechat: 'axue_wx',
+      ),
+    );
+    await repository.createReservation(
+      CrmReservationDraft(
+        contactId: contact.id,
+        title: '预订 奶茶',
+        hamsterId: 'h-naicha',
+        notes: '周末方便看鼠',
+      ),
+    );
+    final controller = CrmController(repository: repository);
+    const hamster = I2Hamster(
+      id: 'h-naicha',
+      internalCode: 'H-N1',
+      name: '奶茶',
+      sex: 'female',
+      varietyCode: 'golden',
+      lifecycleStatus: 'active',
+      breedingStatus: 'candidate',
+      birthDate: null,
+      currentEnclosureId: null,
+      litterId: null,
+      notes: null,
+      version: 1,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CrmHubPage(controller: controller, hamsters: const [hamster]),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('预订'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('预订 奶茶'), findsOneWidget);
+    expect(find.textContaining('阿雪'), findsWidgets);
+    expect(find.textContaining('奶茶'), findsWidgets);
+    expect(find.textContaining('周末方便看鼠'), findsOneWidget);
+    expect(find.text('锁定中'), findsOneWidget);
+
+    await tester.tap(find.text('预订 奶茶'));
+    await tester.pumpAndSettle();
+    expect(find.text('确认预订'), findsWidgets);
+    expect(find.text('取消预订'), findsWidgets);
+    expect(find.text('登记时间'), findsOneWidget);
+  });
+
   testWidgets('CrmHubPage creates contact and shows it', (tester) async {
     await tester.binding.setSurfaceSize(const Size(900, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));

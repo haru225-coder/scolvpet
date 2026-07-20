@@ -68,6 +68,9 @@ class CrmReservation {
     _ => status,
   };
 
+  /// 预订创建时间（公开主页与后台创建共用 reserved_at）。
+  String get reservedLabel => _crmDateTimeLabel(reservedAt);
+
   bool get isOpen => status == 'held' || status == 'confirmed';
 
   factory CrmReservation.fromJson(Map<String, dynamic> json) => CrmReservation(

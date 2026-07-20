@@ -116,7 +116,8 @@ class _CrmHubPageState extends State<CrmHubPage>
               IosModuleIntro(
                 icon: CupertinoIcons.person_2_square_stack_fill,
                 title: '客户成交与交付',
-                description: '从意向客户、预订确认到仓鼠交接，所有记录沿同一条流程推进。',
+                description:
+                    '公开主页客户预订会进入本列表；也可后台登记。确认后可继续交付与合同。',
                 metrics: [
                   IosModuleMetric(label: '客户', value: '${contacts.length}'),
                   IosModuleMetric(
@@ -330,7 +331,7 @@ class _ReservationsTab extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 24),
           child: const BearEmptyCard(
             title: '还没有预订',
-            subtitle: '从客户发起预订，并选择真实仓鼠或待定意向。',
+            subtitle: '客户可在公开主页提交预订；你也可在此为客户登记意向。',
             illustration: BearAssets.emptyList,
             mood: BearMood.sleepy,
           ),
@@ -355,6 +356,7 @@ class _ReservationsTab extends StatelessWidget {
                             r.contactName ?? '客户',
                             _hamsterName(hamsters, r.hamsterId) ??
                                 r.hamsterName,
+                            r.reservedLabel,
                             r.notes,
                           ]
                           .whereType<String>()
