@@ -150,7 +150,7 @@ func (t *postgresTransaction) InsertHamster(ctx context.Context, ownerID, organi
 		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$1,$1)
 		RETURNING id, owner_id, organization_id, internal_code, name, species_rule_version_id,
 			variety_code, sex, sex_confidence, birth_date, source_type, lifecycle_status,
-			breeding_status, current_enclosure_id, phenotype, tags, notes, version, created_at, updated_at
+			breeding_status, current_enclosure_id, cover_media_id, phenotype, tags, notes, version, created_at, updated_at
 	`, ownerID, organizationID, input.InternalCode, input.Name, input.SpeciesRuleVersionID,
 		input.VarietyCode, input.Sex, input.SexConfidence, input.BirthDate, input.SourceType,
 		input.LifecycleStatus, input.BreedingStatus, jsonBytes(input.Phenotype), jsonBytes(input.Tags), input.Notes)
@@ -197,6 +197,11 @@ func (t *postgresTransaction) UpdateHamster(ctx context.Context, ownerID, hamste
 	if input.Tags != nil {
 		add("tags", jsonBytes(input.Tags))
 	}
+	if input.ClearCoverMedia {
+		sets = append(sets, "cover_media_id=NULL")
+	} else if input.CoverMediaID != nil {
+		add("cover_media_id", *input.CoverMediaID)
+	}
 	if input.ClearNotes {
 		sets = append(sets, "notes=NULL")
 	} else if input.Notes != nil {
@@ -206,7 +211,7 @@ func (t *postgresTransaction) UpdateHamster(ctx context.Context, ownerID, hamste
 		WHERE owner_id=$1 AND id=$2 AND version=$3 AND deleted_at IS NULL
 		RETURNING id, owner_id, organization_id, internal_code, name, species_rule_version_id,
 			variety_code, sex, sex_confidence, birth_date, source_type, lifecycle_status,
-			breeding_status, current_enclosure_id, phenotype, tags, notes, version, created_at, updated_at`
+			breeding_status, current_enclosure_id, cover_media_id, phenotype, tags, notes, version, created_at, updated_at`
 	hamster, err := scanHamster(t.tx.QueryRow(ctx, query, args...))
 	return hamster, mapVersionedWriteError(err)
 }
@@ -217,7 +222,7 @@ func (t *postgresTransaction) UpdateHamsterEnclosure(ctx context.Context, ownerI
 		WHERE owner_id=$1 AND id=$2 AND version=$3 AND deleted_at IS NULL
 		RETURNING id, owner_id, organization_id, internal_code, name, species_rule_version_id,
 			variety_code, sex, sex_confidence, birth_date, source_type, lifecycle_status,
-			breeding_status, current_enclosure_id, phenotype, tags, notes, version, created_at, updated_at
+			breeding_status, current_enclosure_id, cover_media_id, phenotype, tags, notes, version, created_at, updated_at
 	`, ownerID, hamsterID, expectedVersion, enclosureID))
 	return hamster, mapVersionedWriteError(err)
 }

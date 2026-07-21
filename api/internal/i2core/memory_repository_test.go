@@ -453,6 +453,11 @@ func (r *memoryRepository) UpdateHamster(_ context.Context, ownerID, hamsterID u
 	} else if input.BirthDate != nil {
 		hamster.BirthDate = input.BirthDate
 	}
+	if input.ClearCoverMedia {
+		hamster.CoverMediaID = nil
+	} else if input.CoverMediaID != nil {
+		hamster.CoverMediaID = input.CoverMediaID
+	}
 	if input.Phenotype != nil {
 		hamster.Phenotype = input.Phenotype
 	}

@@ -38,6 +38,7 @@ type Hamster struct {
 	LifecycleStatus      string
 	BreedingStatus       string
 	CurrentEnclosureID   *uuid.UUID
+	CoverMediaID         *uuid.UUID
 	Phenotype            map[string]any
 	Tags                 []string
 	Notes                *string
@@ -78,6 +79,8 @@ type UpdateHamsterInput struct {
 	ClearSexConfidence bool
 	BirthDate          *time.Time
 	ClearBirthDate     bool
+	CoverMediaID       *uuid.UUID
+	ClearCoverMedia    bool
 	Phenotype          map[string]any
 	Tags               []string
 	Notes              *string

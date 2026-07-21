@@ -13,7 +13,7 @@ import (
 const hamsterSelect = `
 	SELECT id, owner_id, organization_id, internal_code, name, species_rule_version_id,
 		variety_code, sex, sex_confidence, birth_date, source_type, lifecycle_status,
-		breeding_status, current_enclosure_id, phenotype, tags, notes, version, created_at, updated_at
+		breeding_status, current_enclosure_id, cover_media_id, phenotype, tags, notes, version, created_at, updated_at
 	FROM hamster`
 
 const enclosureSelect = `
@@ -621,7 +621,7 @@ func scanHamster(row rowScanner) (Hamster, error) {
 	err := row.Scan(&hamster.ID, &hamster.OwnerID, &hamster.OrganizationID, &hamster.InternalCode,
 		&hamster.Name, &hamster.SpeciesRuleVersionID, &hamster.VarietyCode, &hamster.Sex,
 		&hamster.SexConfidence, &hamster.BirthDate, &hamster.SourceType, &hamster.LifecycleStatus,
-		&hamster.BreedingStatus, &hamster.CurrentEnclosureID, &phenotype, &tags, &hamster.Notes,
+		&hamster.BreedingStatus, &hamster.CurrentEnclosureID, &hamster.CoverMediaID, &phenotype, &tags, &hamster.Notes,
 		&hamster.Version, &hamster.CreatedAt, &hamster.UpdatedAt)
 	if err != nil {
 		return Hamster{}, err

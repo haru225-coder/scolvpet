@@ -486,7 +486,7 @@ func (s *Server) getGrowthPublicMedia(w http.ResponseWriter, r *http.Request) {
 				created_at DESC, id DESC
 			LIMIT 1
 		) v ON true
-		WHERE h.owner_id=$1 AND h.cover_media_id=$2 AND h.deleted_at IS NULL
+		WHERE h.owner_id=$1 AND h.cover_media_id=$2 AND a.id=$2 AND h.deleted_at IS NULL
 			AND h.lifecycle_status='active' AND p.published=true
 	`, ownerID, mediaID).Scan(&objectKey, &contentType, &status, &sha)
 	if errors.Is(err, pgx.ErrNoRows) || status != "ready" || !strings.HasPrefix(contentType, "image/") {
@@ -770,10 +770,9 @@ func (s *Server) loadGrowthPublicHamsters(ctx context.Context, ownerID uuid.UUID
 	query := `
 		SELECT h.id, COALESCE(p.public_name, h.name, ''), COALESCE(p.summary,''), p.traits,
 			h.sex::text, COALESCE(h.variety_code,''), h.birth_date, p.filming_status, p.published, p.consultable,
-			COALESCE(p.cta_text,''), COALESCE(p.price_label,''), NULL::uuid
+			COALESCE(p.cta_text,''), COALESCE(p.price_label,''), h.cover_media_id
 		FROM hamster_public_profile p JOIN hamster h ON h.owner_id=p.owner_id AND h.id=p.hamster_id
 		WHERE p.owner_id=$1 AND h.deleted_at IS NULL AND h.lifecycle_status='active'`
-	// cover_media_id 尚未落库（I2 投影恒为 null）；公开列表先不读该列，避免 500。
 	if consultableOnly {
 		query += ` AND p.published=true AND p.consultable=true`
 	}
@@ -821,7 +820,7 @@ func (s *Server) queryGrowthPublicHamster(ctx context.Context, queryer growthQue
 	rows, err := queryer.Query(ctx, `
 		SELECT h.id, COALESCE(p.public_name, h.name, ''), COALESCE(p.summary,''), p.traits,
 			h.sex::text, COALESCE(h.variety_code,''), h.birth_date, p.filming_status, p.published, p.consultable,
-			COALESCE(p.cta_text,''), COALESCE(p.price_label,''), NULL::uuid
+			COALESCE(p.cta_text,''), COALESCE(p.price_label,''), h.cover_media_id
 		FROM hamster_public_profile p JOIN hamster h ON h.owner_id=p.owner_id AND h.id=p.hamster_id
 		WHERE p.owner_id=$1 AND p.hamster_id=$2 AND h.deleted_at IS NULL AND h.lifecycle_status='active'
 	`, ownerID, hamsterID)

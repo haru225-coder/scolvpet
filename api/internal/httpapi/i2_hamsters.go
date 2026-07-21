@@ -244,11 +244,16 @@ func (s *Server) updateI2Hamster(w http.ResponseWriter, r *http.Request) {
 			input.BirthDate = &parsed
 		}
 	}
-	if raw, exists := patch["cover_media_id"]; exists && !i2JSONNull(raw) {
-		var ignored uuid.UUID
-		if json.Unmarshal(raw, &ignored) != nil || ignored == uuid.Nil {
-			writeI2CoreError(w, r, validationError("cover_media_id", "封面媒体 ID 格式不正确"))
-			return
+	if raw, exists := patch["cover_media_id"]; exists {
+		if i2JSONNull(raw) {
+			input.ClearCoverMedia = true
+		} else {
+			var mediaID uuid.UUID
+			if json.Unmarshal(raw, &mediaID) != nil || mediaID == uuid.Nil {
+				writeI2CoreError(w, r, validationError("cover_media_id", "封面媒体 ID 格式不正确"))
+				return
+			}
+			input.CoverMediaID = &mediaID
 		}
 	}
 	if raw, exists := patch["notes"]; exists {

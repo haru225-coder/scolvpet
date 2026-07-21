@@ -368,7 +368,7 @@ func i2HamsterJSON(hamster i2core.Hamster) any {
 		"variety_code": hamster.VarietyCode, "sex": hamster.Sex, "sex_confidence": hamster.SexConfidence,
 		"birth_date": i2DatePointer(hamster.BirthDate), "litter_id": nil, "source_type": hamster.SourceType,
 		"lifecycle_status": hamster.LifecycleStatus, "breeding_status": hamster.BreedingStatus,
-		"current_enclosure_id": hamster.CurrentEnclosureID, "cover_media_id": nil, "notes": hamster.Notes,
+		"current_enclosure_id": hamster.CurrentEnclosureID, "cover_media_id": hamster.CoverMediaID, "notes": hamster.Notes,
 		"phenotype": phenotype,
 		"version":   hamster.Version, "created_at": hamster.CreatedAt, "updated_at": hamster.UpdatedAt,
 	}
