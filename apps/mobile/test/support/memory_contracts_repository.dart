@@ -122,6 +122,7 @@ class MemoryContractsRepository implements ContractsRepository {
     if (!current.isDraft) {
       throw const ContractsRepositoryException('仅草稿可签发');
     }
+    final token = current.publicToken ?? 'doc_mem_${current.id}';
     final next = DocDocument(
       id: current.id,
       templateId: current.templateId,
@@ -137,6 +138,8 @@ class MemoryContractsRepository implements ContractsRepository {
       notes: current.notes,
       version: current.version + 1,
       contactName: current.contactName,
+      publicToken: token,
+      publicPath: '/d/$token',
     );
     _documents[index] = next;
     return next;

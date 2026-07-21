@@ -281,5 +281,36 @@ RECEIPT_ISSUED="$(curl -fsS -X POST "$API_URL/v1/receipts/$RECEIPT_ID/issue" \
   exit 1
 }
 
-printf 'public-reservation smoke PASS: reservation=%s contact=%s hamster=%s contract=%s handover=%s receipt=%s slug=%s\n' \
-  "$RESERVATION_ID" "$CONTACT_ID" "$HAMSTER_ID" "$CONTRACT_ID" "$HANDOVER_ID" "$RECEIPT_ID" "$SLUG"
+# --- Customer public document read (capability token) ---
+CONTRACT_TOKEN="$(printf '%s' "$ISSUED" | json_field '.data.public_token')"
+# ISSUED was contract issue earlier; re-fetch if empty
+if [[ -z "$CONTRACT_TOKEN" || "$CONTRACT_TOKEN" == "null" ]]; then
+  CONTRACT_TOKEN="$(printf '%s' "$ISSUED" | jq -r '.data.public_token // empty')"
+fi
+# Re-issue response may include token; if not on old var, get from receipt
+RECEIPT_TOKEN="$(printf '%s' "$RECEIPT_ISSUED" | json_field '.data.public_token')"
+[[ -n "$RECEIPT_TOKEN" && "$RECEIPT_TOKEN" != "null" ]] || {
+  printf 'receipt public_token missing: %s\n' "$RECEIPT_ISSUED" >&2
+  exit 1
+}
+PUBLIC_DOC="$(curl -fsS "$API_URL/v1/public/documents/$RECEIPT_TOKEN")"
+PUBLIC_TITLE="$(printf '%s' "$PUBLIC_DOC" | json_field '.data.title')"
+PUBLIC_BODY="$(printf '%s' "$PUBLIC_DOC" | json_field '.data.body_filled')"
+[[ -n "$PUBLIC_TITLE" && "$PUBLIC_TITLE" != "null" ]] || {
+  printf 'public document failed: %s\n' "$PUBLIC_DOC" >&2
+  exit 1
+}
+printf '%s' "$PUBLIC_BODY" | grep -q '阿雪' || {
+  printf 'public document missing contact\n' >&2
+  exit 1
+}
+# draft must not be public even if someone guessed id
+DRAFT_STATUS="$(curl -sS -o /tmp/scolvpet-pr-public-draft.json -w '%{http_code}' \
+  "$API_URL/v1/public/documents/doc_not_exist")"
+[[ "$DRAFT_STATUS" == "404" ]] || {
+  printf 'public document 404 want, got %s\n' "$DRAFT_STATUS" >&2
+  exit 1
+}
+
+printf 'public-reservation smoke PASS: reservation=%s contact=%s hamster=%s contract=%s handover=%s receipt=%s public_token=%s slug=%s\n' \
+  "$RESERVATION_ID" "$CONTACT_ID" "$HAMSTER_ID" "$CONTRACT_ID" "$HANDOVER_ID" "$RECEIPT_ID" "$RECEIPT_TOKEN" "$SLUG"

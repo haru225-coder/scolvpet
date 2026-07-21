@@ -40,6 +40,8 @@ class DocDocument {
     this.notes,
     required this.version,
     this.contactName,
+    this.publicToken,
+    this.publicPath,
   });
 
   final String id;
@@ -56,6 +58,8 @@ class DocDocument {
   final String? notes;
   final int version;
   final String? contactName;
+  final String? publicToken;
+  final String? publicPath;
 
   String get kindLabel => kind == 'receipt' ? '回执' : '合同';
 
@@ -89,7 +93,18 @@ class DocDocument {
     notes: json['notes'] as String?,
     version: (json['version'] as num?)?.toInt() ?? 1,
     contactName: json['contact_name'] as String?,
+    publicToken: json['public_token'] as String?,
+    publicPath: json['public_path'] as String?,
   );
+
+  /// 客户侧相对路径（/d/token）；无 token 时 null。
+  String? get customerSharePath {
+    final path = publicPath?.trim();
+    if (path != null && path.isNotEmpty) return path;
+    final token = publicToken?.trim();
+    if (token == null || token.isEmpty) return null;
+    return '/d/$token';
+  }
 }
 
 class DocTemplateDraft {

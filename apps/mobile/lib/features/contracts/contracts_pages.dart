@@ -1000,6 +1000,18 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
     showIosMessage(context, '正文已复制');
   }
 
+  Future<void> _copyCustomerLink(BuildContext context) async {
+    final path = widget.document.customerSharePath;
+    if (path == null || path.isEmpty) {
+      showIosMessage(context, '仅已签发单据可分享客户链接');
+      return;
+    }
+    // 相对路径 /d/{token}；完整域名由宠舍按公开站配置转发客户。
+    await Clipboard.setData(ClipboardData(text: path));
+    if (!context.mounted) return;
+    showIosMessage(context, '客户链接已复制：$path');
+  }
+
   Future<void> _sharePdf(BuildContext context) async {
     try {
       final bytes = await _pdfBytes;
@@ -1042,10 +1054,16 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
             onSelected: (value) {
               if (value == 'share') _sharePdf(context);
               if (value == 'print') _printPdf(context);
+              if (value == 'customer-link') _copyCustomerLink(context);
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'share', child: Text('分享 PDF')),
-              PopupMenuItem(value: 'print', child: Text('打印 / 保存 PDF')),
+            itemBuilder: (_) => [
+              const PopupMenuItem(value: 'share', child: Text('分享 PDF')),
+              const PopupMenuItem(value: 'print', child: Text('打印 / 保存 PDF')),
+              if (widget.document.customerSharePath != null)
+                const PopupMenuItem(
+                  value: 'customer-link',
+                  child: Text('复制客户链接'),
+                ),
             ],
           ),
         ],

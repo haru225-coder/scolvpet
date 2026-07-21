@@ -6148,6 +6148,34 @@ paths:
         '422':
           "$ref": "#/components/responses/ValidationError"
 
+  "/v1/public/documents/{token}":
+    get:
+      tags:
+      - public-documents
+      operationId: getPublicDocument
+      summary: 客户只读查看已签发合同/回执
+      description: |
+        能力令牌访问；仅 status=issued 的单据可见。
+        不暴露 owner_id、内部 ID 与未签发草稿。
+      security: []
+      parameters:
+      - name: token
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 64
+      responses:
+        '200':
+          description: 公开单据投影
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PublicDocumentResponse"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -11967,6 +11995,16 @@ components:
           minimum: 1
         contact_name:
           type: string
+        public_token:
+          type:
+          - string
+          - 'null'
+          description: 已签发单据的客户侧能力令牌
+        public_path:
+          type:
+          - string
+          - 'null'
+          description: 客户侧相对路径，如 /d/{token}
       required:
       - id
       - template_id
@@ -14404,6 +14442,51 @@ components:
           - reservation_id
           - contact_id
           - hamster_id
+          - status
+          additionalProperties: true
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    PublicDocumentResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            kind:
+              type: string
+              enum: [contract, receipt]
+            kind_label:
+              type: string
+            title:
+              type: string
+            body_filled:
+              type: string
+            contact_name:
+              type: string
+            currency:
+              type: string
+            amount_cents:
+              type:
+              - integer
+              - 'null'
+            amount_label:
+              type:
+              - string
+              - 'null'
+            issued_at:
+              type:
+              - string
+              - 'null'
+              format: date-time
+            status:
+              type: string
+              enum: [issued]
+          required:
+          - kind
+          - title
+          - body_filled
           - status
           additionalProperties: true
         meta:

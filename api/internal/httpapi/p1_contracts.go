@@ -26,6 +26,9 @@ func (s *Server) registerP1ContractRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v1/receipts", s.listReceipts)
 	mux.HandleFunc("POST /v1/receipts", s.createReceipt)
 	mux.HandleFunc("POST /v1/receipts/{document_id}/issue", s.issueReceipt)
+
+	// 客户侧只读：已签发合同/回执（能力令牌，无鉴权）
+	mux.HandleFunc("GET /v1/public/documents/{token}", s.getPublicDocument)
 }
 
 type docTemplate struct {
@@ -51,6 +54,9 @@ type docDocument struct {
 	Notes       *string    `json:"notes,omitempty"`
 	Version     int        `json:"version"`
 	ContactName string     `json:"contact_name,omitempty"`
+	// 仅已签发单据有；客户侧能力链接。
+	PublicToken *string `json:"public_token,omitempty"`
+	PublicPath  *string `json:"public_path,omitempty"`
 }
 
 type createDocTemplateRequest struct {
@@ -438,7 +444,7 @@ func (s *Server) listDocDocuments(w http.ResponseWriter, r *http.Request, kind s
 	rows, err := s.Store.Pool.Query(r.Context(), `
 		SELECT d.id, d.template_id, d.kind::text, d.contact_id, d.handover_id, d.title, d.body_filled,
 			d.amount_cents, d.currency, d.status::text, d.issued_at, d.notes, d.version,
-			COALESCE(c.name, '')
+			COALESCE(c.name, ''), d.public_token
 		FROM doc_document d
 		LEFT JOIN crm_contact c ON c.owner_id=d.owner_id AND c.id=d.contact_id
 		WHERE d.owner_id=$1 AND d.kind=$2::doc_template_kind AND d.status <> 'archived'
@@ -453,14 +459,16 @@ func (s *Server) listDocDocuments(w http.ResponseWriter, r *http.Request, kind s
 	items := make([]docDocument, 0)
 	for rows.Next() {
 		var item docDocument
+		var publicToken *string
 		if err := rows.Scan(
 			&item.ID, &item.TemplateID, &item.Kind, &item.ContactID, &item.HandoverID, &item.Title, &item.BodyFilled,
 			&item.AmountCents, &item.Currency, &item.Status, &item.IssuedAt, &item.Notes, &item.Version,
-			&item.ContactName,
+			&item.ContactName, &publicToken,
 		); err != nil {
 			writeAPIError(w, r, err)
 			return
 		}
+		attachDocPublicShare(&item, publicToken)
 		items = append(items, item)
 	}
 	writeJSON(w, r, http.StatusOK, map[string]any{"data": items, "meta": responseMeta(r)})
@@ -496,13 +504,20 @@ func (s *Server) issueDocDocument(w http.ResponseWriter, r *http.Request, kind s
 			return
 		}
 	}
-	_, err = s.Store.Pool.Exec(r.Context(), `
+	token := newDocPublicToken()
+	tag, err := s.Store.Pool.Exec(r.Context(), `
 		UPDATE doc_document
-		SET status='issued', issued_at=now(), version=version+1, updated_at=now()
+		SET status='issued', issued_at=now(),
+			public_token=COALESCE(public_token, $5),
+			version=version+1, updated_at=now()
 		WHERE owner_id=$1 AND id=$2 AND kind=$3::doc_template_kind AND status='draft' AND version=$4
-	`, ownerID, documentID, kind, current.Version)
+	`, ownerID, documentID, kind, current.Version, token)
 	if err != nil {
 		writeAPIError(w, r, err)
+		return
+	}
+	if tag.RowsAffected() != 1 {
+		writeAPIError(w, r, store.ErrVersionConflict)
 		return
 	}
 	item, err := s.getDocDocument(r.Context(), ownerID, documentID, kind)
@@ -511,6 +526,55 @@ func (s *Server) issueDocDocument(w http.ResponseWriter, r *http.Request, kind s
 		return
 	}
 	writeJSON(w, r, http.StatusOK, map[string]any{"data": item, "meta": responseMeta(r)})
+}
+
+// getPublicDocument 客户只读：仅已签发单据，无内部 ID/组织信息。
+func (s *Server) getPublicDocument(w http.ResponseWriter, r *http.Request) {
+	token := strings.TrimSpace(r.PathValue("token"))
+	if token == "" || len(token) > 64 || strings.ContainsAny(token, "/\\") {
+		writeAPIError(w, r, store.ErrNotFound)
+		return
+	}
+	var (
+		kind, title, body, currency, contactName string
+		amountCents                              *int64
+		issuedAt                                 *time.Time
+	)
+	err := s.Store.Pool.QueryRow(r.Context(), `
+		SELECT d.kind::text, d.title, d.body_filled, d.amount_cents, d.currency, d.issued_at,
+			COALESCE(c.name, '')
+		FROM doc_document d
+		LEFT JOIN crm_contact c ON c.owner_id=d.owner_id AND c.id=d.contact_id
+		WHERE d.public_token=$1 AND d.status='issued'
+	`, token).Scan(&kind, &title, &body, &amountCents, &currency, &issuedAt, &contactName)
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeAPIError(w, r, store.ErrNotFound)
+		return
+	}
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	kindLabel := "合同"
+	if kind == "receipt" {
+		kindLabel = "回执"
+	}
+	data := map[string]any{
+		"kind":         kind,
+		"kind_label":   kindLabel,
+		"title":        title,
+		"body_filled":  body,
+		"currency":     currency,
+		"contact_name": contactName,
+		"issued_at":    issuedAt,
+		"status":       "issued",
+	}
+	if amountCents != nil {
+		data["amount_cents"] = *amountCents
+		data["amount_label"] = fmt.Sprintf("%.2f %s", float64(*amountCents)/100.0, currency)
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, r, http.StatusOK, envelope(r, data))
 }
 
 func (s *Server) getDocTemplate(ctx context.Context, ownerID, id uuid.UUID, kind string) (docTemplate, error) {
@@ -528,22 +592,45 @@ func (s *Server) getDocTemplate(ctx context.Context, ownerID, id uuid.UUID, kind
 
 func (s *Server) getDocDocument(ctx context.Context, ownerID, id uuid.UUID, kind string) (docDocument, error) {
 	var item docDocument
+	var publicToken *string
 	err := s.Store.Pool.QueryRow(ctx, `
 		SELECT d.id, d.template_id, d.kind::text, d.contact_id, d.handover_id, d.title, d.body_filled,
 			d.amount_cents, d.currency, d.status::text, d.issued_at, d.notes, d.version,
-			COALESCE(c.name, '')
+			COALESCE(c.name, ''), d.public_token
 		FROM doc_document d
 		LEFT JOIN crm_contact c ON c.owner_id=d.owner_id AND c.id=d.contact_id
 		WHERE d.owner_id=$1 AND d.id=$2 AND d.kind=$3::doc_template_kind
 	`, ownerID, id, kind).Scan(
 		&item.ID, &item.TemplateID, &item.Kind, &item.ContactID, &item.HandoverID, &item.Title, &item.BodyFilled,
 		&item.AmountCents, &item.Currency, &item.Status, &item.IssuedAt, &item.Notes, &item.Version,
-		&item.ContactName,
+		&item.ContactName, &publicToken,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return docDocument{}, store.ErrNotFound
 	}
-	return item, err
+	if err != nil {
+		return docDocument{}, err
+	}
+	attachDocPublicShare(&item, publicToken)
+	return item, nil
+}
+
+func attachDocPublicShare(item *docDocument, publicToken *string) {
+	if item == nil || publicToken == nil || strings.TrimSpace(*publicToken) == "" {
+		return
+	}
+	if item.Status != "issued" {
+		return
+	}
+	token := strings.TrimSpace(*publicToken)
+	item.PublicToken = &token
+	path := "/d/" + token
+	item.PublicPath = &path
+}
+
+func newDocPublicToken() string {
+	// 能力令牌：doc_ + 32 hex（足够不可猜测）
+	return "doc_" + strings.ReplaceAll(uuid.NewString(), "-", "")
 }
 
 func (s *Server) resolveContactRef(ctx context.Context, ownerID uuid.UUID, contactIDRaw, contactNameOverride *string) (*uuid.UUID, string, error) {

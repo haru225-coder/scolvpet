@@ -125,6 +125,7 @@ export function renderShell(title, body, options = {}) {
       .answer strong { color: var(--accent-strong); }
       .recommendations { display: grid; gap: 8px; margin-top: 12px; }
       .form-panel { padding: clamp(18px, 4vw, 28px); background: var(--surface-muted); border-radius: var(--radius); }
+      .doc-body { margin: 0; white-space: pre-wrap; word-break: break-word; color: var(--text); font: inherit; line-height: 1.7; }
       .form-error { margin: 0 0 12px; padding: 12px 14px; color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); border-radius: 12px; }
       form { display: grid; gap: 10px; }
       label { color: var(--text); font-size: 13px; font-weight: 650; }
@@ -187,6 +188,43 @@ export function renderInvalidShare() {
     '分享链接已失效',
     '<div class="brand-line">熊舍管家公开分享</div><h1>分享链接已失效</h1><p class="site-lead">该公开分享可能已撤销、已过期，或当前暂时不可读取。请向分享者索取新的链接。</p>',
     { description: '这个熊舍管家公开分享链接当前不可用。' },
+  );
+}
+
+export function renderInvalidDocument() {
+  return renderShell(
+    '单据不可用',
+    '<div class="brand-line">熊舍管家客户单据</div><h1>单据链接不可用</h1><p class="site-lead">该合同或回执可能尚未签发、链接有误，或已停止公开。请向熊舍索取新的链接。</p>',
+    { description: '合同或回执公开链接当前不可用。' },
+  );
+}
+
+export function renderPublicDocument(data) {
+  const kindLabel = data?.kind_label || (data?.kind === 'receipt' ? '回执' : '合同');
+  const title = typeof data?.title === 'string' && data.title.trim() ? data.title : kindLabel;
+  const body = typeof data?.body_filled === 'string' ? data.body_filled : '';
+  const contact = typeof data?.contact_name === 'string' ? data.contact_name : '';
+  const amount = typeof data?.amount_label === 'string' ? data.amount_label : '';
+  const issued = typeof data?.issued_at === 'string' ? data.issued_at : '';
+  const metaBits = [
+    kindLabel,
+    contact ? `客户 ${contact}` : '',
+    amount ? `金额 ${amount}` : '',
+    issued ? `签发 ${issued.slice(0, 10)}` : '',
+  ].filter(Boolean);
+  return renderShell(
+    title,
+    `<div class="brand-line">熊舍管家 · 客户${escapeHtml(kindLabel)}</div>
+     <header class="site-header">
+       <h1>${escapeHtml(title)}</h1>
+       ${metaBits.length ? `<p class="site-lead">${escapeHtml(metaBits.join(' · '))}</p>` : ''}
+     </header>
+     <section aria-labelledby="doc-body-heading">
+       <h2 id="doc-body-heading">正文</h2>
+       <div class="form-panel"><pre class="doc-body">${escapeHtml(body)}</pre></div>
+     </section>
+     <p class="muted">本页仅供查看已签发内容，业务状态以熊舍后台为准。</p>`,
+    { description: `${title}的客户只读${kindLabel}。` },
   );
 }
 
@@ -364,6 +402,22 @@ export function createServer(options = {}) {
       }
     }
 
+    if (request.method === 'GET' && /^\/d\/[^/]+$/.test(url.pathname)) {
+      const token = readDocumentToken(url.pathname);
+      if (!token) {
+        return sendHtml(response, 404, renderInvalidDocument());
+      }
+      try {
+        const doc = await fetchPublicDocument({ apiBaseUrl, fetchImpl, token });
+        if (!doc) {
+          return sendHtml(response, 404, renderInvalidDocument());
+        }
+        return sendHtml(response, 200, renderPublicDocument(doc));
+      } catch {
+        return sendHtml(response, 404, renderInvalidDocument());
+      }
+    }
+
     const growthPath = url.pathname.match(/^\/p\/([^/]+)$/);
     const growthAction = url.pathname.match(/^\/p\/([^/]+)\/(consult|lead|reserve)$/);
     const growthMedia = url.pathname.match(/^\/p\/([^/]+)\/media\/([^/]+)$/);
@@ -462,6 +516,40 @@ export function buildPublicShareUrl(apiBaseUrl, token) {
   base.search = '';
   base.hash = '';
   return base.toString();
+}
+
+export function buildPublicDocumentUrl(apiBaseUrl, token) {
+  const base = new URL(String(apiBaseUrl));
+  const basePath = base.pathname.replace(/\/+$/, '');
+  base.pathname = `${basePath}/v1/public/documents/${encodeURIComponent(token)}`;
+  base.search = '';
+  base.hash = '';
+  return base.toString();
+}
+
+export async function fetchPublicDocument({ apiBaseUrl, fetchImpl = globalThis.fetch, token }) {
+  if (!apiBaseUrl || typeof fetchImpl !== 'function' || !token) return null;
+  try {
+    const response = await fetchImpl(buildPublicDocumentUrl(apiBaseUrl, token), {
+      headers: { Accept: 'application/json' },
+    });
+    if (!response || response.status !== 200) return null;
+    const payload = await response.json();
+    return isRecord(payload?.data) ? payload.data : null;
+  } catch {
+    return null;
+  }
+}
+
+function readDocumentToken(pathname) {
+  if (!pathname.startsWith('/d/')) return null;
+  const rawToken = pathname.slice('/d/'.length);
+  try {
+    const token = decodeURIComponent(rawToken);
+    return token && !/[\\/]/.test(token) && token.length <= 64 ? token : null;
+  } catch {
+    return null;
+  }
 }
 
 export function buildPublicGrowthCatalogUrl(apiBaseUrl, slug, campaignCode = '') {

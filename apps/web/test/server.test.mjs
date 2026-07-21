@@ -1,12 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  buildPublicDocumentUrl,
   buildPublicGrowthCatalogUrl,
   buildPublicGrowthMediaUrl,
   buildPublicShareUrl,
   createServer,
   renderGrowthBoundary,
+  renderInvalidDocument,
   renderNotFound,
+  renderPublicDocument,
   renderPublicGrowthPage,
   renderShareBoundary,
 } from '../src/server.mjs';
@@ -158,6 +161,63 @@ test('builds the public growth media endpoint', () => {
   assert.equal(
     buildPublicGrowthMediaUrl('http://api.example.test/root/', 'snow-cattery', 'media 1'),
     'http://api.example.test/root/v1/public/sites/snow-cattery/media/media%201',
+  );
+});
+
+test('builds the public document endpoint', () => {
+  assert.equal(
+    buildPublicDocumentUrl('http://api.example.test/', 'doc_abc'),
+    'http://api.example.test/v1/public/documents/doc_abc',
+  );
+});
+
+test('SSR public document page and invalid token boundary', async (t) => {
+  let requestedUrl = '';
+  const server = createServer({
+    apiBaseUrl: 'https://api.example.test',
+    fetchImpl: async (url) => {
+      requestedUrl = String(url);
+      if (String(url).includes('/public/documents/doc_ok')) {
+        return jsonResponse({
+          data: {
+            kind: 'contract',
+            kind_label: '合同',
+            title: '交接协议 · 奶茶',
+            body_filled: '客户：阿雪\n个体：奶茶\n已签发。',
+            contact_name: '阿雪',
+            status: 'issued',
+            issued_at: '2026-07-20T12:00:00Z',
+          },
+        });
+      }
+      return jsonResponse({}, 404);
+    },
+  });
+  const port = await listen(server);
+  t.after(() => server.close());
+
+  const ok = await fetch(`http://127.0.0.1:${port}/d/doc_ok`);
+  const html = await ok.text();
+  assert.equal(ok.status, 200);
+  assert.equal(requestedUrl, 'https://api.example.test/v1/public/documents/doc_ok');
+  assert.match(html, /交接协议 · 奶茶/);
+  assert.match(html, /客户：阿雪/);
+  assert.match(html, /客户合同|合同/);
+  assert.doesNotMatch(html, /owner_id|postgres|api\.example\.test/);
+
+  const bad = await fetch(`http://127.0.0.1:${port}/d/missing`);
+  assert.equal(bad.status, 404);
+  assert.match(await bad.text(), /单据链接不可用/);
+  assert.match(renderInvalidDocument(), /单据链接不可用/);
+  assert.match(
+    renderPublicDocument({
+      kind: 'receipt',
+      kind_label: '回执',
+      title: '收款回执',
+      body_filled: '金额 100',
+      amount_label: '100.00 CNY',
+    }),
+    /收款回执/,
   );
 });
 
