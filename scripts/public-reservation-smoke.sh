@@ -174,9 +174,12 @@ RESERVABLE2="$(printf '%s' "$CATALOG2" | jq -r --arg id "$HAMSTER_ID" \
   exit 1
 }
 
-# --- Staff confirm ---
+# --- Staff confirm (requires If-Match ETag) ---
+RES_VER="$(printf '%s' "$LIST" | jq -r --arg id "$RESERVATION_ID" \
+  '.data[] | select(.id==$id) | .version')"
+[[ -n "$RES_VER" && "$RES_VER" != "null" ]] || RES_VER=1
 CONFIRMED="$(curl -fsS -X POST "$API_URL/v1/crm/reservations/$RESERVATION_ID/confirm" \
-  "${AUTH[@]}" -H "Idempotency-Key: pr-$RUN_ID-confirm")"
+  "${AUTH[@]}" -H "Idempotency-Key: pr-$RUN_ID-confirm" -H "If-Match: \"$RES_VER\"")"
 [[ "$(printf '%s' "$CONFIRMED" | json_field '.data.status')" == "confirmed" ]] || {
   printf 'confirm failed: %s\n' "$CONFIRMED" >&2
   exit 1
@@ -195,51 +198,30 @@ CONTRACT="$(curl -fsS -X POST "$API_URL/v1/contracts" \
   -H "Idempotency-Key: pr-$RUN_ID-contract" \
   -d "$(jq -cn --arg t "$TPL_ID" --arg r "$RESERVATION_ID" '{template_id:$t,reservation_id:$r}')")"
 CONTRACT_ID="$(printf '%s' "$CONTRACT" | json_field '.data.id')"
+CONTRACT_VER="$(printf '%s' "$CONTRACT" | json_field '.data.version')"
 BODY_FILLED="$(printf '%s' "$CONTRACT" | json_field '.data.body_filled')"
 [[ -n "$CONTRACT_ID" && "$CONTRACT_ID" != "null" ]] || { printf 'contract create failed: %s\n' "$CONTRACT" >&2; exit 1; }
 printf '%s' "$BODY_FILLED" | grep -q '阿雪' || { printf 'contract missing contact: %s\n' "$BODY_FILLED" >&2; exit 1; }
 printf '%s' "$BODY_FILLED" | grep -q '奶茶' || { printf 'contract missing hamster: %s\n' "$BODY_FILLED" >&2; exit 1; }
 
 ISSUED="$(curl -fsS -X POST "$API_URL/v1/contracts/$CONTRACT_ID/issue" \
-  "${AUTH[@]}" -H "Idempotency-Key: pr-$RUN_ID-issue")"
+  "${AUTH[@]}" -H "Idempotency-Key: pr-$RUN_ID-issue" -H "If-Match: \"$CONTRACT_VER\"")"
 [[ "$(printf '%s' "$ISSUED" | json_field '.data.status')" == "issued" ]] || {
   printf 'contract issue failed: %s\n' "$ISSUED" >&2
   exit 1
 }
 
-# --- Delivery from reservation ---
+# --- Delivery schedule from reservation ---
 HANDOVER="$(curl -fsS -X POST "$API_URL/v1/crm/handovers" \
   "${AUTH[@]}" -H 'Content-Type: application/json' \
   -H "Idempotency-Key: pr-$RUN_ID-handover" \
   -d "$(jq -cn --arg c "$CONTACT_ID" --arg r "$RESERVATION_ID" --arg h "$HAMSTER_ID" \
     '{contact_id:$c,reservation_id:$r,hamster_id:$h,notes:"smoke 交付"}')")"
 HANDOVER_ID="$(printf '%s' "$HANDOVER" | json_field '.data.id')"
+HANDOVER_VER="$(printf '%s' "$HANDOVER" | json_field '.data.version')"
 [[ -n "$HANDOVER_ID" && "$HANDOVER_ID" != "null" ]] || { printf 'handover create failed: %s\n' "$HANDOVER" >&2; exit 1; }
 
-DONE="$(curl -fsS -X POST "$API_URL/v1/crm/handovers/$HANDOVER_ID/complete" \
-  "${AUTH[@]}" -H "Idempotency-Key: pr-$RUN_ID-complete")"
-[[ "$(printf '%s' "$DONE" | json_field '.data.status')" == "completed" ]] || {
-  printf 'handover complete failed: %s\n' "$DONE" >&2
-  exit 1
-}
-
-# Reservation should be handed_over after delivery complete
-FINAL_LIST="$(curl -fsS "$API_URL/v1/crm/reservations" "${AUTH[@]}")"
-FINAL_STATUS="$(printf '%s' "$FINAL_LIST" | jq -r --arg id "$RESERVATION_ID" \
-  '.data[]? | select(.id==$id) | .status // empty')"
-# list filters cancelled only; handed_over should still appear
-[[ "$FINAL_STATUS" == "handed_over" ]] || {
-  # some list queries hide terminal states — fall back to direct confirm response path via DB not available; re-check complete side-effects
-  # completeCrmHandover sets reservation handed_over; if list excludes it, count zero is also ok if we got completed handover
-  if [[ -z "$FINAL_STATUS" ]]; then
-    printf 'note: reservation not listed after handed_over (may be filtered); handover completed\n'
-  else
-    printf 'final reservation status want handed_over got %s\n' "$FINAL_STATUS" >&2
-    exit 1
-  fi
-}
-
-# --- Receipt from handover/reservation (inherit customer + hamster) ---
+# --- Receipt BEFORE complete (finance linkage needs issued receipt on complete) ---
 RECEIPT_TPL="$(curl -fsS -X POST "$API_URL/v1/receipts/templates" \
   "${AUTH[@]}" -H 'Content-Type: application/json' \
   -H "Idempotency-Key: pr-$RUN_ID-receipt-tpl" \
@@ -256,6 +238,7 @@ RECEIPT="$(curl -fsS -X POST "$API_URL/v1/receipts" \
   -d "$(jq -cn --arg t "$RECEIPT_TPL_ID" --arg r "$RESERVATION_ID" --arg h "$HANDOVER_ID" \
     '{template_id:$t,reservation_id:$r,handover_id:$h,amount_cents:50000,currency:"CNY",notes:"smoke 收款"}')")"
 RECEIPT_ID="$(printf '%s' "$RECEIPT" | json_field '.data.id')"
+RECEIPT_VER="$(printf '%s' "$RECEIPT" | json_field '.data.version')"
 RECEIPT_BODY="$(printf '%s' "$RECEIPT" | json_field '.data.body_filled')"
 [[ -n "$RECEIPT_ID" && "$RECEIPT_ID" != "null" ]] || {
   printf 'receipt create failed: %s\n' "$RECEIPT" >&2
@@ -275,10 +258,42 @@ printf '%s' "$RECEIPT_BODY" | grep -q '500.00' || {
 }
 
 RECEIPT_ISSUED="$(curl -fsS -X POST "$API_URL/v1/receipts/$RECEIPT_ID/issue" \
-  "${AUTH[@]}" -H "Idempotency-Key: pr-$RUN_ID-receipt-issue")"
+  "${AUTH[@]}" -H "Idempotency-Key: pr-$RUN_ID-receipt-issue" -H "If-Match: \"$RECEIPT_VER\"")"
 [[ "$(printf '%s' "$RECEIPT_ISSUED" | json_field '.data.status')" == "issued" ]] || {
   printf 'receipt issue failed: %s\n' "$RECEIPT_ISSUED" >&2
   exit 1
+}
+
+# --- Complete delivery → auto income accounting_record (notes=handover:{id}) ---
+DONE="$(curl -fsS -X POST "$API_URL/v1/crm/handovers/$HANDOVER_ID/complete" \
+  "${AUTH[@]}" -H "Idempotency-Key: pr-$RUN_ID-complete" -H "If-Match: \"$HANDOVER_VER\"")"
+[[ "$(printf '%s' "$DONE" | json_field '.data.status')" == "completed" ]] || {
+  printf 'handover complete failed: %s\n' "$DONE" >&2
+  exit 1
+}
+
+INCOME_LIST="$(curl -fsS "$API_URL/v1/accounting/records?entry_type=income" "${AUTH[@]}")"
+INCOME_MATCH="$(printf '%s' "$INCOME_LIST" | jq -r --arg m "handover:$HANDOVER_ID" \
+  '[.data[]? | select(.notes==$m and .amount_cents==50000 and .entry_type=="income")] | length')"
+[[ "$INCOME_MATCH" == "1" ]] || {
+  printf 'finance linkage failed: want 1 income notes=handover:%s amount=50000 got %s\n%s\n' \
+    "$HANDOVER_ID" "$INCOME_MATCH" "$INCOME_LIST" >&2
+  exit 1
+}
+
+# Reservation should be handed_over after delivery complete
+FINAL_LIST="$(curl -fsS "$API_URL/v1/crm/reservations" "${AUTH[@]}")"
+FINAL_STATUS="$(printf '%s' "$FINAL_LIST" | jq -r --arg id "$RESERVATION_ID" \
+  '.data[]? | select(.id==$id) | .status // empty')"
+# list filters cancelled only; handed_over should still appear
+[[ "$FINAL_STATUS" == "handed_over" ]] || {
+  # completeCrmHandover sets reservation handed_over; if list excludes it, count zero is also ok if we got completed handover
+  if [[ -z "$FINAL_STATUS" ]]; then
+    printf 'note: reservation not listed after handed_over (may be filtered); handover completed\n'
+  else
+    printf 'final reservation status want handed_over got %s\n' "$FINAL_STATUS" >&2
+    exit 1
+  fi
 }
 
 # --- Customer public document read (capability token) ---
@@ -312,5 +327,5 @@ DRAFT_STATUS="$(curl -sS -o /tmp/scolvpet-pr-public-draft.json -w '%{http_code}'
   exit 1
 }
 
-printf 'public-reservation smoke PASS: reservation=%s contact=%s hamster=%s contract=%s handover=%s receipt=%s public_token=%s slug=%s\n' \
-  "$RESERVATION_ID" "$CONTACT_ID" "$HAMSTER_ID" "$CONTRACT_ID" "$HANDOVER_ID" "$RECEIPT_ID" "$RECEIPT_TOKEN" "$SLUG"
+printf 'public-reservation smoke PASS: reservation=%s contact=%s hamster=%s contract=%s handover=%s receipt=%s income_notes=handover:%s public_token=%s slug=%s\n' \
+  "$RESERVATION_ID" "$CONTACT_ID" "$HAMSTER_ID" "$CONTRACT_ID" "$HANDOVER_ID" "$RECEIPT_ID" "$HANDOVER_ID" "$RECEIPT_TOKEN" "$SLUG"
