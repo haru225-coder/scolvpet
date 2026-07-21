@@ -56,7 +56,10 @@ class ApiClient {
 
   Dio get dio => _dio;
 
-  /// Temporarily override receive timeout on the P2 Dio (e.g. assistant ask).
+  /// Host-root Dio for endpoints not yet in generated client (chat/actions).
+  Dio get p2Dio => _p2Dio;
+
+  /// Temporarily override receive timeout on the P2 generated client.
   Future<T> withP2ReceiveTimeout<T>(
     Duration receiveTimeout,
     Future<T> Function() run,

@@ -8,6 +8,7 @@ class MemoryAssistantRepository implements AssistantRepository {
   MemoryAssistantRepository({this.snapshot = const AssistantSnapshot()});
 
   final AssistantSnapshot snapshot;
+  String? lastSessionId;
 
   @override
   Future<AssistantCapabilities> capabilities() async =>
@@ -21,6 +22,7 @@ class MemoryAssistantRepository implements AssistantRepository {
           'usage',
           'plan',
           'help',
+          'general',
         ],
         modeDefault: 'rules',
         llmAvailable: false,
@@ -29,11 +31,32 @@ class MemoryAssistantRepository implements AssistantRepository {
 
   @override
   Future<AssistantAnswer> ask(String question, {bool preferLlm = false}) async {
-    final q = question.trim();
+    final result = await chat(question, preferLlm: preferLlm);
+    return result.answer;
+  }
+
+  @override
+  Future<AssistantChatResult> chat(
+    String message, {
+    String? sessionId,
+    bool preferLlm = true,
+  }) async {
+    final q = message.trim();
     if (q.isEmpty) {
       throw const AssistantRepositoryException('问题不能为空');
     }
-    return answerFromSnapshot(q, snapshot);
+    lastSessionId = sessionId ?? 'mem-session';
+    return AssistantChatResult(
+      sessionId: lastSessionId!,
+      messageId: 'mem-msg',
+      answer: answerFromSnapshot(q, snapshot),
+    );
   }
-}
 
+  @override
+  Future<Map<String, dynamic>> confirmAction(String actionId) async =>
+      <String, dynamic>{'status': 'executed', 'action_id': actionId};
+
+  @override
+  Future<void> cancelAction(String actionId) async {}
+}

@@ -33,6 +33,15 @@ void main() {
     expect(ans.answer, contains('2'));
   });
 
+  test('MemoryAssistantRepository chat keeps session', () async {
+    final repo = MemoryAssistantRepository();
+    final result = await repo.chat('继续', sessionId: 'sess-1', preferLlm: false);
+    expect(result.sessionId, 'sess-1');
+    expect(result.answer.mode, 'rules');
+    final confirmed = await repo.confirmAction('act-1');
+    expect(confirmed['status'], 'executed');
+  });
+
   testWidgets('AssistantPage answers preset', (tester) async {
     var openedHamsters = false;
     final controller = AssistantController(
@@ -174,19 +183,15 @@ class _AgentRepository implements AssistantRepository {
   Future<AssistantCapabilities> capabilities() async =>
       const AssistantCapabilities(
         intents: ['tasks'],
-        modeDefault: 'agent',
+        modeDefault: 'rules',
         llmAvailable: true,
         disclaimer: 'Agent 操作需要确认',
       );
 
-  @override
-  Future<AssistantAnswer> ask(
-    String question, {
-    bool preferLlm = false,
-  }) async => AssistantAnswer(
+  AssistantAnswer _answer() => AssistantAnswer(
     answer: '建议创建一条称重任务草案。',
     intent: 'tasks',
-    mode: 'agent',
+    mode: 'llm',
     facts: const [],
     disclaimer: '需要确认',
     actions: [
@@ -215,6 +220,30 @@ class _AgentRepository implements AssistantRepository {
       ),
     ],
   );
+
+  @override
+  Future<AssistantAnswer> ask(
+    String question, {
+    bool preferLlm = false,
+  }) async => _answer();
+
+  @override
+  Future<AssistantChatResult> chat(
+    String message, {
+    String? sessionId,
+    bool preferLlm = true,
+  }) async => AssistantChatResult(
+    sessionId: sessionId ?? 'agent-session',
+    messageId: 'agent-msg',
+    answer: _answer(),
+  );
+
+  @override
+  Future<Map<String, dynamic>> confirmAction(String actionId) async =>
+      <String, dynamic>{'status': 'executed'};
+
+  @override
+  Future<void> cancelAction(String actionId) async {}
 }
 
 class _BusyAssistantRepository implements AssistantRepository {
@@ -232,6 +261,27 @@ class _BusyAssistantRepository implements AssistantRepository {
   @override
   Future<AssistantAnswer> ask(String question, {bool preferLlm = false}) =>
       answer.future;
+
+  @override
+  Future<AssistantChatResult> chat(
+    String message, {
+    String? sessionId,
+    bool preferLlm = true,
+  }) async {
+    final a = await answer.future;
+    return AssistantChatResult(
+      sessionId: sessionId ?? 'busy',
+      messageId: 'busy-msg',
+      answer: a,
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>> confirmAction(String actionId) async =>
+      <String, dynamic>{};
+
+  @override
+  Future<void> cancelAction(String actionId) async {}
 }
 
 class _FailingAssistantRepository implements AssistantRepository {
@@ -243,5 +293,24 @@ class _FailingAssistantRepository implements AssistantRepository {
   @override
   Future<AssistantAnswer> ask(String question, {bool preferLlm = false}) async {
     throw const AssistantRepositoryException('没有查到结果，请稍后重试');
+  }
+
+  @override
+  Future<AssistantChatResult> chat(
+    String message, {
+    String? sessionId,
+    bool preferLlm = true,
+  }) async {
+    throw const AssistantRepositoryException('没有查到结果，请稍后重试');
+  }
+
+  @override
+  Future<Map<String, dynamic>> confirmAction(String actionId) async {
+    throw const AssistantRepositoryException('确认失败');
+  }
+
+  @override
+  Future<void> cancelAction(String actionId) async {
+    throw const AssistantRepositoryException('取消失败');
   }
 }

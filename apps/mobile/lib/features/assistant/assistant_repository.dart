@@ -9,6 +9,19 @@ import 'assistant_models.dart';
 abstract interface class AssistantRepository {
   Future<AssistantCapabilities> capabilities();
   Future<AssistantAnswer> ask(String question, {bool preferLlm = false});
+
+  /// Slice A multi-turn chat. Pass [sessionId] to continue a thread.
+  Future<AssistantChatResult> chat(
+    String message, {
+    String? sessionId,
+    bool preferLlm = true,
+  });
+
+  /// Slice C: execute a pending write draft.
+  Future<Map<String, dynamic>> confirmAction(String actionId);
+
+  /// Slice C: cancel a pending write draft.
+  Future<void> cancelAction(String actionId);
 }
 
 class AssistantRepositoryException implements Exception {
@@ -23,7 +36,6 @@ String assistantErrorMessage(Object error) => apiErrorMessage(
   fallback: '助手请求失败',
   mapLocal: (e) => e is AssistantRepositoryException ? e.message : null,
   mapDio: (e) {
-    // 2xx 但生成客户端反序列化失败（常见：mode/mode_default 枚举漂移）
     if (e.response != null &&
         e.response!.statusCode != null &&
         e.response!.statusCode! >= 200 &&
@@ -56,23 +68,62 @@ class DefaultApiAssistantRepository implements AssistantRepository {
 
   @override
   Future<AssistantAnswer> ask(String question, {bool preferLlm = false}) async {
-    // Agent 需要读取业务快照并等待模型生成结构化操作；单独放宽这条
-    // 请求的接收窗口，避免通用 API client 的 12 秒窗口提前取消请求。
+    final result = await chat(question, preferLlm: preferLlm);
+    return result.answer;
+  }
+
+  @override
+  Future<AssistantChatResult> chat(
+    String message, {
+    String? sessionId,
+    bool preferLlm = true,
+  }) async {
+    // 通用对话 + tool 可能较慢；单独放宽 receive 窗口。
     final response = await client.withP2ReceiveTimeout(
-      const Duration(seconds: 35),
-      () => client.p2Api.askAssistant(
-        assistantAskRequest: api.AssistantAskRequest(
-          question: question,
+      const Duration(seconds: 45),
+      () => client.p2Api.chatAssistant(
+        assistantChatRequest: api.AssistantChatRequest(
+          message: message,
+          sessionId: sessionId == null || sessionId.isEmpty ? null : sessionId,
           preferLlm: preferLlm,
         ),
-        idempotencyKey: 'ask-${_uuid.v4()}',
+        idempotencyKey: 'chat-${_uuid.v4()}',
       ),
     );
     final data = response.data?.data;
     if (data == null) {
       throw const AssistantRepositoryException('响应为空');
     }
-    return _mapAnswer(data);
+    return AssistantChatResult(
+      sessionId: data.sessionId,
+      messageId: data.messageId,
+      answer: _mapChatAnswer(data),
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>> confirmAction(String actionId) async {
+    final id = actionId.trim();
+    if (id.isEmpty) {
+      throw const AssistantRepositoryException('动作 ID 无效');
+    }
+    final response = await client.p2Api.confirmAssistantAction(
+      actionId: id,
+      idempotencyKey: 'confirm-${_uuid.v4()}',
+    );
+    return response.data?.data.toJson() ?? <String, dynamic>{};
+  }
+
+  @override
+  Future<void> cancelAction(String actionId) async {
+    final id = actionId.trim();
+    if (id.isEmpty) {
+      throw const AssistantRepositoryException('动作 ID 无效');
+    }
+    await client.p2Api.cancelAssistantAction(
+      actionId: id,
+      idempotencyKey: 'cancel-${_uuid.v4()}',
+    );
   }
 }
 
@@ -84,11 +135,8 @@ AssistantCapabilities _mapCapabilities(api.AssistantCapabilities data) =>
       disclaimer: data.disclaimer,
     );
 
-AssistantAnswer _mapAnswer(api.AssistantAnswer data) => AssistantAnswer(
-  answer: data.answer,
-  intent: data.intent,
-  mode: data.mode.value,
-  facts: data.facts
+AssistantAnswer _mapChatAnswer(api.AssistantChatResult data) {
+  final facts = data.facts
       .map(
         (fact) => AssistantFact(
           key: fact.key,
@@ -97,8 +145,37 @@ AssistantAnswer _mapAnswer(api.AssistantAnswer data) => AssistantAnswer(
           source: fact.source_,
         ),
       )
-      .toList(growable: false),
-  disclaimer: data.disclaimer,
-  // OpenAPI AssistantAnswer 当前无 actions 字段；保留空列表以兼容 UI 动作入口。
-  actions: const <AssistantAction>[],
-);
+      .toList(growable: false);
+  final actions = data.actions
+      .map(
+        (action) => AssistantAction(
+          type: action.type,
+          label: action.label,
+          summary: action.summary,
+          requiresConfirmation: action.requiresConfirmation,
+          payload: Map<String, dynamic>.from(action.payload),
+          actionId: action.actionId,
+        ),
+      )
+      .toList(growable: false);
+  return AssistantAnswer(
+    answer: data.answer,
+    intent: data.intent,
+    mode: data.mode.value,
+    facts: facts,
+    disclaimer: data.disclaimer,
+    actions: actions,
+  );
+}
+
+class AssistantChatResult {
+  const AssistantChatResult({
+    required this.sessionId,
+    required this.messageId,
+    required this.answer,
+  });
+
+  final String sessionId;
+  final String messageId;
+  final AssistantAnswer answer;
+}

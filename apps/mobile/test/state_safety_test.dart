@@ -234,4 +234,25 @@ class _DelayedAssistantRepository extends MemoryAssistantRepository {
   @override
   Future<AssistantAnswer> ask(String question, {bool preferLlm = false}) =>
       answer.future;
+
+  @override
+  Future<AssistantChatResult> chat(
+    String message, {
+    String? sessionId,
+    bool preferLlm = true,
+  }) async {
+    final a = await answer.future;
+    return AssistantChatResult(
+      sessionId: sessionId ?? 'delayed',
+      messageId: 'delayed-msg',
+      answer: a,
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>> confirmAction(String actionId) async =>
+      <String, dynamic>{};
+
+  @override
+  Future<void> cancelAction(String actionId) async {}
 }

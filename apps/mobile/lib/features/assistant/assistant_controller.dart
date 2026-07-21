@@ -21,7 +21,10 @@ class AssistantController extends ChangeNotifier {
   I2AsyncState<void> askingState = const I2AsyncState.idle();
   final List<AssistantChatTurn> turns = [];
   String? lastMessage;
-  // 有可用的 Grok2API 时默认走 Agent 润色；服务端无 Key 会自动回退规则模式。
+
+  /// Server-side multi-turn session (Slice A).
+  String? sessionId;
+  // 有可用的 Grok2API 时默认走通用对话；服务端无 Key 会自动回退规则模式。
   bool preferLlm = true;
 
   Future<void> refreshCapabilities() async {
@@ -48,8 +51,15 @@ class AssistantController extends ChangeNotifier {
     lastMessage = null;
     notifyListeners();
     try {
-      final answer = await repository.ask(q, preferLlm: preferLlm);
-      turns.insert(0, AssistantChatTurn(question: q, answer: answer));
+      final result = await repository.chat(
+        q,
+        sessionId: sessionId,
+        preferLlm: preferLlm,
+      );
+      if (result.sessionId.isNotEmpty) {
+        sessionId = result.sessionId;
+      }
+      turns.insert(0, AssistantChatTurn(question: q, answer: result.answer));
       askingState = const I2AsyncState.data(null);
       notifyListeners();
       return true;
@@ -68,6 +78,50 @@ class AssistantController extends ChangeNotifier {
 
   void clear() {
     turns.clear();
+    sessionId = null;
     notifyListeners();
+  }
+
+  Future<bool> confirmAction(AssistantAction action) async {
+    final id = action.actionId?.trim();
+    if (id == null || id.isEmpty) {
+      lastMessage = '缺少可确认的动作 ID';
+      notifyListeners();
+      return false;
+    }
+    askingState = const I2AsyncState.loading();
+    lastMessage = null;
+    notifyListeners();
+    try {
+      await repository.confirmAction(id);
+      lastMessage = '已确认并执行：${action.label}';
+      askingState = const I2AsyncState.data(null);
+      notifyListeners();
+      return true;
+    } catch (error) {
+      lastMessage = assistantErrorMessage(error);
+      askingState = I2AsyncState.error(lastMessage!);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> cancelAction(AssistantAction action) async {
+    final id = action.actionId?.trim();
+    if (id == null || id.isEmpty) {
+      lastMessage = '缺少可取消的动作 ID';
+      notifyListeners();
+      return false;
+    }
+    try {
+      await repository.cancelAction(id);
+      lastMessage = '已取消：${action.label}';
+      notifyListeners();
+      return true;
+    } catch (error) {
+      lastMessage = assistantErrorMessage(error);
+      notifyListeners();
+      return false;
+    }
   }
 }

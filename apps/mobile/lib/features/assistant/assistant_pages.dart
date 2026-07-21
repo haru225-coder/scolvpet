@@ -52,7 +52,7 @@ class _AssistantPageState extends State<AssistantPage> {
     '现在有多少只在养？',
     '有没有逾期任务？',
     '繁育概况怎么样？',
-    '我的套餐是什么？',
+    '幼崽护理要注意什么？',
     '你能做什么？',
   ];
 
@@ -360,6 +360,14 @@ class _AssistantPageState extends State<AssistantPage> {
         return widget.onOpenTaskDraft != null &&
             _payloadText(action, 'target_type').isNotEmpty &&
             _payloadText(action, 'target_id').isNotEmpty;
+      case 'create_task':
+      case 'complete_task':
+      case 'create_weight_record':
+      case 'create_hamster':
+      case 'update_hamster':
+      case 'create_enclosure':
+        return action.requiresConfirmation &&
+            (action.actionId?.trim().isNotEmpty ?? false);
       case 'open_hamster':
         final id = _payloadText(action, 'hamster_id');
         return widget.onOpenHamsterDetail != null &&
@@ -467,6 +475,14 @@ class _AssistantPageState extends State<AssistantPage> {
 
   void _handleAgentAction(AssistantAction action) {
     switch (action.type) {
+      case 'create_task':
+      case 'complete_task':
+      case 'create_weight_record':
+      case 'create_hamster':
+      case 'update_hamster':
+      case 'create_enclosure':
+        _confirmServerAction(action);
+        return;
       case 'task_draft':
         final targetType = action.payload['target_type']?.toString() ?? '';
         final targetId = action.payload['target_id']?.toString() ?? '';
@@ -530,6 +546,42 @@ class _AssistantPageState extends State<AssistantPage> {
       default:
         return;
     }
+  }
+
+  Future<void> _confirmServerAction(AssistantAction action) async {
+    final summary = action.summary.isEmpty ? action.label : action.summary;
+    final go = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: Text(action.label),
+        content: Text(summary),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('确认执行'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (go != true) {
+      final cancelled = await widget.controller.cancelAction(action);
+      if (!mounted) return;
+      final msg = widget.controller.lastMessage;
+      if (msg != null) showIosMessage(context, msg);
+      if (cancelled) setState(() {});
+      return;
+    }
+    final ok = await widget.controller.confirmAction(action);
+    if (!mounted) return;
+    final msg = widget.controller.lastMessage;
+    if (msg != null) showIosMessage(context, msg);
+    if (ok) setState(() {});
   }
 
   String? _optionalPayloadText(dynamic value) {

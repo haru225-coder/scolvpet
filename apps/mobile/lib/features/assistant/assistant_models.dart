@@ -19,6 +19,7 @@ class AssistantAction {
     required this.summary,
     required this.requiresConfirmation,
     required this.payload,
+    this.actionId,
   });
 
   final String type;
@@ -26,6 +27,9 @@ class AssistantAction {
   final String summary;
   final bool requiresConfirmation;
   final Map<String, dynamic> payload;
+
+  /// Server-side pending write id (Slice C).
+  final String? actionId;
 }
 
 class AssistantAnswer {
