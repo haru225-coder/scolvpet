@@ -98,7 +98,8 @@ func (c *OptionalLLMClient) RunAgent(
 	}
 	out := rules
 	out.Answer = strings.TrimSpace(planned.Answer)
-	out.Mode = "agent"
+	// Wire 契约 mode ∈ {rules, llm}；agent 语义用 actions + disclaimer 表达。
+	out.Mode = "llm"
 	out.Actions = planned.Actions
 	out.Disclaimer = "Agent 已读取当前数据；所有写操作仍需你确认后执行。"
 	return out, nil

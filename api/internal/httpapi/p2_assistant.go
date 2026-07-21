@@ -35,7 +35,9 @@ func (s *Server) assistantCapabilities(w http.ResponseWriter, r *http.Request) {
 				aicore.IntentOverdue, aicore.IntentBreeding, aicore.IntentUsage,
 				aicore.IntentPlan, aicore.IntentHelp,
 			},
-			"mode_default":  map[bool]string{true: "agent", false: "rules"}[llm],
+			// OpenAPI AssistantCapabilities.mode_default 为 const "rules"；
+			// LLM 是否可用只看 llm_available，勿写 agent（客户端 enum 会炸）。
+			"mode_default":  "rules",
 			"llm_available": llm,
 			"disclaimer":    "先读取当前结构化数据再回答；新增任务等写操作需要通过确认入口执行。",
 		},

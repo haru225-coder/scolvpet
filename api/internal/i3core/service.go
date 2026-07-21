@@ -300,12 +300,20 @@ func (s *Service) PublishPlanTx(ctx context.Context, tx pgx.Tx, ownerID, planID 
 	if err := validatePairingCageTx(ctx, tx, ownerID, input.PairingEnclosureID); err != nil {
 		return BreedingPlan{}, nil, err
 	}
-	kinship := map[string]any{"status": "clear", "checked_at": time.Now().UTC()}
+	// Shape must match OpenAPI KinshipCheck (required: checked_at, common_ancestor_count,
+	// risk_level, rule_version). Extra keys are omitted so checked client codecs accept it.
+	kinship := map[string]any{
+		"checked_at":             time.Now().UTC(),
+		"common_ancestor_count":  0,
+		"risk_level":             "none",
+		"rule_version":           "i3-default",
+	}
 	if input.KinshipOverrideReason != nil && strings.TrimSpace(*input.KinshipOverrideReason) != "" {
 		if len(*input.KinshipOverrideReason) > 2000 {
 			return BreedingPlan{}, nil, &ValidationError{Field: "kinship_override_reason", Message: "亲缘覆盖理由不能超过 2000 个字符"}
 		}
-		kinship = map[string]any{"status": "overridden", "override_reason": strings.TrimSpace(*input.KinshipOverrideReason), "checked_at": time.Now().UTC()}
+		kinship["risk_level"] = "low"
+		kinship["warnings"] = []string{"亲缘检查已人工覆盖"}
 	}
 	commandTag, err := tx.Exec(ctx, `
 		UPDATE breeding_plan

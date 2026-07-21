@@ -67,7 +67,7 @@ class ApiI1Repository implements I1Repository {
         phone: phone,
         verificationId: verificationId,
         code: code,
-        device: DeviceInfo(platform: _devicePlatform, appVersion: '0.1.0'),
+        device: DeviceInfo(platform: _devicePlatform, appVersion: '0.0.3'),
       ),
     );
     final session = response.data!.data;

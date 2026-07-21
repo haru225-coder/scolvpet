@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:scolvpet_api/scolvpet_api.dart' as api;
 import 'package:uuid/uuid.dart';
 
@@ -21,6 +22,20 @@ String assistantErrorMessage(Object error) => apiErrorMessage(
   error,
   fallback: '助手请求失败',
   mapLocal: (e) => e is AssistantRepositoryException ? e.message : null,
+  mapDio: (e) {
+    // 2xx 但生成客户端反序列化失败（常见：mode/mode_default 枚举漂移）
+    if (e.response != null &&
+        e.response!.statusCode != null &&
+        e.response!.statusCode! >= 200 &&
+        e.response!.statusCode! < 300) {
+      return '助手数据格式异常，请稍后重试或更新应用';
+    }
+    if (e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.connectionTimeout) {
+      return '助手响应超时，请稍后重试';
+    }
+    return null;
+  },
 );
 
 class DefaultApiAssistantRepository implements AssistantRepository {

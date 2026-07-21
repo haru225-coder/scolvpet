@@ -17,9 +17,26 @@ func PlanJSON(plan BreedingPlan) map[string]any {
 		"actual_birth_at":           plan.ActualBirthAt,
 		"active_pairing_attempt_id": plan.ActivePairingAttemptID,
 		"litter_id":                 plan.LitterID, "objective_traits": plan.ObjectiveTraits,
-		"kinship_check": plan.KinshipCheck, "notes": plan.Notes,
+		// Empty/legacy {} must be null: OpenAPI KinshipCheck has required fields and the
+		// generated mobile client rejects HTTP 200 bodies that still fail deserialization.
+		"kinship_check": formatKinshipCheck(plan.KinshipCheck), "notes": plan.Notes,
 		"version": plan.Version, "created_at": plan.CreatedAt, "updated_at": plan.UpdatedAt,
 	}
+}
+
+// formatKinshipCheck emits null unless the payload has the OpenAPI-required keys.
+// Draft rows store kinship_check as {} and publish used to write incomplete shapes;
+// both break checked JSON decoding on the client (surface as “请求失败（200）”).
+func formatKinshipCheck(value map[string]any) any {
+	if len(value) == 0 {
+		return nil
+	}
+	for _, key := range []string{"checked_at", "common_ancestor_count", "risk_level", "rule_version"} {
+		if _, ok := value[key]; !ok {
+			return nil
+		}
+	}
+	return value
 }
 
 func AttemptJSON(attempt PairingAttempt) map[string]any {

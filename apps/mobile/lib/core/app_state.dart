@@ -463,7 +463,20 @@ class AppState extends ChangeNotifier {
 
   void _captureError(Object error) {
     offline = _isOfflineError(error);
-    lastError = offline ? '离线只读，联网后重新提交/再操作' : '请求未完成，请稍后重试';
+    if (offline) {
+      lastError = '离线只读，联网后重新提交/再操作';
+      return;
+    }
+    // 诊断用：尽量暴露真实原因
+    if (error is DioException) {
+      final status = error.response?.statusCode;
+      final msg = error.response?.data?.toString() ?? error.message ?? error.type.toString();
+      lastError = status != null
+          ? '请求失败($status): $msg'
+          : '网络错误(${error.type}): $msg';
+    } else {
+      lastError = '错误: ${error.toString()}';
+    }
   }
 
   static bool _isOfflineError(Object error) =>

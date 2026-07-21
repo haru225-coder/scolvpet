@@ -49,7 +49,7 @@ func TestRunAgentParsesStructuredAction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if answer.Mode != "agent" || len(answer.Actions) != 1 {
+	if answer.Mode != "llm" || len(answer.Actions) != 1 {
 		t.Fatalf("answer=%+v", answer)
 	}
 	if answer.Actions[0].Payload["target_id"] != "hamster-1" {

@@ -184,11 +184,13 @@ func NewOptionalLLMFromEnv() *OptionalLLMClient {
 	if model == "" {
 		model = "grok-build-0.1"
 	}
+	// 控制在移动端默认 receiveTimeout(12s) 之内：上游慢/429 时尽快回退 rules，
+	// 避免整次 ask 卡满 20s 导致客户端先超时显示「助手请求失败」。
 	return &OptionalLLMClient{
 		APIKey:  key,
 		BaseURL: strings.TrimRight(base, "/"),
 		Model:   model,
-		HTTP:    &http.Client{Timeout: 20 * time.Second},
+		HTTP:    &http.Client{Timeout: 8 * time.Second},
 	}
 }
 

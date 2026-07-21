@@ -97,9 +97,18 @@ class DefaultApiBreedingRepository implements BreedingRepository {
 
   @override
   Future<List<BreedingPlan>> listPlans() async {
-    final response = await _api.listBreedingPlans(limit: 50);
-    final data = response.data?.data ?? const <api.BreedingPlan>[];
-    return data.map(_plan).toList();
+    // Parse with local flexible models. Generated BreedingPlan rejects empty
+    // kinship_check: {} (HTTP 200) which surfaces as “请求失败（200）”.
+    final response = await client.dio.get<Map<String, dynamic>>(
+      '/breeding-plans',
+      queryParameters: const {'limit': 50},
+    );
+    final raw = response.data?['data'];
+    if (raw is! List) return const <BreedingPlan>[];
+    return raw
+        .whereType<Map>()
+        .map((e) => BreedingPlan.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
   }
 
   @override
@@ -253,6 +262,11 @@ String breedingErrorMessage(Object error) => apiErrorMessage(
   mapLocal: (e) => e is BreedingRepositoryException ? e.message : null,
   mapDio: (e) {
     if (e.type == DioExceptionType.connectionError) return '网络不可用，请稍后重试';
-    return '请求失败（${e.response?.statusCode ?? e.type.name}）';
+    final code = e.response?.statusCode;
+    // Generated codecs throw DioException even on 2xx when JSON shape mismatches.
+    if (code != null && code >= 200 && code < 300) {
+      return '繁育数据格式异常，请稍后重试或联系支持';
+    }
+    return '请求失败（${code ?? e.type.name}）';
   },
 );
