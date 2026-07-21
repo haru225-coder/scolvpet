@@ -106,7 +106,17 @@ func main() {
 		go mediaWorker.Run(ctx, time.Duration(config.MediaWorkerIntervalSecs)*time.Second)
 	}
 
-	server := &http.Server{Addr: addr, Handler: apiServer.Handler(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second}
+	// WriteTimeout covers the whole handler lifetime after request headers.
+	// Assistant chat may call upstream LLM + tools for 30–90s; 15s caused empty
+	// replies / Caddy 502 EOF on write paths. Keep >= reverse_proxy read_timeout.
+	server := &http.Server{
+		Addr:              addr,
+		Handler:           apiServer.Handler(),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      120 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 	go func() {
 		logger.Info("api server listening", "addr", addr)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
