@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -20,12 +22,14 @@ func (s *Server) registerP1ContractRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v1/contracts", s.listContracts)
 	mux.HandleFunc("POST /v1/contracts", s.createContract)
 	mux.HandleFunc("POST /v1/contracts/{document_id}/issue", s.issueContract)
+	mux.HandleFunc("POST /v1/contracts/{document_id}/revoke", s.revokeContract)
 
 	mux.HandleFunc("GET /v1/receipts/templates", s.listReceiptTemplates)
 	mux.HandleFunc("POST /v1/receipts/templates", s.createReceiptTemplate)
 	mux.HandleFunc("GET /v1/receipts", s.listReceipts)
 	mux.HandleFunc("POST /v1/receipts", s.createReceipt)
 	mux.HandleFunc("POST /v1/receipts/{document_id}/issue", s.issueReceipt)
+	mux.HandleFunc("POST /v1/receipts/{document_id}/revoke", s.revokeReceipt)
 
 	// 客户侧只读：已签发合同/回执（能力令牌，无鉴权）
 	mux.HandleFunc("GET /v1/public/documents/{token}", s.getPublicDocument)
@@ -57,6 +61,7 @@ type docDocument struct {
 	// 仅已签发单据有；客户侧能力链接。
 	PublicToken *string `json:"public_token,omitempty"`
 	PublicPath  *string `json:"public_path,omitempty"`
+	PublicURL   *string `json:"public_url,omitempty"`
 }
 
 type createDocTemplateRequest struct {
@@ -232,6 +237,10 @@ func (s *Server) issueContract(w http.ResponseWriter, r *http.Request) {
 	s.issueDocDocument(w, r, "contract")
 }
 
+func (s *Server) revokeContract(w http.ResponseWriter, r *http.Request) {
+	s.revokeDocDocument(w, r, "contract")
+}
+
 func (s *Server) listReceipts(w http.ResponseWriter, r *http.Request) {
 	s.listDocDocuments(w, r, "receipt")
 }
@@ -365,6 +374,10 @@ func (s *Server) issueReceipt(w http.ResponseWriter, r *http.Request) {
 	s.issueDocDocument(w, r, "receipt")
 }
 
+func (s *Server) revokeReceipt(w http.ResponseWriter, r *http.Request) {
+	s.revokeDocDocument(w, r, "receipt")
+}
+
 func (s *Server) listDocTemplates(w http.ResponseWriter, r *http.Request, kind string) {
 	ownerID, ok := s.authenticateMemberOwner(w, r)
 	if !ok {
@@ -469,6 +482,7 @@ func (s *Server) listDocDocuments(w http.ResponseWriter, r *http.Request, kind s
 			return
 		}
 		attachDocPublicShare(&item, publicToken)
+		attachDocPublicURL(&item, r)
 		items = append(items, item)
 	}
 	writeJSON(w, r, http.StatusOK, map[string]any{"data": items, "meta": responseMeta(r)})
@@ -484,48 +498,94 @@ func (s *Server) issueDocDocument(w http.ResponseWriter, r *http.Request, kind s
 		writeAPIError(w, r, validationError("document_id", "单据 ID 无效"))
 		return
 	}
-	current, err := s.getDocDocument(r.Context(), ownerID, documentID, kind)
+	payload := []byte(`{"status":"issued"}`)
+	result, err := s.Store.RunIdempotent(
+		r.Context(), ownerID, r.Header.Get("Idempotency-Key"), http.MethodPost, r.URL.Path, payload,
+		func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
+			current, err := getDocDocumentTx(ctx, tx, ownerID, documentID, kind, true)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			if err := requireCrmIfMatch(r.Header.Get("If-Match"), current.Version); err != nil {
+				return 0, nil, nil, err
+			}
+			if current.Status != "draft" {
+				return 0, nil, nil, validationError("status", "仅草稿可签发")
+			}
+			tag, err := tx.Exec(ctx, `
+				UPDATE doc_document
+				SET status='issued', issued_at=now(), public_token=$5,
+					version=version+1, updated_at=now()
+				WHERE owner_id=$1 AND id=$2 AND kind=$3::doc_template_kind AND status='draft' AND version=$4
+			`, ownerID, documentID, kind, current.Version, newDocPublicToken())
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			if tag.RowsAffected() != 1 {
+				return 0, nil, nil, store.ErrVersionConflict
+			}
+			item, err := getDocDocumentTx(ctx, tx, ownerID, documentID, kind, false)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			attachDocPublicURL(&item, r)
+			return http.StatusOK, crmEnvelope(r, item), map[string]string{"ETag": store.FormatETag(item.Version)}, nil
+		},
+	)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	if current.Status != "draft" {
-		writeAPIError(w, r, validationError("status", "仅草稿可签发"))
+	writeStored(w, r, result)
+}
+
+func (s *Server) revokeDocDocument(w http.ResponseWriter, r *http.Request, kind string) {
+	ownerID, ok := s.authenticateMemberOwner(w, r)
+	if !ok {
 		return
 	}
-	if match := strings.TrimSpace(r.Header.Get("If-Match")); match != "" {
-		version, parseErr := store.ParseETag(match)
-		if parseErr != nil {
-			writeAPIError(w, r, validationError("If-Match", "版本号无效"))
-			return
-		}
-		if version != current.Version {
-			writeAPIError(w, r, store.ErrVersionConflict)
-			return
-		}
+	documentID, err := uuid.Parse(r.PathValue("document_id"))
+	if err != nil || documentID == uuid.Nil {
+		writeAPIError(w, r, store.ErrNotFound)
+		return
 	}
-	token := newDocPublicToken()
-	tag, err := s.Store.Pool.Exec(r.Context(), `
-		UPDATE doc_document
-		SET status='issued', issued_at=now(),
-			public_token=COALESCE(public_token, $5),
-			version=version+1, updated_at=now()
-		WHERE owner_id=$1 AND id=$2 AND kind=$3::doc_template_kind AND status='draft' AND version=$4
-	`, ownerID, documentID, kind, current.Version, token)
+	payload := []byte(`{"status":"archived"}`)
+	result, err := s.Store.RunIdempotent(
+		r.Context(), ownerID, r.Header.Get("Idempotency-Key"), http.MethodPost, r.URL.Path, payload,
+		func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
+			current, err := getDocDocumentTx(ctx, tx, ownerID, documentID, kind, true)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			if err := requireCrmIfMatch(r.Header.Get("If-Match"), current.Version); err != nil {
+				return 0, nil, nil, err
+			}
+			if current.Status != "issued" {
+				return 0, nil, nil, validationError("status", "仅已签发单据可撤销")
+			}
+			tag, err := tx.Exec(ctx, `
+				UPDATE doc_document
+				SET status='archived', public_token=NULL, version=version+1, updated_at=now()
+				WHERE owner_id=$1 AND id=$2 AND kind=$3::doc_template_kind AND status='issued' AND version=$4
+			`, ownerID, documentID, kind, current.Version)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			if tag.RowsAffected() != 1 {
+				return 0, nil, nil, store.ErrVersionConflict
+			}
+			item, err := getDocDocumentTx(ctx, tx, ownerID, documentID, kind, false)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			return http.StatusOK, crmEnvelope(r, item), map[string]string{"ETag": store.FormatETag(item.Version)}, nil
+		},
+	)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	if tag.RowsAffected() != 1 {
-		writeAPIError(w, r, store.ErrVersionConflict)
-		return
-	}
-	item, err := s.getDocDocument(r.Context(), ownerID, documentID, kind)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	writeJSON(w, r, http.StatusOK, map[string]any{"data": item, "meta": responseMeta(r)})
+	writeStored(w, r, result)
 }
 
 // getPublicDocument 客户只读：仅已签发单据，无内部 ID/组织信息。
@@ -615,6 +675,34 @@ func (s *Server) getDocDocument(ctx context.Context, ownerID, id uuid.UUID, kind
 	return item, nil
 }
 
+func getDocDocumentTx(ctx context.Context, tx pgx.Tx, ownerID, id uuid.UUID, kind string, forUpdate bool) (docDocument, error) {
+	query := `
+		SELECT d.id, d.template_id, d.kind::text, d.contact_id, d.handover_id, d.title, d.body_filled,
+			d.amount_cents, d.currency, d.status::text, d.issued_at, d.notes, d.version,
+			COALESCE(c.name, ''), d.public_token
+		FROM doc_document d
+		LEFT JOIN crm_contact c ON c.owner_id=d.owner_id AND c.id=d.contact_id
+		WHERE d.owner_id=$1 AND d.id=$2 AND d.kind=$3::doc_template_kind`
+	if forUpdate {
+		query += ` FOR UPDATE OF d`
+	}
+	var item docDocument
+	var publicToken *string
+	err := tx.QueryRow(ctx, query, ownerID, id, kind).Scan(
+		&item.ID, &item.TemplateID, &item.Kind, &item.ContactID, &item.HandoverID, &item.Title, &item.BodyFilled,
+		&item.AmountCents, &item.Currency, &item.Status, &item.IssuedAt, &item.Notes, &item.Version,
+		&item.ContactName, &publicToken,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return docDocument{}, store.ErrNotFound
+	}
+	if err != nil {
+		return docDocument{}, err
+	}
+	attachDocPublicShare(&item, publicToken)
+	return item, nil
+}
+
 func attachDocPublicShare(item *docDocument, publicToken *string) {
 	if item == nil || publicToken == nil || strings.TrimSpace(*publicToken) == "" {
 		return
@@ -626,6 +714,35 @@ func attachDocPublicShare(item *docDocument, publicToken *string) {
 	item.PublicToken = &token
 	path := "/d/" + token
 	item.PublicPath = &path
+}
+
+func attachDocPublicURL(item *docDocument, r *http.Request) {
+	if item == nil || item.PublicPath == nil {
+		return
+	}
+	value := docPublicURL(r, *item.PublicPath)
+	item.PublicURL = &value
+}
+
+func docPublicURL(r *http.Request, path string) string {
+	base := strings.TrimSpace(os.Getenv("PUBLIC_WEB_BASE_URL"))
+	if base != "" {
+		if parsed, err := url.Parse(base); err == nil && parsed.Scheme != "" && parsed.Host != "" {
+			parsed.Path = strings.TrimRight(parsed.Path, "/") + "/" + strings.TrimLeft(path, "/")
+			parsed.RawQuery = ""
+			parsed.Fragment = ""
+			return parsed.String()
+		}
+	}
+	scheme := "http"
+	if r != nil && r.TLS != nil {
+		scheme = "https"
+	}
+	host := "localhost"
+	if r != nil && strings.TrimSpace(r.Host) != "" {
+		host = r.Host
+	}
+	return (&url.URL{Scheme: scheme, Host: host, Path: path}).String()
 }
 
 func newDocPublicToken() string {

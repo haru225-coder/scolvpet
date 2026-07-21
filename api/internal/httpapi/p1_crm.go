@@ -3,6 +3,7 @@ package httpapi
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -121,7 +122,8 @@ func (s *Server) createCrmContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var request createContactRequest
-	if _, err := decodeBody(r, &request); err != nil {
+	payload, err := decodeBody(r, &request)
+	if err != nil {
 		writeAPIError(w, r, validationError("body", "客户请求体格式不正确"))
 		return
 	}
@@ -145,38 +147,31 @@ func (s *Server) createCrmContact(w http.ResponseWriter, r *http.Request) {
 	}
 	phone := normalizeCrmPhone(derefString(request.Phone))
 	wechat := normalizeCrmWechat(derefString(request.Wechat))
-	tx, err := s.Store.Pool.Begin(r.Context())
+	result, err := s.Store.RunIdempotent(
+		r.Context(), ownerID, r.Header.Get("Idempotency-Key"), http.MethodPost, r.URL.Path, payload,
+		func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
+			resolved, err := s.resolveOrCreateCrmContactTx(ctx, tx, ownerID, orgID, resolveCrmContactInput{
+				Name: name, Phone: phone, Wechat: wechat, Notes: request.Notes, Status: status,
+			})
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			item, err := getCrmContactTx(ctx, tx, ownerID, resolved.ID)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			statusCode := http.StatusCreated
+			if !resolved.Created {
+				statusCode = http.StatusOK
+			}
+			return statusCode, crmEnvelope(r, item), map[string]string{"ETag": store.FormatETag(item.Version)}, nil
+		},
+	)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	defer tx.Rollback(r.Context())
-	resolved, err := s.resolveOrCreateCrmContactTx(r.Context(), tx, ownerID, orgID, resolveCrmContactInput{
-		Name:   name,
-		Phone:  phone,
-		Wechat: wechat,
-		Notes:  request.Notes,
-		Status: status,
-	})
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	if err := tx.Commit(r.Context()); err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	item, err := s.getCrmContact(r.Context(), ownerID, resolved.ID)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	// 201 新建；200 复用已有客户（同一 phone/wechat）。
-	statusCode := http.StatusCreated
-	if !resolved.Created {
-		statusCode = http.StatusOK
-	}
-	writeJSON(w, r, statusCode, map[string]any{"data": item, "meta": responseMeta(r)})
+	writeStored(w, r, result)
 }
 
 func (s *Server) listCrmReservations(w http.ResponseWriter, r *http.Request) {
@@ -218,7 +213,8 @@ func (s *Server) createCrmReservation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var request createReservationRequest
-	if _, err := decodeBody(r, &request); err != nil {
+	payload, err := decodeBody(r, &request)
+	if err != nil {
 		writeAPIError(w, r, validationError("body", "预订请求体格式不正确"))
 		return
 	}
@@ -236,10 +232,6 @@ func (s *Server) createCrmReservation(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, err)
 		return
 	}
-	if _, err := s.getCrmContact(r.Context(), ownerID, contactID); err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
 	var hamsterID *uuid.UUID
 	if request.HamsterID != nil && strings.TrimSpace(*request.HamsterID) != "" {
 		parsed, parseErr := uuid.Parse(strings.TrimSpace(*request.HamsterID))
@@ -249,34 +241,35 @@ func (s *Server) createCrmReservation(w http.ResponseWriter, r *http.Request) {
 		}
 		hamsterID = &parsed
 	}
-	tx, err := s.Store.Pool.Begin(r.Context())
+	result, err := s.Store.RunIdempotent(
+		r.Context(), ownerID, r.Header.Get("Idempotency-Key"), http.MethodPost, r.URL.Path, payload,
+		func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
+			contact, err := getCrmContactTx(ctx, tx, ownerID, contactID)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			if contact.Status == "archived" {
+				return 0, nil, nil, validationError("contact_id", "已归档客户不可创建预订")
+			}
+			id, err := s.createCrmReservationTx(ctx, tx, ownerID, orgID, createCrmReservationInput{
+				ContactID: contactID, HamsterID: hamsterID, Title: title, Notes: request.Notes,
+				RequirePublic: false,
+			})
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			item, err := getCrmReservationTx(ctx, tx, ownerID, id, false)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			return http.StatusCreated, crmEnvelope(r, item), map[string]string{"ETag": store.FormatETag(item.Version)}, nil
+		},
+	)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	defer tx.Rollback(r.Context())
-	id, err := s.createCrmReservationTx(r.Context(), tx, ownerID, orgID, createCrmReservationInput{
-		ContactID: contactID,
-		HamsterID: hamsterID,
-		Title:     title,
-		Notes:     request.Notes,
-		// 后台创建：校验仓鼠归属与 lifecycle，不强制公开 profile。
-		RequirePublic: false,
-	})
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	if err := tx.Commit(r.Context()); err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	item, err := s.getCrmReservation(r.Context(), ownerID, id)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	writeJSON(w, r, http.StatusCreated, map[string]any{"data": item, "meta": responseMeta(r)})
+	writeStored(w, r, result)
 }
 
 func (s *Server) confirmCrmReservation(w http.ResponseWriter, r *http.Request) {
@@ -297,30 +290,43 @@ func (s *Server) transitionCrmReservation(w http.ResponseWriter, r *http.Request
 		writeAPIError(w, r, store.ErrNotFound)
 		return
 	}
-	current, err := s.getCrmReservation(r.Context(), ownerID, reservationID)
+	payload := []byte(`{"status":"` + next + `"}`)
+	result, err := s.Store.RunIdempotent(
+		r.Context(), ownerID, r.Header.Get("Idempotency-Key"), http.MethodPost, r.URL.Path, payload,
+		func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
+			current, err := getCrmReservationTx(ctx, tx, ownerID, reservationID, true)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			if err := requireCrmIfMatch(r.Header.Get("If-Match"), current.Version); err != nil {
+				return 0, nil, nil, err
+			}
+			if err := validateReservationTransition(current.Status, next); err != nil {
+				return 0, nil, nil, err
+			}
+			tag, err := tx.Exec(ctx, `
+				UPDATE crm_reservation
+				SET status=$4::crm_reservation_status, version=version+1, updated_at=now()
+				WHERE owner_id=$1 AND id=$2 AND version=$3
+			`, ownerID, reservationID, current.Version, next)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			if tag.RowsAffected() != 1 {
+				return 0, nil, nil, store.ErrVersionConflict
+			}
+			item, err := getCrmReservationTx(ctx, tx, ownerID, reservationID, false)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			return http.StatusOK, crmEnvelope(r, item), map[string]string{"ETag": store.FormatETag(item.Version)}, nil
+		},
+	)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	if current.Status == "handed_over" || current.Status == "cancelled" {
-		writeAPIError(w, r, validationError("status", "当前预订不可再变更"))
-		return
-	}
-	_, err = s.Store.Pool.Exec(r.Context(), `
-		UPDATE crm_reservation
-		SET status=$4::crm_reservation_status, version=version+1, updated_at=now()
-		WHERE owner_id=$1 AND id=$2 AND version=$3
-	`, ownerID, reservationID, current.Version, next)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	item, err := s.getCrmReservation(r.Context(), ownerID, reservationID)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	writeJSON(w, r, http.StatusOK, map[string]any{"data": item, "meta": responseMeta(r)})
+	writeStored(w, r, result)
 }
 
 func (s *Server) listCrmHandovers(w http.ResponseWriter, r *http.Request) {
@@ -362,17 +368,14 @@ func (s *Server) createCrmHandover(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var request createHandoverRequest
-	if _, err := decodeBody(r, &request); err != nil {
+	payload, err := decodeBody(r, &request)
+	if err != nil {
 		writeAPIError(w, r, validationError("body", "交付请求体格式不正确"))
 		return
 	}
 	contactID, err := uuid.Parse(strings.TrimSpace(request.ContactID))
 	if err != nil || contactID == uuid.Nil {
 		writeAPIError(w, r, validationError("contact_id", "客户无效"))
-		return
-	}
-	if _, err := s.getCrmContact(r.Context(), ownerID, contactID); err != nil {
-		writeAPIError(w, r, err)
 		return
 	}
 	orgID, err := s.currentOrganizationID(r.Context(), ownerID)
@@ -389,18 +392,6 @@ func (s *Server) createCrmHandover(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		reservationID = &parsed
-		reservation, reservationErr := s.getCrmReservation(r.Context(), ownerID, parsed)
-		if reservationErr != nil {
-			writeAPIError(w, r, reservationErr)
-			return
-		}
-		if reservation.ContactID != contactID {
-			writeAPIError(w, r, validationError("reservation_id", "预订不属于所选客户"))
-			return
-		}
-		if request.HamsterID == nil || strings.TrimSpace(*request.HamsterID) == "" {
-			hamsterID = reservation.HamsterID
-		}
 	}
 	var parsedHamsterID *uuid.UUID
 	if request.HamsterID != nil && strings.TrimSpace(*request.HamsterID) != "" {
@@ -410,10 +401,6 @@ func (s *Server) createCrmHandover(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		parsedHamsterID = &parsed
-		if err := s.ensureCrmHamsterOwned(r.Context(), ownerID, parsed); err != nil {
-			writeAPIError(w, r, err)
-			return
-		}
 	}
 	if parsedHamsterID != nil {
 		hamsterID = parsedHamsterID
@@ -427,23 +414,67 @@ func (s *Server) createCrmHandover(w http.ResponseWriter, r *http.Request) {
 		}
 		scheduledAt = parsed.UTC()
 	}
-	var id uuid.UUID
-	err = s.Store.Pool.QueryRow(r.Context(), `
-		INSERT INTO crm_handover (
-			owner_id, organization_id, contact_id, reservation_id, hamster_id, status, scheduled_at, notes
-		) VALUES ($1,$2,$3,$4,$5,'scheduled',$6,$7)
-		RETURNING id
-	`, ownerID, orgID, contactID, reservationID, hamsterID, scheduledAt, emptyToNil(request.Notes)).Scan(&id)
+	result, err := s.Store.RunIdempotent(
+		r.Context(), ownerID, r.Header.Get("Idempotency-Key"), http.MethodPost, r.URL.Path, payload,
+		func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
+			contact, err := getCrmContactTx(ctx, tx, ownerID, contactID)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			if contact.Status == "archived" {
+				return 0, nil, nil, validationError("contact_id", "已归档客户不可安排交付")
+			}
+			resolvedHamsterID := hamsterID
+			if reservationID != nil {
+				reservation, err := getCrmReservationTx(ctx, tx, ownerID, *reservationID, true)
+				if err != nil {
+					return 0, nil, nil, err
+				}
+				if err := validateHandoverReservation(reservation, contactID, parsedHamsterID); err != nil {
+					return 0, nil, nil, err
+				}
+				resolvedHamsterID = reservation.HamsterID
+				var exists bool
+				if err := tx.QueryRow(ctx, `
+					SELECT EXISTS(
+						SELECT 1 FROM crm_handover
+						WHERE owner_id=$1 AND reservation_id=$2 AND status <> 'cancelled'
+					)
+				`, ownerID, *reservationID).Scan(&exists); err != nil {
+					return 0, nil, nil, err
+				}
+				if exists {
+					return 0, nil, nil, conflictError("reservation_id", "该预订已有交付单")
+				}
+			}
+			if resolvedHamsterID == nil {
+				return 0, nil, nil, validationError("hamster_id", "交付必须关联仓鼠")
+			}
+			if err := assertCrmHamsterActiveTx(ctx, tx, ownerID, *resolvedHamsterID); err != nil {
+				return 0, nil, nil, err
+			}
+			var id uuid.UUID
+			err = tx.QueryRow(ctx, `
+				INSERT INTO crm_handover (
+					owner_id, organization_id, contact_id, reservation_id, hamster_id, status, scheduled_at, notes
+				) VALUES ($1,$2,$3,$4,$5,'scheduled',$6,$7)
+				RETURNING id
+			`, ownerID, orgID, contactID, reservationID, resolvedHamsterID, scheduledAt, emptyToNil(request.Notes)).Scan(&id)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			item, err := getCrmHandoverTx(ctx, tx, ownerID, id, false)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			return http.StatusCreated, crmEnvelope(r, item), map[string]string{"ETag": store.FormatETag(item.Version)}, nil
+		},
+	)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	item, err := s.getCrmHandover(r.Context(), ownerID, id)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	writeJSON(w, r, http.StatusCreated, map[string]any{"data": item, "meta": responseMeta(r)})
+	writeStored(w, r, result)
 }
 
 func (s *Server) completeCrmHandover(w http.ResponseWriter, r *http.Request) {
@@ -456,71 +487,87 @@ func (s *Server) completeCrmHandover(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, store.ErrNotFound)
 		return
 	}
-	current, err := s.getCrmHandover(r.Context(), ownerID, handoverID)
+	payload := []byte(`{"status":"completed"}`)
+	result, err := s.Store.RunIdempotent(
+		r.Context(), ownerID, r.Header.Get("Idempotency-Key"), http.MethodPost, r.URL.Path, payload,
+		func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
+			current, err := getCrmHandoverTx(ctx, tx, ownerID, handoverID, true)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			if err := requireCrmIfMatch(r.Header.Get("If-Match"), current.Version); err != nil {
+				return 0, nil, nil, err
+			}
+			if current.Status != "scheduled" {
+				return 0, nil, nil, validationError("status", "仅待交付可完成")
+			}
+			if current.HamsterID == nil {
+				return 0, nil, nil, validationError("hamster_id", "交付必须关联仓鼠")
+			}
+			if current.Reservation != nil {
+				reservation, err := getCrmReservationTx(ctx, tx, ownerID, *current.Reservation, true)
+				if err != nil {
+					return 0, nil, nil, err
+				}
+				if reservation.Status != "confirmed" || reservation.ContactID != current.ContactID || reservation.HamsterID == nil || *reservation.HamsterID != *current.HamsterID {
+					return 0, nil, nil, conflictError("reservation_id", "交付与已确认预订不一致")
+				}
+				tag, err := tx.Exec(ctx, `
+					UPDATE crm_reservation
+					SET status='handed_over', version=version+1, updated_at=now()
+					WHERE owner_id=$1 AND id=$2 AND version=$3 AND status='confirmed'
+				`, ownerID, reservation.ID, reservation.Version)
+				if err != nil {
+					return 0, nil, nil, err
+				}
+				if tag.RowsAffected() != 1 {
+					return 0, nil, nil, store.ErrVersionConflict
+				}
+			}
+			tag, err := tx.Exec(ctx, `
+				UPDATE hamster
+				SET lifecycle_status='transferred', version=version+1, updated_at=now()
+				WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL AND lifecycle_status='active'
+			`, ownerID, *current.HamsterID)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			if tag.RowsAffected() != 1 {
+				return 0, nil, nil, conflictError("hamster_id", "仓鼠当前不可完成交付")
+			}
+			tag, err = tx.Exec(ctx, `
+				UPDATE crm_handover
+				SET status='completed', completed_at=now(), version=version+1, updated_at=now()
+				WHERE owner_id=$1 AND id=$2 AND version=$3 AND status='scheduled'
+			`, ownerID, handoverID, current.Version)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			if tag.RowsAffected() != 1 {
+				return 0, nil, nil, store.ErrVersionConflict
+			}
+			if _, err := tx.Exec(ctx, `
+				UPDATE crm_contact
+				SET status='active', version=version+1, updated_at=now()
+				WHERE owner_id=$1 AND id=$2 AND status='lead'
+			`, ownerID, current.ContactID); err != nil {
+				return 0, nil, nil, err
+			}
+			if err := insertHandoverIncomeIfNeeded(ctx, tx, ownerID, current); err != nil {
+				return 0, nil, nil, err
+			}
+			item, err := getCrmHandoverTx(ctx, tx, ownerID, handoverID, false)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			return http.StatusOK, crmEnvelope(r, item), map[string]string{"ETag": store.FormatETag(item.Version)}, nil
+		},
+	)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	if current.Status != "scheduled" {
-		writeAPIError(w, r, validationError("status", "仅待交付可完成"))
-		return
-	}
-	tx, err := s.Store.Pool.Begin(r.Context())
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	defer tx.Rollback(r.Context())
-	_, err = tx.Exec(r.Context(), `
-		UPDATE crm_handover
-		SET status='completed', completed_at=now(), version=version+1, updated_at=now()
-		WHERE owner_id=$1 AND id=$2 AND version=$3
-	`, ownerID, handoverID, current.Version)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	if current.HamsterID != nil {
-		_, err = tx.Exec(r.Context(), `
-			UPDATE hamster
-			SET lifecycle_status='transferred', version=version+1, updated_at=now()
-			WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
-		`, ownerID, *current.HamsterID)
-		if err != nil {
-			writeAPIError(w, r, err)
-			return
-		}
-	}
-	if current.Reservation != nil {
-		_, err = tx.Exec(r.Context(), `
-			UPDATE crm_reservation
-			SET status='handed_over', version=version+1, updated_at=now()
-			WHERE owner_id=$1 AND id=$2 AND status IN ('held','confirmed')
-		`, ownerID, *current.Reservation)
-		if err != nil {
-			writeAPIError(w, r, err)
-			return
-		}
-	}
-	_, err = tx.Exec(r.Context(), `
-		UPDATE crm_contact
-		SET status='active', version=version+1, updated_at=now()
-		WHERE owner_id=$1 AND id=$2 AND status='lead'
-	`, ownerID, current.ContactID)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	if err := tx.Commit(r.Context()); err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	item, err := s.getCrmHandover(r.Context(), ownerID, handoverID)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
-	writeJSON(w, r, http.StatusOK, map[string]any{"data": item, "meta": responseMeta(r)})
+	writeStored(w, r, result)
 }
 
 func (s *Server) getCrmContact(ctx context.Context, ownerID, id uuid.UUID) (crmContact, error) {
@@ -566,6 +613,132 @@ func (s *Server) getCrmHandover(ctx context.Context, ownerID, id uuid.UUID) (crm
 		return crmHandover{}, store.ErrNotFound
 	}
 	return item, err
+}
+
+func getCrmContactTx(ctx context.Context, tx pgx.Tx, ownerID, id uuid.UUID) (crmContact, error) {
+	var item crmContact
+	err := tx.QueryRow(ctx, `
+		SELECT id, name, phone, wechat, notes, status::text, version
+		FROM crm_contact WHERE owner_id=$1 AND id=$2
+	`, ownerID, id).Scan(&item.ID, &item.Name, &item.Phone, &item.Wechat, &item.Notes, &item.Status, &item.Version)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return crmContact{}, store.ErrNotFound
+	}
+	return item, err
+}
+
+func getCrmReservationTx(ctx context.Context, tx pgx.Tx, ownerID, id uuid.UUID, forUpdate bool) (crmReservation, error) {
+	query := `
+		SELECT r.id, r.contact_id, r.hamster_id, r.title, r.status::text, r.reserved_at, r.notes, r.version, c.name,
+			CASE WHEN h.id IS NULL THEN NULL ELSE COALESCE(NULLIF(h.name,''), h.internal_code) END
+		FROM crm_reservation r
+		JOIN crm_contact c ON c.owner_id=r.owner_id AND c.id=r.contact_id
+		LEFT JOIN hamster h ON h.owner_id=r.owner_id AND h.id=r.hamster_id AND h.deleted_at IS NULL
+		WHERE r.owner_id=$1 AND r.id=$2`
+	if forUpdate {
+		query += ` FOR UPDATE OF r`
+	}
+	var item crmReservation
+	err := tx.QueryRow(ctx, query, ownerID, id).Scan(
+		&item.ID, &item.ContactID, &item.HamsterID, &item.Title, &item.Status, &item.ReservedAt,
+		&item.Notes, &item.Version, &item.ContactName, &item.HamsterName,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return crmReservation{}, store.ErrNotFound
+	}
+	return item, err
+}
+
+func getCrmHandoverTx(ctx context.Context, tx pgx.Tx, ownerID, id uuid.UUID, forUpdate bool) (crmHandover, error) {
+	query := `
+		SELECT h.id, h.contact_id, h.reservation_id, h.hamster_id, h.status::text,
+			h.scheduled_at, h.completed_at, h.notes, h.version, c.name,
+			CASE WHEN hamster.id IS NULL THEN NULL ELSE COALESCE(NULLIF(hamster.name,''), hamster.internal_code) END
+		FROM crm_handover h
+		JOIN crm_contact c ON c.owner_id=h.owner_id AND c.id=h.contact_id
+		LEFT JOIN hamster ON hamster.owner_id=h.owner_id AND hamster.id=h.hamster_id AND hamster.deleted_at IS NULL
+		WHERE h.owner_id=$1 AND h.id=$2`
+	if forUpdate {
+		query += ` FOR UPDATE OF h`
+	}
+	var item crmHandover
+	err := tx.QueryRow(ctx, query, ownerID, id).Scan(
+		&item.ID, &item.ContactID, &item.Reservation, &item.HamsterID, &item.Status,
+		&item.ScheduledAt, &item.CompletedAt, &item.Notes, &item.Version,
+		&item.ContactName, &item.HamsterName,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return crmHandover{}, store.ErrNotFound
+	}
+	return item, err
+}
+
+func crmEnvelope(r *http.Request, item any) map[string]any {
+	return map[string]any{"data": item, "meta": responseMeta(r)}
+}
+
+func requireCrmIfMatch(value string, currentVersion int) error {
+	if strings.TrimSpace(value) == "" {
+		return validationError("If-Match", "写操作必须提供当前资源版本 ETag")
+	}
+	version, err := store.ParseETag(value)
+	if err != nil {
+		return validationError("If-Match", "If-Match 必须是当前资源版本 ETag")
+	}
+	if version != currentVersion {
+		return store.ErrVersionConflict
+	}
+	return nil
+}
+
+func validateReservationTransition(current, next string) error {
+	switch next {
+	case "confirmed":
+		if current != "held" {
+			return validationError("status", "仅待确认预订可确认")
+		}
+	case "cancelled":
+		if current != "held" && current != "confirmed" {
+			return validationError("status", "当前预订不可取消")
+		}
+	default:
+		return validationError("status", "预订状态无效")
+	}
+	return nil
+}
+
+func validateHandoverReservation(reservation crmReservation, contactID uuid.UUID, requestedHamsterID *uuid.UUID) error {
+	if reservation.Status != "confirmed" {
+		return validationError("reservation_id", "仅已确认预订可安排交付")
+	}
+	if reservation.ContactID != contactID {
+		return validationError("reservation_id", "预订不属于所选客户")
+	}
+	if reservation.HamsterID == nil {
+		return validationError("reservation_id", "预订未关联仓鼠")
+	}
+	if requestedHamsterID != nil && *requestedHamsterID != *reservation.HamsterID {
+		return validationError("hamster_id", "交付仓鼠必须与预订一致")
+	}
+	return nil
+}
+
+func assertCrmHamsterActiveTx(ctx context.Context, tx pgx.Tx, ownerID, hamsterID uuid.UUID) error {
+	var lifecycle string
+	err := tx.QueryRow(ctx, `
+		SELECT lifecycle_status::text FROM hamster
+		WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+	`, ownerID, hamsterID).Scan(&lifecycle)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return validationError("hamster_id", "所选仓鼠不存在")
+	}
+	if err != nil {
+		return err
+	}
+	if lifecycle != "active" {
+		return conflictError("hamster_id", "该仓鼠当前不可交付")
+	}
+	return nil
 }
 
 func (s *Server) ensureCrmHamsterOwned(ctx context.Context, ownerID, hamsterID uuid.UUID) error {
@@ -798,12 +971,12 @@ func (s *Server) resolveOrCreateCrmContactTx(
 
 	if phone != "" || wechat != "" {
 		var (
-			id            uuid.UUID
-			existingPhone *string
+			id             uuid.UUID
+			existingPhone  *string
 			existingWechat *string
-			existingNotes *string
+			existingNotes  *string
 			existingStatus string
-			version       int
+			version        int
 		)
 		// 优先 phone 精确命中；其次 wechat；非归档优先；最近更新优先。
 		err := tx.QueryRow(ctx, `
@@ -885,4 +1058,79 @@ func emptyToNil(value *string) *string {
 		return nil
 	}
 	return &trimmed
+}
+
+// insertHandoverIncomeIfNeeded creates at most one income row when a handover
+// completes and an issued receipt with amount > 0 is linked. Notes carry a
+// stable handover marker so repeated completion (or future retries) stay
+// idempotent without a dedicated FK column.
+func insertHandoverIncomeIfNeeded(ctx context.Context, tx pgx.Tx, ownerID uuid.UUID, handover crmHandover) error {
+	marker := fmt.Sprintf("handover:%s", handover.ID)
+	var exists bool
+	if err := tx.QueryRow(ctx, `
+		SELECT EXISTS(
+			SELECT 1 FROM accounting_record
+			WHERE owner_id=$1 AND notes=$2
+		)
+	`, ownerID, marker).Scan(&exists); err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+
+	var (
+		amountCents int64
+		currency    string
+		title       string
+	)
+	err := tx.QueryRow(ctx, `
+		SELECT amount_cents, COALESCE(NULLIF(currency,''), 'CNY'), title
+		FROM doc_document
+		WHERE owner_id=$1
+		  AND handover_id=$2
+		  AND kind='receipt'::doc_template_kind
+		  AND status='issued'
+		  AND amount_cents IS NOT NULL
+		  AND amount_cents > 0
+		ORDER BY issued_at DESC NULLS LAST, updated_at DESC, id DESC
+		LIMIT 1
+	`, ownerID, handover.ID).Scan(&amountCents, &currency, &title)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	var orgID uuid.UUID
+	if err := tx.QueryRow(ctx, `
+		SELECT id FROM organization
+		WHERE owner_id=$1 AND deleted_at IS NULL
+		ORDER BY created_at LIMIT 1
+	`, ownerID).Scan(&orgID); err != nil {
+		return err
+	}
+
+	incomeTitle := strings.TrimSpace(title)
+	if incomeTitle == "" {
+		incomeTitle = "交付收入"
+	}
+	if handover.HamsterName != nil && strings.TrimSpace(*handover.HamsterName) != "" {
+		incomeTitle = fmt.Sprintf("%s · %s", incomeTitle, strings.TrimSpace(*handover.HamsterName))
+	}
+	if utf8.RuneCountInString(incomeTitle) > 200 {
+		runes := []rune(incomeTitle)
+		incomeTitle = string(runes[:200])
+	}
+
+	_, err = tx.Exec(ctx, `
+		INSERT INTO accounting_record (
+			owner_id, organization_id, category_id, entry_type, amount_cents, currency,
+			title, notes, contact_id, occurred_at
+		) VALUES (
+			$1,$2,NULL,'income'::accounting_entry_type,$3,$4,$5,$6,$7,now()
+		)
+	`, ownerID, orgID, amountCents, currency, incomeTitle, marker, handover.ContactID)
+	return err
 }
