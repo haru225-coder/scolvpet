@@ -1,14 +1,19 @@
 package httpapi
 
 import (
+	"bytes"
+	"context"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/scolvpet/scolvpet/api/internal/aicore"
 	"github.com/scolvpet/scolvpet/api/internal/auth"
+	"github.com/scolvpet/scolvpet/api/internal/store"
 )
 
 func TestP2AssistantRoutesRequireAuth(t *testing.T) {
@@ -21,6 +26,10 @@ func TestP2AssistantRoutesRequireAuth(t *testing.T) {
 	}{
 		{http.MethodPost, "/v1/assistant/ask"},
 		{http.MethodGet, "/v1/assistant/capabilities"},
+		{http.MethodPost, "/v1/assistant/chat"},
+		{http.MethodGet, "/v1/assistant/sessions"},
+		{http.MethodPost, "/v1/assistant/sessions"},
+		{http.MethodPost, "/v1/assistant/actions/00000000-0000-0000-0000-000000000001/confirm"},
 	} {
 		recorder := httptest.NewRecorder()
 		request := httptest.NewRequest(path.method, path.path, nil)
@@ -28,6 +37,57 @@ func TestP2AssistantRoutesRequireAuth(t *testing.T) {
 		if recorder.Code != http.StatusUnauthorized {
 			t.Fatalf("%s %s expected 401, got %d", path.method, path.path, recorder.Code)
 		}
+	}
+}
+
+func TestConfirmAssistantActionRequiresIdempotencyKey(t *testing.T) {
+	server := NewServer(nil, auth.New("test", "123456"), slog.Default())
+	mux := http.NewServeMux()
+	server.registerP2AssistantRoutes(mux)
+	ownerID := uuid.New()
+	token, _, err := server.Auth.CreateSession(context.Background(), ownerID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/v1/assistant/actions/00000000-0000-0000-0000-000000000001/confirm",
+		nil,
+	)
+	request = request.WithContext(context.WithValue(request.Context(), requestPrincipalContextKey{}, store.Principal{
+		AccountID: ownerID,
+		OwnerID:   ownerID,
+		Role:      "owner",
+	}))
+	request.Header.Set("Authorization", "Bearer "+token)
+	// Intentionally omit Idempotency-Key.
+	recorder := httptest.NewRecorder()
+	mux.ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("status=%d body=%s", recorder.Code, recorder.Body.String())
+	}
+}
+
+func TestCreateAssistantSessionRejectsMalformedBody(t *testing.T) {
+	server := NewServer(nil, auth.New("test", "123456"), slog.Default())
+	mux := http.NewServeMux()
+	server.registerP2AssistantRoutes(mux)
+	ownerID := uuid.New()
+	request := httptest.NewRequest(http.MethodPost, "/v1/assistant/sessions", bytes.NewBufferString(`{"title":`))
+	request = request.WithContext(context.WithValue(request.Context(), requestPrincipalContextKey{}, store.Principal{
+		AccountID: ownerID,
+		OwnerID:   ownerID,
+		Role:      "owner",
+	}))
+	token, _, err := server.Auth.CreateSession(context.Background(), ownerID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request.Header.Set("Authorization", "Bearer "+token)
+	recorder := httptest.NewRecorder()
+	mux.ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("status=%d body=%s", recorder.Code, recorder.Body.String())
 	}
 }
 
