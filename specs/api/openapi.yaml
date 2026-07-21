@@ -4427,11 +4427,43 @@ paths:
         schema:
           type: string
           format: uuid
-      - *2
-      - *1
+      - "$ref": "#/components/parameters/IfMatch"
+      - "$ref": "#/components/parameters/IdempotencyKey"
       responses:
         '200':
           description: 签发合同成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/contracts/{document_id}/revoke":
+    post:
+      tags:
+      - P1 合同与回执
+      operationId: revokeContract
+      summary: 撤销合同
+      description: 需要 Bearer 令牌；撤销已签发合同并立即使客户公开链接失效。
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        description: 合同单据 ID
+        schema:
+          type: string
+          format: uuid
+      - "$ref": "#/components/parameters/IfMatch"
+      - "$ref": "#/components/parameters/IdempotencyKey"
+      responses:
+        '200':
+          description: 撤销合同成功
           content:
             application/json:
               schema:
@@ -4549,11 +4581,43 @@ paths:
         schema:
           type: string
           format: uuid
-      - *2
-      - *1
+      - "$ref": "#/components/parameters/IfMatch"
+      - "$ref": "#/components/parameters/IdempotencyKey"
       responses:
         '200':
           description: 签发回执成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/receipts/{document_id}/revoke":
+    post:
+      tags:
+      - P1 合同与回执
+      operationId: revokeReceipt
+      summary: 撤销回执
+      description: 需要 Bearer 令牌；撤销已签发回执并立即使客户公开链接失效。
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        description: 回执单据 ID
+        schema:
+          type: string
+          format: uuid
+      - "$ref": "#/components/parameters/IfMatch"
+      - "$ref": "#/components/parameters/IdempotencyKey"
+      responses:
+        '200':
+          description: 撤销回执成功
           content:
             application/json:
               schema:
@@ -5498,6 +5562,154 @@ paths:
           "$ref": "#/components/responses/Unauthorized"
         '422':
           "$ref": "#/components/responses/ValidationError"
+  "/v1/assistant/sessions":
+    get:
+      tags:
+      - P2 助手
+      operationId: listAssistantSessions
+      summary: 列出会话
+      description: 需要 Bearer 令牌；按 owner_id 隔离。
+      responses:
+        '200':
+          description: 会话列表
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AssistantSessionListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+    post:
+      tags:
+      - P2 助手
+      operationId: createAssistantSession
+      summary: 创建会话
+      description: 需要 Bearer 令牌；可空 body。
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AssistantSessionCreateRequest"
+      responses:
+        '201':
+          description: 已创建
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AssistantSessionResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+  "/v1/assistant/sessions/{session_id}/messages":
+    get:
+      tags:
+      - P2 助手
+      operationId: listAssistantMessages
+      summary: 列出会话消息
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: 消息列表
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AssistantMessageListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+  "/v1/assistant/chat":
+    post:
+      tags:
+      - P2 助手
+      operationId: chatAssistant
+      summary: 通用多轮对话
+      description: |
+        需要 Bearer 令牌。主路径为 Grok Build 通用对话，并注入本舍结构化事实。
+        未传 session_id 时自动创建会话。LLM 失败时降级为规则答案。
+      parameters:
+      - "$ref": "#/components/parameters/P1P2IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AssistantChatRequest"
+      responses:
+        '200':
+          description: 对话成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AssistantChatResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/assistant/actions/{action_id}/confirm":
+    post:
+      tags:
+      - P2 助手
+      operationId: confirmAssistantAction
+      summary: 确认并执行助手动作
+      description: 需要 Bearer 令牌；仅可执行当前 owner 的待确认动作。
+      parameters:
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - "$ref": "#/components/parameters/P1P2IdempotencyKey"
+      responses:
+        '200':
+          description: 动作已执行
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AssistantActionConfirmResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/v1/assistant/actions/{action_id}/cancel":
+    post:
+      tags:
+      - P2 助手
+      operationId: cancelAssistantAction
+      summary: 取消助手动作
+      description: 需要 Bearer 令牌；仅可取消当前 owner 的待确认动作。
+      parameters:
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - "$ref": "#/components/parameters/P1P2IdempotencyKey"
+      responses:
+        '200':
+          description: 动作已取消
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AssistantActionCancelResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+
   "/v1/stud/listings":
     get:
       tags:
@@ -12005,6 +12217,12 @@ components:
           - string
           - 'null'
           description: 客户侧相对路径，如 /d/{token}
+        public_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: 可直接复制或打开的客户侧完整公开 URL
       required:
       - id
       - template_id
@@ -13612,6 +13830,214 @@ components:
       - mode_default
       - llm_available
       - disclaimer
+      additionalProperties: false
+
+    AssistantSession:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required: [id, owner_id, title, created_at, updated_at]
+      additionalProperties: false
+    AssistantSessionCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 200
+      additionalProperties: false
+    AssistantSessionResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/AssistantSession"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    AssistantSessionListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/AssistantSession"
+        page:
+          type: object
+          additionalProperties: true
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    AssistantMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_id:
+          type: string
+          format: uuid
+        session_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [user, assistant, system]
+        content:
+          type: string
+        mode:
+          type: [string, 'null']
+          enum: [rules, llm]
+        facts_json:
+          type: array
+          items: {}
+        created_at:
+          type: string
+          format: date-time
+      required: [id, owner_id, session_id, role, content, created_at]
+      additionalProperties: false
+    AssistantMessageListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/AssistantMessage"
+        page:
+          type: object
+          additionalProperties: true
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    AssistantChatRequest:
+      type: object
+      properties:
+        session_id:
+          type: [string, 'null']
+          format: uuid
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        prefer_llm:
+          type: boolean
+          default: true
+      required: [message]
+      additionalProperties: false
+    AssistantChatAction:
+      type: object
+      properties:
+        action_id:
+          type: [string, 'null']
+          format: uuid
+        type:
+          type: string
+        label:
+          type: string
+        summary:
+          type: string
+        requires_confirmation:
+          type: boolean
+        payload:
+          type: object
+          additionalProperties: true
+      required: [type, label, summary, requires_confirmation, payload]
+      additionalProperties: false
+    AssistantChatResult:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        message_id:
+          type: string
+          format: uuid
+        answer:
+          type: string
+        intent:
+          type: string
+        mode:
+          type: string
+          enum: [rules, llm]
+        facts:
+          type: array
+          items:
+            "$ref": "#/components/schemas/AssistantFact"
+        actions:
+          type: array
+          items:
+            "$ref": "#/components/schemas/AssistantChatAction"
+        disclaimer:
+          type: string
+      required: [session_id, message_id, answer, intent, mode, facts, actions, disclaimer]
+      additionalProperties: false
+    AssistantChatResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/AssistantChatResult"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    AssistantActionConfirmResult:
+      type: object
+      properties:
+        action_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        status:
+          type: string
+          enum: [executed]
+        result:
+          type: object
+          additionalProperties: true
+      required: [action_id, type, status, result]
+      additionalProperties: false
+    AssistantActionConfirmResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/AssistantActionConfirmResult"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
+      additionalProperties: false
+    AssistantActionCancelResult:
+      type: object
+      properties:
+        action_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [cancelled]
+      required: [action_id, status]
+      additionalProperties: false
+    AssistantActionCancelResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/AssistantActionCancelResult"
+        meta:
+          "$ref": "#/components/schemas/ResponseMeta"
+      required: [data, meta]
       additionalProperties: false
     AssistantAskRequest:
       type: object

@@ -29,6 +29,8 @@ abstract class _$GrowthPublicHamsterCWProxy {
 
   GrowthPublicHamster consultable(bool consultable);
 
+  GrowthPublicHamster reservable(bool reservable);
+
   GrowthPublicHamster ctaText(String? ctaText);
 
   GrowthPublicHamster priceLabel(String? priceLabel);
@@ -52,6 +54,7 @@ abstract class _$GrowthPublicHamsterCWProxy {
     GrowthPublicHamsterFilmingStatusEnum filmingStatus,
     bool published,
     bool consultable,
+    bool reservable,
     String? ctaText,
     String? priceLabel,
     List<GrowthPublicMedia>? media,
@@ -100,6 +103,10 @@ class _$GrowthPublicHamsterCWProxyImpl implements _$GrowthPublicHamsterCWProxy {
       this(consultable: consultable);
 
   @override
+  GrowthPublicHamster reservable(bool reservable) =>
+      this(reservable: reservable);
+
+  @override
   GrowthPublicHamster ctaText(String? ctaText) => this(ctaText: ctaText);
 
   @override
@@ -128,6 +135,7 @@ class _$GrowthPublicHamsterCWProxyImpl implements _$GrowthPublicHamsterCWProxy {
     Object? filmingStatus = const $CopyWithPlaceholder(),
     Object? published = const $CopyWithPlaceholder(),
     Object? consultable = const $CopyWithPlaceholder(),
+    Object? reservable = const $CopyWithPlaceholder(),
     Object? ctaText = const $CopyWithPlaceholder(),
     Object? priceLabel = const $CopyWithPlaceholder(),
     Object? media = const $CopyWithPlaceholder(),
@@ -173,6 +181,10 @@ class _$GrowthPublicHamsterCWProxyImpl implements _$GrowthPublicHamsterCWProxy {
           ? _value.consultable
           // ignore: cast_nullable_to_non_nullable
           : consultable as bool,
+      reservable: reservable == const $CopyWithPlaceholder()
+          ? _value.reservable
+          // ignore: cast_nullable_to_non_nullable
+          : reservable as bool,
       ctaText: ctaText == const $CopyWithPlaceholder()
           ? _value.ctaText
           // ignore: cast_nullable_to_non_nullable
@@ -213,6 +225,7 @@ GrowthPublicHamster _$GrowthPublicHamsterFromJson(Map<String, dynamic> json) =>
             'filming_status',
             'published',
             'consultable',
+            'reservable',
           ],
         );
         final val = GrowthPublicHamster(
@@ -236,6 +249,7 @@ GrowthPublicHamster _$GrowthPublicHamsterFromJson(Map<String, dynamic> json) =>
           ),
           published: $checkedConvert('published', (v) => v as bool),
           consultable: $checkedConvert('consultable', (v) => v as bool),
+          reservable: $checkedConvert('reservable', (v) => v as bool),
           ctaText: $checkedConvert('cta_text', (v) => v as String?),
           priceLabel: $checkedConvert('price_label', (v) => v as String?),
           media: $checkedConvert(
@@ -273,6 +287,7 @@ Map<String, dynamic> _$GrowthPublicHamsterToJson(
       _$GrowthPublicHamsterFilmingStatusEnumEnumMap[instance.filmingStatus]!,
   'published': instance.published,
   'consultable': instance.consultable,
+  'reservable': instance.reservable,
   'cta_text': ?instance.ctaText,
   'price_label': ?instance.priceLabel,
   'media': ?instance.media?.map((e) => e.toJson()).toList(),

@@ -41,6 +41,8 @@ class GrowthPublicHamster {
 
     required  this.consultable,
 
+    required  this.reservable,
+
      this.ctaText,
 
      this.priceLabel,
@@ -168,6 +170,19 @@ class GrowthPublicHamster {
 
 
 
+      /// Backend 唯一可订判定（公开可咨询且无 held/confirmed 预订）
+  @JsonKey(
+
+    name: r'reservable',
+    required: true,
+    includeIfNull: false,
+  )
+
+
+  final bool reservable;
+
+
+
   @JsonKey(
 
     name: r'cta_text',
@@ -218,6 +233,7 @@ class GrowthPublicHamster {
       other.filmingStatus == filmingStatus &&
       other.published == published &&
       other.consultable == consultable &&
+      other.reservable == reservable &&
       other.ctaText == ctaText &&
       other.priceLabel == priceLabel &&
       other.media == media;
@@ -234,6 +250,7 @@ class GrowthPublicHamster {
         filmingStatus.hashCode +
         published.hashCode +
         consultable.hashCode +
+        reservable.hashCode +
         ctaText.hashCode +
         priceLabel.hashCode +
         media.hashCode;

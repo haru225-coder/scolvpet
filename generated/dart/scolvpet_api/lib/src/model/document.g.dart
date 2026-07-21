@@ -35,6 +35,12 @@ abstract class _$DocumentCWProxy {
 
   Document contactName(String? contactName);
 
+  Document publicToken(String? publicToken);
+
+  Document publicPath(String? publicPath);
+
+  Document publicUrl(String? publicUrl);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `Document(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -56,6 +62,9 @@ abstract class _$DocumentCWProxy {
     String? notes,
     int version,
     String? contactName,
+    String? publicToken,
+    String? publicPath,
+    String? publicUrl,
   });
 }
 
@@ -108,6 +117,15 @@ class _$DocumentCWProxyImpl implements _$DocumentCWProxy {
   Document contactName(String? contactName) => this(contactName: contactName);
 
   @override
+  Document publicToken(String? publicToken) => this(publicToken: publicToken);
+
+  @override
+  Document publicPath(String? publicPath) => this(publicPath: publicPath);
+
+  @override
+  Document publicUrl(String? publicUrl) => this(publicUrl: publicUrl);
+
+  @override
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `Document(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -129,6 +147,9 @@ class _$DocumentCWProxyImpl implements _$DocumentCWProxy {
     Object? notes = const $CopyWithPlaceholder(),
     Object? version = const $CopyWithPlaceholder(),
     Object? contactName = const $CopyWithPlaceholder(),
+    Object? publicToken = const $CopyWithPlaceholder(),
+    Object? publicPath = const $CopyWithPlaceholder(),
+    Object? publicUrl = const $CopyWithPlaceholder(),
   }) {
     return Document(
       id: id == const $CopyWithPlaceholder()
@@ -187,6 +208,18 @@ class _$DocumentCWProxyImpl implements _$DocumentCWProxy {
           ? _value.contactName
           // ignore: cast_nullable_to_non_nullable
           : contactName as String?,
+      publicToken: publicToken == const $CopyWithPlaceholder()
+          ? _value.publicToken
+          // ignore: cast_nullable_to_non_nullable
+          : publicToken as String?,
+      publicPath: publicPath == const $CopyWithPlaceholder()
+          ? _value.publicPath
+          // ignore: cast_nullable_to_non_nullable
+          : publicPath as String?,
+      publicUrl: publicUrl == const $CopyWithPlaceholder()
+          ? _value.publicUrl
+          // ignore: cast_nullable_to_non_nullable
+          : publicUrl as String?,
     );
   }
 }
@@ -242,6 +275,9 @@ Document _$DocumentFromJson(Map<String, dynamic> json) => $checkedCreate(
       notes: $checkedConvert('notes', (v) => v as String?),
       version: $checkedConvert('version', (v) => (v as num).toInt()),
       contactName: $checkedConvert('contact_name', (v) => v as String?),
+      publicToken: $checkedConvert('public_token', (v) => v as String?),
+      publicPath: $checkedConvert('public_path', (v) => v as String?),
+      publicUrl: $checkedConvert('public_url', (v) => v as String?),
     );
     return val;
   },
@@ -253,6 +289,9 @@ Document _$DocumentFromJson(Map<String, dynamic> json) => $checkedCreate(
     'amountCents': 'amount_cents',
     'issuedAt': 'issued_at',
     'contactName': 'contact_name',
+    'publicToken': 'public_token',
+    'publicPath': 'public_path',
+    'publicUrl': 'public_url',
   },
 );
 
@@ -271,6 +310,9 @@ Map<String, dynamic> _$DocumentToJson(Document instance) => <String, dynamic>{
   'notes': ?instance.notes,
   'version': instance.version,
   'contact_name': ?instance.contactName,
+  'public_token': ?instance.publicToken,
+  'public_path': ?instance.publicPath,
+  'public_url': ?instance.publicUrl,
 };
 
 const _$DocumentKindEnumEnumMap = {

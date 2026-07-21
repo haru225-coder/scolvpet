@@ -47,6 +47,12 @@ class Document {
     required  this.version,
 
      this.contactName,
+
+     this.publicToken,
+
+     this.publicPath,
+
+     this.publicUrl,
   });
 
   @JsonKey(
@@ -219,6 +225,45 @@ class Document {
 
 
 
+      /// 已签发单据的客户侧能力令牌
+  @JsonKey(
+
+    name: r'public_token',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? publicToken;
+
+
+
+      /// 客户侧相对路径，如 /d/{token}
+  @JsonKey(
+
+    name: r'public_path',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? publicPath;
+
+
+
+      /// 可直接复制或打开的客户侧完整公开 URL
+  @JsonKey(
+
+    name: r'public_url',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? publicUrl;
+
+
+
 
 
     @override
@@ -236,7 +281,10 @@ class Document {
       other.issuedAt == issuedAt &&
       other.notes == notes &&
       other.version == version &&
-      other.contactName == contactName;
+      other.contactName == contactName &&
+      other.publicToken == publicToken &&
+      other.publicPath == publicPath &&
+      other.publicUrl == publicUrl;
 
     @override
     int get hashCode =>
@@ -253,7 +301,10 @@ class Document {
         (issuedAt == null ? 0 : issuedAt.hashCode) +
         (notes == null ? 0 : notes.hashCode) +
         version.hashCode +
-        contactName.hashCode;
+        contactName.hashCode +
+        (publicToken == null ? 0 : publicToken.hashCode) +
+        (publicPath == null ? 0 : publicPath.hashCode) +
+        (publicUrl == null ? 0 : publicUrl.hashCode);
 
   factory Document.fromJson(Map<String, dynamic> json) => _$DocumentFromJson(json);
 

@@ -13,6 +13,7 @@ import 'package:scolvpet_api/src/api/growth_api.dart';
 import 'package:scolvpet_api/src/api/p1_api.dart';
 import 'package:scolvpet_api/src/api/p1_crm_api.dart';
 import 'package:scolvpet_api/src/api/p2_api.dart';
+import 'package:scolvpet_api/src/api/public_documents_api.dart';
 import 'package:scolvpet_api/src/api/public_growth_api.dart';
 
 class ScolvpetApi {
@@ -140,6 +141,12 @@ class ScolvpetApi {
   /// by doing that all interceptors will not be executed
   P2Api getP2Api() {
     return P2Api(dio);
+  }
+
+  /// Get PublicDocumentsApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  PublicDocumentsApi getPublicDocumentsApi() {
+    return PublicDocumentsApi(dio);
   }
 
   /// Get PublicGrowthApi instance, base route and serializer can be overridden by a given but be careful,

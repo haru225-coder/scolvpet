@@ -11,6 +11,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**consultPublicGrowthAdvisor**](PublicGrowthApi.md#consultpublicgrowthadvisor) | **POST** /v1/public/sites/{slug}/consult | 向公开 AI 顾问咨询
 [**createPublicGrowthLead**](PublicGrowthApi.md#createpublicgrowthlead) | **POST** /v1/public/sites/{slug}/leads | 提交公开咨询线索
+[**createPublicGrowthReservation**](PublicGrowthApi.md#createpublicgrowthreservation) | **POST** /v1/public/sites/{slug}/reservations | 客户提交公开仓鼠预订
 [**getPublicGrowthCatalog**](PublicGrowthApi.md#getpublicgrowthcatalog) | **GET** /v1/public/sites/{slug}/catalog | 查看公开熊舍获客目录
 [**getPublicGrowthMedia**](PublicGrowthApi.md#getpublicgrowthmedia) | **GET** /v1/public/sites/{slug}/media/{media_id} | 读取公开仓鼠封面图片
 
@@ -91,6 +92,53 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**PublicGrowthLeadResponse**](PublicGrowthLeadResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createPublicGrowthReservation**
+> PublicGrowthReservationResponse createPublicGrowthReservation(slug, publicGrowthReservationRequest, idempotencyKey)
+
+客户提交公开仓鼠预订
+
+客户从前台对真实 hamster 创建统一 crm_reservation（status=held）。 必须传 hamster_id；Backend 校验公开可订与排他；禁止手填品种/毛色。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getPublicGrowthApi();
+final String slug = slug_example; // String |
+final PublicGrowthReservationRequest publicGrowthReservationRequest = ; // PublicGrowthReservationRequest |
+final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
+
+try {
+    final response = api.createPublicGrowthReservation(slug, publicGrowthReservationRequest, idempotencyKey);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling PublicGrowthApi->createPublicGrowthReservation: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **slug** | **String**|  |
+ **publicGrowthReservationRequest** | [**PublicGrowthReservationRequest**](PublicGrowthReservationRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
+
+### Return type
+
+[**PublicGrowthReservationResponse**](PublicGrowthReservationResponse.md)
 
 ### Authorization
 

@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **templateId** | **String** |  |
 **contactId** | **String** |  | [optional]
 **handoverId** | **String** |  | [optional]
+**reservationId** | **String** | 从统一预订继承客户与仓鼠；可同时关联已有交付 | [optional]
 **title** | **String** |  | [optional]
 **amountCents** | **int** |  |
 **currency** | **String** |  | [optional] [default to 'CNY']

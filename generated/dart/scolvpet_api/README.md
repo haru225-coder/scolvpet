@@ -235,7 +235,9 @@ Class | Method | HTTP request | Description
 [*P1Api*](doc/P1Api.md) | [**listPushMessages**](doc/P1Api.md#listpushmessages) | **GET** /v1/push/messages | 列出推送消息
 [*P1Api*](doc/P1Api.md) | [**listReceiptTemplates**](doc/P1Api.md#listreceipttemplates) | **GET** /v1/receipts/templates | 列出回执模板
 [*P1Api*](doc/P1Api.md) | [**listReceipts**](doc/P1Api.md#listreceipts) | **GET** /v1/receipts | 列出回执单据
+[*P1Api*](doc/P1Api.md) | [**revokeContract**](doc/P1Api.md#revokecontract) | **POST** /v1/contracts/{document_id}/revoke | 撤销合同
 [*P1Api*](doc/P1Api.md) | [**revokeOrganizationMember**](doc/P1Api.md#revokeorganizationmember) | **POST** /v1/organization-members/{member_id}/revoke | 撤销熊舍成员
+[*P1Api*](doc/P1Api.md) | [**revokeReceipt**](doc/P1Api.md#revokereceipt) | **POST** /v1/receipts/{document_id}/revoke | 撤销回执
 [*P1Api*](doc/P1Api.md) | [**sandboxActivatePlan**](doc/P1Api.md#sandboxactivateplan) | **POST** /v1/entitlements/sandbox/activate | 沙箱激活权益套餐
 [*P1Api*](doc/P1Api.md) | [**simulateGeneticBreeding**](doc/P1Api.md#simulategeneticbreeding) | **POST** /v1/genetic/simulate | 模拟遗传配对
 [*P1Api*](doc/P1Api.md) | [**updateOrganizationMember**](doc/P1Api.md#updateorganizationmember) | **PATCH** /v1/organization-members/{member_id} | 更新熊舍成员
@@ -252,15 +254,21 @@ Class | Method | HTTP request | Description
 [*P2Api*](doc/P2Api.md) | [**askAssistant**](doc/P2Api.md#askassistant) | **POST** /v1/assistant/ask | 向只读助手提问
 [*P2Api*](doc/P2Api.md) | [**assistantCapabilities**](doc/P2Api.md#assistantcapabilities) | **GET** /v1/assistant/capabilities | 读取助手能力
 [*P2Api*](doc/P2Api.md) | [**auditMiniprogramRelease**](doc/P2Api.md#auditminiprogramrelease) | **POST** /v1/miniprogram/releases/{release_id}/audit | 审核小程序版本
+[*P2Api*](doc/P2Api.md) | [**cancelAssistantAction**](doc/P2Api.md#cancelassistantaction) | **POST** /v1/assistant/actions/{action_id}/cancel | 取消助手动作
 [*P2Api*](doc/P2Api.md) | [**cancelStudDeal**](doc/P2Api.md#cancelstuddeal) | **POST** /v1/stud/deals/{deal_id}/cancel | 取消跨舍借配单
+[*P2Api*](doc/P2Api.md) | [**chatAssistant**](doc/P2Api.md#chatassistant) | **POST** /v1/assistant/chat | 通用多轮对话
 [*P2Api*](doc/P2Api.md) | [**completeStudDeal**](doc/P2Api.md#completestuddeal) | **POST** /v1/stud/deals/{deal_id}/complete | 完成跨舍借配单
+[*P2Api*](doc/P2Api.md) | [**confirmAssistantAction**](doc/P2Api.md#confirmassistantaction) | **POST** /v1/assistant/actions/{action_id}/confirm | 确认并执行助手动作
 [*P2Api*](doc/P2Api.md) | [**confirmStudDeal**](doc/P2Api.md#confirmstuddeal) | **POST** /v1/stud/deals/{deal_id}/confirm | 确认跨舍借配单
+[*P2Api*](doc/P2Api.md) | [**createAssistantSession**](doc/P2Api.md#createassistantsession) | **POST** /v1/assistant/sessions | 创建会话
 [*P2Api*](doc/P2Api.md) | [**createMiniprogramRelease**](doc/P2Api.md#createminiprogramrelease) | **POST** /v1/miniprogram/releases | 创建小程序版本
 [*P2Api*](doc/P2Api.md) | [**createStudDeal**](doc/P2Api.md#createstuddeal) | **POST** /v1/stud/deals | 创建跨舍借配单
 [*P2Api*](doc/P2Api.md) | [**createStudListing**](doc/P2Api.md#createstudlisting) | **POST** /v1/stud/listings | 创建种公借配挂牌
 [*P2Api*](doc/P2Api.md) | [**getMiniprogramConfig**](doc/P2Api.md#getminiprogramconfig) | **GET** /v1/miniprogram/config | 读取小程序配置
 [*P2Api*](doc/P2Api.md) | [**getOwnerPublicSite**](doc/P2Api.md#getownerpublicsite) | **GET** /v1/public-site | 读取熊舍公开主页草稿
 [*P2Api*](doc/P2Api.md) | [**getPublicSiteBySlug**](doc/P2Api.md#getpublicsitebyslug) | **GET** /v1/public/sites/{slug} | 读取公开主页投影
+[*P2Api*](doc/P2Api.md) | [**listAssistantMessages**](doc/P2Api.md#listassistantmessages) | **GET** /v1/assistant/sessions/{session_id}/messages | 列出会话消息
+[*P2Api*](doc/P2Api.md) | [**listAssistantSessions**](doc/P2Api.md#listassistantsessions) | **GET** /v1/assistant/sessions | 列出会话
 [*P2Api*](doc/P2Api.md) | [**listMiniprogramReleases**](doc/P2Api.md#listminiprogramreleases) | **GET** /v1/miniprogram/releases | 列出小程序版本
 [*P2Api*](doc/P2Api.md) | [**listStudDeals**](doc/P2Api.md#liststuddeals) | **GET** /v1/stud/deals | 列出跨舍借配单
 [*P2Api*](doc/P2Api.md) | [**listStudListings**](doc/P2Api.md#liststudlistings) | **GET** /v1/stud/listings | 列出种公借配挂牌
@@ -273,8 +281,10 @@ Class | Method | HTTP request | Description
 [*P2Api*](doc/P2Api.md) | [**unpublishStudListing**](doc/P2Api.md#unpublishstudlisting) | **POST** /v1/stud/listings/{listing_id}/unpublish | 撤下种公挂牌
 [*P2Api*](doc/P2Api.md) | [**upsertMiniprogramConfig**](doc/P2Api.md#upsertminiprogramconfig) | **PUT** /v1/miniprogram/config | 保存小程序配置
 [*P2Api*](doc/P2Api.md) | [**upsertOwnerPublicSite**](doc/P2Api.md#upsertownerpublicsite) | **PUT** /v1/public-site | 保存熊舍公开主页
+[*PublicDocumentsApi*](doc/PublicDocumentsApi.md) | [**getPublicDocument**](doc/PublicDocumentsApi.md#getpublicdocument) | **GET** /v1/public/documents/{token} | 客户只读查看已签发合同/回执
 [*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**consultPublicGrowthAdvisor**](doc/PublicGrowthApi.md#consultpublicgrowthadvisor) | **POST** /v1/public/sites/{slug}/consult | 向公开 AI 顾问咨询
 [*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**createPublicGrowthLead**](doc/PublicGrowthApi.md#createpublicgrowthlead) | **POST** /v1/public/sites/{slug}/leads | 提交公开咨询线索
+[*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**createPublicGrowthReservation**](doc/PublicGrowthApi.md#createpublicgrowthreservation) | **POST** /v1/public/sites/{slug}/reservations | 客户提交公开仓鼠预订
 [*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**getPublicGrowthCatalog**](doc/PublicGrowthApi.md#getpublicgrowthcatalog) | **GET** /v1/public/sites/{slug}/catalog | 查看公开熊舍获客目录
 [*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**getPublicGrowthMedia**](doc/PublicGrowthApi.md#getpublicgrowthmedia) | **GET** /v1/public/sites/{slug}/media/{media_id} | 读取公开仓鼠封面图片
 
@@ -298,12 +308,26 @@ Class | Method | HTTP request | Description
  - [AdjustLitterCountRequest](doc/AdjustLitterCountRequest.md)
  - [AdjustLitterCountResponse](doc/AdjustLitterCountResponse.md)
  - [AdjustLitterCountResponseData](doc/AdjustLitterCountResponseData.md)
+ - [AssistantActionCancelResponse](doc/AssistantActionCancelResponse.md)
+ - [AssistantActionCancelResult](doc/AssistantActionCancelResult.md)
+ - [AssistantActionConfirmResponse](doc/AssistantActionConfirmResponse.md)
+ - [AssistantActionConfirmResult](doc/AssistantActionConfirmResult.md)
  - [AssistantAnswer](doc/AssistantAnswer.md)
  - [AssistantAnswerResponse](doc/AssistantAnswerResponse.md)
  - [AssistantAskRequest](doc/AssistantAskRequest.md)
  - [AssistantCapabilities](doc/AssistantCapabilities.md)
  - [AssistantCapabilitiesResponse](doc/AssistantCapabilitiesResponse.md)
+ - [AssistantChatAction](doc/AssistantChatAction.md)
+ - [AssistantChatRequest](doc/AssistantChatRequest.md)
+ - [AssistantChatResponse](doc/AssistantChatResponse.md)
+ - [AssistantChatResult](doc/AssistantChatResult.md)
  - [AssistantFact](doc/AssistantFact.md)
+ - [AssistantMessage](doc/AssistantMessage.md)
+ - [AssistantMessageListResponse](doc/AssistantMessageListResponse.md)
+ - [AssistantSession](doc/AssistantSession.md)
+ - [AssistantSessionCreateRequest](doc/AssistantSessionCreateRequest.md)
+ - [AssistantSessionListResponse](doc/AssistantSessionListResponse.md)
+ - [AssistantSessionResponse](doc/AssistantSessionResponse.md)
  - [AsyncJob](doc/AsyncJob.md)
  - [AsyncJobResponse](doc/AsyncJobResponse.md)
  - [AuditMiniprogramReleaseRequest](doc/AuditMiniprogramReleaseRequest.md)
@@ -540,6 +564,8 @@ Class | Method | HTTP request | Description
  - [PhenotypeTableOutcome](doc/PhenotypeTableOutcome.md)
  - [PhoneCodeLoginRequest](doc/PhoneCodeLoginRequest.md)
  - [PlanCatalogEntry](doc/PlanCatalogEntry.md)
+ - [PublicDocumentResponse](doc/PublicDocumentResponse.md)
+ - [PublicDocumentResponseData](doc/PublicDocumentResponseData.md)
  - [PublicGrowthCatalog](doc/PublicGrowthCatalog.md)
  - [PublicGrowthCatalogResponse](doc/PublicGrowthCatalogResponse.md)
  - [PublicGrowthConsultRequest](doc/PublicGrowthConsultRequest.md)
@@ -547,6 +573,9 @@ Class | Method | HTTP request | Description
  - [PublicGrowthConsultResponseData](doc/PublicGrowthConsultResponseData.md)
  - [PublicGrowthLeadRequest](doc/PublicGrowthLeadRequest.md)
  - [PublicGrowthLeadResponse](doc/PublicGrowthLeadResponse.md)
+ - [PublicGrowthReservationRequest](doc/PublicGrowthReservationRequest.md)
+ - [PublicGrowthReservationResponse](doc/PublicGrowthReservationResponse.md)
+ - [PublicGrowthReservationResponseData](doc/PublicGrowthReservationResponseData.md)
  - [PublicShareResponse](doc/PublicShareResponse.md)
  - [PublicShareResponseData](doc/PublicShareResponseData.md)
  - [PublicSite](doc/PublicSite.md)

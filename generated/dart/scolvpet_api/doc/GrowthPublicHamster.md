@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **filmingStatus** | **String** |  |
 **published** | **bool** |  |
 **consultable** | **bool** |  |
+**reservable** | **bool** | Backend 唯一可订判定（公开可咨询且无 held/confirmed 预订） |
 **ctaText** | **String** |  | [optional]
 **priceLabel** | **String** |  | [optional]
 **media** | [**List&lt;GrowthPublicMedia&gt;**](GrowthPublicMedia.md) |  | [optional]

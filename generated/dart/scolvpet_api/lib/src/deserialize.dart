@@ -15,12 +15,26 @@ import 'package:scolvpet_api/src/model/adjust_baseline_response_data.dart';
 import 'package:scolvpet_api/src/model/adjust_litter_count_request.dart';
 import 'package:scolvpet_api/src/model/adjust_litter_count_response.dart';
 import 'package:scolvpet_api/src/model/adjust_litter_count_response_data.dart';
+import 'package:scolvpet_api/src/model/assistant_action_cancel_response.dart';
+import 'package:scolvpet_api/src/model/assistant_action_cancel_result.dart';
+import 'package:scolvpet_api/src/model/assistant_action_confirm_response.dart';
+import 'package:scolvpet_api/src/model/assistant_action_confirm_result.dart';
 import 'package:scolvpet_api/src/model/assistant_answer.dart';
 import 'package:scolvpet_api/src/model/assistant_answer_response.dart';
 import 'package:scolvpet_api/src/model/assistant_ask_request.dart';
 import 'package:scolvpet_api/src/model/assistant_capabilities.dart';
 import 'package:scolvpet_api/src/model/assistant_capabilities_response.dart';
+import 'package:scolvpet_api/src/model/assistant_chat_action.dart';
+import 'package:scolvpet_api/src/model/assistant_chat_request.dart';
+import 'package:scolvpet_api/src/model/assistant_chat_response.dart';
+import 'package:scolvpet_api/src/model/assistant_chat_result.dart';
 import 'package:scolvpet_api/src/model/assistant_fact.dart';
+import 'package:scolvpet_api/src/model/assistant_message.dart';
+import 'package:scolvpet_api/src/model/assistant_message_list_response.dart';
+import 'package:scolvpet_api/src/model/assistant_session.dart';
+import 'package:scolvpet_api/src/model/assistant_session_create_request.dart';
+import 'package:scolvpet_api/src/model/assistant_session_list_response.dart';
+import 'package:scolvpet_api/src/model/assistant_session_response.dart';
 import 'package:scolvpet_api/src/model/async_job.dart';
 import 'package:scolvpet_api/src/model/async_job_response.dart';
 import 'package:scolvpet_api/src/model/audit_miniprogram_release_request.dart';
@@ -240,6 +254,8 @@ import 'package:scolvpet_api/src/model/pedigree_parentage_response.dart';
 import 'package:scolvpet_api/src/model/phenotype_table_outcome.dart';
 import 'package:scolvpet_api/src/model/phone_code_login_request.dart';
 import 'package:scolvpet_api/src/model/plan_catalog_entry.dart';
+import 'package:scolvpet_api/src/model/public_document_response.dart';
+import 'package:scolvpet_api/src/model/public_document_response_data.dart';
 import 'package:scolvpet_api/src/model/public_growth_catalog.dart';
 import 'package:scolvpet_api/src/model/public_growth_catalog_response.dart';
 import 'package:scolvpet_api/src/model/public_growth_consult_request.dart';
@@ -247,6 +263,9 @@ import 'package:scolvpet_api/src/model/public_growth_consult_response.dart';
 import 'package:scolvpet_api/src/model/public_growth_consult_response_data.dart';
 import 'package:scolvpet_api/src/model/public_growth_lead_request.dart';
 import 'package:scolvpet_api/src/model/public_growth_lead_response.dart';
+import 'package:scolvpet_api/src/model/public_growth_reservation_request.dart';
+import 'package:scolvpet_api/src/model/public_growth_reservation_response.dart';
+import 'package:scolvpet_api/src/model/public_growth_reservation_response_data.dart';
 import 'package:scolvpet_api/src/model/public_share_response.dart';
 import 'package:scolvpet_api/src/model/public_share_response_data.dart';
 import 'package:scolvpet_api/src/model/public_site.dart';
@@ -395,6 +414,14 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return AdjustLitterCountResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'AdjustLitterCountResponseData':
           return AdjustLitterCountResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantActionCancelResponse':
+          return AssistantActionCancelResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantActionCancelResult':
+          return AssistantActionCancelResult.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantActionConfirmResponse':
+          return AssistantActionConfirmResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantActionConfirmResult':
+          return AssistantActionConfirmResult.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'AssistantAnswer':
           return AssistantAnswer.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'AssistantAnswerResponse':
@@ -405,8 +432,28 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return AssistantCapabilities.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'AssistantCapabilitiesResponse':
           return AssistantCapabilitiesResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantChatAction':
+          return AssistantChatAction.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantChatRequest':
+          return AssistantChatRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantChatResponse':
+          return AssistantChatResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantChatResult':
+          return AssistantChatResult.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'AssistantFact':
           return AssistantFact.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantMessage':
+          return AssistantMessage.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantMessageListResponse':
+          return AssistantMessageListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantSession':
+          return AssistantSession.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantSessionCreateRequest':
+          return AssistantSessionCreateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantSessionListResponse':
+          return AssistantSessionListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AssistantSessionResponse':
+          return AssistantSessionResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'AsyncJob':
           return AsyncJob.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'AsyncJobResponse':
@@ -896,6 +943,10 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return PhoneCodeLoginRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PlanCatalogEntry':
           return PlanCatalogEntry.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicDocumentResponse':
+          return PublicDocumentResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicDocumentResponseData':
+          return PublicDocumentResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublicGrowthCatalog':
           return PublicGrowthCatalog.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublicGrowthCatalogResponse':
@@ -910,6 +961,12 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return PublicGrowthLeadRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublicGrowthLeadResponse':
           return PublicGrowthLeadResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicGrowthReservationRequest':
+          return PublicGrowthReservationRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicGrowthReservationResponse':
+          return PublicGrowthReservationResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PublicGrowthReservationResponseData':
+          return PublicGrowthReservationResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublicShareResponse':
           return PublicShareResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublicShareResponseData':

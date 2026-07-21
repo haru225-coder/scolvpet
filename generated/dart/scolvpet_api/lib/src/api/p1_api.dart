@@ -1379,8 +1379,8 @@ _responseData = rawData == null ? null : deserialize<OrganizationMemberResponse,
   ///
   /// Parameters:
   /// * [documentId] - 合同单据 ID
-  /// * [ifMatch] - 可选的当前资源版本 ETag；传入时用于乐观并发控制。
-  /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
+  /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1392,8 +1392,8 @@ _responseData = rawData == null ? null : deserialize<OrganizationMemberResponse,
   /// Throws [DioException] if API call or serialization fails
   Future<Response<DocumentResponse>> issueContract({
     required String documentId,
-    String? ifMatch,
-    String? idempotencyKey,
+    required String ifMatch,
+    required String idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1405,8 +1405,8 @@ _responseData = rawData == null ? null : deserialize<OrganizationMemberResponse,
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
-        if (ifMatch != null) r'If-Match': ifMatch,
-        if (idempotencyKey != null) r'Idempotency-Key': idempotencyKey,
+        r'If-Match': ifMatch,
+        r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
       extra: <String, dynamic>{
@@ -1463,8 +1463,8 @@ _responseData = rawData == null ? null : deserialize<DocumentResponse, DocumentR
   ///
   /// Parameters:
   /// * [documentId] - 回执单据 ID
-  /// * [ifMatch] - 可选的当前资源版本 ETag；传入时用于乐观并发控制。
-  /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
+  /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1476,8 +1476,8 @@ _responseData = rawData == null ? null : deserialize<DocumentResponse, DocumentR
   /// Throws [DioException] if API call or serialization fails
   Future<Response<DocumentResponse>> issueReceipt({
     required String documentId,
-    String? ifMatch,
-    String? idempotencyKey,
+    required String ifMatch,
+    required String idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1489,8 +1489,8 @@ _responseData = rawData == null ? null : deserialize<DocumentResponse, DocumentR
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
-        if (ifMatch != null) r'If-Match': ifMatch,
-        if (idempotencyKey != null) r'Idempotency-Key': idempotencyKey,
+        r'If-Match': ifMatch,
+        r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
       extra: <String, dynamic>{
@@ -2398,6 +2398,90 @@ _responseData = rawData == null ? null : deserialize<DocumentListResponse, Docum
     );
   }
 
+  /// 撤销合同
+  /// 需要 Bearer 令牌；撤销已签发合同并立即使客户公开链接失效。
+  ///
+  /// Parameters:
+  /// * [documentId] - 合同单据 ID
+  /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [DocumentResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<DocumentResponse>> revokeContract({
+    required String documentId,
+    required String ifMatch,
+    required String idempotencyKey,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/contracts/{document_id}/revoke'.replaceAll('{' r'document_id' '}', documentId.toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'If-Match': ifMatch,
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    DocumentResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<DocumentResponse, DocumentResponse>(rawData, 'DocumentResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<DocumentResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// 撤销熊舍成员
   /// 需要 Bearer 令牌；仅舍主可撤销成员。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
   ///
@@ -2471,6 +2555,90 @@ _responseData = rawData == null ? null : deserialize<OrganizationMemberResponse,
     }
 
     return Response<OrganizationMemberResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 撤销回执
+  /// 需要 Bearer 令牌；撤销已签发回执并立即使客户公开链接失效。
+  ///
+  /// Parameters:
+  /// * [documentId] - 回执单据 ID
+  /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [DocumentResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<DocumentResponse>> revokeReceipt({
+    required String documentId,
+    required String ifMatch,
+    required String idempotencyKey,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/receipts/{document_id}/revoke'.replaceAll('{' r'document_id' '}', documentId.toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'If-Match': ifMatch,
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    DocumentResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<DocumentResponse, DocumentResponse>(rawData, 'DocumentResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<DocumentResponse>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

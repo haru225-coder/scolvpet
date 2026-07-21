@@ -36,7 +36,9 @@ Method | HTTP request | Description
 [**listPushMessages**](P1Api.md#listpushmessages) | **GET** /v1/push/messages | 列出推送消息
 [**listReceiptTemplates**](P1Api.md#listreceipttemplates) | **GET** /v1/receipts/templates | 列出回执模板
 [**listReceipts**](P1Api.md#listreceipts) | **GET** /v1/receipts | 列出回执单据
+[**revokeContract**](P1Api.md#revokecontract) | **POST** /v1/contracts/{document_id}/revoke | 撤销合同
 [**revokeOrganizationMember**](P1Api.md#revokeorganizationmember) | **POST** /v1/organization-members/{member_id}/revoke | 撤销熊舍成员
+[**revokeReceipt**](P1Api.md#revokereceipt) | **POST** /v1/receipts/{document_id}/revoke | 撤销回执
 [**sandboxActivatePlan**](P1Api.md#sandboxactivateplan) | **POST** /v1/entitlements/sandbox/activate | 沙箱激活权益套餐
 [**simulateGeneticBreeding**](P1Api.md#simulategeneticbreeding) | **POST** /v1/genetic/simulate | 模拟遗传配对
 [**updateOrganizationMember**](P1Api.md#updateorganizationmember) | **PATCH** /v1/organization-members/{member_id} | 更新熊舍成员
@@ -676,8 +678,8 @@ import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
 final String documentId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 合同单据 ID
-final String ifMatch = ifMatch_example; // String | 可选的当前资源版本 ETag；传入时用于乐观并发控制。
-final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
+final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 
 try {
     final response = api.issueContract(documentId, ifMatch, idempotencyKey);
@@ -692,8 +694,8 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **documentId** | **String**| 合同单据 ID |
- **ifMatch** | **String**| 可选的当前资源版本 ETag；传入时用于乐观并发控制。 | [optional]
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
 
 ### Return type
 
@@ -723,8 +725,8 @@ import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getP1Api();
 final String documentId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 回执单据 ID
-final String ifMatch = ifMatch_example; // String | 可选的当前资源版本 ETag；传入时用于乐观并发控制。
-final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
+final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
 
 try {
     final response = api.issueReceipt(documentId, ifMatch, idempotencyKey);
@@ -739,8 +741,8 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **documentId** | **String**| 回执单据 ID |
- **ifMatch** | **String**| 可选的当前资源版本 ETag；传入时用于乐观并发控制。 | [optional]
- **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
 
 ### Return type
 
@@ -1198,6 +1200,53 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **revokeContract**
+> DocumentResponse revokeContract(documentId, ifMatch, idempotencyKey)
+
+撤销合同
+
+需要 Bearer 令牌；撤销已签发合同并立即使客户公开链接失效。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP1Api();
+final String documentId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 合同单据 ID
+final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+
+try {
+    final response = api.revokeContract(documentId, ifMatch, idempotencyKey);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P1Api->revokeContract: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **documentId** | **String**| 合同单据 ID |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+
+### Return type
+
+[**DocumentResponse**](DocumentResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **revokeOrganizationMember**
 > OrganizationMemberResponse revokeOrganizationMember(memberId, ifMatch, idempotencyKey)
 
@@ -1233,6 +1282,53 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**OrganizationMemberResponse**](OrganizationMemberResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **revokeReceipt**
+> DocumentResponse revokeReceipt(documentId, ifMatch, idempotencyKey)
+
+撤销回执
+
+需要 Bearer 令牌；撤销已签发回执并立即使客户公开链接失效。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP1Api();
+final String documentId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 回执单据 ID
+final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+
+try {
+    final response = api.revokeReceipt(documentId, ifMatch, idempotencyKey);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P1Api->revokeReceipt: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **documentId** | **String**| 回执单据 ID |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+
+### Return type
+
+[**DocumentResponse**](DocumentResponse.md)
 
 ### Authorization
 

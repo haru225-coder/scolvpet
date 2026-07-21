@@ -13,6 +13,8 @@ abstract class _$CreateReceiptRequestCWProxy {
 
   CreateReceiptRequest handoverId(String? handoverId);
 
+  CreateReceiptRequest reservationId(String? reservationId);
+
   CreateReceiptRequest title(String? title);
 
   CreateReceiptRequest amountCents(int amountCents);
@@ -35,6 +37,7 @@ abstract class _$CreateReceiptRequestCWProxy {
     String templateId,
     String? contactId,
     String? handoverId,
+    String? reservationId,
     String? title,
     int amountCents,
     String? currency,
@@ -62,6 +65,10 @@ class _$CreateReceiptRequestCWProxyImpl
   @override
   CreateReceiptRequest handoverId(String? handoverId) =>
       this(handoverId: handoverId);
+
+  @override
+  CreateReceiptRequest reservationId(String? reservationId) =>
+      this(reservationId: reservationId);
 
   @override
   CreateReceiptRequest title(String? title) => this(title: title);
@@ -95,6 +102,7 @@ class _$CreateReceiptRequestCWProxyImpl
     Object? templateId = const $CopyWithPlaceholder(),
     Object? contactId = const $CopyWithPlaceholder(),
     Object? handoverId = const $CopyWithPlaceholder(),
+    Object? reservationId = const $CopyWithPlaceholder(),
     Object? title = const $CopyWithPlaceholder(),
     Object? amountCents = const $CopyWithPlaceholder(),
     Object? currency = const $CopyWithPlaceholder(),
@@ -115,6 +123,10 @@ class _$CreateReceiptRequestCWProxyImpl
           ? _value.handoverId
           // ignore: cast_nullable_to_non_nullable
           : handoverId as String?,
+      reservationId: reservationId == const $CopyWithPlaceholder()
+          ? _value.reservationId
+          // ignore: cast_nullable_to_non_nullable
+          : reservationId as String?,
       title: title == const $CopyWithPlaceholder()
           ? _value.title
           // ignore: cast_nullable_to_non_nullable
@@ -165,6 +177,7 @@ CreateReceiptRequest _$CreateReceiptRequestFromJson(
       templateId: $checkedConvert('template_id', (v) => v as String),
       contactId: $checkedConvert('contact_id', (v) => v as String?),
       handoverId: $checkedConvert('handover_id', (v) => v as String?),
+      reservationId: $checkedConvert('reservation_id', (v) => v as String?),
       title: $checkedConvert('title', (v) => v as String?),
       amountCents: $checkedConvert('amount_cents', (v) => (v as num).toInt()),
       currency: $checkedConvert('currency', (v) => v as String? ?? 'CNY'),
@@ -178,6 +191,7 @@ CreateReceiptRequest _$CreateReceiptRequestFromJson(
     'templateId': 'template_id',
     'contactId': 'contact_id',
     'handoverId': 'handover_id',
+    'reservationId': 'reservation_id',
     'amountCents': 'amount_cents',
     'contactName': 'contact_name',
     'hamsterName': 'hamster_name',
@@ -190,6 +204,7 @@ Map<String, dynamic> _$CreateReceiptRequestToJson(
   'template_id': instance.templateId,
   'contact_id': ?instance.contactId,
   'handover_id': ?instance.handoverId,
+  'reservation_id': ?instance.reservationId,
   'title': ?instance.title,
   'amount_cents': instance.amountCents,
   'currency': ?instance.currency,

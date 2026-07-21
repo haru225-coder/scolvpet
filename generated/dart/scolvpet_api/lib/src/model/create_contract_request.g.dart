@@ -13,6 +13,8 @@ abstract class _$CreateContractRequestCWProxy {
 
   CreateContractRequest handoverId(String? handoverId);
 
+  CreateContractRequest reservationId(String? reservationId);
+
   CreateContractRequest title(String? title);
 
   CreateContractRequest notes(String? notes);
@@ -31,6 +33,7 @@ abstract class _$CreateContractRequestCWProxy {
     String templateId,
     String? contactId,
     String? handoverId,
+    String? reservationId,
     String? title,
     String? notes,
     String? contactName,
@@ -58,6 +61,10 @@ class _$CreateContractRequestCWProxyImpl
       this(handoverId: handoverId);
 
   @override
+  CreateContractRequest reservationId(String? reservationId) =>
+      this(reservationId: reservationId);
+
+  @override
   CreateContractRequest title(String? title) => this(title: title);
 
   @override
@@ -82,6 +89,7 @@ class _$CreateContractRequestCWProxyImpl
     Object? templateId = const $CopyWithPlaceholder(),
     Object? contactId = const $CopyWithPlaceholder(),
     Object? handoverId = const $CopyWithPlaceholder(),
+    Object? reservationId = const $CopyWithPlaceholder(),
     Object? title = const $CopyWithPlaceholder(),
     Object? notes = const $CopyWithPlaceholder(),
     Object? contactName = const $CopyWithPlaceholder(),
@@ -100,6 +108,10 @@ class _$CreateContractRequestCWProxyImpl
           ? _value.handoverId
           // ignore: cast_nullable_to_non_nullable
           : handoverId as String?,
+      reservationId: reservationId == const $CopyWithPlaceholder()
+          ? _value.reservationId
+          // ignore: cast_nullable_to_non_nullable
+          : reservationId as String?,
       title: title == const $CopyWithPlaceholder()
           ? _value.title
           // ignore: cast_nullable_to_non_nullable
@@ -142,6 +154,7 @@ CreateContractRequest _$CreateContractRequestFromJson(
       templateId: $checkedConvert('template_id', (v) => v as String),
       contactId: $checkedConvert('contact_id', (v) => v as String?),
       handoverId: $checkedConvert('handover_id', (v) => v as String?),
+      reservationId: $checkedConvert('reservation_id', (v) => v as String?),
       title: $checkedConvert('title', (v) => v as String?),
       notes: $checkedConvert('notes', (v) => v as String?),
       contactName: $checkedConvert('contact_name', (v) => v as String?),
@@ -153,6 +166,7 @@ CreateContractRequest _$CreateContractRequestFromJson(
     'templateId': 'template_id',
     'contactId': 'contact_id',
     'handoverId': 'handover_id',
+    'reservationId': 'reservation_id',
     'contactName': 'contact_name',
     'hamsterName': 'hamster_name',
   },
@@ -164,6 +178,7 @@ Map<String, dynamic> _$CreateContractRequestToJson(
   'template_id': instance.templateId,
   'contact_id': ?instance.contactId,
   'handover_id': ?instance.handoverId,
+  'reservation_id': ?instance.reservationId,
   'title': ?instance.title,
   'notes': ?instance.notes,
   'contact_name': ?instance.contactName,

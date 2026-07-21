@@ -26,6 +26,8 @@ class CreateReceiptRequest {
 
      this.handoverId,
 
+     this.reservationId,
+
      this.title,
 
     required  this.amountCents,
@@ -72,6 +74,19 @@ class CreateReceiptRequest {
 
 
   final String? handoverId;
+
+
+
+      /// 从统一预订继承客户与仓鼠；可同时关联已有交付
+  @JsonKey(
+
+    name: r'reservation_id',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? reservationId;
 
 
 
@@ -155,6 +170,7 @@ class CreateReceiptRequest {
       other.templateId == templateId &&
       other.contactId == contactId &&
       other.handoverId == handoverId &&
+      other.reservationId == reservationId &&
       other.title == title &&
       other.amountCents == amountCents &&
       other.currency == currency &&
@@ -167,6 +183,7 @@ class CreateReceiptRequest {
         templateId.hashCode +
         (contactId == null ? 0 : contactId.hashCode) +
         (handoverId == null ? 0 : handoverId.hashCode) +
+        (reservationId == null ? 0 : reservationId.hashCode) +
         title.hashCode +
         amountCents.hashCode +
         currency.hashCode +

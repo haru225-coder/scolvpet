@@ -12,15 +12,21 @@ Method | HTTP request | Description
 [**askAssistant**](P2Api.md#askassistant) | **POST** /v1/assistant/ask | 向只读助手提问
 [**assistantCapabilities**](P2Api.md#assistantcapabilities) | **GET** /v1/assistant/capabilities | 读取助手能力
 [**auditMiniprogramRelease**](P2Api.md#auditminiprogramrelease) | **POST** /v1/miniprogram/releases/{release_id}/audit | 审核小程序版本
+[**cancelAssistantAction**](P2Api.md#cancelassistantaction) | **POST** /v1/assistant/actions/{action_id}/cancel | 取消助手动作
 [**cancelStudDeal**](P2Api.md#cancelstuddeal) | **POST** /v1/stud/deals/{deal_id}/cancel | 取消跨舍借配单
+[**chatAssistant**](P2Api.md#chatassistant) | **POST** /v1/assistant/chat | 通用多轮对话
 [**completeStudDeal**](P2Api.md#completestuddeal) | **POST** /v1/stud/deals/{deal_id}/complete | 完成跨舍借配单
+[**confirmAssistantAction**](P2Api.md#confirmassistantaction) | **POST** /v1/assistant/actions/{action_id}/confirm | 确认并执行助手动作
 [**confirmStudDeal**](P2Api.md#confirmstuddeal) | **POST** /v1/stud/deals/{deal_id}/confirm | 确认跨舍借配单
+[**createAssistantSession**](P2Api.md#createassistantsession) | **POST** /v1/assistant/sessions | 创建会话
 [**createMiniprogramRelease**](P2Api.md#createminiprogramrelease) | **POST** /v1/miniprogram/releases | 创建小程序版本
 [**createStudDeal**](P2Api.md#createstuddeal) | **POST** /v1/stud/deals | 创建跨舍借配单
 [**createStudListing**](P2Api.md#createstudlisting) | **POST** /v1/stud/listings | 创建种公借配挂牌
 [**getMiniprogramConfig**](P2Api.md#getminiprogramconfig) | **GET** /v1/miniprogram/config | 读取小程序配置
 [**getOwnerPublicSite**](P2Api.md#getownerpublicsite) | **GET** /v1/public-site | 读取熊舍公开主页草稿
 [**getPublicSiteBySlug**](P2Api.md#getpublicsitebyslug) | **GET** /v1/public/sites/{slug} | 读取公开主页投影
+[**listAssistantMessages**](P2Api.md#listassistantmessages) | **GET** /v1/assistant/sessions/{session_id}/messages | 列出会话消息
+[**listAssistantSessions**](P2Api.md#listassistantsessions) | **GET** /v1/assistant/sessions | 列出会话
 [**listMiniprogramReleases**](P2Api.md#listminiprogramreleases) | **GET** /v1/miniprogram/releases | 列出小程序版本
 [**listStudDeals**](P2Api.md#liststuddeals) | **GET** /v1/stud/deals | 列出跨舍借配单
 [**listStudListings**](P2Api.md#liststudlistings) | **GET** /v1/stud/listings | 列出种公借配挂牌
@@ -166,6 +172,51 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **cancelAssistantAction**
+> AssistantActionCancelResponse cancelAssistantAction(actionId, idempotencyKey)
+
+取消助手动作
+
+需要 Bearer 令牌；仅可取消当前 owner 的待确认动作。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP2Api();
+final String actionId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
+
+try {
+    final response = api.cancelAssistantAction(actionId, idempotencyKey);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P2Api->cancelAssistantAction: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **actionId** | **String**|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
+
+### Return type
+
+[**AssistantActionCancelResponse**](AssistantActionCancelResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **cancelStudDeal**
 > StudDealResponse cancelStudDeal(dealId, idempotencyKey)
 
@@ -211,6 +262,51 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **chatAssistant**
+> AssistantChatResponse chatAssistant(assistantChatRequest, idempotencyKey)
+
+通用多轮对话
+
+需要 Bearer 令牌。主路径为 Grok Build 通用对话，并注入本舍结构化事实。 未传 session_id 时自动创建会话。LLM 失败时降级为规则答案。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP2Api();
+final AssistantChatRequest assistantChatRequest = ; // AssistantChatRequest |
+final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
+
+try {
+    final response = api.chatAssistant(assistantChatRequest, idempotencyKey);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P2Api->chatAssistant: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assistantChatRequest** | [**AssistantChatRequest**](AssistantChatRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
+
+### Return type
+
+[**AssistantChatResponse**](AssistantChatResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **completeStudDeal**
 > StudDealResponse completeStudDeal(dealId, idempotencyKey)
 
@@ -244,6 +340,51 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**StudDealResponse**](StudDealResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **confirmAssistantAction**
+> AssistantActionConfirmResponse confirmAssistantAction(actionId, idempotencyKey)
+
+确认并执行助手动作
+
+需要 Bearer 令牌；仅可执行当前 owner 的待确认动作。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP2Api();
+final String actionId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
+
+try {
+    final response = api.confirmAssistantAction(actionId, idempotencyKey);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P2Api->confirmAssistantAction: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **actionId** | **String**|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
+
+### Return type
+
+[**AssistantActionConfirmResponse**](AssistantActionConfirmResponse.md)
 
 ### Authorization
 
@@ -297,6 +438,49 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createAssistantSession**
+> AssistantSessionResponse createAssistantSession(assistantSessionCreateRequest)
+
+创建会话
+
+需要 Bearer 令牌；可空 body。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP2Api();
+final AssistantSessionCreateRequest assistantSessionCreateRequest = ; // AssistantSessionCreateRequest |
+
+try {
+    final response = api.createAssistantSession(assistantSessionCreateRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P2Api->createAssistantSession: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assistantSessionCreateRequest** | [**AssistantSessionCreateRequest**](AssistantSessionCreateRequest.md)|  | [optional]
+
+### Return type
+
+[**AssistantSessionResponse**](AssistantSessionResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -549,6 +733,86 @@ Name | Type | Description  | Notes
 ### Authorization
 
 No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **listAssistantMessages**
+> AssistantMessageListResponse listAssistantMessages(sessionId)
+
+列出会话消息
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP2Api();
+final String sessionId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+
+try {
+    final response = api.listAssistantMessages(sessionId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P2Api->listAssistantMessages: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **sessionId** | **String**|  |
+
+### Return type
+
+[**AssistantMessageListResponse**](AssistantMessageListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **listAssistantSessions**
+> AssistantSessionListResponse listAssistantSessions()
+
+列出会话
+
+需要 Bearer 令牌；按 owner_id 隔离。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP2Api();
+
+try {
+    final response = api.listAssistantSessions();
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P2Api->listAssistantSessions: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**AssistantSessionListResponse**](AssistantSessionListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
 
 ### HTTP request headers
 

@@ -26,6 +26,8 @@ class CreateContractRequest {
 
      this.handoverId,
 
+     this.reservationId,
+
      this.title,
 
      this.notes,
@@ -68,6 +70,19 @@ class CreateContractRequest {
 
 
   final String? handoverId;
+
+
+
+      /// 从统一预订继承客户与仓鼠；与 handover_id 可并存
+  @JsonKey(
+
+    name: r'reservation_id',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? reservationId;
 
 
 
@@ -126,6 +141,7 @@ class CreateContractRequest {
       other.templateId == templateId &&
       other.contactId == contactId &&
       other.handoverId == handoverId &&
+      other.reservationId == reservationId &&
       other.title == title &&
       other.notes == notes &&
       other.contactName == contactName &&
@@ -136,6 +152,7 @@ class CreateContractRequest {
         templateId.hashCode +
         (contactId == null ? 0 : contactId.hashCode) +
         (handoverId == null ? 0 : handoverId.hashCode) +
+        (reservationId == null ? 0 : reservationId.hashCode) +
         title.hashCode +
         (notes == null ? 0 : notes.hashCode) +
         (contactName == null ? 0 : contactName.hashCode) +

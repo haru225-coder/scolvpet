@@ -16,6 +16,8 @@ import 'package:scolvpet_api/src/model/public_growth_consult_request.dart';
 import 'package:scolvpet_api/src/model/public_growth_consult_response.dart';
 import 'package:scolvpet_api/src/model/public_growth_lead_request.dart';
 import 'package:scolvpet_api/src/model/public_growth_lead_response.dart';
+import 'package:scolvpet_api/src/model/public_growth_reservation_request.dart';
+import 'package:scolvpet_api/src/model/public_growth_reservation_response.dart';
 
 class PublicGrowthApi {
 
@@ -201,6 +203,102 @@ _responseData = rawData == null ? null : deserialize<PublicGrowthLeadResponse, P
     }
 
     return Response<PublicGrowthLeadResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 客户提交公开仓鼠预订
+  /// 客户从前台对真实 hamster 创建统一 crm_reservation（status&#x3D;held）。 必须传 hamster_id；Backend 校验公开可订与排他；禁止手填品种/毛色。
+  ///
+  /// Parameters:
+  /// * [slug]
+  /// * [publicGrowthReservationRequest]
+  /// * [idempotencyKey] - P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [PublicGrowthReservationResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<PublicGrowthReservationResponse>> createPublicGrowthReservation({
+    required String slug,
+    required PublicGrowthReservationRequest publicGrowthReservationRequest,
+    String? idempotencyKey,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/public/sites/{slug}/reservations'.replaceAll('{' r'slug' '}', slug.toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        if (idempotencyKey != null) r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = jsonEncode(publicGrowthReservationRequest);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    PublicGrowthReservationResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<PublicGrowthReservationResponse, PublicGrowthReservationResponse>(rawData, 'PublicGrowthReservationResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<PublicGrowthReservationResponse>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
