@@ -39,9 +39,7 @@ class WeightAlert {
   String get summary {
     if (flags.contains('drop_from_previous')) {
       final change = record.changeFromPreviousG;
-      return change == null
-          ? '掉重'
-          : '掉重 ${change.abs().toStringAsFixed(1)} g';
+      return change == null ? '掉重' : '掉重 ${change.abs().toStringAsFixed(1)} g';
     }
     if (flags.contains('below_min_weight')) {
       return '低于阈值 ${record.weightG} g';
@@ -145,9 +143,7 @@ I2WeightRecord buildWeightRecord({
   WeightAlertRules rules = WeightAlertRules.syrianDefault,
 }) {
   final previousG = previous?.weightG;
-  final change = previousG == null
-      ? null
-      : draft.weightG - previousG;
+  final change = previousG == null ? null : draft.weightG - previousG;
   final provisional = I2WeightRecord(
     id: id,
     hamsterId: draft.hamsterId,

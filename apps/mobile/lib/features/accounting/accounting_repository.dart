@@ -29,6 +29,7 @@ String accountingErrorMessage(Object error) => apiErrorMessage(
   fallback: '财务请求失败',
   mapLocal: (e) => e is AccountingRepositoryException ? e.message : null,
 );
+
 class DefaultApiAccountingRepository implements AccountingRepository {
   DefaultApiAccountingRepository({required this.client});
 

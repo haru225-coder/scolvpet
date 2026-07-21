@@ -29,6 +29,7 @@ String taskRepositoryErrorMessage(Object error) => apiErrorMessage(
   fallback: '网络请求失败，请稍后重试',
   mapLocal: (e) => e is TaskRepositoryException ? e.message : null,
 );
+
 class DefaultApiTaskRepository implements TaskRepository {
   DefaultApiTaskRepository({required this.client});
 
@@ -123,8 +124,9 @@ class DefaultApiTaskRepository implements TaskRepository {
             .map(
               (id) => api.CompleteTaskRequestSubjectResultsInner(
                 subjectId: id,
-                status:
-                    api.CompleteTaskRequestSubjectResultsInnerStatusEnum.completed,
+                status: api
+                    .CompleteTaskRequestSubjectResultsInnerStatusEnum
+                    .completed,
               ),
             )
             .toList(),
@@ -153,9 +155,8 @@ class DefaultApiTaskRepository implements TaskRepository {
       return data
           .whereType<Map>()
           .map(
-            (item) => TaskReminderItem.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
+            (item) =>
+                TaskReminderItem.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList();
     } catch (_) {

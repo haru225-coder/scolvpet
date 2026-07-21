@@ -438,4 +438,3 @@ class MemoryI2Repository implements I2Repository {
   @override
   Future<List<I2ImportRowResult>> listImportRows(String jobId) async => _rows;
 }
-

@@ -562,10 +562,7 @@ class I2WeightDraft {
 }
 
 class I2WeightBatchFailure {
-  const I2WeightBatchFailure({
-    required this.hamsterId,
-    required this.message,
-  });
+  const I2WeightBatchFailure({required this.hamsterId, required this.message});
 
   final String? hamsterId;
   final String message;

@@ -131,9 +131,7 @@ class _BreedingHubPageState extends State<BreedingHubPage> {
                 ),
               ),
               if (_segment == 1)
-                _BreedingLittersSegment(
-                  onOpenLitters: widget.onOpenLitters,
-                )
+                _BreedingLittersSegment(onOpenLitters: widget.onOpenLitters)
               else if (listState.status == I2AsyncStatus.loading &&
                   !listState.hasValue)
                 const Padding(
@@ -284,7 +282,9 @@ class _BreedingProgressBody extends StatelessWidget {
       grouped.putIfAbsent(key, () => []).add(plan);
     }
     final keys = grouped.keys.toList()
-      ..sort((a, b) => _progressGroupOrder(a).compareTo(_progressGroupOrder(b)));
+      ..sort(
+        (a, b) => _progressGroupOrder(a).compareTo(_progressGroupOrder(b)),
+      );
 
     final pairing = active.where((p) => p.state == 'pairing').length;
     final gestation = active.where((p) => p.state == 'gestation').length;
@@ -419,16 +419,16 @@ class _SummaryChip extends StatelessWidget {
         children: [
           Text(
             value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: p.secondaryLabel,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: p.secondaryLabel),
           ),
         ],
       ),
@@ -573,9 +573,9 @@ class _BreedingPlanTile extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       meta.join(' · '),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: p.secondaryLabel,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: p.secondaryLabel),
                     ),
                     if (plan.displayName != '$sire × $dam' &&
                         (plan.name?.trim().isNotEmpty ?? false)) ...[
@@ -685,58 +685,58 @@ class _BreedingWizardPageState extends State<BreedingWizardPage> {
         builder: (ctx) => StatefulBuilder(
           builder: (ctx, setLocal) {
             return CupertinoAlertDialog(
-            title: const Text('新建繁育计划'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CupertinoTextField(
-                    controller: nameCtrl,
-                    textInputAction: TextInputAction.done,
-                    placeholder: '名称（可选）',
-                  ),
-                  const SizedBox(height: 12),
-                  IosPickerField<String>(
-                    label: '公本',
-                    items: [
-                      for (final h in males)
-                        IosPickerItem(
-                          value: h.id,
-                          label:
-                              '${h.displayName} · ${h.corePhenotypeLabel ?? '无表型'}',
-                        ),
-                    ],
-                    selected: sireId,
-                    onSelected: (v) => setLocal(() => sireId = v),
-                  ),
-                  const SizedBox(height: 12),
-                  IosPickerField<String>(
-                    label: '母本',
-                    items: [
-                      for (final h in females)
-                        IosPickerItem(
-                          value: h.id,
-                          label:
-                              '${h.displayName} · ${h.corePhenotypeLabel ?? '无表型'}',
-                        ),
-                    ],
-                    selected: damId,
-                    onSelected: (v) => setLocal(() => damId = v),
-                  ),
-                ],
+              title: const Text('新建繁育计划'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CupertinoTextField(
+                      controller: nameCtrl,
+                      textInputAction: TextInputAction.done,
+                      placeholder: '名称（可选）',
+                    ),
+                    const SizedBox(height: 12),
+                    IosPickerField<String>(
+                      label: '公本',
+                      items: [
+                        for (final h in males)
+                          IosPickerItem(
+                            value: h.id,
+                            label:
+                                '${h.displayName} · ${h.corePhenotypeLabel ?? '无表型'}',
+                          ),
+                      ],
+                      selected: sireId,
+                      onSelected: (v) => setLocal(() => sireId = v),
+                    ),
+                    const SizedBox(height: 12),
+                    IosPickerField<String>(
+                      label: '母本',
+                      items: [
+                        for (final h in females)
+                          IosPickerItem(
+                            value: h.id,
+                            label:
+                                '${h.displayName} · ${h.corePhenotypeLabel ?? '无表型'}',
+                          ),
+                      ],
+                      selected: damId,
+                      onSelected: (v) => setLocal(() => damId = v),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            actions: [
-              CupertinoDialogAction(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('取消'),
-              ),
-              CupertinoDialogAction(
-                isDefaultAction: true,
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('创建'),
-              ),
-            ],
+              actions: [
+                CupertinoDialogAction(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('取消'),
+                ),
+                CupertinoDialogAction(
+                  isDefaultAction: true,
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('创建'),
+                ),
+              ],
             );
           },
         ),
@@ -995,8 +995,7 @@ class _BreedingWizardPageState extends State<BreedingWizardPage> {
               CupertinoDialogAction(
                 isDefaultAction: true,
                 onPressed: () {
-                  if (chooseDestinations &&
-                      sireDestination == damDestination) {
+                  if (chooseDestinations && sireDestination == damDestination) {
                     setLocal(() => validationError = '公鼠和母鼠必须选择不同笼盒');
                     return;
                   }
@@ -1055,8 +1054,7 @@ class _BreedingWizardPageState extends State<BreedingWizardPage> {
       animation: widget.controller,
       builder: (context, _) {
         final listState = widget.controller.listState;
-        final plans =
-            listState.data ?? const <BreedingPlan>[];
+        final plans = listState.data ?? const <BreedingPlan>[];
         final busy =
             widget.controller.actionState.status == I2AsyncStatus.loading;
         final hasRule = widget.ruleVersionId?.isNotEmpty == true;
@@ -1132,144 +1130,166 @@ class _BreedingWizardPageState extends State<BreedingWizardPage> {
                         icon: CupertinoIcons.arrow_2_squarepath,
                         message: '还没有繁育计划',
                         actionLabel: widget.canWrite && hasRule ? '新建计划' : null,
-                        onRetry: widget.canWrite && hasRule ? _createPlan : null,
+                        onRetry: widget.canWrite && hasRule
+                            ? _createPlan
+                            : null,
                         illustration: BearAssets.emptyList,
                         mood: BearMood.sleepy,
                       )
                     : ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
-                  itemCount: plans.length,
-                  itemBuilder: (context, index) {
-                    final plan = plans[index];
-                    final action = nextActionLabel(plan.state);
-                    final hasSnap =
-                        SimulationSnapshot.tryParseNotes(plan.notes) != null;
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: index == plans.length - 1 ? 0 : 12,
-                      ),
-                      child: Container(
-                        key: Key('breeding-plan-${plan.id}'),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: ScolvPalette.of(
-                            context,
-                          ).secondaryGroupedBackground,
-                          borderRadius: BorderRadius.circular(
-                            IosMetrics.continuousRadius,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    plan.displayName,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: ScolvPalette.of(context).accentSoft,
-                                    borderRadius: BorderRadius.circular(
-                                      IosMetrics.pillRadius,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    breedingStateLabel(plan.state),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: ScolvPalette.of(context).accent,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
+                        itemCount: plans.length,
+                        itemBuilder: (context, index) {
+                          final plan = plans[index];
+                          final action = nextActionLabel(plan.state);
+                          final hasSnap =
+                              SimulationSnapshot.tryParseNotes(plan.notes) !=
+                              null;
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              bottom: index == plans.length - 1 ? 0 : 12,
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '公 ${_breedingHamsterLabel(widget.hamsters, plan.sireId, '公鼠')}'
-                              ' · 母 ${_breedingHamsterLabel(widget.hamsters, plan.damId, '母鼠')}',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            if (hasSnap) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                '已有配对预测',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: ScolvPalette.of(context).accent,
-                                      fontWeight: FontWeight.w600,
+                            child: Container(
+                              key: Key('breeding-plan-${plan.id}'),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: ScolvPalette.of(
+                                  context,
+                                ).secondaryGroupedBackground,
+                                borderRadius: BorderRadius.circular(
+                                  IosMetrics.continuousRadius,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          plan.displayName,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: ScolvPalette.of(
+                                            context,
+                                          ).accentSoft,
+                                          borderRadius: BorderRadius.circular(
+                                            IosMetrics.pillRadius,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          breedingStateLabel(plan.state),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: ScolvPalette.of(
+                                              context,
+                                            ).accent,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '公 ${_breedingHamsterLabel(widget.hamsters, plan.sireId, '公鼠')}'
+                                    ' · 母 ${_breedingHamsterLabel(widget.hamsters, plan.damId, '母鼠')}',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                  if (hasSnap) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '已有配对预测',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: ScolvPalette.of(
+                                              context,
+                                            ).accent,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     ),
+                                  ],
+                                  const SizedBox(height: 12),
+                                  _StepRail(state: plan.state),
+                                  const SizedBox(height: 12),
+                                  if (hasSnap && widget.onOpenGenetic != null)
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton.icon(
+                                        key: Key(
+                                          'breeding-open-genetic-${plan.id}',
+                                        ),
+                                        onPressed: () =>
+                                            _openGeneticForPlan(plan),
+                                        icon: const Icon(
+                                          CupertinoIcons.lab_flask,
+                                          size: 16,
+                                        ),
+                                        label: Text(
+                                          plan.litterId != null
+                                              ? '记录本窝'
+                                              : '查看预测',
+                                        ),
+                                      ),
+                                    ),
+                                  if (hasSnap && widget.onOpenGenetic != null)
+                                    const SizedBox(height: 8),
+                                  if (action != null)
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: FilledButton(
+                                        key: Key('breeding-next-${plan.id}'),
+                                        onPressed: busy || !widget.canWrite
+                                            ? null
+                                            : () => _advance(plan),
+                                        child: Text(action),
+                                      ),
+                                    )
+                                  else if (plan.state == 'litter_nursing' ||
+                                      plan.litterId != null)
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          widget.onOpenLitters();
+                                        },
+                                        child: const Text('查看窝次'),
+                                      ),
+                                    )
+                                  else
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 2),
+                                      child: Text(
+                                        '当前计划为${breedingStateLabel(plan.state)}，没有下一步主路径操作。',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall,
+                                      ),
+                                    ),
+                                ],
                               ),
-                            ],
-                            const SizedBox(height: 12),
-                            _StepRail(state: plan.state),
-                            const SizedBox(height: 12),
-                            if (hasSnap && widget.onOpenGenetic != null)
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton.icon(
-                                  key: Key('breeding-open-genetic-${plan.id}'),
-                                  onPressed: () => _openGeneticForPlan(plan),
-                                  icon: const Icon(
-                                    CupertinoIcons.lab_flask,
-                                    size: 16,
-                                  ),
-                                  label: Text(
-                                    plan.litterId != null ? '记录本窝' : '查看预测',
-                                  ),
-                                ),
-                              ),
-                            if (hasSnap && widget.onOpenGenetic != null)
-                              const SizedBox(height: 8),
-                            if (action != null)
-                              SizedBox(
-                                width: double.infinity,
-                                child: FilledButton(
-                                  key: Key('breeding-next-${plan.id}'),
-                                  onPressed: busy || !widget.canWrite
-                                      ? null
-                                      : () => _advance(plan),
-                                  child: Text(action),
-                                ),
-                              )
-                            else if (plan.state == 'litter_nursing' ||
-                                plan.litterId != null)
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    widget.onOpenLitters();
-                                  },
-                                  child: const Text('查看窝次'),
-                                ),
-                              )
-                            else
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Text(
-                                  '当前计划为${breedingStateLabel(plan.state)}，没有下一步主路径操作。',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ),
-                          ],
-                        ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                    ),
               ),
             ],
           ),

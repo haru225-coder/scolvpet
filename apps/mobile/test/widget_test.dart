@@ -134,10 +134,7 @@ void main() {
       expect(find.text('进度'), findsWidgets);
       expect(find.text('窝次'), findsWidgets);
       expect(find.text('计划'), findsWidgets);
-      expect(
-        find.byKey(const Key('breeding-hub-open-wizard')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const Key('breeding-hub-open-wizard')), findsOneWidget);
       await tester.tap(find.text('窝次').last);
       await tester.pumpAndSettle();
       expect(

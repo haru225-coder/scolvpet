@@ -123,8 +123,8 @@ class I2Controller extends ChangeNotifier {
       hamsterDetailState = I2AsyncState.data(value);
     } catch (error) {
       I2Hamster? cachedHamster;
-      for (final hamster in
-          snapshotState.data?.hamsters ?? const <I2Hamster>[]) {
+      for (final hamster
+          in snapshotState.data?.hamsters ?? const <I2Hamster>[]) {
         if (hamster.id == hamsterId) {
           cachedHamster = hamster;
           break;
@@ -140,11 +140,11 @@ class I2Controller extends ChangeNotifier {
                       litter.sireId == hamsterId || litter.damId == hamsterId,
                 )
                 .toList(),
-            weights: (snapshotState.data?.recentWeights ??
-                    const <I2WeightRecord>[])
-                .where((weight) => weight.hamsterId == hamsterId)
-                .toList()
-              ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt)),
+            weights:
+                (snapshotState.data?.recentWeights ?? const <I2WeightRecord>[])
+                    .where((weight) => weight.hamsterId == hamsterId)
+                    .toList()
+                  ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt)),
           ),
         );
       } else {
@@ -163,8 +163,8 @@ class I2Controller extends ChangeNotifier {
       );
     } catch (error) {
       I2Enclosure? cachedEnclosure;
-      for (final enclosure in
-          snapshotState.data?.enclosures ?? const <I2Enclosure>[]) {
+      for (final enclosure
+          in snapshotState.data?.enclosures ?? const <I2Enclosure>[]) {
         if (enclosure.id == enclosureId) {
           cachedEnclosure = enclosure;
           break;
@@ -193,9 +193,7 @@ class I2Controller extends ChangeNotifier {
           : I2AsyncState.data(values);
     } catch (error) {
       cleaningState = offline
-          ? const I2AsyncState.empty(
-              message: '离线状态下暂无可用的清洁历史',
-            )
+          ? const I2AsyncState.empty(message: '离线状态下暂无可用的清洁历史')
           : _errorState(error);
     }
     notifyListeners();
@@ -210,11 +208,11 @@ class I2Controller extends ChangeNotifier {
           ? const I2AsyncState.empty(message: '还没有体重记录')
           : I2AsyncState.data(values);
     } catch (error) {
-      final cached = (snapshotState.data?.recentWeights ??
-              const <I2WeightRecord>[])
-          .where((weight) => weight.hamsterId == hamsterId)
-          .toList()
-        ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
+      final cached =
+          (snapshotState.data?.recentWeights ?? const <I2WeightRecord>[])
+              .where((weight) => weight.hamsterId == hamsterId)
+              .toList()
+            ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
       if (offline) {
         weightState = cached.isEmpty
             ? const I2AsyncState.empty(message: '离线状态下暂无缓存体重')
@@ -455,10 +453,7 @@ class I2Controller extends ChangeNotifier {
     final avatarRepository = repository;
     if (avatarState.status == I2AsyncStatus.loading) return false;
     if (avatarRepository is! I2AvatarRepository) {
-      avatarState = const I2AsyncState.error(
-        '当前数据源未启用头像管理',
-        retryable: false,
-      );
+      avatarState = const I2AsyncState.error('当前数据源未启用头像管理', retryable: false);
       notifyListeners();
       return false;
     }
@@ -667,18 +662,13 @@ class I2Controller extends ChangeNotifier {
   Future<bool> _ensureWritable({I2Draft? draft}) async {
     if (canWrite) return true;
     if (!_authorizedToWrite) {
-      actionState = const I2AsyncState.error(
-        '当前角色没有编辑权限',
-        retryable: false,
-      );
+      actionState = const I2AsyncState.error('当前角色没有编辑权限', retryable: false);
       notifyListeners();
       return false;
     }
     if (draft != null) await saveDraft(draft);
     actionState = I2AsyncState.error(
-      draft == null
-          ? '离线只读，联网后再提交'
-          : '离线只读，草稿已保存；联网后由用户明确提交',
+      draft == null ? '离线只读，联网后再提交' : '离线只读，草稿已保存；联网后由用户明确提交',
       retryable: false,
     );
     notifyListeners();

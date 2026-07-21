@@ -80,10 +80,7 @@ class EnclosureGridPage extends StatelessWidget {
                               ? onCreate
                               : () => showIosMessage(
                                   context,
-                                  _writeRestrictionMessage(
-                                    controller,
-                                    '新增笼盒',
-                                  ),
+                                  _writeRestrictionMessage(controller, '新增笼盒'),
                                 ),
                           icon: const Icon(CupertinoIcons.add),
                         ),
@@ -367,9 +364,7 @@ class _EnclosureEditorPageState extends State<EnclosureEditorPage> {
                       controller: _rack,
                       enabled: canSubmit && !_busy,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: '笼架（可选）',
-                      ),
+                      decoration: const InputDecoration(labelText: '笼架（可选）'),
                       validator: (value) => (value?.trim().length ?? 0) > 64
                           ? '笼架最多 64 个字符'
                           : null,
@@ -384,9 +379,7 @@ class _EnclosureEditorPageState extends State<EnclosureEditorPage> {
                       controller: _level,
                       enabled: canSubmit && !_busy,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: '层位（可选）',
-                      ),
+                      decoration: const InputDecoration(labelText: '层位（可选）'),
                       validator: (value) => (value?.trim().length ?? 0) > 64
                           ? '层位最多 64 个字符'
                           : null,
@@ -557,10 +550,11 @@ class _EnclosureBoardTile extends StatelessWidget {
                         enclosure.code.isEmpty ? '未命名笼盒' : enclosure.code,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.41,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.41,
+                            ),
                       ),
                     ),
                     Icon(
@@ -609,10 +603,7 @@ class _EnclosureBoardTile extends StatelessWidget {
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              _enclosureHamsterSummary(
-                                hamster,
-                                recentWeights,
-                              ),
+                              _enclosureHamsterSummary(hamster, recentWeights),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.bodySmall,
@@ -758,195 +749,196 @@ class _EnclosureDetailPageState extends State<EnclosureDetailPage> {
         appBar: AppBar(title: const Text('笼盒详情')),
         body: Column(
           children: [
-          I2OfflineBanner(
-            offline: widget.controller.offline,
-            lastSyncLabel: widget.controller.lastSyncLabel,
-          ),
-          if (!hasWritePermission && !widget.controller.offline)
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: IosBanner(
-                icon: CupertinoIcons.lock_shield,
-                color: IosColors.systemOrange,
-                text: '当前角色可查看笼舍详情，入住、移笼与清洁操作已禁用。',
-              ),
+            I2OfflineBanner(
+              offline: widget.controller.offline,
+              lastSyncLabel: widget.controller.lastSyncLabel,
             ),
-          Expanded(
-            child: I2AsyncStateView<I2EnclosureDetail>(
-              state: widget.controller.enclosureDetailState,
-              onRetry: () =>
-                  widget.controller.loadEnclosureDetail(widget.enclosureId),
-              builder: (detail) {
-                final snapshot = widget.controller.snapshotState.data;
-                return ListView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-                  children: [
-                    IosGroupedSection(
-                      margin: EdgeInsets.zero,
-                      children: [
-                        IosListTile(
-                          title: detail.enclosure.code,
-                          subtitle: i2EnclosureStateLabel(
-                            detail.enclosure.state,
-                          ),
-                          trailing: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: ScolvPalette.of(context).secondaryFill,
-                              borderRadius: BorderRadius.circular(
-                                IosMetrics.pillRadius,
-                              ),
-                            ),
-                            child: Text(
-                              i2CleanlinessLabel(
-                                detail.enclosure.cleanlinessState,
-                              ),
-                              style: Theme.of(context).textTheme.labelSmall,
-                            ),
-                          ),
-                          showChevron: false,
-                        ),
-                        I2InfoTile(
-                          label: '笼架 / 层位',
-                          value:
-                              '${detail.enclosure.rackLabel} / ${detail.enclosure.levelLabel}',
-                        ),
-                        I2InfoTile(
-                          label: '容量',
-                          value: '${detail.enclosure.capacity ?? '—'}',
-                        ),
-                        I2InfoTile(
-                          label: '设施',
-                          value: detail.enclosure.equipment.isEmpty
-                              ? '—'
-                              : detail.enclosure.equipment.join('、'),
-                        ),
-                        I2InfoTile(
-                          label: '最近清洁',
-                          value: i2DateTimeLabel(
-                            detail.enclosure.lastCleanedAt,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        if (widget.onMove != null)
-                          I2WriteButton(
-                            enabled: canWrite,
-                            label: '入住 / 移笼',
-                            disabledLabel: widget.controller.offline
-                                ? '入住 / 移笼（联网后可用）'
-                                : '入住 / 移笼（无编辑权限）',
-                            icon: CupertinoIcons.arrow_right_arrow_left,
-                            onPressed: widget.onMove,
-                          ),
-                        if (widget.onCare != null)
-                          I2WriteButton(
-                            enabled: canWrite,
-                            label: '记录清洁',
-                            disabledLabel: widget.controller.offline
-                                ? '记录清洁（联网后可用）'
-                                : '记录清洁（无编辑权限）',
-                            icon: CupertinoIcons.sparkles,
-                            onPressed: widget.onCare,
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      '入住与移笼历史',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: ScolvPalette.of(context).secondaryLabel,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    if (detail.stays.isEmpty)
-                      Text(
-                        widget.controller.offline
-                            ? '离线缓存不含入住与移笼历史'
-                            : '暂无入住记录',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      )
-                    else
+            if (!hasWritePermission && !widget.controller.offline)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: IosBanner(
+                  icon: CupertinoIcons.lock_shield,
+                  color: IosColors.systemOrange,
+                  text: '当前角色可查看笼舍详情，入住、移笼与清洁操作已禁用。',
+                ),
+              ),
+            Expanded(
+              child: I2AsyncStateView<I2EnclosureDetail>(
+                state: widget.controller.enclosureDetailState,
+                onRetry: () =>
+                    widget.controller.loadEnclosureDetail(widget.enclosureId),
+                builder: (detail) {
+                  final snapshot = widget.controller.snapshotState.data;
+                  return ListView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                    children: [
                       IosGroupedSection(
                         margin: EdgeInsets.zero,
                         children: [
-                          for (final stay in detail.stays)
-                            IosListTile(
-                              leading: IosGlyph(
-                                icon: stay.endedAt == null
-                                    ? CupertinoIcons.arrow_down_left
-                                    : CupertinoIcons.arrow_up_right,
-                                color: stay.endedAt == null
-                                    ? IosColors.systemGreen
-                                    : IosColors.systemOrange,
-                              ),
-                              title:
-                                  '${_hamsterLabel(snapshot, stay.hamsterId)} · ${i2StayPurposeLabel(stay.purpose)}',
-                              subtitle:
-                                  '${i2DateTimeLabel(stay.startedAt)} → ${i2DateTimeLabel(stay.endedAt)}'
-                                  '${stay.reason == null ? '' : '\n${stay.reason}'}',
-                              showChevron: false,
+                          IosListTile(
+                            title: detail.enclosure.code,
+                            subtitle: i2EnclosureStateLabel(
+                              detail.enclosure.state,
                             ),
+                            trailing: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: ScolvPalette.of(context).secondaryFill,
+                                borderRadius: BorderRadius.circular(
+                                  IosMetrics.pillRadius,
+                                ),
+                              ),
+                              child: Text(
+                                i2CleanlinessLabel(
+                                  detail.enclosure.cleanlinessState,
+                                ),
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                            ),
+                            showChevron: false,
+                          ),
+                          I2InfoTile(
+                            label: '笼架 / 层位',
+                            value:
+                                '${detail.enclosure.rackLabel} / ${detail.enclosure.levelLabel}',
+                          ),
+                          I2InfoTile(
+                            label: '容量',
+                            value: '${detail.enclosure.capacity ?? '—'}',
+                          ),
+                          I2InfoTile(
+                            label: '设施',
+                            value: detail.enclosure.equipment.isEmpty
+                                ? '—'
+                                : detail.enclosure.equipment.join('、'),
+                          ),
+                          I2InfoTile(
+                            label: '最近清洁',
+                            value: i2DateTimeLabel(
+                              detail.enclosure.lastCleanedAt,
+                            ),
+                          ),
                         ],
                       ),
-                    const SizedBox(height: 20),
-                    Text(
-                      '清洁历史',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: ScolvPalette.of(context).secondaryLabel,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    I2AsyncStateView<List<I2CleaningRecord>>(
-                      state: widget.controller.cleaningState,
-                      onRetry: () => widget.controller.loadCleaningHistory(
-                        widget.enclosureId,
-                      ),
-                      emptyBuilder: (context) => _EnclosureInlineEmpty(
-                        message: widget.controller.cleaningState.message ??
-                            '暂无清洁记录',
-                      ),
-                      builder: (records) => IosGroupedSection(
-                        margin: EdgeInsets.zero,
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
                         children: [
-                          for (final record in records)
-                            IosListTile(
-                              leading: const IosGlyph(
-                                icon: CupertinoIcons.sparkles,
-                                color: IosColors.systemTeal,
-                              ),
-                              title: i2CleaningTypeLabel(record.type),
-                              subtitle:
-                                  '${i2DateTimeLabel(record.completedAt)}'
-                                  '${record.reason == null ? '' : ' · ${record.reason}'}',
-                              trailing: record.healthRecordId == null
-                                  ? null
-                                  : const Icon(
-                                      CupertinoIcons.heart_fill,
-                                      size: 16,
-                                      color: IosColors.systemRed,
-                                    ),
-                              showChevron: false,
+                          if (widget.onMove != null)
+                            I2WriteButton(
+                              enabled: canWrite,
+                              label: '入住 / 移笼',
+                              disabledLabel: widget.controller.offline
+                                  ? '入住 / 移笼（联网后可用）'
+                                  : '入住 / 移笼（无编辑权限）',
+                              icon: CupertinoIcons.arrow_right_arrow_left,
+                              onPressed: widget.onMove,
+                            ),
+                          if (widget.onCare != null)
+                            I2WriteButton(
+                              enabled: canWrite,
+                              label: '记录清洁',
+                              disabledLabel: widget.controller.offline
+                                  ? '记录清洁（联网后可用）'
+                                  : '记录清洁（无编辑权限）',
+                              icon: CupertinoIcons.sparkles,
+                              onPressed: widget.onCare,
                             ),
                         ],
                       ),
-                    ),
-                  ],
-                );
-              },
+                      const SizedBox(height: 20),
+                      Text(
+                        '入住与移笼历史',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: ScolvPalette.of(context).secondaryLabel,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (detail.stays.isEmpty)
+                        Text(
+                          widget.controller.offline
+                              ? '离线缓存不含入住与移笼历史'
+                              : '暂无入住记录',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        )
+                      else
+                        IosGroupedSection(
+                          margin: EdgeInsets.zero,
+                          children: [
+                            for (final stay in detail.stays)
+                              IosListTile(
+                                leading: IosGlyph(
+                                  icon: stay.endedAt == null
+                                      ? CupertinoIcons.arrow_down_left
+                                      : CupertinoIcons.arrow_up_right,
+                                  color: stay.endedAt == null
+                                      ? IosColors.systemGreen
+                                      : IosColors.systemOrange,
+                                ),
+                                title:
+                                    '${_hamsterLabel(snapshot, stay.hamsterId)} · ${i2StayPurposeLabel(stay.purpose)}',
+                                subtitle:
+                                    '${i2DateTimeLabel(stay.startedAt)} → ${i2DateTimeLabel(stay.endedAt)}'
+                                    '${stay.reason == null ? '' : '\n${stay.reason}'}',
+                                showChevron: false,
+                              ),
+                          ],
+                        ),
+                      const SizedBox(height: 20),
+                      Text(
+                        '清洁历史',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: ScolvPalette.of(context).secondaryLabel,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      I2AsyncStateView<List<I2CleaningRecord>>(
+                        state: widget.controller.cleaningState,
+                        onRetry: () => widget.controller.loadCleaningHistory(
+                          widget.enclosureId,
+                        ),
+                        emptyBuilder: (context) => _EnclosureInlineEmpty(
+                          message:
+                              widget.controller.cleaningState.message ??
+                              '暂无清洁记录',
+                        ),
+                        builder: (records) => IosGroupedSection(
+                          margin: EdgeInsets.zero,
+                          children: [
+                            for (final record in records)
+                              IosListTile(
+                                leading: const IosGlyph(
+                                  icon: CupertinoIcons.sparkles,
+                                  color: IosColors.systemTeal,
+                                ),
+                                title: i2CleaningTypeLabel(record.type),
+                                subtitle:
+                                    '${i2DateTimeLabel(record.completedAt)}'
+                                    '${record.reason == null ? '' : ' · ${record.reason}'}',
+                                trailing: record.healthRecordId == null
+                                    ? null
+                                    : const Icon(
+                                        CupertinoIcons.heart_fill,
+                                        size: 16,
+                                        color: IosColors.systemRed,
+                                      ),
+                                showChevron: false,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
           ],
         ),
       );

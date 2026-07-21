@@ -23,10 +23,7 @@ class _HamsterDetailOfflineBanner extends StatelessWidget {
 }
 
 class _HamsterDetailPanel extends StatelessWidget {
-  const _HamsterDetailPanel({
-    required this.child,
-    super.key,
-  });
+  const _HamsterDetailPanel({required this.child, super.key});
 
   final Widget child;
 
@@ -167,12 +164,13 @@ class _HamsterDetailProfileCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: (offline
-                                    ? IosColors.systemOrange
-                                    : (healthGood
-                                          ? IosColors.systemGreen
-                                          : IosColors.systemOrange))
-                                .withValues(alpha: 0.14),
+                            color:
+                                (offline
+                                        ? IosColors.systemOrange
+                                        : (healthGood
+                                              ? IosColors.systemGreen
+                                              : IosColors.systemOrange))
+                                    .withValues(alpha: 0.14),
                             borderRadius: BorderRadius.circular(
                               IosMetrics.pillRadius,
                             ),
@@ -341,10 +339,7 @@ class _HamsterDetailArchiveSection extends StatelessWidget {
       ('性别', i2SexLabel(hamster.sex)),
       ('当前状态', i2LifecycleLabel(hamster.lifecycleStatus)),
       ('笼盒', enclosureLabel),
-      (
-        '体重',
-        latestWeight == null ? '暂无' : '${latestWeight!.weightG} g',
-      ),
+      ('体重', latestWeight == null ? '暂无' : '${latestWeight!.weightG} g'),
       if (hamster.coreSeriesCode != null)
         ('系列', _seriesLabel(hamster.coreSeriesCode!)),
       if (hamster.corePhenotypeLabel != null)
@@ -389,17 +384,11 @@ class _HamsterDetailBreedingSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _HamsterDetailSectionTitle(
-            icon: CupertinoIcons.heart,
-            title: '繁育',
-          ),
+          _HamsterDetailSectionTitle(icon: CupertinoIcons.heart, title: '繁育'),
           const SizedBox(height: 8),
           _HamsterDetailFieldTable(
             rows: [
-              (
-                '当前繁育状态',
-                i2BreedingStatusLabel(breedingStatus),
-              ),
+              ('当前繁育状态', i2BreedingStatusLabel(breedingStatus)),
               ('关联窝次', '$litterCount'),
             ],
           ),
@@ -417,10 +406,7 @@ class _HamsterDetailBreedingSection extends StatelessWidget {
                   TextButton(
                     key: const Key('hamster-open-genetic'),
                     onPressed: onOpenGenetic,
-                    child: Text(
-                      '配对推算',
-                      style: TextStyle(color: p.accent),
-                    ),
+                    child: Text('配对推算', style: TextStyle(color: p.accent)),
                   ),
               ],
             ),
@@ -443,7 +429,11 @@ class _HamsterDetailFieldTable extends StatelessWidget {
       children: [
         for (var i = 0; i < rows.length; i++) ...[
           if (i > 0)
-            Divider(height: 1, thickness: IosMetrics.hairline, color: p.separator),
+            Divider(
+              height: 1,
+              thickness: IosMetrics.hairline,
+              color: p.separator,
+            ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(
@@ -452,9 +442,9 @@ class _HamsterDetailFieldTable extends StatelessWidget {
                   width: 96,
                   child: Text(
                     rows[i].$1,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: p.secondaryLabel,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: p.secondaryLabel),
                   ),
                 ),
                 Expanded(
@@ -583,25 +573,25 @@ class _HamsterDetailRecentRow extends StatelessWidget {
               children: [
                 Text(
                   event.title,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 if (event.subtitle != null && event.subtitle!.isNotEmpty)
                   Text(
                     event.subtitle!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: p.secondaryLabel,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: p.secondaryLabel),
                   ),
               ],
             ),
           ),
           Text(
             _relativeDetailTime(event.at),
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: p.secondaryLabel,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.labelMedium?.copyWith(color: p.secondaryLabel),
           ),
         ],
       ),
@@ -641,15 +631,15 @@ class _HamsterDetailTaskRow extends StatelessWidget {
               children: [
                 Text(
                   task.displayTitle,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 Text(
                   taskTypeLabel(task.taskType),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: p.secondaryLabel,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: p.secondaryLabel),
                 ),
               ],
             ),
@@ -688,9 +678,9 @@ class _HamsterDetailWeightRow extends StatelessWidget {
           ),
           Text(
             i2DateTimeLabel(weight.recordedAt),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: p.secondaryLabel,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: p.secondaryLabel),
           ),
         ],
       ),

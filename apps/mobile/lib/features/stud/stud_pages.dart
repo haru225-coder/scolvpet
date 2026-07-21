@@ -90,9 +90,7 @@ class _StudHubPageState extends State<StudHubPage>
                           }
                         },
                   backgroundColor: ScolvPalette.of(context).accent,
-                  foregroundColor: ScolvPalette.of(
-                    context,
-                  ).groupedBackground,
+                  foregroundColor: ScolvPalette.of(context).groupedBackground,
                   elevation: 0,
                   icon: const Icon(CupertinoIcons.add),
                   label: Text(_tabs.index == 0 ? '发布挂牌' : '新建借配单'),
@@ -244,8 +242,7 @@ class _StudListingEditorPage extends StatefulWidget {
   final List<I2Hamster> males;
 
   @override
-  State<_StudListingEditorPage> createState() =>
-      _StudListingEditorPageState();
+  State<_StudListingEditorPage> createState() => _StudListingEditorPageState();
 }
 
 class _StudListingEditorPageState extends State<_StudListingEditorPage> {
@@ -469,9 +466,7 @@ class _StudDealEditorPageState extends State<_StudDealEditorPage> {
     );
     if (mine == null) {
       setState(
-        () => _error = _side == 'provider'
-            ? '请选择本舍出借的种公'
-            : '请选择本舍参与配对的母鼠',
+        () => _error = _side == 'provider' ? '请选择本舍出借的种公' : '请选择本舍参与配对的母鼠',
       );
       return;
     }

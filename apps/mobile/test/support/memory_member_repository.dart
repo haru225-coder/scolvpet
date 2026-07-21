@@ -124,4 +124,3 @@ class MemoryMemberRepository implements MemberRepository {
     return next;
   }
 }
-

@@ -157,8 +157,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('工作台'), findsOneWidget);
-    // 副标题为问候 + 账号/机构名，机构名仍可能出现在问候行
-    expect(find.textContaining('好'), findsWidgets);
+    // 问候会随运行时段变化；机构名来自会话快照，适合作稳定断言。
+    expect(find.textContaining('雪团熊舍'), findsOneWidget);
     expect(find.text('经营概览'), findsOneWidget);
     expect(find.text('在养'), findsOneWidget);
     expect(find.text('今日待办'), findsOneWidget);
@@ -168,7 +168,9 @@ void main() {
     expect(find.byKey(const Key('home-quick-more-toggle')), findsNothing);
     expect(find.textContaining('离线只读'), findsOneWidget);
     // 活跃窝次 0 时可点进窝次；有数据时点「查看繁育」
-    await tester.ensureVisible(find.byKey(const Key('home-breeding-feed-open')));
+    await tester.ensureVisible(
+      find.byKey(const Key('home-breeding-feed-open')),
+    );
     await tester.tap(find.byKey(const Key('home-breeding-feed-open')));
     await tester.pumpAndSettle();
     // 本用例未注入 onOpenBreeding 断言；仅确认入口存在

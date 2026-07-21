@@ -20,7 +20,8 @@ class MemoryTaskRepository implements TaskRepository {
     String state = 'pending',
   }) {
     final id = 'task-${_seq++}';
-    final when = scheduledAt ?? DateTime.now().toUtc().add(const Duration(hours: 2));
+    final when =
+        scheduledAt ?? DateTime.now().toUtc().add(const Duration(hours: 2));
     final task = CareTaskItem(
       id: id,
       taskType: taskType,
@@ -132,4 +133,3 @@ class MemoryTaskRepository implements TaskRepository {
   Future<List<TaskReminderItem>> listReminders() async =>
       List<TaskReminderItem>.from(_reminders);
 }
-

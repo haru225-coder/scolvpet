@@ -35,6 +35,7 @@ String memberErrorMessage(Object error) => apiErrorMessage(
   fallback: '成员请求失败，请稍后重试',
   mapLocal: (e) => e is MemberRepositoryException ? e.message : null,
 );
+
 class DefaultApiMemberRepository implements MemberRepository {
   DefaultApiMemberRepository({required this.client});
 

@@ -53,9 +53,7 @@ class _WeightBatchPageState extends State<WeightBatchPage> {
     if (!widget.controller.canWrite) {
       showIosMessage(
         context,
-        widget.controller.offline
-            ? '当前为离线只读，联网后再提交体重'
-            : '当前角色没有录入体重的权限',
+        widget.controller.offline ? '当前为离线只读，联网后再提交体重' : '当前角色没有录入体重的权限',
       );
       return;
     }
@@ -262,10 +260,7 @@ class _WeightBatchPageState extends State<WeightBatchPage> {
   }
 }
 
-String _batchResultMessage(
-  I2WeightBatchResult result,
-  I2Snapshot? snapshot,
-) {
+String _batchResultMessage(I2WeightBatchResult result, I2Snapshot? snapshot) {
   if (result.isCompleteSuccess) {
     return '上次提交已保存 ${result.successCount} 条体重。';
   }

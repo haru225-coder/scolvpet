@@ -1,10 +1,7 @@
 part of '../screens.dart';
 
 class HomeShell extends StatefulWidget {
-  const HomeShell({
-    super.key,
-    required this.services,
-  });
+  const HomeShell({super.key, required this.services});
 
   final AppServices services;
 
@@ -192,7 +189,9 @@ class _HomeShellState extends State<HomeShell> {
         Navigator.of(context).push<void>(
           iosPageRoute(
             builder: (_) => StudHubPage(
-              controller: StudController(repository: widget.services.studRepository),
+              controller: StudController(
+                repository: widget.services.studRepository,
+              ),
             ),
           ),
         );
@@ -203,7 +202,9 @@ class _HomeShellState extends State<HomeShell> {
   @override
   void initState() {
     super.initState();
-    _growthController = GrowthController(repository: widget.services.growthRepository);
+    _growthController = GrowthController(
+      repository: widget.services.growthRepository,
+    );
     _assistantController = AssistantController(
       repository: widget.services.assistantRepository,
     );
@@ -224,14 +225,17 @@ class _HomeShellState extends State<HomeShell> {
     super.dispose();
   }
 
-  String? get _speciesRuleVersionId =>
-      widget.services.state.ownerRules.isEmpty ? null : widget.services.state.ownerRules.first.id;
+  String? get _speciesRuleVersionId => widget.services.state.ownerRules.isEmpty
+      ? null
+      : widget.services.state.ownerRules.first.id;
 
   bool _canWrite(String capability) =>
-      !widget.services.state.offline && widget.services.state.hasCapability(capability);
+      !widget.services.state.offline &&
+      widget.services.state.hasCapability(capability);
 
   void _showWriteRestricted(String action) {
-    final message = widget.services.state.offline || widget.services.i2Controller.offline
+    final message =
+        widget.services.state.offline || widget.services.i2Controller.offline
         ? '当前离线，只能查看已同步记录'
         : '${memberRoleLabel(widget.services.state.currentMemberRole)}可查看记录，但没有$action权限';
     showIosMessage(context, message);
@@ -323,11 +327,14 @@ class _HomeShellState extends State<HomeShell> {
 
   void _openGeneticHub({GeneticHubPrefill? prefill}) {
     final hamsters =
-        widget.services.i2Controller.snapshotState.data?.hamsters ?? const <I2Hamster>[];
+        widget.services.i2Controller.snapshotState.data?.hamsters ??
+        const <I2Hamster>[];
     Navigator.of(context).push<void>(
       iosPageRoute(
         builder: (_) => GeneticHubPage(
-          controller: GeneticController(repository: widget.services.geneticRepository),
+          controller: GeneticController(
+            repository: widget.services.geneticRepository,
+          ),
           hamsters: hamsters,
           breedingController: widget.services.breedingController,
           ruleVersionId: _speciesRuleVersionId,
@@ -354,7 +361,12 @@ class _HomeShellState extends State<HomeShell> {
           onEdit: canEditHamster
               ? () {
                   final current =
-                      widget.services.i2Controller.hamsterDetailState.data?.hamster ??
+                      widget
+                          .services
+                          .i2Controller
+                          .hamsterDetailState
+                          .data
+                          ?.hamster ??
                       hamster;
                   _openHamsterEditor(existing: current);
                 }
@@ -364,7 +376,8 @@ class _HomeShellState extends State<HomeShell> {
               : null,
           onOpenGenetic: () async {
             final current =
-                widget.services.i2Controller.hamsterDetailState.data?.hamster ?? hamster;
+                widget.services.i2Controller.hamsterDetailState.data?.hamster ??
+                hamster;
             final all =
                 widget.services.i2Controller.snapshotState.data?.hamsters ??
                 const <I2Hamster>[];
@@ -379,7 +392,8 @@ class _HomeShellState extends State<HomeShell> {
           },
           onOpenPedigree: () {
             final current =
-                widget.services.i2Controller.hamsterDetailState.data?.hamster ?? hamster;
+                widget.services.i2Controller.hamsterDetailState.data?.hamster ??
+                hamster;
             Navigator.of(detailContext).push<void>(
               iosPageRoute(
                 builder: (_) => PedigreePage(
@@ -395,7 +409,8 @@ class _HomeShellState extends State<HomeShell> {
           },
           onOpenHealth: () {
             final current =
-                widget.services.i2Controller.hamsterDetailState.data?.hamster ?? hamster;
+                widget.services.i2Controller.hamsterDetailState.data?.hamster ??
+                hamster;
             Navigator.of(detailContext)
                 .push<void>(
                   iosPageRoute(
@@ -456,13 +471,23 @@ class _HomeShellState extends State<HomeShell> {
           canWrite: _canWrite(AppCapability.writeEnclosure),
           onMove: () {
             final current =
-                widget.services.i2Controller.enclosureDetailState.data?.enclosure ??
+                widget
+                    .services
+                    .i2Controller
+                    .enclosureDetailState
+                    .data
+                    ?.enclosure ??
                 enclosure;
             _openEnclosureAction(current, cleaning: false);
           },
           onCare: () {
             final current =
-                widget.services.i2Controller.enclosureDetailState.data?.enclosure ??
+                widget
+                    .services
+                    .i2Controller
+                    .enclosureDetailState
+                    .data
+                    ?.enclosure ??
                 enclosure;
             _openEnclosureAction(current, cleaning: true);
           },
@@ -480,7 +505,9 @@ class _HomeShellState extends State<HomeShell> {
           controller: widget.services.litterBoardController,
           enclosures: snapshot?.enclosures ?? const <I2Enclosure>[],
           canWrite: _canWrite(AppCapability.writeLitter),
-          offline: widget.services.state.offline || widget.services.i2Controller.offline,
+          offline:
+              widget.services.state.offline ||
+              widget.services.i2Controller.offline,
           lastSyncLabel: widget.services.i2Controller.lastSyncLabel,
         ),
       ),
@@ -521,7 +548,9 @@ class _HomeShellState extends State<HomeShell> {
         builder: (_) => TaskListPage(
           controller: widget.services.taskController,
           canWrite: _canWrite(AppCapability.writeTask),
-          offline: widget.services.state.offline || widget.services.i2Controller.offline,
+          offline:
+              widget.services.state.offline ||
+              widget.services.i2Controller.offline,
           organizationId: widget.services.state.organization?.id,
           hamsters: snapshot?.hamsters ?? const <I2Hamster>[],
           enclosures: snapshot?.enclosures ?? const <I2Enclosure>[],
@@ -590,19 +619,20 @@ class _HomeShellState extends State<HomeShell> {
           controller: CrmController(repository: widget.services.crmRepository),
           hamsters: snapshot?.hamsters ?? const <I2Hamster>[],
           canWrite: _canWrite(AppCapability.writeCrm),
-          onOpenDocuments: (handover, contact, hamster, [documentKind = 'contract']) {
-            _openContracts(
-              launchContext: ContractsLaunchContext(
-                kind: documentKind,
-                contactId: handover.contactId,
-                contactName: contact?.name ?? handover.contactName,
-                handoverId: handover.id,
-                reservationId: handover.reservationId,
-                hamsterId: handover.hamsterId,
-                hamsterName: hamster?.displayName ?? handover.hamsterName,
-              ),
-            );
-          },
+          onOpenDocuments:
+              (handover, contact, hamster, [documentKind = 'contract']) {
+                _openContracts(
+                  launchContext: ContractsLaunchContext(
+                    kind: documentKind,
+                    contactId: handover.contactId,
+                    contactName: contact?.name ?? handover.contactName,
+                    handoverId: handover.id,
+                    reservationId: handover.reservationId,
+                    hamsterId: handover.hamsterId,
+                    hamsterName: hamster?.displayName ?? handover.hamsterName,
+                  ),
+                );
+              },
           onOpenContractFromReservation: (reservation, hamster) {
             _openContracts(
               launchContext: ContractsLaunchContext(
@@ -627,7 +657,9 @@ class _HomeShellState extends State<HomeShell> {
           controller: ContractsController(
             repository: widget.services.contractsRepository,
           ),
-          crmController: CrmController(repository: widget.services.crmRepository),
+          crmController: CrmController(
+            repository: widget.services.crmRepository,
+          ),
           hamsters: snapshot?.hamsters ?? const <I2Hamster>[],
           launchContext: launchContext,
           canWrite: _canWrite(AppCapability.writeDocuments),

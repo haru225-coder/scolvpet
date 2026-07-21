@@ -25,6 +25,7 @@ String publicSiteErrorMessage(Object error) => apiErrorMessage(
   fallback: '公开主页请求失败',
   mapLocal: (e) => e is PublicSiteRepositoryException ? e.message : null,
 );
+
 class DefaultApiPublicSiteRepository implements PublicSiteRepository {
   DefaultApiPublicSiteRepository({required this.client});
 

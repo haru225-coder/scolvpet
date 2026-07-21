@@ -15,8 +15,8 @@ class SharedPreferencesTodayWidgetPublisher implements TodayWidgetPublisher {
     SharedPreferences? preferences,
     MethodChannel? channel,
   }) : _preferences = preferences,
-       _channel = channel ??
-           const MethodChannel('cn.scolvpet.dev/today_widget');
+       _channel =
+           channel ?? const MethodChannel('cn.scolvpet.dev/today_widget');
 
   SharedPreferences? _preferences;
   final MethodChannel _channel;

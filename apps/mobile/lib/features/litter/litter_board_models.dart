@@ -194,8 +194,7 @@ LitterBoardAction? nextLitterAction(String state) {
 bool isLitterTerminal(String state) => state == 'closed' || state == 'voided';
 
 String litterWaitingMessage(String state) => switch (state) {
-  'litter_nursing' || 'nursing' || 'newborn' =>
-    '幼崽仍在带崽期。到达断奶日后，系统会开放断奶操作。',
+  'litter_nursing' || 'nursing' || 'newborn' => '幼崽仍在带崽期。到达断奶日后，系统会开放断奶操作。',
   'closed' => '这一窝已完成，已建档幼崽可在仓鼠列表查看。',
   'voided' => '这一窝已作废，不再继续阶段操作。',
   _ => '当前状态没有可执行的阶段操作，请刷新后再次检查。',

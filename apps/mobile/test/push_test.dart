@@ -26,9 +26,7 @@ void main() {
   testWidgets('PushSettingsPage is a read-only availability notice', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      const MaterialApp(home: PushSettingsPage()),
-    );
+    await tester.pumpWidget(const MaterialApp(home: PushSettingsPage()));
     await tester.pumpAndSettle();
     expect(find.text('通知说明'), findsOneWidget);
     expect(find.byKey(const Key('push-read-only')), findsOneWidget);

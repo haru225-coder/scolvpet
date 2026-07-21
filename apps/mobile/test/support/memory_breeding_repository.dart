@@ -209,4 +209,3 @@ class MemoryBreedingRepository implements BreedingRepository {
     return (plan: next, litterId: litterId);
   }
 }
-

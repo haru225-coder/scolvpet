@@ -205,4 +205,3 @@ class MemoryAccountingRepository implements AccountingRepository {
     );
   }
 }
-

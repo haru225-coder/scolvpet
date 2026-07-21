@@ -32,6 +32,7 @@ String crmErrorMessage(Object error) => apiErrorMessage(
   nonDioFallback: '客户记录暂时未完成，请稍后重试',
   mapLocal: (e) => e is CrmRepositoryException ? e.message : null,
 );
+
 class DefaultApiCrmRepository implements CrmRepository {
   DefaultApiCrmRepository({required this.client});
 

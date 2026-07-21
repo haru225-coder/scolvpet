@@ -22,6 +22,7 @@ String pedigreeErrorMessage(Object error) => apiErrorMessage(
   mapLocal: (e) => e is PedigreeRepositoryException ? e.message : null,
   mapDio: (e) => e.response?.statusCode == 404 ? '未找到该仓鼠的谱系' : null,
 );
+
 class DefaultApiPedigreeRepository implements PedigreeRepository {
   DefaultApiPedigreeRepository({required this.client});
 

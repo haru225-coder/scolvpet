@@ -129,11 +129,7 @@ void main() {
       );
       final next = buildWeightRecord(
         id: 'w-next',
-        draft: I2WeightDraft(
-          hamsterId: 'h1',
-          weightG: 45,
-          recordedAt: t1,
-        ),
+        draft: I2WeightDraft(hamsterId: 'h1', weightG: 45, recordedAt: t1),
         previous: previous,
       );
       expect(next.previousWeightG, 50);
@@ -229,12 +225,7 @@ void main() {
           enclosures: const <I2Enclosure>[],
           lastSyncedAt: t0,
           recentWeights: [
-            record(
-              id: 'w0',
-              hamsterId: 'h1',
-              weightG: 100,
-              recordedAt: t0,
-            ),
+            record(id: 'w0', hamsterId: 'h1', weightG: 100, recordedAt: t0),
           ],
         ),
       ),

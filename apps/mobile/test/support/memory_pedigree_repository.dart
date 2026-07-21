@@ -85,4 +85,3 @@ class MemoryPedigreeRepository implements PedigreeRepository {
     return graph;
   }
 }
-

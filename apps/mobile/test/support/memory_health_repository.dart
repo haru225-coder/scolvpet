@@ -67,4 +67,3 @@ class MemoryHealthRepository implements HealthRepository {
     return record;
   }
 }
-

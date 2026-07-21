@@ -92,7 +92,9 @@ class TodayWidgetSnapshot {
       lines: rawLines is List
           ? rawLines
                 .whereType<Map>()
-                .map((e) => TodayWidgetLine.fromJson(Map<String, dynamic>.from(e)))
+                .map(
+                  (e) => TodayWidgetLine.fromJson(Map<String, dynamic>.from(e)),
+                )
                 .toList()
           : const [],
       openCount: (json['open_count'] as num?)?.toInt() ?? 0,
@@ -156,8 +158,16 @@ class TodayWidgetSnapshot {
     DateTime? now,
     int maxLines = 5,
   }) {
-    final queue = buildTodayCareQueue(tasks: tasks, now: now, maxItems: maxLines);
-    return TodayWidgetSnapshot.fromCareQueue(queue, now: now, maxLines: maxLines);
+    final queue = buildTodayCareQueue(
+      tasks: tasks,
+      now: now,
+      maxItems: maxLines,
+    );
+    return TodayWidgetSnapshot.fromCareQueue(
+      queue,
+      now: now,
+      maxLines: maxLines,
+    );
   }
 }
 

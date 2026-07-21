@@ -194,4 +194,3 @@ class MemoryGeneticRepository implements GeneticRepository {
     return out;
   }
 }
-

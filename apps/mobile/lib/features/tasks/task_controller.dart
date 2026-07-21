@@ -24,8 +24,9 @@ class TaskController extends ChangeNotifier {
   String? lastMessage;
   bool notificationsReady = false;
 
-  List<CareTaskItem> get openTasks =>
-      (listState.data ?? const <CareTaskItem>[]).where((t) => t.isOpen).toList();
+  List<CareTaskItem> get openTasks => (listState.data ?? const <CareTaskItem>[])
+      .where((t) => t.isOpen)
+      .toList();
 
   int get openCount => openTasks.length;
 

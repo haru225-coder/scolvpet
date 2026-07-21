@@ -151,9 +151,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
     if (!mounted) return;
     showIosMessage(
       context,
-      ok
-          ? '头像已更新'
-          : widget.controller.avatarState.message ?? '重试失败，请稍后再试',
+      ok ? '头像已更新' : widget.controller.avatarState.message ?? '重试失败，请稍后再试',
     );
   }
 
@@ -194,9 +192,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
       if (mounted) {
         showIosMessage(
           context,
-          ok
-              ? '头像已移除'
-              : widget.controller.avatarState.message ?? '头像移除失败',
+          ok ? '头像已移除' : widget.controller.avatarState.message ?? '头像移除失败',
         );
       }
     }
@@ -316,7 +312,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
         ),
       ),
     );
-    if (!mounted || choice == null) return;
+    if (!context.mounted || choice == null) return;
     switch (choice) {
       case 'edit':
         if (widget.controller.hasWritePermission) {
@@ -444,10 +440,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                   const SizedBox(height: 12),
                   _HamsterDetailFieldTable(
                     rows: [
-                      (
-                        '当前状态',
-                        i2BreedingStatusLabel(hamster.breedingStatus),
-                      ),
+                      ('当前状态', i2BreedingStatusLabel(hamster.breedingStatus)),
                       ('关联窝次', '${detail.litters.length}'),
                     ],
                   ),
@@ -495,9 +488,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                       ),
                       (
                         '护理待办',
-                        relatedTasks.isEmpty
-                            ? '无'
-                            : '${relatedTasks.length} 项',
+                        relatedTasks.isEmpty ? '无' : '${relatedTasks.length} 项',
                       ),
                       ('综合', healthGood ? '良好' : '需关注'),
                     ],
@@ -586,8 +577,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                         child: const Text('记录体重'),
                       ),
                     ),
-                  if (widget.onAddWeight != null &&
-                      widget.onOpenHealth != null)
+                  if (widget.onAddWeight != null && widget.onOpenHealth != null)
                     const SizedBox(width: 10),
                   if (widget.onOpenHealth != null)
                     Expanded(

@@ -78,9 +78,8 @@ class ScheduledLocalNotification {
 
 /// Plugin-backed scheduler for device/simulator runs.
 class PluginLocalNotificationScheduler implements LocalNotificationScheduler {
-  PluginLocalNotificationScheduler({
-    FlutterLocalNotificationsPlugin? plugin,
-  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  PluginLocalNotificationScheduler({FlutterLocalNotificationsPlugin? plugin})
+    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin _plugin;
   bool _ready = false;

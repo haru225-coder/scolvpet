@@ -264,8 +264,10 @@ class HomeOverviewPage extends StatelessWidget {
   final VoidCallback? onOpenTasks;
   final VoidCallback? onOpenCalendar;
   final VoidCallback? onOpenBatchWeight;
+
   /// P0-1: Account menu (原「我的」能力入口)
   final VoidCallback? onOpenAccount;
+
   /// P0-1: AI 管家（原一级 Tab，现 push）
   final VoidCallback? onOpenAssistant;
 
@@ -340,9 +342,7 @@ class HomeOverviewPage extends StatelessWidget {
                         final name = state.account?.displayName?.trim();
                         final who = (org != null && org.isNotEmpty)
                             ? org
-                            : ((name != null && name.isNotEmpty)
-                                  ? name
-                                  : '熊舍');
+                            : ((name != null && name.isNotEmpty) ? name : '熊舍');
                         return '${workbenchGreeting(now)}，$who\n${workbenchDateLabel(now)}';
                       }(),
                       trailing: Row(
@@ -645,9 +645,9 @@ class _BreedingFeedSection extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: Text(
               summary,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: p.secondaryLabel,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: p.secondaryLabel),
             ),
           ),
         if (items.isEmpty)
@@ -721,9 +721,9 @@ class _BreedingFeedCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       item.subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: p.secondaryLabel,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: p.secondaryLabel),
                     ),
                   ],
                 ),
@@ -941,8 +941,7 @@ class _TodayCareQueueSection extends StatelessWidget {
                   _CareTodoCard(
                     item: items[i],
                     onTap: _tapFor(items[i]),
-                    onComplete:
-                        items[i].canComplete && taskController != null
+                    onComplete: items[i].canComplete && taskController != null
                         ? () => _complete(context, items[i].task!)
                         : null,
                   ),
@@ -957,11 +956,7 @@ class _TodayCareQueueSection extends StatelessWidget {
 
 /// 草稿风格待办卡：时间 / 标题 / 状态 pill，可点完成。
 class _CareTodoCard extends StatelessWidget {
-  const _CareTodoCard({
-    required this.item,
-    this.onTap,
-    this.onComplete,
-  });
+  const _CareTodoCard({required this.item, this.onTap, this.onComplete});
 
   final TodayCareItem item;
   final VoidCallback? onTap;
@@ -1056,9 +1051,9 @@ class _CareTodoCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       item.subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: p.secondaryLabel,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: p.secondaryLabel),
                     ),
                   ],
                 ),
@@ -1153,4 +1148,3 @@ class _QuickChip extends StatelessWidget {
     );
   }
 }
-

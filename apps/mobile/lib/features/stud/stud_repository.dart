@@ -30,6 +30,7 @@ String studErrorMessage(Object error) => apiErrorMessage(
   fallback: '借配请求失败',
   mapLocal: (e) => e is StudRepositoryException ? e.message : null,
 );
+
 class DefaultApiStudRepository implements StudRepository {
   DefaultApiStudRepository({required this.client});
 
@@ -103,8 +104,10 @@ class DefaultApiStudRepository implements StudRepository {
         if (draft.listingId != null) 'listing_id': draft.listingId,
         'side': draft.side,
         'partner_cattery_name': draft.partnerCatteryName,
-        if (draft.myHamsterLabel != null) 'my_hamster_label': draft.myHamsterLabel,
-        if (draft.partnerContact != null) 'partner_contact': draft.partnerContact,
+        if (draft.myHamsterLabel != null)
+          'my_hamster_label': draft.myHamsterLabel,
+        if (draft.partnerContact != null)
+          'partner_contact': draft.partnerContact,
         if (draft.partnerAnimalLabel != null)
           'partner_animal_label': draft.partnerAnimalLabel,
         'fee_cents': draft.feeCents,

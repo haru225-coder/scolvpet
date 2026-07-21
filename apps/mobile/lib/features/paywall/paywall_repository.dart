@@ -24,6 +24,7 @@ String paywallErrorMessage(Object error) => apiErrorMessage(
   fallback: '权益请求失败',
   mapLocal: (e) => e is PaywallRepositoryException ? e.message : null,
 );
+
 class DefaultApiPaywallRepository implements PaywallRepository {
   DefaultApiPaywallRepository({required this.client});
 

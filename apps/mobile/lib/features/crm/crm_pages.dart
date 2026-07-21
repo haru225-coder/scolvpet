@@ -22,6 +22,7 @@ class CrmHubPage extends StatefulWidget {
 
   final CrmController controller;
   final List<I2Hamster> hamsters;
+
   /// [documentKind] 为 `contract` 或 `receipt`。
   final void Function(
     CrmHandover handover,
@@ -30,6 +31,7 @@ class CrmHubPage extends StatefulWidget {
     String documentKind,
   ])?
   onOpenDocuments;
+
   /// 从已确认/锁定中的预订一键生成合同（继承客户与仓鼠）。
   final void Function(CrmReservation reservation, I2Hamster? hamster)?
   onOpenContractFromReservation;
@@ -122,8 +124,7 @@ class _CrmHubPageState extends State<CrmHubPage>
               IosModuleIntro(
                 icon: CupertinoIcons.person_2_square_stack_fill,
                 title: '客户成交与交付',
-                description:
-                    '公开主页客户预订会进入本列表；也可后台登记。确认后可继续交付与合同。',
+                description: '公开主页客户预订会进入本列表；也可后台登记。确认后可继续交付与合同。',
                 metrics: [
                   IosModuleMetric(label: '客户', value: '${contacts.length}'),
                   IosModuleMetric(
@@ -263,7 +264,9 @@ class _CrmHubPageState extends State<CrmHubPage>
     await _snack(() => widget.controller.createHandover(draft));
   }
 
-  Future<void> _scheduleDeliveryFromReservation(CrmReservation reservation) async {
+  Future<void> _scheduleDeliveryFromReservation(
+    CrmReservation reservation,
+  ) async {
     _tabs.animateTo(2);
     await _createHandover(fromReservation: reservation);
   }

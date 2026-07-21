@@ -81,7 +81,8 @@ List<TodayCareItem> buildTodayCareQueue({
     }
   }
 
-  final alerts = metrics?.weightAlerts ??
+  final alerts =
+      metrics?.weightAlerts ??
       buildWeightAlerts(snapshot?.recentWeights ?? const <I2WeightRecord>[]);
   for (final alert in alerts.take(3)) {
     items.add(
@@ -95,15 +96,14 @@ List<TodayCareItem> buildTodayCareQueue({
     );
   }
 
-  final dirtyCount = metrics?.dirtyEnclosureCount ??
-      (snapshot?.enclosures
-              .where((e) {
-                final c = e.cleanlinessState.toLowerCase();
-                return c.contains('dirty') ||
-                    c.contains('soil') ||
-                    c.contains('needs_clean');
-              })
-              .length ??
+  final dirtyCount =
+      metrics?.dirtyEnclosureCount ??
+      (snapshot?.enclosures.where((e) {
+            final c = e.cleanlinessState.toLowerCase();
+            return c.contains('dirty') ||
+                c.contains('soil') ||
+                c.contains('needs_clean');
+          }).length ??
           0);
   if (dirtyCount > 0) {
     items.add(

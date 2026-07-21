@@ -27,6 +27,7 @@ class BreedingPlan {
   final int version;
   final String? name;
   final DateTime? plannedPairingAt;
+
   /// 进入孕期时的权威交配基准日（Backend `mating_baseline_at`）。
   final DateTime? matingBaselineAt;
   final String? activePairingAttemptId;
@@ -230,7 +231,11 @@ int? breedingCalendarDayIndex(DateTime start, DateTime now) {
     start.toLocal().month,
     start.toLocal().day,
   );
-  final n = DateTime(now.toLocal().year, now.toLocal().month, now.toLocal().day);
+  final n = DateTime(
+    now.toLocal().year,
+    now.toLocal().month,
+    now.toLocal().day,
+  );
   if (n.isBefore(s)) return null;
   return n.difference(s).inDays;
 }

@@ -81,6 +81,7 @@ class HamsterAvatar extends StatelessWidget {
   final Uint8List? imageBytes;
   final double size;
   final Color? statusColor;
+
   /// true：无图时用品牌 mascot，不用首字（列表默认）
   final bool preferBrandPlaceholder;
 
@@ -155,11 +156,8 @@ class _HamsterBrandPlaceholder extends StatelessWidget {
         BearAssets.mascotHappy,
         fit: BoxFit.cover,
         filterQuality: FilterQuality.high,
-        errorBuilder: (_, __, ___) => Icon(
-          CupertinoIcons.paw,
-          size: size * 0.42,
-          color: color,
-        ),
+        errorBuilder: (_, __, ___) =>
+            Icon(CupertinoIcons.paw, size: size * 0.42, color: color),
       ),
     );
   }

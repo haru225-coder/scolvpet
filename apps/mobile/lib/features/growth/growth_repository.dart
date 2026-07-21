@@ -31,6 +31,7 @@ String growthErrorMessage(Object error) => apiErrorMessage(
   fallback: '获客请求失败',
   mapLocal: (e) => e is GrowthRepositoryException ? e.message : null,
 );
+
 class DefaultApiGrowthRepository implements GrowthRepository {
   DefaultApiGrowthRepository({required this.client});
 

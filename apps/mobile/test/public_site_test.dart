@@ -25,7 +25,9 @@ void main() {
     expect(view.stats['active_hamsters'], 12);
   });
 
-  testWidgets('PublicSiteEditorPage loads and controller saves', (tester) async {
+  testWidgets('PublicSiteEditorPage loads and controller saves', (
+    tester,
+  ) async {
     final controller = PublicSiteController(
       repository: MemoryPublicSiteRepository(),
     );

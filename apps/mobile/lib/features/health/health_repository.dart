@@ -45,6 +45,7 @@ void _validateHealthDraft(HealthRecordDraft draft) {
     }
   }
 }
+
 class DefaultApiHealthRepository implements HealthRepository {
   DefaultApiHealthRepository({required this.client});
 

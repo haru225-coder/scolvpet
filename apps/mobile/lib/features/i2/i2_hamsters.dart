@@ -25,10 +25,7 @@ part 'hamster_editor_page.dart';
 part 'batch_hamster_editor_page.dart';
 part 'weight_entry_page.dart';
 
-String _hamsterWriteRestrictionMessage(
-  I2Controller controller,
-  String action,
-) {
+String _hamsterWriteRestrictionMessage(I2Controller controller, String action) {
   if (controller.offline) return '当前为离线只读，联网后再$action';
   return '当前角色没有$action的权限';
 }

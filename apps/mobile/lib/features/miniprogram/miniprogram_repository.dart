@@ -32,6 +32,7 @@ String miniprogramErrorMessage(Object error) => apiErrorMessage(
   fallback: '小程序请求失败',
   mapLocal: (e) => e is MiniprogramRepositoryException ? e.message : null,
 );
+
 class DefaultApiMiniprogramRepository implements MiniprogramRepository {
   DefaultApiMiniprogramRepository({required this.client});
 

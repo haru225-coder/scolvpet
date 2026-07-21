@@ -22,6 +22,7 @@ class HamsterListPage extends StatefulWidget {
 
 class _HamsterListPageState extends State<HamsterListPage> {
   final TextEditingController _searchController = TextEditingController();
+
   /// 筛选键：all | active | breeding | retired | transferred | deceased
   /// lifecycle 键与 i2LifecycleLabel 权威枚举一致；breeding 为展示层派生（不改领域）。
   String _lifecycle = 'all';
@@ -177,27 +178,28 @@ class _HamsterListPageState extends State<HamsterListPage> {
                               widget.onBatchCreate?.call();
                               return;
                             }
-                            final choice = await showCupertinoModalPopup<String>(
-                              context: context,
-                              builder: (ctx) => CupertinoActionSheet(
-                                actions: [
-                                  CupertinoActionSheetAction(
-                                    onPressed: () =>
-                                        Navigator.of(ctx).pop('single'),
-                                    child: const Text('单只建档'),
+                            final choice =
+                                await showCupertinoModalPopup<String>(
+                                  context: context,
+                                  builder: (ctx) => CupertinoActionSheet(
+                                    actions: [
+                                      CupertinoActionSheetAction(
+                                        onPressed: () =>
+                                            Navigator.of(ctx).pop('single'),
+                                        child: const Text('单只建档'),
+                                      ),
+                                      CupertinoActionSheetAction(
+                                        onPressed: () =>
+                                            Navigator.of(ctx).pop('batch'),
+                                        child: const Text('批量建档'),
+                                      ),
+                                    ],
+                                    cancelButton: CupertinoActionSheetAction(
+                                      onPressed: () => Navigator.of(ctx).pop(),
+                                      child: const Text('取消'),
+                                    ),
                                   ),
-                                  CupertinoActionSheetAction(
-                                    onPressed: () =>
-                                        Navigator.of(ctx).pop('batch'),
-                                    child: const Text('批量建档'),
-                                  ),
-                                ],
-                                cancelButton: CupertinoActionSheetAction(
-                                  onPressed: () => Navigator.of(ctx).pop(),
-                                  child: const Text('取消'),
-                                ),
-                              ),
-                            );
+                                );
                             if (choice == 'single') widget.onCreate?.call();
                             if (choice == 'batch') widget.onBatchCreate?.call();
                           },
@@ -286,12 +288,14 @@ class _HamsterListPageState extends State<HamsterListPage> {
                             ],
                           ),
                         ),
-                        Expanded(child: _buildListBody(
-                          values: values,
-                          hasWritePermission: hasWritePermission,
-                          snapshot: snapshot,
-                          p: p,
-                        )),
+                        Expanded(
+                          child: _buildListBody(
+                            values: values,
+                            hasWritePermission: hasWritePermission,
+                            snapshot: snapshot,
+                            p: p,
+                          ),
+                        ),
                       ],
                     );
                   },
@@ -560,9 +564,9 @@ class _HamsterListRow extends StatelessWidget {
                       metaParts.join(' · '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: p.secondaryLabel,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: p.secondaryLabel),
                     ),
                   ],
                   if (parents != null) ...[
@@ -571,9 +575,9 @@ class _HamsterListRow extends StatelessWidget {
                       parents,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: p.tertiaryLabel,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: p.tertiaryLabel),
                     ),
                   ],
                   const SizedBox(height: 6),
@@ -599,10 +603,7 @@ class _HamsterListRow extends StatelessWidget {
                       ),
                       if (showBreedingPill) ...[
                         const SizedBox(width: 6),
-                        _ListPill(
-                          label: breedingLabel,
-                          color: p.accent,
-                        ),
+                        _ListPill(label: breedingLabel, color: p.accent),
                       ],
                       if (abnormal) ...[
                         const SizedBox(width: 4),

@@ -38,6 +38,7 @@ class LitterBoardRepositoryException implements Exception {
   @override
   String toString() => message;
 }
+
 class DefaultApiLitterBoardRepository implements LitterBoardRepository {
   DefaultApiLitterBoardRepository({required this.client});
 
@@ -85,12 +86,11 @@ class DefaultApiLitterBoardRepository implements LitterBoardRepository {
       limit: 100,
     );
     final data = response.data?.data ?? const <api.PupIdentity>[];
-    final litterWeaned = litter.state.value != 'newborn' &&
+    final litterWeaned =
+        litter.state.value != 'newborn' &&
         litter.state.value != 'nursing' &&
         litter.state.value != 'weaning_due';
-    return data
-        .map((pup) => _mapPup(pup, litterWeaned: litterWeaned))
-        .toList();
+    return data.map((pup) => _mapPup(pup, litterWeaned: litterWeaned)).toList();
   }
 
   @override
@@ -213,18 +213,17 @@ class DefaultApiLitterBoardRepository implements LitterBoardRepository {
     if (missing.isNotEmpty || profileByPup.length != eligibleIds.length) {
       throw const LitterBoardRepositoryException('请为每只可建档幼崽填写编号');
     }
-    final items = board.alivePups
-        .where((p) => eligibleIds.contains(p.id))
-        .map((p) {
-          final profile = profileByPup[p.id]!;
-          final name = profile.name?.trim();
-          return api.IndividualizeLitterRequestItemsInner(
-            pupIdentityId: p.id,
-            internalCode: profile.internalCode.trim(),
-            name: name == null || name.isEmpty ? null : name,
-          );
-        })
-        .toList();
+    final items = board.alivePups.where((p) => eligibleIds.contains(p.id)).map((
+      p,
+    ) {
+      final profile = profileByPup[p.id]!;
+      final name = profile.name?.trim();
+      return api.IndividualizeLitterRequestItemsInner(
+        pupIdentityId: p.id,
+        internalCode: profile.internalCode.trim(),
+        name: name == null || name.isEmpty ? null : name,
+      );
+    }).toList();
     if (items.isEmpty) {
       throw const LitterBoardRepositoryException('没有可个体化的幼崽');
     }

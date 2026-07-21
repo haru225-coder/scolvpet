@@ -172,4 +172,3 @@ class MemoryStudRepository implements StudRepository {
     );
   }
 }
-

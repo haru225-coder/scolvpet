@@ -470,7 +470,10 @@ class AppState extends ChangeNotifier {
     // 诊断用：尽量暴露真实原因
     if (error is DioException) {
       final status = error.response?.statusCode;
-      final msg = error.response?.data?.toString() ?? error.message ?? error.type.toString();
+      final msg =
+          error.response?.data?.toString() ??
+          error.message ??
+          error.type.toString();
       lastError = status != null
           ? '请求失败($status): $msg'
           : '网络错误(${error.type}): $msg';

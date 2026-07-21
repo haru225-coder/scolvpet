@@ -69,6 +69,7 @@ Future<PhenotypeTableIndex> loadBundledPhenotypeTable() async {
   }
   return PhenotypeTableIndex.fromJson(Map<String, dynamic>.from(json));
 }
+
 class DefaultApiGeneticRepository implements GeneticRepository {
   DefaultApiGeneticRepository({required this.client});
 

@@ -118,10 +118,7 @@ class MemoryLitterBoardRepository implements LitterBoardRepository {
       }
       if (assignment.sex != 'unknown') {
         confirmedSexesByEnclosure
-            .putIfAbsent(
-              assignment.destinationEnclosureId,
-              () => <String>{},
-            )
+            .putIfAbsent(assignment.destinationEnclosureId, () => <String>{})
             .add(assignment.sex);
       }
     }
@@ -205,4 +202,3 @@ class MemoryLitterBoardRepository implements LitterBoardRepository {
     return next;
   }
 }
-

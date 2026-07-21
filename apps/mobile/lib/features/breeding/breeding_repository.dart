@@ -66,6 +66,7 @@ class BreedingRepositoryException implements Exception {
   @override
   String toString() => message;
 }
+
 class DefaultApiBreedingRepository implements BreedingRepository {
   DefaultApiBreedingRepository({required this.client});
 
@@ -166,7 +167,10 @@ class DefaultApiBreedingRepository implements BreedingRepository {
       ),
     );
     final data = response.data!.data;
-    return (plan: _plan(data.breedingPlan), attempt: _attempt(data.pairingAttempt));
+    return (
+      plan: _plan(data.breedingPlan),
+      attempt: _attempt(data.pairingAttempt),
+    );
   }
 
   @override
@@ -196,7 +200,10 @@ class DefaultApiBreedingRepository implements BreedingRepository {
       ),
     );
     final data = response.data!.data;
-    return (plan: _plan(data.breedingPlan), attempt: _attempt(data.pairingAttempt));
+    return (
+      plan: _plan(data.breedingPlan),
+      attempt: _attempt(data.pairingAttempt),
+    );
   }
 
   @override

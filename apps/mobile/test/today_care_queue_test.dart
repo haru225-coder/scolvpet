@@ -94,11 +94,7 @@ void main() {
       now: now,
     );
 
-    final queue = buildTodayCareQueue(
-      tasks: tasks,
-      metrics: metrics,
-      now: now,
-    );
+    final queue = buildTodayCareQueue(tasks: tasks, metrics: metrics, now: now);
 
     expect(queue.first.kind, TodayCareKind.overdueTask);
     expect(queue.any((i) => i.kind == TodayCareKind.dueTodayTask), isTrue);
@@ -274,8 +270,7 @@ class _OfflineI1 implements I1Repository {
   Future<String> requestCode(String phone) async => throw networkError;
 
   @override
-  Future<List<SpeciesRuleVersion>> listOwnerRules() async =>
-      throw networkError;
+  Future<List<SpeciesRuleVersion>> listOwnerRules() async => throw networkError;
 
   @override
   Future<List<SpeciesRuleVersion>> listSystemRules() async =>

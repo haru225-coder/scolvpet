@@ -105,4 +105,3 @@ class MemoryPushRepository implements PushRepository {
     return item;
   }
 }
-

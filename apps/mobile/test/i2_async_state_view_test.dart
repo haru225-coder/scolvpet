@@ -20,7 +20,7 @@ void main() {
     );
 
     expect(find.text('暂无记录'), findsOneWidget);
-    expect(find.text('新建或同步记录后会显示在这里'), findsOneWidget);
+    expect(find.text('新建或同步记录后会显示在这里。'), findsOneWidget);
     expect(find.text('重试'), findsNothing);
     expect(retries, 0);
   });
@@ -41,7 +41,7 @@ void main() {
       ),
     );
 
-    expect(find.text('刷新后会再次检查'), findsOneWidget);
+    expect(find.text('下拉或点重试，同步最新记录。'), findsOneWidget);
     await tester.tap(find.text('重试'));
     expect(retries, 1);
   });

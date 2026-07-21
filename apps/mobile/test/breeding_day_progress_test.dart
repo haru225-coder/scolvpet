@@ -28,10 +28,7 @@ void main() {
         state: 'draft',
         plannedPairingAt: DateTime(2026, 7, 22, 12),
       );
-      expect(
-        breedingPlannedPairingLabel(plan),
-        '计划配对日 2026-07-22',
-      );
+      expect(breedingPlannedPairingLabel(plan), '计划配对日 2026-07-22');
       expect(breedingDayProgressLabel(plan, now: now), isNull);
     });
 
@@ -40,10 +37,7 @@ void main() {
         state: 'pair_ready',
         plannedPairingAt: DateTime(2025, 12, 31, 12),
       );
-      expect(
-        breedingPlannedPairingLabel(plan),
-        '计划配对日 2025-12-31',
-      );
+      expect(breedingPlannedPairingLabel(plan), '计划配对日 2025-12-31');
       // 旧逻辑：now - planned ≈ 201 天；现必须为 null。
       final staleDays = now.difference(plan.plannedPairingAt!).inDays;
       expect(staleDays, greaterThan(100));
@@ -129,9 +123,6 @@ void main() {
       'mating_baseline_at': DateTime(2026, 7, 10, 12).toIso8601String(),
     });
     expect(plan.matingBaselineAt, isNotNull);
-    expect(
-      breedingDayProgressLabel(plan, now: now),
-      'Day 10',
-    );
+    expect(breedingDayProgressLabel(plan, now: now), 'Day 10');
   });
 }

@@ -167,4 +167,3 @@ class MemoryMiniprogramRepository implements MiniprogramRepository {
     );
   }
 }
-

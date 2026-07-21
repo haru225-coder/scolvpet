@@ -181,4 +181,3 @@ class MemoryPaywallRepository implements PaywallRepository {
     );
   }
 }
-

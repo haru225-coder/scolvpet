@@ -312,8 +312,8 @@ class _LitterBoardDetailPageState extends State<LitterBoardDetailPage> {
                 ),
               Expanded(
                 child: switch (detail.status) {
-                  I2AsyncStatus.loading || I2AsyncStatus.idle =>
-                    const IosLoading(),
+                  I2AsyncStatus.loading ||
+                  I2AsyncStatus.idle => const IosLoading(),
                   I2AsyncStatus.error => I2StateMessage(
                     icon: CupertinoIcons.cloud,
                     message: detail.message ?? '加载失败',
@@ -468,8 +468,7 @@ class _LitterSexSeparationPage extends StatefulWidget {
       _LitterSexSeparationPageState();
 }
 
-class _LitterSexSeparationPageState
-    extends State<_LitterSexSeparationPage> {
+class _LitterSexSeparationPageState extends State<_LitterSexSeparationPage> {
   final Map<String, String?> _sexByPup = {};
   final Map<String, String?> _enclosureByPup = {};
   String? _error;
@@ -482,9 +481,8 @@ class _LitterSexSeparationPageState
       _sexByPup[pup.id] = pup.sex == 'male' || pup.sex == 'female'
           ? pup.sex
           : null;
-      _enclosureByPup[pup.id] = enclosureIds.contains(
-        pup.destinationEnclosureId,
-      )
+      _enclosureByPup[pup.id] =
+          enclosureIds.contains(pup.destinationEnclosureId)
           ? pup.destinationEnclosureId
           : null;
     }
@@ -526,10 +524,7 @@ class _LitterSexSeparationPageState
     for (final assignment in assignments) {
       if (assignment.sex == 'unknown') continue;
       confirmedSexesByEnclosure
-          .putIfAbsent(
-            assignment.destinationEnclosureId,
-            () => <String>{},
-          )
+          .putIfAbsent(assignment.destinationEnclosureId, () => <String>{})
           .add(assignment.sex);
     }
     if (confirmedSexesByEnclosure.values.any((sexes) => sexes.length > 1)) {

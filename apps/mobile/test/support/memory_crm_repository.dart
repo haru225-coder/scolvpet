@@ -218,4 +218,3 @@ class MemoryCrmRepository implements CrmRepository {
     return next;
   }
 }
-
