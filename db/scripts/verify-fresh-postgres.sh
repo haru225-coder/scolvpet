@@ -48,8 +48,9 @@ ENUMS="$(psql -XAt "$URL" -c "select count(*) from pg_type where typtype='e' and
 RULES="$(psql -XAt "$URL" -c "select count(*) from species_rule_version where scope='system';")"
 META_TABLES="$(psql -XAt "$URL" -c "select count(*) from pg_class where relkind='r' and relnamespace='scolvpet_meta'::regnamespace;")"
 
-# Baseline after migrations 0000–0026 (I1–I6 + P1/P2 vertical slices).
-[[ "$TABLES" == "58" ]] || { printf 'table count mismatch: %s\n' "$TABLES" >&2; exit 1; }
+# Baseline after migrations 0000–0031 (I1–I6 + CRM/合同/公开主页/预订闭环).
+# 0027–0031: genetic feedback, growth, contact identity, reservation exclusive, doc public token.
+[[ "$TABLES" == "64" ]] || { printf 'table count mismatch: %s\n' "$TABLES" >&2; exit 1; }
 [[ "$ENUMS" == "75" ]] || { printf 'enum count mismatch: %s\n' "$ENUMS" >&2; exit 1; }
 [[ "$RULES" == "1" ]] || { printf 'seed rule count mismatch: %s\n' "$RULES" >&2; exit 1; }
 [[ "$META_TABLES" == "1" ]] || { printf 'metadata table count mismatch: %s\n' "$META_TABLES" >&2; exit 1; }
