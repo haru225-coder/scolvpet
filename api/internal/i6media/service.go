@@ -131,6 +131,93 @@ type MediaAsset struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// MediaView is the OpenAPI MediaAsset shape clients consume (urls + variants).
+type MediaView struct {
+	ID             uuid.UUID          `json:"id"`
+	OwnerID        uuid.UUID          `json:"owner_id"`
+	MediaType      string             `json:"media_type"`
+	ContentType    string             `json:"content_type"`
+	SizeBytes      int64              `json:"size_bytes"`
+	SHA256         string             `json:"sha256"`
+	Status         string             `json:"status"`
+	OriginalURL    *string            `json:"original_url"`
+	CoverVariantID *string            `json:"cover_variant_id,omitempty"`
+	Variants       []MediaVariantView `json:"variants"`
+	Version        int                `json:"version"`
+	CreatedAt      time.Time          `json:"created_at"`
+	UpdatedAt      time.Time          `json:"updated_at"`
+}
+
+type MediaVariantView struct {
+	ID              uuid.UUID `json:"id"`
+	Kind            string    `json:"kind"`
+	Status          string    `json:"status"`
+	URL             *string   `json:"url"`
+	Width           *int      `json:"width,omitempty"`
+	Height          *int      `json:"height,omitempty"`
+	DurationSeconds *float64  `json:"duration_seconds,omitempty"`
+}
+
+func privateMediaContentPath(mediaID uuid.UUID, variantID *uuid.UUID) string {
+	path := "/v1/media/" + mediaID.String() + "/content"
+	if variantID != nil && *variantID != uuid.Nil {
+		return path + "?variant_id=" + variantID.String()
+	}
+	return path
+}
+
+func mapMediaType(kind string) string {
+	if kind == "video" {
+		return "video"
+	}
+	return "image"
+}
+
+func mapMediaStatus(status string) string {
+	switch status {
+	case "ready":
+		return "ready"
+	case "failed", "quarantined":
+		return "failed"
+	default:
+		return "processing"
+	}
+}
+
+func mapVariantKind(kind string) string {
+	switch kind {
+	case "thumbnail":
+		return "thumbnail"
+	case "preview", "share_render":
+		return "preview"
+	case "image_edit", "edited":
+		return "edited"
+	case "video_720p":
+		return "video_720p"
+	case "video_1080p":
+		return "video_1080p"
+	case "video_cover", "cover":
+		return "cover"
+	case "video_transcode":
+		return "video_720p"
+	default:
+		return "preview"
+	}
+}
+
+func mapVariantStatus(status string) string {
+	switch status {
+	case "ready":
+		return "ready"
+	case "failed":
+		return "failed"
+	case "processing":
+		return "processing"
+	default:
+		return "queued"
+	}
+}
+
 type Share struct {
 	ID          uuid.UUID   `json:"id"`
 	SubjectType string      `json:"subject_type"`
@@ -313,6 +400,114 @@ func (s *Service) GetMedia(ctx context.Context, ownerID, mediaID uuid.UUID) (Med
 		return MediaAsset{}, ErrNotFound
 	}
 	return asset, err
+}
+
+func (s *Service) GetMediaView(ctx context.Context, ownerID, mediaID uuid.UUID) (MediaView, error) {
+	var view MediaView
+	var kind, status string
+	err := s.Store.Pool.QueryRow(ctx, `
+		SELECT id, owner_id, kind::text, status::text, mime_type, byte_size, sha256, version, created_at, updated_at
+		FROM media_asset WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+	`, ownerID, mediaID).Scan(
+		&view.ID, &view.OwnerID, &kind, &status, &view.ContentType, &view.SizeBytes, &view.SHA256,
+		&view.Version, &view.CreatedAt, &view.UpdatedAt,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return MediaView{}, ErrNotFound
+	}
+	if err != nil {
+		return MediaView{}, err
+	}
+	view.MediaType = mapMediaType(kind)
+	view.Status = mapMediaStatus(status)
+	if view.Status == "ready" {
+		url := privateMediaContentPath(mediaID, nil)
+		view.OriginalURL = &url
+	}
+	rows, err := s.Store.Pool.Query(ctx, `
+		SELECT id, variant_kind::text, status::text, width_px, height_px, duration_ms, object_key
+		FROM media_variant
+		WHERE owner_id=$1 AND media_asset_id=$2 AND deleted_at IS NULL
+		ORDER BY created_at ASC, id ASC
+	`, ownerID, mediaID)
+	if err != nil {
+		return MediaView{}, err
+	}
+	defer rows.Close()
+	view.Variants = make([]MediaVariantView, 0)
+	for rows.Next() {
+		var item MediaVariantView
+		var variantKind, variantStatus string
+		var width, height *int
+		var durationMS *int64
+		var objectKey *string
+		if err := rows.Scan(&item.ID, &variantKind, &variantStatus, &width, &height, &durationMS, &objectKey); err != nil {
+			return MediaView{}, err
+		}
+		item.Kind = mapVariantKind(variantKind)
+		item.Status = mapVariantStatus(variantStatus)
+		item.Width = width
+		item.Height = height
+		if durationMS != nil {
+			seconds := float64(*durationMS) / 1000
+			item.DurationSeconds = &seconds
+		}
+		if item.Status == "ready" && objectKey != nil && strings.TrimSpace(*objectKey) != "" {
+			vid := item.ID
+			url := privateMediaContentPath(mediaID, &vid)
+			item.URL = &url
+		}
+		view.Variants = append(view.Variants, item)
+	}
+	if err := rows.Err(); err != nil {
+		return MediaView{}, err
+	}
+	return view, nil
+}
+
+func (s *Service) OpenMediaContent(ctx context.Context, ownerID, mediaID uuid.UUID, variantID *uuid.UUID) (io.ReadCloser, objectstore.ObjectInfo, string, error) {
+	if s.Objects == nil {
+		return nil, objectstore.ObjectInfo{}, "", errors.New("media object store unavailable")
+	}
+	var objectKey, contentType string
+	if variantID != nil && *variantID != uuid.Nil {
+		err := s.Store.Pool.QueryRow(ctx, `
+			SELECT v.object_key, COALESCE(v.mime_type, a.mime_type)
+			FROM media_variant v
+			JOIN media_asset a ON a.owner_id=v.owner_id AND a.id=v.media_asset_id AND a.deleted_at IS NULL
+			WHERE v.owner_id=$1 AND v.media_asset_id=$2 AND v.id=$3 AND v.deleted_at IS NULL
+				AND v.status='ready' AND v.object_key IS NOT NULL
+		`, ownerID, mediaID, *variantID).Scan(&objectKey, &contentType)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, objectstore.ObjectInfo{}, "", ErrNotFound
+		}
+		if err != nil {
+			return nil, objectstore.ObjectInfo{}, "", err
+		}
+	} else {
+		err := s.Store.Pool.QueryRow(ctx, `
+			SELECT original_object_key, mime_type
+			FROM media_asset
+			WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL AND status='ready'
+		`, ownerID, mediaID).Scan(&objectKey, &contentType)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, objectstore.ObjectInfo{}, "", ErrNotFound
+		}
+		if err != nil {
+			return nil, objectstore.ObjectInfo{}, "", err
+		}
+	}
+	if strings.TrimSpace(objectKey) == "" {
+		return nil, objectstore.ObjectInfo{}, "", ErrNotFound
+	}
+	reader, info, err := s.Objects.Get(ctx, objectKey)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, objectstore.ObjectInfo{}, "", ErrNotFound
+		}
+		return nil, objectstore.ObjectInfo{}, "", err
+	}
+	return reader, info, contentType, nil
 }
 
 func (s *Service) CreateEditRecipe(ctx context.Context, ownerID, mediaID uuid.UUID, key, path string, payload []byte, ifMatch string, input EditRecipeInput) (WriteResult[map[string]any], error) {

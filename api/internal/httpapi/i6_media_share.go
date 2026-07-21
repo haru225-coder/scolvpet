@@ -20,6 +20,7 @@ func (s *Server) registerI6MediaRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /v1/media/uploads/{upload_id}/content", s.putI6MediaUpload)
 	mux.HandleFunc("POST /v1/media/uploads/{upload_id}/complete", s.completeI6MediaUpload)
 	mux.HandleFunc("GET /v1/media/{media_id}", s.getI6Media)
+	mux.HandleFunc("GET /v1/media/{media_id}/content", s.getI6MediaContent)
 	mux.HandleFunc("POST /v1/media/{media_id}/edit-recipes", s.createI6MediaEditRecipe)
 	mux.HandleFunc("GET /v1/media/{media_id}/transcode-status", s.getI6MediaTranscodeStatus)
 	mux.HandleFunc("POST /v1/media/{media_id}/retry-processing", s.retryI6MediaProcessing)
@@ -128,13 +129,51 @@ func (s *Server) getI6Media(w http.ResponseWriter, r *http.Request) {
 		writeI6MediaError(w, r, i6media.ErrNotFound)
 		return
 	}
-	asset, err := s.i6MediaService().GetMedia(r.Context(), ownerID, mediaID)
+	asset, err := s.i6MediaService().GetMediaView(r.Context(), ownerID, mediaID)
 	if err != nil {
 		writeI6MediaError(w, r, err)
 		return
 	}
 	w.Header().Set("ETag", store.FormatETag(asset.Version))
 	writeJSON(w, r, http.StatusOK, envelope(r, asset))
+}
+
+func (s *Server) getI6MediaContent(w http.ResponseWriter, r *http.Request) {
+	ownerID, ok := s.authenticateI6(w, r)
+	if !ok {
+		return
+	}
+	mediaID, err := uuid.Parse(r.PathValue("media_id"))
+	if err != nil {
+		writeI6MediaError(w, r, i6media.ErrNotFound)
+		return
+	}
+	var variantID *uuid.UUID
+	if raw := strings.TrimSpace(r.URL.Query().Get("variant_id")); raw != "" {
+		parsed, err := uuid.Parse(raw)
+		if err != nil {
+			writeI6MediaError(w, r, i6media.ErrNotFound)
+			return
+		}
+		variantID = &parsed
+	}
+	reader, info, contentType, err := s.i6MediaService().OpenMediaContent(r.Context(), ownerID, mediaID, variantID)
+	if err != nil {
+		w.Header().Set("Cache-Control", "no-store")
+		writeI6MediaError(w, r, err)
+		return
+	}
+	defer reader.Close()
+	w.Header().Set("Cache-Control", "private, no-store, max-age=0")
+	if contentType != "" {
+		w.Header().Set("Content-Type", contentType)
+	}
+	if info.SHA256 != "" {
+		w.Header().Set("ETag", `"`+info.SHA256+`"`)
+	}
+	if _, err := io.Copy(w, reader); err != nil {
+		return
+	}
 }
 
 func (s *Server) createI6MediaEditRecipe(w http.ResponseWriter, r *http.Request) {

@@ -7,6 +7,7 @@ import 'package:scolvpet_api/scolvpet_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api_client.dart';
+import '../core/media_url.dart';
 import '../features/i2/i2_models.dart';
 
 abstract interface class I2Repository {
@@ -542,19 +543,34 @@ class DefaultApiI2Repository implements I2Repository, I2AvatarRepository {
     final mediaId = hamster.coverMediaId;
     if (mediaId == null || mediaId.isEmpty) return hamster;
     try {
-      final response = await api.getMediaAsset(mediaId: mediaId);
-      final media = response.data!.data;
-      String? url;
-      for (final variant in media.variants) {
-        if (variant.status.value == 'ready' &&
-            (variant.kind.value == 'thumbnail' ||
-                variant.kind.value == 'preview') &&
-            variant.url != null) {
-          url = variant.url;
-          break;
+      final response = await client.dio.get<Map<String, dynamic>>(
+        '/media/$mediaId',
+      );
+      final data = response.data?['data'];
+      if (data is! Map) return hamster;
+      final map = Map<String, dynamic>.from(data);
+      final url = resolveMediaUrl(
+        _pickMediaUrl(map),
+        apiBaseUrl: client.dio.options.baseUrl,
+      );
+      if (url == null) return hamster;
+      if (isPrivateMediaContentUrl(url)) {
+        final bytesResponse = await client.dio.get<List<int>>(
+          url,
+          options: Options(
+            responseType: ResponseType.bytes,
+            headers: const {'Accept': 'image/*,*/*;q=0.8'},
+          ),
+        );
+        final bytes = bytesResponse.data;
+        if (bytes != null && bytes.isNotEmpty) {
+          return I2Hamster.fromJson(<String, dynamic>{
+            ...hamster.toJson(),
+            'avatar_url': url,
+            'avatar_bytes': base64Encode(bytes),
+          });
         }
       }
-      url ??= media.originalUrl;
       return I2Hamster.fromJson(<String, dynamic>{
         ...hamster.toJson(),
         'avatar_url': url,
@@ -562,6 +578,33 @@ class DefaultApiI2Repository implements I2Repository, I2AvatarRepository {
     } on Object {
       return hamster;
     }
+  }
+
+  String? _pickMediaUrl(Map<String, dynamic> media) {
+    final variants = media['variants'];
+    if (variants is List) {
+      const preferred = ['thumbnail', 'preview', 'cover'];
+      for (final kind in preferred) {
+        for (final raw in variants) {
+          if (raw is! Map) continue;
+          final item = Map<String, dynamic>.from(raw);
+          if (item['status']?.toString() != 'ready') continue;
+          if (item['kind']?.toString() != kind) continue;
+          final url = item['url']?.toString();
+          if (url != null && url.trim().isNotEmpty) return url;
+        }
+      }
+      for (final raw in variants) {
+        if (raw is! Map) continue;
+        final item = Map<String, dynamic>.from(raw);
+        if (item['status']?.toString() != 'ready') continue;
+        final url = item['url']?.toString();
+        if (url != null && url.trim().isNotEmpty) return url;
+      }
+    }
+    final original = media['original_url']?.toString();
+    if (original != null && original.trim().isNotEmpty) return original;
+    return null;
   }
 
   @override

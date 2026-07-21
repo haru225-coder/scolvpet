@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
 import '../../core/api_error.dart';
+import '../../core/media_url.dart';
 import 'growth_models.dart';
 
 abstract interface class GrowthRepository {
@@ -57,15 +58,17 @@ class DefaultApiGrowthRepository implements GrowthRepository {
   Map<String, dynamic> _normalizePublicMedia(Map<String, dynamic> data) {
     final media = data['media'];
     if (media is! List) return data;
-    final base = Uri.parse(client.dio.options.baseUrl);
     data['media'] = [
       for (final raw in media)
         if (raw is Map)
           () {
             final item = Map<String, dynamic>.from(raw);
-            final url = item['url'];
-            if (url is String && url.startsWith('/')) {
-              item['url'] = base.resolve(url).toString();
+            final resolved = resolveMediaUrl(
+              item['url']?.toString(),
+              apiBaseUrl: client.dio.options.baseUrl,
+            );
+            if (resolved != null) {
+              item['url'] = resolved;
             }
             return item;
           }(),

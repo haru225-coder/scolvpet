@@ -16,6 +16,7 @@ func TestI6MediaRoutesRequireAuth(t *testing.T) {
 	for _, item := range []struct{ method, path string }{
 		{http.MethodPost, "/v1/media/uploads/presign"},
 		{http.MethodGet, "/v1/media/00000000-0000-0000-0000-000000000001"},
+		{http.MethodGet, "/v1/media/00000000-0000-0000-0000-000000000001/content"},
 		{http.MethodGet, "/v1/shares"},
 	} {
 		recorder := httptest.NewRecorder()
