@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:scolvpet_api/scolvpet_api.dart' show P1Api;
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
@@ -13,6 +14,7 @@ abstract interface class ContractsRepository {
   Future<DocDocument> createContract(ContractDraft draft);
   Future<DocDocument> createReceipt(ReceiptDraft draft);
   Future<DocDocument> issueDocument(String kind, String id, int version);
+  Future<DocDocument> revokeDocument(String kind, String id, int version);
 }
 
 class ContractsRepositoryException implements Exception {
@@ -42,10 +44,13 @@ String defaultTemplateBody(String kind) {
   }
   return starterContractTemplates.first.bodyText;
 }
+
 class DefaultApiContractsRepository implements ContractsRepository {
-  DefaultApiContractsRepository({required this.client});
+  DefaultApiContractsRepository({required this.client})
+    : _p1Api = P1Api(client.p2Dio);
 
   final ApiClient client;
+  final P1Api _p1Api;
   final _uuid = const Uuid();
   String _key() => 'doc-${_uuid.v4()}';
 
@@ -149,5 +154,29 @@ class DefaultApiContractsRepository implements ContractsRepository {
       ),
     );
     return DocDocument.fromJson(_data(response));
+  }
+
+  @override
+  Future<DocDocument> revokeDocument(
+    String kind,
+    String id,
+    int version,
+  ) async {
+    final response = kind == 'receipt'
+        ? await _p1Api.revokeReceipt(
+            documentId: id,
+            ifMatch: '"$version"',
+            idempotencyKey: _key(),
+          )
+        : await _p1Api.revokeContract(
+            documentId: id,
+            ifMatch: '"$version"',
+            idempotencyKey: _key(),
+          );
+    final data = response.data?.data;
+    if (data == null) {
+      throw const ContractsRepositoryException('响应为空');
+    }
+    return DocDocument.fromJson(data.toJson());
   }
 }

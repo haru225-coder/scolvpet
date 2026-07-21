@@ -27,6 +27,19 @@ void main() {
     final issued = await repo.issueDocument('contract', doc.id, doc.version);
     expect(issued.status, 'issued');
     expect(issued.issuedAt, isNotNull);
+    expect(
+      issued.customerShareUrl,
+      'https://example.test/d/${issued.publicToken}',
+    );
+
+    final revoked = await repo.revokeDocument(
+      'contract',
+      issued.id,
+      issued.version,
+    );
+    expect(revoked.status, 'archived');
+    expect(revoked.publicToken, isNull);
+    expect(revoked.customerShareUrl, isNull);
   });
 
   test('MemoryContractsRepository receipt amount fill', () async {
@@ -112,5 +125,48 @@ void main() {
     expect(find.textContaining('当前角色可查看、复制和输出单据'), findsOneWidget);
     expect(find.byKey(const Key('doc-fab')), findsNothing);
     expect(find.byKey(const Key('doc-refresh')), findsOneWidget);
+  });
+
+  testWidgets('issued document exposes confirmed revoke action', (
+    tester,
+  ) async {
+    var revoked = false;
+    final document = DocDocument(
+      id: 'doc-issued',
+      templateId: 'tpl-1',
+      kind: 'contract',
+      title: '雪球交接协议',
+      bodyFilled: '交接正文',
+      currency: 'CNY',
+      status: 'issued',
+      issuedAt: DateTime.utc(2026, 7, 22),
+      version: 2,
+      publicToken: 'doc_token',
+      publicPath: '/d/doc_token',
+      publicUrl: 'https://www.example.test/d/doc_token',
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DocumentPreviewPage(
+          document: document,
+          onRevoke: () async {
+            revoked = true;
+            return false;
+          },
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('doc-preview-revoke')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('doc-preview-revoke')));
+    await tester.tap(find.byKey(const Key('doc-preview-revoke')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('撤销合同？'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('doc-revoke-confirm')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(revoked, isTrue);
   });
 }

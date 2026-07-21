@@ -140,6 +140,42 @@ class MemoryContractsRepository implements ContractsRepository {
       contactName: current.contactName,
       publicToken: token,
       publicPath: '/d/$token',
+      publicUrl: 'https://example.test/d/$token',
+    );
+    _documents[index] = next;
+    return next;
+  }
+
+  @override
+  Future<DocDocument> revokeDocument(
+    String kind,
+    String id,
+    int version,
+  ) async {
+    final index = _documents.indexWhere((d) => d.id == id && d.kind == kind);
+    if (index < 0) throw const ContractsRepositoryException('单据不存在');
+    final current = _documents[index];
+    if (current.version != version) {
+      throw const ContractsRepositoryException('版本冲突');
+    }
+    if (current.status != 'issued') {
+      throw const ContractsRepositoryException('仅已签发单据可撤销');
+    }
+    final next = DocDocument(
+      id: current.id,
+      templateId: current.templateId,
+      kind: current.kind,
+      contactId: current.contactId,
+      handoverId: current.handoverId,
+      title: current.title,
+      bodyFilled: current.bodyFilled,
+      amountCents: current.amountCents,
+      currency: current.currency,
+      status: 'archived',
+      issuedAt: current.issuedAt,
+      notes: current.notes,
+      version: current.version + 1,
+      contactName: current.contactName,
     );
     _documents[index] = next;
     return next;
@@ -152,4 +188,3 @@ class MemoryContractsRepository implements ContractsRepository {
     );
   }
 }
-

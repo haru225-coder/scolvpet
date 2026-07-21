@@ -142,6 +142,16 @@ class ContractsController extends ChangeNotifier {
     }
   });
 
+  Future<bool> revokeDocument(DocDocument item) => _run(() async {
+    await repository.revokeDocument(item.kind, item.id, item.version);
+    lastMessage = '${item.kindLabel}已撤销，客户链接已失效';
+    if (item.kind == 'receipt') {
+      await refreshReceipts();
+    } else {
+      await refreshContracts();
+    }
+  });
+
   Future<bool> _run(Future<void> Function() body) async {
     actionState = const I2AsyncState.loading();
     lastMessage = null;

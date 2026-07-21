@@ -42,6 +42,7 @@ class DocDocument {
     this.contactName,
     this.publicToken,
     this.publicPath,
+    this.publicUrl,
   });
 
   final String id;
@@ -60,6 +61,7 @@ class DocDocument {
   final String? contactName;
   final String? publicToken;
   final String? publicPath;
+  final String? publicUrl;
 
   String get kindLabel => kind == 'receipt' ? '回执' : '合同';
 
@@ -71,6 +73,7 @@ class DocDocument {
   };
 
   bool get isDraft => status == 'draft';
+  bool get isIssued => status == 'issued';
 
   String? get amountLabel {
     if (amountCents == null) return null;
@@ -95,6 +98,7 @@ class DocDocument {
     contactName: json['contact_name'] as String?,
     publicToken: json['public_token'] as String?,
     publicPath: json['public_path'] as String?,
+    publicUrl: json['public_url'] as String?,
   );
 
   /// 客户侧相对路径（/d/token）；无 token 时 null。
@@ -104,6 +108,13 @@ class DocDocument {
     final token = publicToken?.trim();
     if (token == null || token.isEmpty) return null;
     return '/d/$token';
+  }
+
+  /// 服务端给出的可直接发送给客户的完整链接。
+  String? get customerShareUrl {
+    final url = publicUrl?.trim();
+    if (url != null && url.isNotEmpty) return url;
+    return customerSharePath;
   }
 }
 

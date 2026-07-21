@@ -357,6 +357,9 @@ class _ContractsHubPageState extends State<ContractsHubPage>
           onIssue: item.isDraft && widget.canWrite
               ? () => widget.controller.issueDocument(item)
               : null,
+          onRevoke: item.isIssued && widget.canWrite
+              ? () => widget.controller.revokeDocument(item)
+              : null,
         ),
       ),
     );
@@ -982,10 +985,16 @@ class _DocumentsTab extends StatelessWidget {
 }
 
 class DocumentPreviewPage extends StatefulWidget {
-  const DocumentPreviewPage({super.key, required this.document, this.onIssue});
+  const DocumentPreviewPage({
+    super.key,
+    required this.document,
+    this.onIssue,
+    this.onRevoke,
+  });
 
   final DocDocument document;
   final Future<bool> Function()? onIssue;
+  final Future<bool> Function()? onRevoke;
 
   @override
   State<DocumentPreviewPage> createState() => _DocumentPreviewPageState();
@@ -1001,15 +1010,40 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
   }
 
   Future<void> _copyCustomerLink(BuildContext context) async {
-    final path = widget.document.customerSharePath;
-    if (path == null || path.isEmpty) {
+    final url = widget.document.customerShareUrl;
+    if (url == null || url.isEmpty) {
       showIosMessage(context, '仅已签发单据可分享客户链接');
       return;
     }
-    // 相对路径 /d/{token}；完整域名由宠舍按公开站配置转发客户。
-    await Clipboard.setData(ClipboardData(text: path));
+    await Clipboard.setData(ClipboardData(text: url));
     if (!context.mounted) return;
-    showIosMessage(context, '客户链接已复制：$path');
+    showIosMessage(context, '客户链接已复制：$url');
+  }
+
+  Future<void> _revoke(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('撤销${widget.document.kindLabel}？'),
+        content: const Text('撤销后客户公开链接会立即失效，且该操作不会恢复为草稿。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('暂不撤销'),
+          ),
+          FilledButton(
+            key: const Key('doc-revoke-confirm'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('确认撤销'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final ok = await widget.onRevoke!();
+    if (!context.mounted) return;
+    showIosMessage(context, ok ? '已撤销，客户链接已失效' : '撤销失败');
+    if (ok) Navigator.of(context).pop();
   }
 
   Future<void> _sharePdf(BuildContext context) async {
@@ -1059,7 +1093,7 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
             itemBuilder: (_) => [
               const PopupMenuItem(value: 'share', child: Text('分享 PDF')),
               const PopupMenuItem(value: 'print', child: Text('打印 / 保存 PDF')),
-              if (widget.document.customerSharePath != null)
+              if (widget.document.customerShareUrl != null)
                 const PopupMenuItem(
                   value: 'customer-link',
                   child: Text('复制客户链接'),
@@ -1155,6 +1189,15 @@ class _DocumentPreviewPageState extends State<DocumentPreviewPage> {
               },
               icon: const Icon(CupertinoIcons.checkmark_circle),
               label: const Text('签发'),
+            ),
+          ],
+          if (widget.onRevoke != null) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              key: const Key('doc-preview-revoke'),
+              onPressed: () => _revoke(context),
+              icon: const Icon(CupertinoIcons.xmark_circle),
+              label: Text('撤销${widget.document.kindLabel}并使链接失效'),
             ),
           ],
         ],
