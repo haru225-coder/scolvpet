@@ -19,7 +19,7 @@ class ApiClient {
             status != null && status >= 200 && status < 300,
       ),
     );
-    _dio.interceptors.add(_authInterceptor());
+    _dio.interceptors.add(_authInterceptor(normalizeHostRootPaths: false));
     api = DefaultApi(_dio);
 
     // P1/P2 generated clients emit absolute /v1/... paths; they must share the
@@ -34,12 +34,17 @@ class ApiClient {
             status != null && status >= 200 && status < 300,
       ),
     );
-    _p2Dio.interceptors.add(_authInterceptor());
+    _p2Dio.interceptors.add(_authInterceptor(normalizeHostRootPaths: true));
     p2Api = P2Api(_p2Dio);
   }
 
-  QueuedInterceptorsWrapper _authInterceptor() => QueuedInterceptorsWrapper(
+  QueuedInterceptorsWrapper _authInterceptor({
+    required bool normalizeHostRootPaths,
+  }) => QueuedInterceptorsWrapper(
     onRequest: (options, handler) async {
+      if (normalizeHostRootPaths) {
+        options.path = _normalizeV1Path(options.path);
+      }
       final token = await _sessionStore.readAccessToken();
       if (token != null && token.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $token';
@@ -47,6 +52,19 @@ class ApiClient {
       handler.next(options);
     },
   );
+
+  /// Collapse accidental `/v1/v1/...` and bare `/assistant/...` (404 on prod).
+  static String _normalizeV1Path(String path) {
+    var p = path.trim();
+    if (p.isEmpty) return p;
+    while (p.startsWith('/v1/v1/')) {
+      p = p.replaceFirst('/v1/v1/', '/v1/');
+    }
+    if (p.startsWith('/assistant/') || p == '/assistant') {
+      p = '/v1$p';
+    }
+    return p;
+  }
 
   late final Dio _dio;
   late final Dio _p2Dio;

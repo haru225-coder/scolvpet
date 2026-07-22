@@ -248,13 +248,15 @@ func (s *Store) MarkAssistantAction(
 		resultJSON = []byte("{}")
 	}
 	setExecuted := toStatus == "executed" || toStatus == "failed"
+	// Use string(resultJSON) + explicit casts: bare []byte as $5 once caused
+	// SQLSTATE 42P08 inconsistent parameter types on some pgx paths.
 	tag, err := s.Pool.Exec(ctx, `
 		UPDATE assistant_action
-		SET status=$4,
+		SET status=$4::text,
 		    result_json=$5::jsonb,
-		    executed_at=CASE WHEN $6::bool THEN now() ELSE executed_at END
-		WHERE owner_id=$1 AND id=$2 AND status=$3
-	`, ownerID, actionID, fromStatus, toStatus, resultJSON, setExecuted)
+		    executed_at=CASE WHEN $6::boolean THEN now() ELSE executed_at END
+		WHERE owner_id=$1 AND id=$2 AND status=$3::text
+	`, ownerID, actionID, fromStatus, toStatus, string(resultJSON), setExecuted)
 	if err != nil {
 		return AssistantAction{}, err
 	}

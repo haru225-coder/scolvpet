@@ -59,25 +59,62 @@ class SessionStore implements SessionStorePort {
   ];
   final FlutterSecureStorage _secureStorage;
 
+  /// Process-memory fallback when Keychain/secure storage fails after reinstall
+  /// or code-sign edge cases. Survives for the app process lifetime only.
+  String? _accessTokenMemory;
+  String? _refreshTokenMemory;
+
   @override
   Future<void> saveTokens({
     required String accessToken,
     required String refreshToken,
   }) async {
-    await _secureStorage.write(key: _accessTokenKey, value: accessToken);
-    await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
+    _accessTokenMemory = accessToken;
+    _refreshTokenMemory = refreshToken;
+    try {
+      await _secureStorage.write(key: _accessTokenKey, value: accessToken);
+      await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
+    } on Object {
+      // Memory copy already set; subsequent API calls in this process still auth.
+    }
   }
 
   @override
-  Future<String?> readAccessToken() =>
-      _secureStorage.read(key: _accessTokenKey);
+  Future<String?> readAccessToken() async {
+    if (_accessTokenMemory != null && _accessTokenMemory!.isNotEmpty) {
+      return _accessTokenMemory;
+    }
+    try {
+      final token = await _secureStorage.read(key: _accessTokenKey);
+      if (token != null && token.isNotEmpty) {
+        _accessTokenMemory = token;
+      }
+      return token;
+    } on Object {
+      return _accessTokenMemory;
+    }
+  }
 
   @override
-  Future<String?> readRefreshToken() =>
-      _secureStorage.read(key: _refreshTokenKey);
+  Future<String?> readRefreshToken() async {
+    if (_refreshTokenMemory != null && _refreshTokenMemory!.isNotEmpty) {
+      return _refreshTokenMemory;
+    }
+    try {
+      final token = await _secureStorage.read(key: _refreshTokenKey);
+      if (token != null && token.isNotEmpty) {
+        _refreshTokenMemory = token;
+      }
+      return token;
+    } on Object {
+      return _refreshTokenMemory;
+    }
+  }
 
   @override
   Future<void> clear() async {
+    _accessTokenMemory = null;
+    _refreshTokenMemory = null;
     // Logout is a best-effort local boundary: one storage backend failing must
     // not prevent the other account-bound values from being removed.
     try {
