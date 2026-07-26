@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 var (
@@ -52,6 +53,14 @@ type Persistence interface {
 	// CheckAndHitRateLimit enforces cooldown/window limits.
 	// Returns remaining cooldown seconds when blocked (0 when allowed).
 	CheckAndHitRateLimit(ctx context.Context, bucketKey string, cooldown time.Duration, maxPerWindow int, window time.Duration, now time.Time) (retryAfterSeconds int, err error)
+}
+
+// RefreshTxPersistence lets a caller that already holds a transaction rotate a
+// refresh session on it. Implementations are optional: RefreshTx falls back to
+// Refresh when the configured Persistence does not provide it.
+type RefreshTxPersistence interface {
+	LookupRefreshSessionTx(context.Context, pgx.Tx, string, time.Time) (uuid.UUID, error)
+	RotateRefreshSessionTx(context.Context, pgx.Tx, string, string, uuid.UUID, time.Time, time.Time) error
 }
 
 type SMSProvider interface {
@@ -238,6 +247,50 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (accessToken
 	delete(s.refreshOwner, refreshToken)
 	s.refresh[nextRefreshToken] = ownerID
 	s.refreshOwner[nextRefreshToken] = ownerID
+	return accessToken, nextRefreshToken, nil
+}
+
+// RefreshTx rotates the session on a transaction the caller already owns.
+//
+// Refresh cannot be used from inside a transaction: it takes the service mutex
+// and then asks the pool for a second connection, so once concurrent refreshes
+// reach DB_MAX_CONNS every one of them holds a connection while waiting for the
+// mutex holder, which is itself waiting for a connection that can never free.
+// Reusing the caller's transaction keeps the whole rotation on one connection,
+// and the mutex is not needed at all because the persistence path touches none
+// of the in-memory maps it guards.
+func (s *Service) RefreshTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	refreshToken string,
+) (accessToken, nextRefreshToken string, err error) {
+	txPersistence, ok := s.persistence.(RefreshTxPersistence)
+	if !ok {
+		return s.Refresh(ctx, refreshToken)
+	}
+	now := time.Now().UTC()
+	ownerID, err := txPersistence.LookupRefreshSessionTx(ctx, tx, digestHex(refreshToken), now)
+	if err != nil {
+		return "", "", err
+	}
+	claims := tokenClaims{
+		Subject: ownerID.String(),
+		Expires: now.Add(time.Hour).Unix(),
+		JTI:     uuid.NewString(),
+	}
+	accessToken = s.sign(claims)
+	nextRefreshToken = "rt_" + uuid.NewString()
+	if err := txPersistence.RotateRefreshSessionTx(
+		ctx,
+		tx,
+		digestHex(refreshToken),
+		digestHex(nextRefreshToken),
+		ownerID,
+		now.Add(30*24*time.Hour),
+		now,
+	); err != nil {
+		return "", "", err
+	}
 	return accessToken, nextRefreshToken, nil
 }
 

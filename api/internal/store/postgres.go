@@ -176,13 +176,16 @@ func (s *Store) RunIdempotent(ctx context.Context, ownerID uuid.UUID, key, metho
 	var existingHash, status string
 	var responseStatus *int
 	var responseBody []byte
+	var expired bool
 	err = tx.QueryRow(ctx, `
-		SELECT request_hash, status, response_status, response_body
+		SELECT request_hash, status, response_status, response_body, expires_at <= now()
 		FROM idempotency_record
 		WHERE owner_id=$1 AND idempotency_key=$2
 		FOR UPDATE
-	`, ownerID, key).Scan(&existingHash, &status, &responseStatus, &responseBody)
-	if err == nil {
+	`, ownerID, key).Scan(&existingHash, &status, &responseStatus, &responseBody, &expired)
+	reclaimed := false
+	switch {
+	case err == nil && !expired:
 		if existingHash != hashHex {
 			return IdempotentResult{}, ErrIdempotencyPayloadMismatch
 		}
@@ -197,22 +200,36 @@ func (s *Store) RunIdempotent(ctx context.Context, ownerID uuid.UUID, key, metho
 		}
 		body, headers := decodeStoredResponse(responseBody)
 		return IdempotentResult{Status: *responseStatus, Body: body, Headers: headers, Replayed: true}, nil
-	}
-	if !errors.Is(err, pgx.ErrNoRows) {
+	case err == nil:
+		// Past its retention window the stored response is no longer a valid
+		// replay source, so the key starts a fresh attempt instead.
+		if _, execErr := tx.Exec(ctx, `
+			UPDATE idempotency_record
+			SET request_method=$3, request_path=$4, request_hash=$5, status='processing',
+				response_status=NULL, response_body=NULL, completed_at=NULL,
+				locked_at=now(), expires_at=now()+interval '24 hours', updated_at=now()
+			WHERE owner_id=$1 AND idempotency_key=$2
+		`, ownerID, key, method, path, hashHex); execErr != nil {
+			return IdempotentResult{}, execErr
+		}
+		reclaimed = true
+	case !errors.Is(err, pgx.ErrNoRows):
 		return IdempotentResult{}, err
 	}
 
-	_, err = tx.Exec(ctx, `
-		INSERT INTO idempotency_record
-		(owner_id, idempotency_key, request_method, request_path, request_hash, status, expires_at)
-		VALUES ($1,$2,$3,$4,$5,'processing',now()+interval '24 hours')
-	`, ownerID, key, method, path, hashHex)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return IdempotentResult{}, ErrIdempotencyInProgress
+	if !reclaimed {
+		_, err = tx.Exec(ctx, `
+			INSERT INTO idempotency_record
+			(owner_id, idempotency_key, request_method, request_path, request_hash, status, expires_at)
+			VALUES ($1,$2,$3,$4,$5,'processing',now()+interval '24 hours')
+		`, ownerID, key, method, path, hashHex)
+		if err != nil {
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+				return IdempotentResult{}, ErrIdempotencyInProgress
+			}
+			return IdempotentResult{}, err
 		}
-		return IdempotentResult{}, err
 	}
 
 	statusCode, body, headers, err := fn(ctx, tx)

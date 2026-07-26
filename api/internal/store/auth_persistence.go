@@ -88,9 +88,6 @@ func (s *Store) CreateRefreshSession(ctx context.Context, tokenHash string, owne
 }
 
 func (s *Store) LookupRefreshSession(ctx context.Context, tokenHash string, now time.Time) (uuid.UUID, error) {
-	var ownerID uuid.UUID
-	var expiresAt time.Time
-	var revokedAt *time.Time
 	_, err := s.Pool.Exec(ctx, `
 		DELETE FROM auth_refresh_session
 		WHERE expires_at <= $1 AND revoked_at IS NULL AND consumed_at IS NULL
@@ -98,7 +95,38 @@ func (s *Store) LookupRefreshSession(ctx context.Context, tokenHash string, now 
 	if err != nil {
 		return uuid.Nil, err
 	}
-	err = s.Pool.QueryRow(ctx, `
+	return lookupRefreshSession(ctx, s.Pool, tokenHash, now)
+}
+
+// LookupRefreshSessionTx reads the session on a transaction the caller already
+// owns, so a handler inside an idempotency transaction never waits on a second
+// pooled connection. The opportunistic cleanup of LookupRefreshSession is left
+// out on purpose: writing to shared rows inside the caller's transaction would
+// widen its lock footprint, and OwnerForRefresh already runs that sweep earlier
+// in the same request.
+func (s *Store) LookupRefreshSessionTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	tokenHash string,
+	now time.Time,
+) (uuid.UUID, error) {
+	return lookupRefreshSession(ctx, tx, tokenHash, now)
+}
+
+type refreshSessionQueryer interface {
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+}
+
+func lookupRefreshSession(
+	ctx context.Context,
+	queryer refreshSessionQueryer,
+	tokenHash string,
+	now time.Time,
+) (uuid.UUID, error) {
+	var ownerID uuid.UUID
+	var expiresAt time.Time
+	var revokedAt *time.Time
+	err := queryer.QueryRow(ctx, `
 		SELECT owner_id, expires_at, revoked_at
 		FROM auth_refresh_session
 		WHERE token_sha256=$1
@@ -122,8 +150,33 @@ func (s *Store) RotateRefreshSession(ctx context.Context, tokenHash, nextTokenHa
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
+	if err := rotateRefreshSession(ctx, tx, tokenHash, nextTokenHash, ownerID, expiresAt, now); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+// RotateRefreshSessionTx rotates on the caller's transaction; see
+// LookupRefreshSessionTx for why the refresh path must not open its own.
+func (s *Store) RotateRefreshSessionTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	tokenHash, nextTokenHash string,
+	ownerID uuid.UUID,
+	expiresAt, now time.Time,
+) error {
+	return rotateRefreshSession(ctx, tx, tokenHash, nextTokenHash, ownerID, expiresAt, now)
+}
+
+func rotateRefreshSession(
+	ctx context.Context,
+	tx pgx.Tx,
+	tokenHash, nextTokenHash string,
+	ownerID uuid.UUID,
+	expiresAt, now time.Time,
+) error {
 	var currentOwner uuid.UUID
-	err = tx.QueryRow(ctx, `
+	err := tx.QueryRow(ctx, `
 		UPDATE auth_refresh_session
 		SET consumed_at=$3, last_used_at=$3
 		WHERE token_sha256=$1 AND owner_id=$2
@@ -139,13 +192,11 @@ func (s *Store) RotateRefreshSession(ctx context.Context, tokenHash, nextTokenHa
 	if currentOwner != ownerID {
 		return auth.ErrInvalidRefresh
 	}
-	if _, err := tx.Exec(ctx, `
+	_, err = tx.Exec(ctx, `
 		INSERT INTO auth_refresh_session (owner_id, token_sha256, expires_at)
 		VALUES ($1, $2, $3)
-	`, ownerID, nextTokenHash, expiresAt); err != nil {
-		return err
-	}
-	return tx.Commit(ctx)
+	`, ownerID, nextTokenHash, expiresAt)
+	return err
 }
 
 func (s *Store) RevokeRefreshSession(ctx context.Context, tokenHash string, now time.Time) error {

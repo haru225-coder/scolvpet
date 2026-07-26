@@ -296,7 +296,7 @@ func (s *Server) refreshSession(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return 0, nil, nil, err
 		}
-		accessToken, nextRefreshToken, err := s.Auth.Refresh(ctx, request.RefreshToken)
+		accessToken, nextRefreshToken, err := s.Auth.RefreshTx(ctx, tx, request.RefreshToken)
 		if err != nil {
 			return 0, nil, nil, err
 		}
@@ -333,33 +333,23 @@ func (s *Server) deleteSession(w http.ResponseWriter, r *http.Request) {
 	if refreshToken == "" {
 		refreshToken = strings.TrimSpace(r.Header.Get("X-Refresh-Token"))
 	}
-	payload := []byte(`{"action":"logout"}`)
-	key := r.Header.Get("Idempotency-Key")
-	if strings.TrimSpace(key) == "" {
-		key = "logout-" + ownerID.String()
-	}
-	result, err := s.Store.RunIdempotent(r.Context(), ownerID, key, http.MethodDelete, r.URL.Path, payload, func(ctx context.Context, _ pgx.Tx) (int, any, map[string]string, error) {
-		if err := s.Auth.RevokeAccess(ctx, accessToken); err != nil {
-			return 0, nil, nil, err
-		}
-		if refreshToken != "" {
-			if err := s.Auth.RevokeRefresh(ctx, refreshToken); err != nil {
-				return 0, nil, nil, err
-			}
-		} else {
-			// Without a refresh token in the request, revoke all active sessions for this account.
-			if err := s.Auth.RevokeAllRefreshForOwner(ctx, ownerID); err != nil {
-				return 0, nil, nil, err
-			}
-		}
-		return http.StatusNoContent, nil, map[string]string{}, nil
-	})
-	if err != nil {
+	// Revocation must never run behind a stored-response cache: a replayed 204
+	// would report success while leaving the token family live.
+	if err := s.Auth.RevokeAccess(r.Context(), accessToken); err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
-	for key, value := range result.Headers {
-		w.Header().Set(key, value)
+	if refreshToken != "" {
+		if err := s.Auth.RevokeRefresh(r.Context(), refreshToken); err != nil {
+			writeAPIError(w, r, err)
+			return
+		}
+	} else {
+		// Without a refresh token in the request, revoke all active sessions for this account.
+		if err := s.Auth.RevokeAllRefreshForOwner(r.Context(), ownerID); err != nil {
+			writeAPIError(w, r, err)
+			return
+		}
 	}
 	w.Header().Set("Idempotency-Key", r.Header.Get("Idempotency-Key"))
 	w.WriteHeader(http.StatusNoContent)

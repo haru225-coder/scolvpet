@@ -50,9 +50,15 @@ func ResolvePrincipalContextTx(
 	return principal, organization, nil
 }
 
-// ResolveLoginPrincipalTx accepts the newest pending invite for the verified
-// phone and selects the most recently joined non-owner organization. If no
-// team membership exists, the account keeps its own personal organization.
+// ResolveLoginPrincipalTx onboards an account that has no organization yet by
+// accepting the newest pending invite for its verified phone, then resolves the
+// active principal.
+//
+// Anyone can invite an arbitrary phone number, so an invite must never move an
+// account that already belongs somewhere: that would let a stranger redirect a
+// cattery owner's whole session into their own tenant. Accounts that already
+// have an active membership keep it, and their pending invites stay 'invited'
+// until an explicit accept flow exists.
 func ResolveLoginPrincipalTx(
 	ctx context.Context,
 	tx pgx.Tx,
@@ -67,6 +73,13 @@ func ResolveLoginPrincipalTx(
 			WHERE phone=$2
 			  AND status='invited'
 			  AND (account_id IS NULL OR account_id=$1)
+			  AND NOT EXISTS (
+				SELECT 1 FROM organization_member
+				WHERE account_id=$1 AND status='active'
+			  )
+			  AND NOT EXISTS (
+				SELECT 1 FROM organization WHERE owner_id=$1
+			  )
 			ORDER BY invited_at DESC, created_at DESC, id DESC
 			LIMIT 1
 		)
@@ -125,7 +138,7 @@ func resolvePrincipal(
 		FROM organization_member
 		WHERE account_id=$1 AND status='active'
 		ORDER BY
-			CASE WHEN role='owner' THEN 1 ELSE 0 END,
+			CASE WHEN role='owner' THEN 0 ELSE 1 END,
 			accepted_at DESC NULLS LAST,
 			updated_at DESC,
 			id DESC
