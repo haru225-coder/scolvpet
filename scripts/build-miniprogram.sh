@@ -15,7 +15,7 @@
 #   MP_TARGET_DIR  override target dir (tests only)
 #
 # Fail-closed (MP_APP_ENV=production only — dev builds pass through):
-#   - MP_APPID empty or touristappid
+#   - MP_APPID empty, touristappid, or not wx + 16 lowercase hex chars
 #   - MP_API_BASE hits p.scolv.com, carries an explicit port, or is not https://
 set -euo pipefail
 
@@ -84,6 +84,14 @@ APPID="${MP_APPID:-$DEV_APPID}"
 if [ "$APP_ENV" = "production" ]; then
   test -n "$APPID" || fail 'MP_APPID is required for production builds'
   [ "$APPID" != "touristappid" ] || fail 'MP_APPID must not be touristappid for production builds'
+  case "$APPID" in
+    wx*) ;;
+    *) fail "MP_APPID must start with wx for production builds, got $APPID" ;;
+  esac
+  [ "${#APPID}" -eq 18 ] || fail "MP_APPID must be wx + 16 hex chars (18 total), got ${#APPID} chars: $APPID"
+  case "${APPID#wx}" in
+    *[!0-9a-f]*) fail "MP_APPID must be wx followed by 16 lowercase hex chars, got $APPID" ;;
+  esac
   case "$API_BASE" in
     https://*) ;;
     *) fail "MP_API_BASE must start with https://, got $API_BASE" ;;

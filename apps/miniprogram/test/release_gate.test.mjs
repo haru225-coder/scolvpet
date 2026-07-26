@@ -45,6 +45,9 @@ test('production build fails closed on bad values', (t) => {
   const badCases = [
     ['empty appid', { ...GOOD_ENV, MP_APPID: '' }],
     ['touristappid', { ...GOOD_ENV, MP_APPID: 'touristappid' }],
+    ['appid without wx prefix', { ...GOOD_ENV, MP_APPID: 'ab1234567890abcdef' }],
+    ['appid wrong length', { ...GOOD_ENV, MP_APPID: 'wx1234' }],
+    ['appid non-hex tail', { ...GOOD_ENV, MP_APPID: 'wx1234567890abcdeZ' }],
     ['staging host', { ...GOOD_ENV, MP_API_BASE: 'https://p.scolv.com' }],
     ['explicit port', { ...GOOD_ENV, MP_API_BASE: 'https://api.scolv.example:8443' }],
     ['plain http', { ...GOOD_ENV, MP_API_BASE: 'http://api.scolv.example' }],
