@@ -20,6 +20,7 @@ import (
 	"github.com/scolvpet/scolvpet/api/internal/objectstore"
 	"github.com/scolvpet/scolvpet/api/internal/ratelimit"
 	"github.com/scolvpet/scolvpet/api/internal/store"
+	"github.com/scolvpet/scolvpet/api/internal/wechat"
 )
 
 type Server struct {
@@ -28,6 +29,8 @@ type Server struct {
 	Logger        *slog.Logger
 	ImportObjects objectstore.ObjectStore
 	RateLimiter   *ratelimit.Postgres
+	// Wechat exchanges wx.login js_codes for customer identities (P2).
+	Wechat wechat.Provider
 	// Environment is APP_ENV (development|test|staging|production).
 	// Sandbox entitlement routes are only registered outside production.
 	Environment string
