@@ -1,8 +1,14 @@
 SHELL := /bin/bash
 
 -include .env
-# LLM 出站（Grok2API）；make 配方默认不 export 变量，这里显式导出给 api-run/smoke。
-export AI_API_KEY AI_BASE_URL AI_MODEL XAI_API_KEY XAI_BASE_URL XAI_MODEL
+# LLM 出站（Grok2API）；仅 api-run/smoke 启动的 API 会外呼模型，按目标导出，
+# 避免真实付费 key 进入其余所有配方的子进程（docs/31 §5.8）。
+api-run smoke: export AI_API_KEY := $(AI_API_KEY)
+api-run smoke: export AI_BASE_URL := $(AI_BASE_URL)
+api-run smoke: export AI_MODEL := $(AI_MODEL)
+api-run smoke: export XAI_API_KEY := $(XAI_API_KEY)
+api-run smoke: export XAI_BASE_URL := $(XAI_BASE_URL)
+api-run smoke: export XAI_MODEL := $(XAI_MODEL)
 
 OPENAPI_GENERATOR_VERSION := 7.23.0
 DATABASE_URL ?= postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
@@ -111,10 +117,11 @@ release-android:
 	$(call check_release_url,PRODUCTION_API_BASE_URL,$${PRODUCTION_API_BASE_URL:-}); \
 	$(call check_release_url,PRODUCTION_PUBLIC_SITE_HOST,$${PRODUCTION_PUBLIC_SITE_HOST:-}); \
 	STORE_FILE="$${SCOLVPET_UPLOAD_STORE_FILE:-$$(grep -E '^SCOLVPET_UPLOAD_STORE_FILE=' apps/mobile/android/mobile-identifiers.properties 2>/dev/null | cut -d= -f2-)}"; \
-	STORE_PASS="$${SCOLVPET_UPLOAD_STORE_PASSWORD:-$$(grep -E '^SCOLVPET_UPLOAD_STORE_PASSWORD=' apps/mobile/android/mobile-identifiers.properties 2>/dev/null | cut -d= -f2-)}"; \
 	KEY_ALIAS="$${SCOLVPET_UPLOAD_KEY_ALIAS:-$$(grep -E '^SCOLVPET_UPLOAD_KEY_ALIAS=' apps/mobile/android/mobile-identifiers.properties 2>/dev/null | cut -d= -f2-)}"; \
-	KEY_PASS="$${SCOLVPET_UPLOAD_KEY_PASSWORD:-$$(grep -E '^SCOLVPET_UPLOAD_KEY_PASSWORD=' apps/mobile/android/mobile-identifiers.properties 2>/dev/null | cut -d= -f2-)}"; \
-	test -n "$$STORE_FILE" -a -n "$$STORE_PASS" -a -n "$$KEY_ALIAS" -a -n "$$KEY_PASS" || { echo 'SCOLVPET_UPLOAD_* keystore credentials required' >&2; exit 1; }; \
+	STORE_PASS="$${SCOLVPET_UPLOAD_STORE_PASSWORD:-}"; \
+	KEY_PASS="$${SCOLVPET_UPLOAD_KEY_PASSWORD:-}"; \
+	test -n "$$STORE_PASS" -a -n "$$KEY_PASS" || { echo 'keystore passwords must come from env (SCOLVPET_UPLOAD_STORE_PASSWORD / SCOLVPET_UPLOAD_KEY_PASSWORD), never from a versioned file' >&2; exit 1; }; \
+	test -n "$$STORE_FILE" -a -n "$$KEY_ALIAS" || { echo 'SCOLVPET_UPLOAD_STORE_FILE / SCOLVPET_UPLOAD_KEY_ALIAS required' >&2; exit 1; }; \
 	test -f "$$STORE_FILE" || { echo "keystore file not found: $$STORE_FILE" >&2; exit 1; }; \
 	export SCOLVPET_UPLOAD_STORE_FILE="$$STORE_FILE" SCOLVPET_UPLOAD_STORE_PASSWORD="$$STORE_PASS" SCOLVPET_UPLOAD_KEY_ALIAS="$$KEY_ALIAS" SCOLVPET_UPLOAD_KEY_PASSWORD="$$KEY_PASS"; \
 	cd apps/mobile && GRADLE_OPTS="$${GRADLE_OPTS:-} $(FLUTTER_GRADLE_OPTS)" $(TIMEOUT_SCRIPT) $(FLUTTER_BUILD_TIMEOUT_SECONDS) \

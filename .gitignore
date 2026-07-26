@@ -10,4 +10,9 @@ apps/mobile/android/local.properties
 # Audit hand-off bundles (30MB+ build artifacts, regenerate instead of committing).
 ScolvPet_*_audit_*.zip
 ScolvPet_*_audit_*.sha256
+# Signing material must never enter version control.
+*.jks
+*.keystore
+*.p12
+**/key.properties
 
