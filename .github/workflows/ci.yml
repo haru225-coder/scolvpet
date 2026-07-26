@@ -34,16 +34,27 @@ jobs:
           channel: stable
       - name: OpenAPI lint
         run: make openapi-lint
+      - name: OpenAPI ↔ server route conformance
+        run: make openapi-conformance
       - name: Migration source drift
         run: make migration-drift
       - name: Generated dart-dio client drift
         run: make client-drift
+      - name: Mini-program contract tests
+        run: make miniprogram-test
       - name: Web lint
         run: make web-lint
       - name: Flutter dependencies
         run: make flutter-pub-get
       - name: Flutter analyze
         run: make flutter-analyze
+      - name: App version constant matches pubspec
+        run: |
+          set -euo pipefail
+          PUBSPEC_VERSION="$(sed -n 's/^version:[[:space:]]*//p' apps/mobile/pubspec.yaml | head -1 | tr -d '\r')"
+          CONST_VERSION="$(sed -n "s/.*defaultValue: '\\([^']*\\)'.*/\\1/p" apps/mobile/lib/core/app_version.dart | head -1)"
+          test "$PUBSPEC_VERSION" = "$CONST_VERSION"
+          echo "app version ok: $PUBSPEC_VERSION"
 
   test:
     name: test
@@ -82,15 +93,33 @@ jobs:
           DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
         run: DATABASE_URL="$DATABASE_URL" db/scripts/migrate.sh --seed
       - name: API unit tests
+        env:
+          # Required so store public-idempotency concurrency tests do not silent-SKIP.
+          DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
+          AUTH_TEST_DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
         run: make api-test
       - name: API I1 smoke and integration checks
         env:
           DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
         run: make smoke
+      - name: Public reservation smoke
+        env:
+          DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
+        run: make reservation-smoke
+      - name: Media smoke
+        env:
+          DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
+        run: make media-smoke
+      - name: Object store smoke
+        env:
+          DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
+        run: make objectstore-smoke
       - name: Outbox claim and retry checks
         env:
           DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
         run: make outbox-test
+      - name: Timeout wrapper check
+        run: make timeout-test
       - name: Web tests
         run: make web-test
       - name: Flutter tests
