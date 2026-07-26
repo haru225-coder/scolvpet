@@ -51,16 +51,17 @@ MIGRATIONS="$(psql -XAt "$URL" -c "select count(*) from scolvpet_meta.schema_mig
 LAST_MIGRATION="$(psql -XAt "$URL" -c "select max(migration_name) from scolvpet_meta.schema_migrations;")"
 ASSISTANT_TABLES="$(psql -XAt "$URL" -c "select count(*) from pg_class where relkind='r' and relnamespace='public'::regnamespace and relname in ('assistant_session', 'assistant_message', 'assistant_action');")"
 
-# Baseline after migrations 0000–0039 (I1–I6 + CRM/合同/公开主页/预订/Assistant
+# Baseline after migrations 0000–0040 (I1–I6 + CRM/合同/公开主页/预订/Assistant
 # and the P0 security persistence tables).
 # 0032 adds hamster cover media fields; 0033 adds the three Assistant tables;
-# 0034–0039 add the audit, customer, idempotency, and token-revocation tables.
-[[ "$TABLES" == "72" ]] || { printf 'table count mismatch: %s\n' "$TABLES" >&2; exit 1; }
+# 0034–0039 add the audit, customer, idempotency, and token-revocation tables;
+# 0040 adds the WeChat identity binding and bind-ticket tables.
+[[ "$TABLES" == "74" ]] || { printf 'table count mismatch: %s\n' "$TABLES" >&2; exit 1; }
 [[ "$ENUMS" == "75" ]] || { printf 'enum count mismatch: %s\n' "$ENUMS" >&2; exit 1; }
 [[ "$RULES" == "1" ]] || { printf 'seed rule count mismatch: %s\n' "$RULES" >&2; exit 1; }
 [[ "$META_TABLES" == "1" ]] || { printf 'metadata table count mismatch: %s\n' "$META_TABLES" >&2; exit 1; }
-[[ "$MIGRATIONS" == "40" ]] || { printf 'migration count mismatch: %s\n' "$MIGRATIONS" >&2; exit 1; }
-[[ "$LAST_MIGRATION" == "0039_auth_token_revocation.sql" ]] || { printf 'last migration mismatch: %s\n' "$LAST_MIGRATION" >&2; exit 1; }
+[[ "$MIGRATIONS" == "41" ]] || { printf 'migration count mismatch: %s\n' "$MIGRATIONS" >&2; exit 1; }
+[[ "$LAST_MIGRATION" == "0040_customer_wechat_identity.sql" ]] || { printf 'last migration mismatch: %s\n' "$LAST_MIGRATION" >&2; exit 1; }
 [[ "$ASSISTANT_TABLES" == "3" ]] || { printf 'assistant table count mismatch: %s\n' "$ASSISTANT_TABLES" >&2; exit 1; }
 
 printf 'fresh postgres verified: tables=%s enums=%s system_rules=%s metadata_tables=%s migrations=%s last_migration=%s assistant_tables=%s replay=stable seed_replay=idempotent checksum_drift=detected port=%s\n' "$TABLES" "$ENUMS" "$RULES" "$META_TABLES" "$MIGRATIONS" "$LAST_MIGRATION" "$ASSISTANT_TABLES" "$PORT"

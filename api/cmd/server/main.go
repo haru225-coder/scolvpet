@@ -18,6 +18,7 @@ import (
 	"github.com/scolvpet/scolvpet/api/internal/outbox"
 	"github.com/scolvpet/scolvpet/api/internal/sms"
 	"github.com/scolvpet/scolvpet/api/internal/store"
+	"github.com/scolvpet/scolvpet/api/internal/wechat"
 	"github.com/scolvpet/scolvpet/api/internal/worker"
 )
 
@@ -81,6 +82,20 @@ func main() {
 	// replaces it with the configured local or S3-compatible implementation.
 	apiServer.ImportObjects = importObjects
 	apiServer.Environment = config.Environment
+	switch config.WechatProvider {
+	case "mock":
+		apiServer.Wechat = wechat.MockProvider{}
+	case "http":
+		wechatProvider, wechatErr := wechat.NewHTTPProvider(config.WechatAppID, config.WechatSecret)
+		if wechatErr != nil {
+			logger.Error("wechat provider config invalid", "error", wechatErr)
+			os.Exit(1)
+		}
+		apiServer.Wechat = wechatProvider
+	default:
+		logger.Error("wechat provider unsupported", "provider", config.WechatProvider)
+		os.Exit(1)
+	}
 	outboxWorker := worker.New(pool, logger)
 	outboxWorker.LeaseDuration = time.Duration(config.OutboxLeaseSeconds) * time.Second
 	switch config.OutboxPublisherMode {

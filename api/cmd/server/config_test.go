@@ -96,6 +96,9 @@ func TestLoadRuntimeConfigProductionAcceptsConfiguredHTTPSMSProvider(t *testing.
 		"SMS_PROVIDER":              "http",
 		"SMS_HTTP_ENDPOINT":         "https://sms.example.test/send",
 		"SMS_HTTP_TOKEN":            "token-from-secret-manager",
+		"WECHAT_PROVIDER":           "http",
+		"WECHAT_APPID":              "wx1234567890abcdef",
+		"WECHAT_SECRET":             "wechat-secret-from-secret-manager",
 		"OBJECT_STORE_PROVIDER":     "s3",
 		"OBJECT_STORE_ENDPOINT":     "https://s3.us-east-1.amazonaws.com",
 		"OBJECT_STORE_BUCKET":       "scolvpet-production",
@@ -112,6 +115,52 @@ func TestLoadRuntimeConfigProductionAcceptsConfiguredHTTPSMSProvider(t *testing.
 	}
 }
 
+func TestLoadRuntimeConfigWechatDefaultsToMock(t *testing.T) {
+	config, err := loadRuntimeConfigFrom(mapLookup(map[string]string{}))
+	if err != nil {
+		t.Fatalf("load development config: %v", err)
+	}
+	if config.WechatProvider != "mock" {
+		t.Fatalf("wechat provider default: got %q", config.WechatProvider)
+	}
+}
+
+func TestLoadRuntimeConfigRejectsUnknownWechatProvider(t *testing.T) {
+	_, err := loadRuntimeConfigFrom(mapLookup(map[string]string{"WECHAT_PROVIDER": "real"}))
+	if err == nil || !strings.Contains(err.Error(), "WECHAT_PROVIDER must be one of") {
+		t.Fatalf("expected wechat provider validation error, got %v", err)
+	}
+}
+
+func TestLoadRuntimeConfigProductionRequiresWechatHTTPProvider(t *testing.T) {
+	_, err := loadRuntimeConfigFrom(mapLookup(map[string]string{"APP_ENV": "production"}))
+	if err == nil {
+		t.Fatal("expected production config rejection")
+	}
+	if !strings.Contains(err.Error(), "WECHAT_PROVIDER must be http for the production code2Session exchange") {
+		t.Fatalf("production error missing wechat provider issue: %v", err)
+	}
+}
+
+func TestLoadRuntimeConfigProductionRequiresWechatCredentials(t *testing.T) {
+	_, err := loadRuntimeConfigFrom(mapLookup(map[string]string{
+		"APP_ENV":         "production",
+		"WECHAT_PROVIDER": "http",
+	}))
+	if err == nil {
+		t.Fatal("expected production config rejection")
+	}
+	message := err.Error()
+	for _, expected := range []string{
+		"WECHAT_APPID must be explicitly set",
+		"WECHAT_SECRET must be explicitly set",
+	} {
+		if !strings.Contains(message, expected) {
+			t.Fatalf("production error missing %q: %s", expected, message)
+		}
+	}
+}
+
 func TestLoadRuntimeConfigMinIODefaultsToPathStyle(t *testing.T) {
 	values := map[string]string{
 		"APP_ENV":                   "production",
@@ -120,6 +169,9 @@ func TestLoadRuntimeConfigMinIODefaultsToPathStyle(t *testing.T) {
 		"SMS_PROVIDER":              "http",
 		"SMS_HTTP_ENDPOINT":         "https://sms.example.test/send",
 		"SMS_HTTP_TOKEN":            "token-from-secret-manager",
+		"WECHAT_PROVIDER":           "http",
+		"WECHAT_APPID":              "wx1234567890abcdef",
+		"WECHAT_SECRET":             "wechat-secret-from-secret-manager",
 		"OBJECT_STORE_PROVIDER":     "minio",
 		"OBJECT_STORE_ENDPOINT":     "http://minio.internal:9000",
 		"OBJECT_STORE_BUCKET":       "scolvpet-production",

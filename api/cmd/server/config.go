@@ -27,6 +27,9 @@ type runtimeConfig struct {
 	SMSMockCode              string
 	SMSHTTPEndpoint          string
 	SMSHTTPToken             string
+	WechatProvider           string
+	WechatAppID              string
+	WechatSecret             string
 	ObjectStoreProvider      string
 	ObjectStoreLocalRoot     string
 	ObjectStoreEndpoint      string
@@ -81,6 +84,10 @@ func loadRuntimeConfigFrom(lookup envLookup) (runtimeConfig, error) {
 	if objectStoreProvider != "" && objectStoreProvider != "local" && objectStoreProvider != "s3" && objectStoreProvider != "minio" {
 		return runtimeConfig{}, fmt.Errorf("OBJECT_STORE_PROVIDER must be one of local, s3, minio; got %q", objectStoreProvider)
 	}
+	wechatProvider := strings.ToLower(strings.TrimSpace(envOrDefault(lookup, "WECHAT_PROVIDER", "mock")))
+	if wechatProvider != "mock" && wechatProvider != "http" {
+		return runtimeConfig{}, fmt.Errorf("WECHAT_PROVIDER must be one of mock, http; got %q", wechatProvider)
+	}
 	outboxPublisherMode := strings.ToLower(strings.TrimSpace(envOrDefault(lookup, "OUTBOX_PUBLISHER_MODE", "success")))
 	if outboxPublisherMode != "success" && outboxPublisherMode != "fail" && outboxPublisherMode != "http" {
 		return runtimeConfig{}, fmt.Errorf("OUTBOX_PUBLISHER_MODE must be one of success, fail, http; got %q", outboxPublisherMode)
@@ -99,6 +106,9 @@ func loadRuntimeConfigFrom(lookup envLookup) (runtimeConfig, error) {
 		SMSMockCode:              smsMockCode,
 		SMSHTTPEndpoint:          strings.TrimSpace(envOrDefault(lookup, "SMS_HTTP_ENDPOINT", "")),
 		SMSHTTPToken:             envOrDefault(lookup, "SMS_HTTP_TOKEN", ""),
+		WechatProvider:           wechatProvider,
+		WechatAppID:              strings.TrimSpace(envOrDefault(lookup, "WECHAT_APPID", "")),
+		WechatSecret:             strings.TrimSpace(envOrDefault(lookup, "WECHAT_SECRET", "")),
 		ObjectStoreProvider:      strings.ToLower(strings.TrimSpace(objectStoreProvider)),
 		ObjectStoreLocalRoot:     envOrDefault(lookup, "IMPORT_OBJECT_STORE_DIR", ""),
 		ObjectStoreEndpoint:      strings.TrimRight(strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_ENDPOINT", "")), "/"),
@@ -154,6 +164,16 @@ func validateProductionConfig(lookup envLookup, config runtimeConfig) error {
 	}
 	if config.SMSMockCode != "" {
 		issues = append(issues, "SMS_MOCK_CODE must be empty in production")
+	}
+	if config.WechatProvider != "http" {
+		issues = append(issues, "WECHAT_PROVIDER must be http for the production code2Session exchange")
+	} else {
+		if config.WechatAppID == "" {
+			issues = append(issues, "WECHAT_APPID must be explicitly set")
+		}
+		if config.WechatSecret == "" {
+			issues = append(issues, "WECHAT_SECRET must be explicitly set")
+		}
 	}
 	if config.ObjectStoreProvider != "s3" && config.ObjectStoreProvider != "minio" {
 		issues = append(issues, "OBJECT_STORE_PROVIDER must be s3 or minio in production")

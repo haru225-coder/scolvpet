@@ -6629,6 +6629,94 @@ paths:
         '401':
           "$ref": "#/components/responses/Unauthorized"
 
+  "/v1/public/customer/wechat-sessions":
+    post:
+      tags: [customer]
+      operationId: createCustomerWechatSession
+      summary: 微信 wx.login 静默登录
+      description: >-
+        用 wx.login 的 js_code 换取身份：openid 已绑定手机号则直接发放 ct_* 会话（201）；
+        未绑定则返回一次性绑定票据（200，10 分钟有效），随后经短信验证完成绑定。
+        session_key 永不返回客户端。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [js_code]
+              properties:
+                js_code: { type: string, description: wx.login 返回的临时凭证 }
+      responses:
+        '201':
+          description: openid 已绑定，静默发放客户会话
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CustomerSessionResponse"
+        '200':
+          description: openid 未绑定，需短信验证绑定
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CustomerWechatBindTicketResponse"
+        '401':
+          description: 微信登录凭证无效
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+        '429':
+          description: 频控
+        '503':
+          description: 微信登录暂不可用，降级短信登录
+
+  "/v1/public/customer/wechat-bindings":
+    post:
+      tags: [customer]
+      operationId: createCustomerWechatBinding
+      summary: 短信验证并绑定微信身份
+      description: >-
+        消费 wechat-sessions 下发的一次性票据：短信验证通过后写入 openid↔phone 绑定
+        并发放 ct_* 会话。票据过期/已用返回 422，客户端应降级到普通验证码登录。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [wechat_ticket, phone, verification_id, code]
+              properties:
+                wechat_ticket: { type: string, description: wt_ 开头的一次性票据 }
+                phone: { type: string }
+                verification_id: { type: string, format: uuid }
+                code: { type: string }
+      responses:
+        '201':
+          description: 绑定成功并创建客户会话
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CustomerSessionResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+
+  "/v1/customer/wechat-bindings/current":
+    delete:
+      tags: [customer]
+      operationId: deleteCustomerWechatBinding
+      summary: 解绑当前客户的微信身份
+      description: 审计链保留绑定行（revoked_at），解绑后下次 wx.login 回到绑定流程。
+      security:
+      - customerBearerAuth: []
+      responses:
+        '204':
+          description: 已解绑
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+
   "/v1/customer/reservations":
     get:
       tags: [customer]
@@ -13757,6 +13845,20 @@ components:
             access_token: { type: string, description: opaque ct_ token }
             expires_in_seconds: { type: integer }
             phone: { type: string }
+        meta:
+          type: object
+          additionalProperties: true
+    CustomerWechatBindTicketResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          required: [bind_required, wechat_ticket]
+          properties:
+            bind_required: { type: boolean, example: true }
+            wechat_ticket:
+              type: string
+              description: wt_ 开头的一次性绑定票据，10 分钟有效，明文仅此一次
         meta:
           type: object
           additionalProperties: true
