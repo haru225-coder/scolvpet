@@ -42,6 +42,12 @@
 
 `f06ea9e polish(miniprogram-next)`:补 Sheet 弹入 keyframes(原引用未定义,真 bug)、Cell 按压反馈走原生 hover-class(零 JS)、NavBar 返回触target 扩到整个左槽(HIG 44pt)、样例页 ScrollView 开 bounces/enhanced、底部安全区改 `env(safe-area-inset-bottom)`、删死代码;SwipeAction 的 setState 位移天花板已注释,真机不过再上 worklet。快照 5 处更新,全部门禁复跑绿。
 
+## 追加:迭代二(同日,前端升级 + brief 打磨)
+
+前端:大标题从"原地淡出"改为 iOS 原生行为——`LargeTitle` 进滚动容器随内容真实滚走,固定栏小标题按 44px 行程淡入;今日页加原生下拉刷新(refresherEnabled,假数据 600ms 复位,M1 换真拉取);登录页用 mp-ui FormRow/Button 铺出静态版式(不接线),主包三页视觉闭环。
+Brief:README 重写为工程简报(一屏状态/硬约定/真机 Gate 清单/M1 交接);docs/34 增补 §10 真机 Gate 验收清单(6 项判据 + 回退流程)。
+门禁复跑全绿(vitest 18、原生 15、tsc、build、体积门禁,主包 0.373MB)。
+
 ## 提交
 
 - `feat(contracts): typescript-fetch client generation with drift gate (M0-4)`
