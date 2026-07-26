@@ -259,6 +259,22 @@ func (s *Server) chatAssistant(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// assistantActionRoute maps a confirmable assistant action to the direct API
+// route whose RBAC rule governs it; confirm re-checks that rule.
+func assistantActionRoute(actionType string) (string, bool) {
+	switch actionType {
+	case "create_task", "complete_task":
+		return "/v1/tasks", true
+	case "create_weight_record":
+		return "/v1/weight-records", true
+	case "create_hamster", "update_hamster":
+		return "/v1/hamsters", true
+	case "create_enclosure":
+		return "/v1/enclosures", true
+	}
+	return "", false
+}
+
 func (s *Server) confirmAssistantAction(w http.ResponseWriter, r *http.Request) {
 	ownerID, ok := s.authenticateMemberOwner(w, r)
 	if !ok {
@@ -297,6 +313,16 @@ func (s *Server) confirmAssistantAction(w http.ResponseWriter, r *http.Request) 
 	if action.Status != "pending" {
 		writeAPIError(w, r, validationError("status", "动作不是待确认状态"))
 		return
+	}
+	// Confirm must not grant more than the equivalent direct write: re-run
+	// the RBAC rule of the action's direct route. Unknown action types are
+	// denied for non-owner roles so a new action cannot silently bypass this.
+	if principal, hasPrincipal := principalFromRequest(r); hasPrincipal && principal.Role != "owner" {
+		route, known := assistantActionRoute(action.Type)
+		if !known || !principalCanRequest(principal.Role, http.MethodPost, route) {
+			writeAPIError(w, r, permissionDenied(principal.Role))
+			return
+		}
 	}
 	// Claim before executing. A second concurrent request now observes the
 	// confirmed state and cannot execute the business write a second time.

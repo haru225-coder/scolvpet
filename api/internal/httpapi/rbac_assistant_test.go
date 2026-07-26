@@ -1,0 +1,36 @@
+package httpapi
+
+import (
+	"net/http"
+	"testing"
+)
+
+// The confirm endpoint executes writes on behalf of the caller; every
+// confirmable action must map to a direct route, and the mapping must deny
+// roles that the direct route denies (docs/31 §5.2).
+func TestAssistantConfirmMirrorsDirectRBAC(t *testing.T) {
+	confirmable := []string{
+		"create_task", "complete_task", "create_weight_record",
+		"create_hamster", "update_hamster", "create_enclosure",
+	}
+	for _, actionType := range confirmable {
+		route, known := assistantActionRoute(actionType)
+		if !known {
+			t.Fatalf("confirmable action %q has no direct-route mapping", actionType)
+		}
+		direct := principalCanRequest("staff", http.MethodPost, route)
+		if actionType == "create_enclosure" || actionType == "create_weight_record" ||
+			actionType == "create_task" || actionType == "complete_task" {
+			if direct {
+				t.Fatalf("staff unexpectedly passes the direct rule for %s (%s)", actionType, route)
+			}
+		}
+		// breeder keeps its legitimate writes through confirm.
+		if actionType == "create_weight_record" && !principalCanRequest("breeder", http.MethodPost, route) {
+			t.Fatalf("breeder must keep weight-record writes via confirm")
+		}
+	}
+	if _, known := assistantActionRoute("future_unmapped_action"); known {
+		t.Fatal("unknown action types must stay unmapped (fail-closed)")
+	}
+}
