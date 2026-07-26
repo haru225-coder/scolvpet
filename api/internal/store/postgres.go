@@ -82,6 +82,26 @@ func (s *Store) Ping(ctx context.Context) error {
 	return s.Pool.Ping(ctx)
 }
 
+// CleanupExpiredAuthArtifacts deletes rows that only had a replay/limit
+// window: expired idempotency records (member + public) and rate-limit
+// buckets whose window closed long ago. Without this the three tables grow
+// without bound (docs/31 §5.12).
+func (s *Store) CleanupExpiredAuthArtifacts(ctx context.Context) (int64, error) {
+	var total int64
+	for _, query := range []string{
+		`DELETE FROM idempotency_record WHERE expires_at IS NOT NULL AND expires_at <= now()`,
+		`DELETE FROM auth_public_idempotency WHERE expires_at <= now()`,
+		`DELETE FROM auth_rate_limit WHERE window_started_at <= now() - interval '48 hours'`,
+	} {
+		tag, err := s.Pool.Exec(ctx, query)
+		if err != nil {
+			return total, err
+		}
+		total += tag.RowsAffected()
+	}
+	return total, nil
+}
+
 func (s *Store) EnsureAccount(ctx context.Context, phone string) (domain.Account, uuid.UUID, error) {
 	var account domain.Account
 	var ownerID uuid.UUID

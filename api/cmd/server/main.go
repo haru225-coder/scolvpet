@@ -127,6 +127,23 @@ func main() {
 	if !config.MediaWorkerDisabled {
 		go mediaWorker.Run(ctx, time.Duration(config.MediaWorkerIntervalSecs)*time.Second)
 	}
+	// Hourly cleanup of expired idempotency/rate-limit rows (docs/31 §5.12).
+	go func() {
+		ticker := time.NewTicker(time.Hour)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if n, err := apiStore.CleanupExpiredAuthArtifacts(ctx); err != nil {
+					logger.Warn("auth artifact cleanup failed", "error", err)
+				} else if n > 0 {
+					logger.Info("auth artifacts cleaned", "rows", n)
+				}
+			}
+		}
+	}()
 	// Auto-release expired public/staff reservation holds (P0-03).
 	go func() {
 		ticker := time.NewTicker(60 * time.Second)
