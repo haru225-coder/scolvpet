@@ -16,50 +16,22 @@ abstract interface class LocalNotificationScheduler {
   Future<void> cancelAll();
 }
 
-/// In-memory scheduler for tests and offline demos.
-class MemoryLocalNotificationScheduler implements LocalNotificationScheduler {
-  final Map<String, ScheduledLocalNotification> scheduled =
-      <String, ScheduledLocalNotification>{};
-  bool initialized = false;
+/// Production no-op scheduler when plugin wiring is unavailable.
+/// Not a test double — intentionally does not schedule notifications.
+class NoOpLocalNotificationScheduler implements LocalNotificationScheduler {
+  const NoOpLocalNotificationScheduler();
 
   @override
-  Future<void> initialize() async {
-    initialized = true;
-  }
+  Future<void> initialize() async {}
 
   @override
-  Future<void> syncOpenTasks(Iterable<CareTaskItem> tasks) async {
-    final openIds = <String>{};
-    for (final task in tasks.where((t) => t.isOpen)) {
-      openIds.add(task.id);
-      scheduled[task.id] = ScheduledLocalNotification(
-        taskId: task.id,
-        title: task.displayTitle,
-        body: '到期：${_formatWhen(task.scheduledAt)}',
-        when: task.scheduledAt.toUtc(),
-      );
-    }
-    scheduled.removeWhere((id, _) => !openIds.contains(id));
-  }
+  Future<void> syncOpenTasks(Iterable<CareTaskItem> tasks) async {}
 
   @override
-  Future<void> cancelTask(String taskId) async {
-    scheduled.remove(taskId);
-  }
+  Future<void> cancelTask(String taskId) async {}
 
   @override
-  Future<void> cancelAll() async {
-    scheduled.clear();
-  }
-
-  static String _formatWhen(DateTime value) {
-    final local = value.toLocal();
-    final mm = local.month.toString().padLeft(2, '0');
-    final dd = local.day.toString().padLeft(2, '0');
-    final hh = local.hour.toString().padLeft(2, '0');
-    final mi = local.minute.toString().padLeft(2, '0');
-    return '$mm-$dd $hh:$mi';
-  }
+  Future<void> cancelAll() async {}
 }
 
 class ScheduledLocalNotification {

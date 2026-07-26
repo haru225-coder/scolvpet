@@ -105,24 +105,25 @@ abstract interface class I2LocalStore {
   Future<void> deleteDraft(String id);
 }
 
-class MemoryI2LocalStore implements I2LocalStore {
-  I2Snapshot? _snapshot;
-  final Map<String, I2Draft> _drafts = <String, I2Draft>{};
+/// Production no-op local store when SharedPreferences is unavailable.
+/// Not a test double — intentionally drops offline drafts/snapshots.
+class NoOpI2LocalStore implements I2LocalStore {
+  const NoOpI2LocalStore();
 
   @override
-  Future<I2Snapshot?> readSnapshot() async => _snapshot;
+  Future<I2Snapshot?> readSnapshot() async => null;
 
   @override
-  Future<void> saveSnapshot(I2Snapshot snapshot) async => _snapshot = snapshot;
+  Future<void> saveSnapshot(I2Snapshot snapshot) async {}
 
   @override
-  Future<List<I2Draft>> readDrafts() async => _drafts.values.toList();
+  Future<List<I2Draft>> readDrafts() async => const <I2Draft>[];
 
   @override
-  Future<void> saveDraft(I2Draft draft) async => _drafts[draft.id] = draft;
+  Future<void> saveDraft(I2Draft draft) async {}
 
   @override
-  Future<void> deleteDraft(String id) async => _drafts.remove(id);
+  Future<void> deleteDraft(String id) async {}
 }
 
 class SharedPreferencesI2LocalStore implements I2LocalStore {

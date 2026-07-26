@@ -1,5 +1,7 @@
 // Test-only Memory* doubles.
 export 'memory_i2_repository.dart';
+export 'memory_i2_local_store.dart';
+export 'memory_local_notifications.dart';
 export 'memory_accounting_repository.dart';
 export 'memory_assistant_repository.dart';
 export 'memory_breeding_repository.dart';

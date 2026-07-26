@@ -12,7 +12,7 @@ class TaskController extends ChangeNotifier {
     required this.repository,
     LocalNotificationScheduler? notifications,
     this.widgetPublisher,
-  }) : notifications = notifications ?? MemoryLocalNotificationScheduler();
+  }) : notifications = notifications ?? const NoOpLocalNotificationScheduler();
 
   final TaskRepository repository;
   final LocalNotificationScheduler notifications;
