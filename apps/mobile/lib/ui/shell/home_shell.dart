@@ -1,5 +1,7 @@
 part of '../screens.dart';
 
+// Wave 0 surface flags: ProductSurface (lib/core/product_surface.dart)
+
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key, required this.services});
 
@@ -13,6 +15,11 @@ class _HomeShellState extends State<HomeShell> {
   int index = 0;
   late final GrowthController _growthController;
   late final AssistantController _assistantController;
+  late final GeneticController _geneticController;
+
+  /// v2 底栏：0 首页 · 1 模拟 · 2 仓鼠
+  static const _tabSimulate = 1;
+  static const _tabHamsters = 2;
 
   void _goTab(int value) {
     if (value == index) return;
@@ -52,7 +59,7 @@ class _HomeShellState extends State<HomeShell> {
               : null,
           onOpenHamsters: () {
             Navigator.of(context).popUntil((route) => route.isFirst);
-            _goTab(1);
+            _goTab(_tabHamsters);
           },
           onOpenHamsterDetail: (hamster) {
             Navigator.of(context).popUntil((route) => route.isFirst);
@@ -149,7 +156,9 @@ class _HomeShellState extends State<HomeShell> {
           ),
         );
       },
-      onOpenTodayWidget: widget.services.todayWidgetPublisher == null
+      // Wave 0: hide unfinished surfaces (closure audit docs/28).
+      onOpenTodayWidget: !ProductSurface.exposeTodayWidget ||
+              widget.services.todayWidgetPublisher == null
           ? null
           : () {
               Navigator.of(context).push<void>(
@@ -162,17 +171,19 @@ class _HomeShellState extends State<HomeShell> {
               );
             },
       onOpenGenetic: () => _openGeneticHub(),
-      onOpenPaywall: () {
-        Navigator.of(context).push<void>(
-          iosPageRoute(
-            builder: (_) => PaywallPage(
-              controller: PaywallController(
-                repository: widget.services.paywallRepository,
-              ),
-            ),
-          ),
-        );
-      },
+      onOpenPaywall: !ProductSurface.exposePaywall
+          ? null
+          : () {
+              Navigator.of(context).push<void>(
+                iosPageRoute(
+                  builder: (_) => PaywallPage(
+                    controller: PaywallController(
+                      repository: widget.services.paywallRepository,
+                    ),
+                  ),
+                ),
+              );
+            },
       onOpenPublicSite: () {
         Navigator.of(context).push<void>(
           iosPageRoute(
@@ -185,17 +196,19 @@ class _HomeShellState extends State<HomeShell> {
         );
       },
       onOpenAssistant: _openAssistant,
-      onOpenStud: () {
-        Navigator.of(context).push<void>(
-          iosPageRoute(
-            builder: (_) => StudHubPage(
-              controller: StudController(
-                repository: widget.services.studRepository,
-              ),
-            ),
-          ),
-        );
-      },
+      onOpenStud: !ProductSurface.exposeStudNetwork
+          ? null
+          : () {
+              Navigator.of(context).push<void>(
+                iosPageRoute(
+                  builder: (_) => StudHubPage(
+                    controller: StudController(
+                      repository: widget.services.studRepository,
+                    ),
+                  ),
+                ),
+              );
+            },
     );
   }
 
@@ -207,6 +220,9 @@ class _HomeShellState extends State<HomeShell> {
     );
     _assistantController = AssistantController(
       repository: widget.services.assistantRepository,
+    );
+    _geneticController = GeneticController(
+      repository: widget.services.geneticRepository,
     );
     widget.services.i2Controller.setWritePermission(
       widget.services.state.hasCapability(AppCapability.writeHamster),
@@ -222,6 +238,7 @@ class _HomeShellState extends State<HomeShell> {
   void dispose() {
     _growthController.dispose();
     _assistantController.dispose();
+    _geneticController.dispose();
     super.dispose();
   }
 
@@ -326,6 +343,11 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   void _openGeneticHub({GeneticHubPrefill? prefill}) {
+    // 一级 Tab 即模拟；带 prefill 时仍 push，避免打断 Tab 内默认态。
+    if (prefill == null) {
+      _goTab(_tabSimulate);
+      return;
+    }
     final hamsters =
         widget.services.i2Controller.snapshotState.data?.hamsters ??
         const <I2Hamster>[];
@@ -339,6 +361,76 @@ class _HomeShellState extends State<HomeShell> {
           breedingController: widget.services.breedingController,
           ruleVersionId: _speciesRuleVersionId,
           prefill: prefill,
+        ),
+      ),
+    );
+  }
+
+  void _openPedigree(I2Hamster hamster) {
+    final canEdit = _canWrite(AppCapability.writeHamster);
+    final ruleId = _speciesRuleVersionId;
+    Navigator.of(context).push<void>(
+      iosPageRoute(
+        builder: (_) => PedigreePage(
+          controller: PedigreeController(
+            repository: widget.services.pedigreeRepository,
+          ),
+          hamsterId: hamster.id,
+          hamsterLabel: hamster.displayName,
+          generations: 3,
+          canEdit: canEdit && ruleId != null,
+          candidates:
+              widget.services.i2Controller.snapshotState.data?.hamsters ??
+              const <I2Hamster>[],
+          createStub: !canEdit || ruleId == null
+              ? null
+              : ({
+                  required String name,
+                  required String sex,
+                  required String relationLabel,
+                }) async {
+                  final code =
+                      'PED-${DateTime.now().microsecondsSinceEpoch.toRadixString(36).toUpperCase()}';
+                  final created = await widget.services.i2Controller.repository
+                      .createHamster(
+                        I2HamsterDraft(
+                          internalCode: code,
+                          speciesRuleVersionId: ruleId,
+                          sex: sex,
+                          sourceType: 'introduced',
+                          name: name,
+                          notes: '血统图快速插入 · $relationLabel',
+                        ),
+                      );
+                  // Keep roster fresh for subsequent picks.
+                  await widget.services.i2Controller.restore();
+                  return PedigreeNode(
+                    id: created.id,
+                    internalCode: created.internalCode,
+                    name: created.name,
+                    sex: created.sex,
+                    varietyCode: created.varietyCode,
+                  );
+                },
+        ),
+      ),
+    );
+  }
+
+  /// 繁育进度 / 窝次（原一级 Tab，v2 降为二级）。
+  void _openBreedingHub() {
+    final snapshot = widget.services.i2Controller.snapshotState.data;
+    Navigator.of(context).push<void>(
+      iosPageRoute(
+        builder: (_) => BreedingHubPage(
+          controller: widget.services.breedingController,
+          hamsters: snapshot?.hamsters ?? const <I2Hamster>[],
+          enclosures: snapshot?.enclosures ?? const <I2Enclosure>[],
+          ruleVersionId: _speciesRuleVersionId,
+          onOpenLitters: _openLitters,
+          canWrite: _canWrite(AppCapability.writeBreeding),
+          geneticRepository: widget.services.geneticRepository,
+          onOpenGenetic: _openGeneticHub,
         ),
       ),
     );
@@ -394,18 +486,7 @@ class _HomeShellState extends State<HomeShell> {
             final current =
                 widget.services.i2Controller.hamsterDetailState.data?.hamster ??
                 hamster;
-            Navigator.of(detailContext).push<void>(
-              iosPageRoute(
-                builder: (_) => PedigreePage(
-                  controller: PedigreeController(
-                    repository: widget.services.pedigreeRepository,
-                  ),
-                  hamsterId: current.id,
-                  hamsterLabel: current.displayName,
-                  generations: 3,
-                ),
-              ),
-            );
+            _openPedigree(current);
           },
           onOpenHealth: () {
             final current =
@@ -523,7 +604,7 @@ class _HomeShellState extends State<HomeShell> {
           canWrite: _canWrite(AppCapability.writeImport),
           onOpenMediaLibrary: () {
             Navigator.of(context).popUntil((route) => route.isFirst);
-            _goTab(1);
+            _goTab(_tabHamsters);
           },
           onOpenPublicShares: () {
             Navigator.of(context).push<void>(
@@ -670,16 +751,19 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
-    // P0-1 Shell: 5 → 3 底栏。管家 / 我的 改为 push 可达，不删能力。
+    // v2 Shell: 首页 / 模拟 / 仓鼠。繁育进度与管家 / 账号改为 push。
     final pages = [
       HomeOverviewPage(
         state: widget.services.state,
         controller: widget.services.i2Controller,
         taskController: widget.services.taskController,
-        onOpenHamsters: () => _goTab(1),
-        onOpenEnclosures: _openEnclosures,
-        onOpenBreeding: () => _goTab(2),
+        onOpenHamsters: () => _goTab(_tabHamsters),
+        onOpenSimulate: () => _goTab(_tabSimulate),
+        onOpenPedigree: _openPedigree,
+        onOpenCrm: _openCrm,
+        onOpenBreeding: _openBreedingHub,
         onOpenLitters: _openLitters,
+        onOpenEnclosures: _openEnclosures,
         onOpenDataCenter: _openDataCenter,
         onOpenTasks: _openTasks,
         onOpenCalendar: _openCalendar,
@@ -687,6 +771,20 @@ class _HomeShellState extends State<HomeShell> {
         onOpenBatchWeight: _openBatchWeight,
         onOpenAccount: _openAccount,
         onOpenAssistant: _openAssistant,
+      ),
+      AnimatedBuilder(
+        animation: widget.services.i2Controller,
+        builder: (context, _) {
+          final hamsters =
+              widget.services.i2Controller.snapshotState.data?.hamsters ??
+              const <I2Hamster>[];
+          return GeneticHubPage(
+            controller: _geneticController,
+            hamsters: hamsters,
+            breedingController: widget.services.breedingController,
+            ruleVersionId: _speciesRuleVersionId,
+          );
+        },
       ),
       HamsterListPage(
         controller: widget.services.i2Controller,
@@ -699,22 +797,6 @@ class _HomeShellState extends State<HomeShell> {
             : null,
         onOpenLitters: _openLitters,
       ),
-      AnimatedBuilder(
-        animation: widget.services.i2Controller,
-        builder: (context, _) {
-          final snapshot = widget.services.i2Controller.snapshotState.data;
-          return BreedingHubPage(
-            controller: widget.services.breedingController,
-            hamsters: snapshot?.hamsters ?? const <I2Hamster>[],
-            enclosures: snapshot?.enclosures ?? const <I2Enclosure>[],
-            ruleVersionId: _speciesRuleVersionId,
-            onOpenLitters: _openLitters,
-            canWrite: _canWrite(AppCapability.writeBreeding),
-            geneticRepository: widget.services.geneticRepository,
-            onOpenGenetic: _openGeneticHub,
-          );
-        },
-      ),
     ];
     return Scaffold(
       body: SafeArea(
@@ -726,22 +808,21 @@ class _HomeShellState extends State<HomeShell> {
           selectedIndex: index,
           onDestinationSelected: _goTab,
           animationDuration: IosMetrics.spring,
-          // 视觉草稿 3 主导航：家 / 仓鼠爪印 / 心形（窝巢语义，线性 icon）
           destinations: const [
             NavigationDestination(
               icon: Icon(CupertinoIcons.house),
               selectedIcon: Icon(CupertinoIcons.house_fill),
-              label: '工作台',
+              label: '首页',
+            ),
+            NavigationDestination(
+              icon: Icon(CupertinoIcons.lab_flask),
+              selectedIcon: Icon(CupertinoIcons.lab_flask_solid),
+              label: '模拟',
             ),
             NavigationDestination(
               icon: Icon(CupertinoIcons.paw),
               selectedIcon: Icon(CupertinoIcons.paw_solid),
               label: '仓鼠',
-            ),
-            NavigationDestination(
-              icon: Icon(CupertinoIcons.heart),
-              selectedIcon: Icon(CupertinoIcons.heart_fill),
-              label: '繁育',
             ),
           ],
         ),

@@ -65,8 +65,8 @@ class _MinePage extends StatelessWidget {
                   ),
                   title: '数据中心',
                   subtitle: state.hasCapability(AppCapability.writeImport)
-                      ? '整理、导入和备份你的资料'
-                      : '只读浏览 · 导入与备份操作仅舍主可用',
+                      ? '导入与用量（导出/备份入口已收起）'
+                      : '只读浏览 · 导入操作仅舍主可用',
                   onTap: onOpenDataCenter,
                 ),
               ],
@@ -169,11 +169,11 @@ class _MinePage extends StatelessWidget {
                       key: const Key('mine-open-genetic'),
                       leading: const BearGlyphTile(
                         icon: CupertinoIcons.lab_flask_solid,
-                        semanticLabel: '遗传推算',
+                        semanticLabel: '繁育模拟',
                         size: 32,
                         padding: 4,
                       ),
-                      title: '遗传推算',
+                      title: '繁育模拟',
                       subtitle: '配对概率与本窝记录',
                       onTap: onOpenGenetic,
                     ),

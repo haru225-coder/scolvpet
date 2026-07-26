@@ -33,15 +33,16 @@ class HamsterDetailPage extends StatefulWidget {
 class _HamsterDetailPageState extends State<HamsterDetailPage> {
   final ImagePicker _imagePicker = ImagePicker();
 
-  /// UI V2 草稿：概览 / 繁育 / 健康 / 谱系 / 记录（纯表现分段，不改领域）
+  /// V0.0.5：身份 / 血统 / 繁育价值 / 健康记录 / 成长记录。
+  /// 仅调整表现层顺序，不改变领域模型或数据来源。
   int _section = 0;
 
   static const _sections = <(String, String)>[
-    ('overview', '概览'),
-    ('breeding', '繁育'),
-    ('health', '健康'),
-    ('pedigree', '谱系'),
-    ('records', '记录'),
+    ('overview', '身份'),
+    ('pedigree', '血统'),
+    ('breeding', '繁育价值'),
+    ('health', '健康记录'),
+    ('records', '成长记录'),
   ];
 
   @override
@@ -303,7 +304,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
           if (widget.onOpenPedigree != null)
             CupertinoActionSheetAction(
               onPressed: () => Navigator.pop(ctx, 'pedigree'),
-              child: const Text('查看谱系'),
+              child: const Text('查看血统'),
             ),
         ],
         cancelButton: CupertinoActionSheetAction(
@@ -435,7 +436,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                 children: [
                   const _HamsterDetailSectionTitle(
                     icon: CupertinoIcons.heart,
-                    title: '繁育表现',
+                    title: '繁育价值',
                   ),
                   const SizedBox(height: 12),
                   _HamsterDetailFieldTable(
@@ -463,7 +464,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                   _HamsterDetailSectionTitle(
                     key: const Key('hamster-health-title'),
                     icon: CupertinoIcons.heart,
-                    title: '健康',
+                    title: '健康记录',
                     trailing: widget.onOpenHealth == null
                         ? null
                         : _HamsterDetailLink(
@@ -597,11 +598,11 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                 children: [
                   const _HamsterDetailSectionTitle(
                     icon: CupertinoIcons.arrow_branch,
-                    title: '谱系',
+                    title: '血统档案',
                   ),
                   const SizedBox(height: 8),
                   const _HamsterDetailEmptyRow(
-                    text: '父母与祖代关系在谱系页查看；确认父母并完成个体化后会自动展开。',
+                    text: '父母与祖代关系在血统档案页查看；确认父母并完成个体化后会自动展开。',
                   ),
                   if (widget.onOpenPedigree != null) ...[
                     const SizedBox(height: 8),
@@ -610,7 +611,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                       child: TextButton(
                         key: const Key('hamster-detail-open-pedigree-tab'),
                         onPressed: widget.onOpenPedigree,
-                        child: const Text('打开谱系'),
+                        child: const Text('打开血统档案'),
                       ),
                     ),
                   ],
@@ -619,7 +620,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                       alignment: Alignment.centerLeft,
                       child: TextButton(
                         onPressed: widget.onOpenGenetic,
-                        child: const Text('配对推算'),
+                        child: const Text('繁育模拟'),
                       ),
                     ),
                 ],
@@ -632,7 +633,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                 children: [
                   _HamsterDetailSectionTitle(
                     icon: CupertinoIcons.doc_text,
-                    title: '记录',
+                    title: '成长记录',
                     trailing: widget.onOpenHealth == null
                         ? null
                         : _HamsterDetailLink(
@@ -656,7 +657,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
   }
 }
 
-/// 详情顶部分段 chip（草稿：概览/繁育/健康/谱系/记录）
+/// 详情顶部分段 chip（草稿：概览/繁育/健康/血统/记录）
 class _DetailSectionChip extends StatelessWidget {
   const _DetailSectionChip({
     super.key,

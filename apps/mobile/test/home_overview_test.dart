@@ -5,7 +5,6 @@ import 'package:scolvpet_api/scolvpet_api.dart';
 import 'package:scolvpet_mobile/core/app_state.dart';
 import 'package:scolvpet_mobile/core/session_store.dart';
 import 'package:scolvpet_mobile/data/i1_repository.dart';
-import 'package:scolvpet_mobile/data/i2_repository.dart';
 import 'package:scolvpet_mobile/features/i2/i2_controller.dart';
 import 'package:scolvpet_mobile/features/i2/i2_models.dart';
 import 'package:scolvpet_mobile/features/shell/home_overview.dart';
@@ -100,7 +99,9 @@ void main() {
     expect(metrics.organizationName, '雪团熊舍');
   });
 
-  testWidgets('HomeOverviewPage shows stats and quick actions', (tester) async {
+  testWidgets('HomeOverviewPage shows breeding-space hero and modules', (
+    tester,
+  ) async {
     final local = MemoryI2LocalStore();
     await local.saveSnapshot(
       I2Snapshot(
@@ -115,12 +116,54 @@ void main() {
             breedingStatus: 'candidate',
             birthDate: null,
             currentEnclosureId: null,
+            litterId: 'l1',
+            notes: null,
+            version: 1,
+          ),
+          I2Hamster(
+            id: 'sire1',
+            internalCode: 'S-1',
+            name: '奶茶',
+            sex: 'male',
+            varietyCode: 'golden',
+            lifecycleStatus: 'active',
+            breedingStatus: 'stud',
+            birthDate: null,
+            currentEnclosureId: null,
+            litterId: null,
+            notes: null,
+            version: 1,
+          ),
+          I2Hamster(
+            id: 'dam1',
+            internalCode: 'D-1',
+            name: '波利',
+            sex: 'female',
+            varietyCode: 'golden',
+            lifecycleStatus: 'active',
+            breedingStatus: 'candidate',
+            birthDate: null,
+            currentEnclosureId: null,
             litterId: null,
             notes: null,
             version: 1,
           ),
         ],
-        litters: const <I2Litter>[],
+        litters: [
+          I2Litter(
+            id: 'l1',
+            code: 'L-1',
+            origin: 'breeding',
+            bornAt: DateTime.utc(2026, 6, 1),
+            initialAliveCount: 4,
+            currentManagedCount: 4,
+            state: 'closed',
+            enclosureId: '',
+            sireId: 'sire1',
+            damId: 'dam1',
+            version: 1,
+          ),
+        ],
         enclosures: const <I2Enclosure>[],
         lastSyncedAt: DateTime.utc(2026, 7, 1),
       ),
@@ -137,7 +180,8 @@ void main() {
     );
     await appState.restore();
 
-    var openedLitters = false;
+    var openedSimulate = false;
+    var openedBreeding = false;
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -145,10 +189,10 @@ void main() {
             state: appState,
             controller: controller,
             onOpenHamsters: () {},
-            onOpenEnclosures: () {},
-            onOpenBreeding: () {},
-            onOpenLitters: () => openedLitters = true,
-            onOpenDataCenter: () {},
+            onOpenSimulate: () => openedSimulate = true,
+            onOpenBreeding: () => openedBreeding = true,
+            onOpenLitters: () {},
+            onOpenCrm: () {},
             onCreateHamster: () {},
           ),
         ),
@@ -156,25 +200,103 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('工作台'), findsOneWidget);
-    // 问候会随运行时段变化；机构名来自会话快照，适合作稳定断言。
+    expect(find.text('我的繁育空间'), findsOneWidget);
     expect(find.textContaining('雪团熊舍'), findsOneWidget);
-    expect(find.text('经营概览'), findsOneWidget);
-    expect(find.text('在养'), findsOneWidget);
-    expect(find.text('今日待办'), findsOneWidget);
-    expect(find.text('繁育动态'), findsOneWidget);
+    expect(find.byKey(const Key('home-simulate-hero')), findsOneWidget);
+    expect(find.byKey(const Key('home-simulate-start')), findsOneWidget);
+    expect(find.byKey(const Key('home-bloodline-title')), findsOneWidget);
+    expect(find.byKey(const Key('home-my-hamsters-title')), findsOneWidget);
     expect(find.byKey(const Key('home-quick-create-hamster')), findsOneWidget);
-    expect(find.byKey(const Key('home-quick-enclosures')), findsNothing);
-    expect(find.byKey(const Key('home-quick-more-toggle')), findsNothing);
+    expect(find.byKey(const Key('home-open-crm')), findsOneWidget);
+    // ERP 首页模块已退场
+    expect(find.text('经营概览'), findsNothing);
+    expect(find.text('今日待办'), findsNothing);
+    expect(find.text('繁育动态'), findsNothing);
     expect(find.textContaining('离线只读'), findsOneWidget);
-    // 活跃窝次 0 时可点进窝次；有数据时点「查看繁育」
-    await tester.ensureVisible(
-      find.byKey(const Key('home-breeding-feed-open')),
-    );
-    await tester.tap(find.byKey(const Key('home-breeding-feed-open')));
+
+    await tester.tap(find.byKey(const Key('home-simulate-start')));
     await tester.pumpAndSettle();
-    // 本用例未注入 onOpenBreeding 断言；仅确认入口存在
-    expect(openedLitters, isFalse);
+    expect(openedSimulate, isTrue);
+
+    await tester.ensureVisible(
+      find.byKey(const Key('home-secondary-breeding')),
+    );
+    await tester.tap(find.byKey(const Key('home-secondary-breeding')));
+    await tester.pumpAndSettle();
+    expect(openedBreeding, isTrue);
+  });
+
+  test('buildBloodlinePreviews prefers parented hamsters', () {
+    final previews = buildBloodlinePreviews(
+      snapshot: I2Snapshot(
+        hamsters: const [
+          I2Hamster(
+            id: 'child',
+            internalCode: 'C-1',
+            name: '雪团',
+            sex: 'female',
+            varietyCode: 'golden',
+            lifecycleStatus: 'active',
+            breedingStatus: 'candidate',
+            birthDate: null,
+            currentEnclosureId: null,
+            litterId: 'l1',
+            notes: null,
+            version: 1,
+          ),
+          I2Hamster(
+            id: 'sire1',
+            internalCode: 'S-1',
+            name: '奶茶',
+            sex: 'male',
+            varietyCode: 'golden',
+            lifecycleStatus: 'active',
+            breedingStatus: 'stud',
+            birthDate: null,
+            currentEnclosureId: null,
+            litterId: null,
+            notes: null,
+            version: 1,
+          ),
+          I2Hamster(
+            id: 'dam1',
+            internalCode: 'D-1',
+            name: '波利',
+            sex: 'female',
+            varietyCode: 'golden',
+            lifecycleStatus: 'active',
+            breedingStatus: 'candidate',
+            birthDate: null,
+            currentEnclosureId: null,
+            litterId: null,
+            notes: null,
+            version: 1,
+          ),
+        ],
+        litters: [
+          I2Litter(
+            id: 'l1',
+            code: 'L-1',
+            origin: 'breeding',
+            bornAt: DateTime.utc(2026, 6, 1),
+            initialAliveCount: 4,
+            currentManagedCount: 4,
+            state: 'closed',
+            enclosureId: '',
+            sireId: 'sire1',
+            damId: 'dam1',
+            version: 1,
+          ),
+        ],
+        enclosures: const [],
+        lastSyncedAt: null,
+      ),
+      maxItems: 2,
+    );
+    expect(previews, isNotEmpty);
+    expect(previews.first.hamsterId, 'child');
+    expect(previews.first.sireName, '奶茶');
+    expect(previews.first.damName, '波利');
   });
 
   testWidgets('HomeOverviewPage hides zero dashboard on uncached error', (
@@ -195,10 +317,7 @@ void main() {
             state: appState,
             controller: controller,
             onOpenHamsters: () {},
-            onOpenEnclosures: () {},
-            onOpenBreeding: () {},
-            onOpenLitters: () {},
-            onOpenDataCenter: () {},
+            onOpenSimulate: () {},
             onCreateHamster: () {},
           ),
         ),
@@ -206,13 +325,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('今日数据暂时不可用'), findsOneWidget);
+    expect(find.text('繁育数据暂时不可用'), findsOneWidget);
     expect(find.text('服务器暂时繁忙'), findsOneWidget);
-    expect(find.text('在养'), findsNothing);
-    expect(find.text('今日待办'), findsNothing);
     expect(find.text('经营概览'), findsNothing);
-    expect(find.text('需要关注'), findsNothing);
-    expect(find.byKey(const Key('home-quick-create-hamster')), findsOneWidget);
+    expect(find.text('今日待办'), findsNothing);
+    expect(find.byKey(const Key('home-simulate-hero')), findsOneWidget);
+    expect(find.byKey(const Key('home-quick-create-hamster')), findsNothing);
   });
 
   test('buildBreedingFeed ranks gestation and active litters', () {

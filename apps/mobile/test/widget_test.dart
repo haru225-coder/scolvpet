@@ -94,7 +94,7 @@ void main() {
       final shellContext = tester.element(find.byType(HomeShell));
       expect(Theme.of(shellContext).brightness, Brightness.light);
       expect(ScolvPalette.of(shellContext).accent, ScolvPalette.light.accent);
-      for (final label in ['工作台', '仓鼠', '繁育']) {
+      for (final label in ['首页', '模拟', '仓鼠']) {
         expect(
           find.descendant(
             of: find.byType(NavigationBar),
@@ -103,8 +103,8 @@ void main() {
           findsOneWidget,
         );
       }
-      // P0-1: 管家 / 我的 已移出底栏
-      for (final gone in ['今日', '管家', '我的']) {
+      // 旧底栏标签与 ERP 首页模块已退场
+      for (final gone in ['工作台', '繁育', '今日', '管家', '我的']) {
         expect(
           find.descendant(
             of: find.byType(NavigationBar),
@@ -113,43 +113,34 @@ void main() {
           findsNothing,
         );
       }
-      expect(find.text('今日待办'), findsOneWidget);
-      expect(find.text('经营概览'), findsOneWidget);
-      expect(find.text('繁育动态'), findsOneWidget);
-      expect(find.text('在养'), findsOneWidget);
+      expect(find.text('我的繁育空间'), findsOneWidget);
+      expect(find.byKey(const Key('home-simulate-hero')), findsOneWidget);
+      expect(find.byKey(const Key('home-bloodline-title')), findsOneWidget);
+      expect(find.byKey(const Key('home-my-hamsters-title')), findsOneWidget);
+      expect(find.text('经营概览'), findsNothing);
+      expect(find.text('今日待办'), findsNothing);
       expect(
         find.byKey(const Key('home-quick-create-hamster')),
         findsOneWidget,
       );
-      expect(find.byKey(const Key('home-quick-enclosures')), findsNothing);
-      expect(find.byKey(const Key('home-quick-more-toggle')), findsNothing);
+      // 模拟 Tab：一级入口为繁育模拟
       await tester.tap(
         find.descendant(
           of: find.byType(NavigationBar),
-          matching: find.text('繁育'),
+          matching: find.text('模拟'),
         ),
       );
       await tester.pumpAndSettle();
-      // P0-5 / P1: 默认繁育进度工作流；进度 / 窝次 / 计划 三段
-      expect(find.text('进度'), findsWidgets);
-      expect(find.text('窝次'), findsWidgets);
-      expect(find.text('计划'), findsWidgets);
-      expect(find.byKey(const Key('breeding-hub-open-wizard')), findsOneWidget);
-      await tester.tap(find.text('窝次').last);
-      await tester.pumpAndSettle();
-      expect(
-        find.byKey(const Key('breeding-hub-open-litters')),
-        findsOneWidget,
-      );
-      // 回到工作台，经右上角账号入口进入原「我的」能力
+      expect(find.text('繁育模拟'), findsWidgets);
+      expect(find.text('配对预测'), findsWidgets);
+      // 回到首页，经右上角账号入口进入原「我的」能力
       await tester.tap(
         find.descendant(
           of: find.byType(NavigationBar),
-          matching: find.text('工作台'),
+          matching: find.text('首页'),
         ),
       );
       await tester.pumpAndSettle();
-      // 工作台是可滚动页，先滚回顶部再点 header 入口
       final homeScroll = find.byType(Scrollable).first;
       await tester.drag(homeScroll, const Offset(0, 2400));
       await tester.pumpAndSettle();
@@ -161,29 +152,22 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('雪团熊舍'), findsOneWidget);
       // Account ListView is lazy — scroll each entry into view.
+      // Wave 0：主链相关入口仍在；未闭环入口已收起。
       for (final key in [
         const Key('mine-open-crm'),
         const Key('mine-open-contracts'),
         const Key('mine-open-accounting'),
-        const Key('mine-open-today-widget'),
         const Key('mine-open-genetic'),
-        const Key('mine-open-paywall'),
         const Key('mine-open-public-site'),
         const Key('mine-open-assistant'),
-        const Key('mine-open-stud'),
       ]) {
         await tester.scrollUntilVisible(find.byKey(key), 100);
         expect(find.byKey(key), findsOneWidget);
       }
-      await tester.scrollUntilVisible(
-        find.byKey(const Key('mine-open-genetic')),
-        -100,
-      );
+      expect(find.byKey(const Key('mine-open-today-widget')), findsNothing);
+      expect(find.byKey(const Key('mine-open-paywall')), findsNothing);
+      expect(find.byKey(const Key('mine-open-stud')), findsNothing);
       expect(find.byKey(const Key('mine-open-push')), findsNothing);
-      await tester.scrollUntilVisible(
-        find.byKey(const Key('mine-open-public-site')),
-        100,
-      );
       expect(find.byKey(const Key('mine-open-miniprogram')), findsNothing);
       await tester.scrollUntilVisible(
         find.byKey(const Key('mine-open-assistant')),
@@ -191,7 +175,7 @@ void main() {
       );
       await tester.tap(find.byKey(const Key('mine-open-assistant')));
       await tester.pumpAndSettle();
-      // 管家改为 push；遮罩路由下底栏 offstage，用 skipOffstage 校验仍停在工作台
+      // 管家改为 push；遮罩路由下底栏 offstage，用 skipOffstage 校验仍停在首页
       expect(
         tester
             .widget<NavigationBar>(

@@ -353,7 +353,7 @@ class _HamsterDetailArchiveSection extends StatelessWidget {
         children: [
           _HamsterDetailSectionTitle(
             icon: CupertinoIcons.doc_person,
-            title: '基本档案',
+            title: '基础资料',
           ),
           const SizedBox(height: 8),
           _HamsterDetailFieldTable(rows: rows),
@@ -384,7 +384,7 @@ class _HamsterDetailBreedingSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _HamsterDetailSectionTitle(icon: CupertinoIcons.heart, title: '繁育'),
+          _HamsterDetailSectionTitle(icon: CupertinoIcons.heart, title: '繁育价值'),
           const SizedBox(height: 8),
           _HamsterDetailFieldTable(
             rows: [
@@ -400,7 +400,7 @@ class _HamsterDetailBreedingSection extends StatelessWidget {
                   TextButton(
                     key: const Key('hamster-detail-open-pedigree'),
                     onPressed: onOpenPedigree,
-                    child: const Text('查看谱系'),
+                    child: const Text('查看血统'),
                   ),
                 if (onOpenGenetic != null)
                   TextButton(

@@ -6,7 +6,7 @@ import 'i2_models.dart';
 
 class I2Controller extends ChangeNotifier {
   I2Controller({required this.repository, I2LocalStore? localStore})
-    : localStore = localStore ?? MemoryI2LocalStore();
+    : localStore = localStore ?? const NoOpI2LocalStore();
 
   final I2Repository repository;
   final I2LocalStore localStore;
