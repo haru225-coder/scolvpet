@@ -38,6 +38,10 @@
 - Gate PASS → 开 M1(B 端登录、今日队列、任务、个体/笼舍浏览、快录)。
 - 外部申请四项(ICP/AppID+类目/微信认证/短信签名/订阅消息模板)仍在用户侧,与代码不互相阻塞(docs/33 §4)。
 
+## 追加:手感打磨(同日,ponytail 口径)
+
+`f06ea9e polish(miniprogram-next)`:补 Sheet 弹入 keyframes(原引用未定义,真 bug)、Cell 按压反馈走原生 hover-class(零 JS)、NavBar 返回触target 扩到整个左槽(HIG 44pt)、样例页 ScrollView 开 bounces/enhanced、底部安全区改 `env(safe-area-inset-bottom)`、删死代码;SwipeAction 的 setState 位移天花板已注释,真机不过再上 worklet。快照 5 处更新,全部门禁复跑绿。
+
 ## 提交
 
 - `feat(contracts): typescript-fetch client generation with drift gate (M0-4)`
