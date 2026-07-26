@@ -20,7 +20,7 @@ Page({
     verificationId: '',
     customerToken: '',
     busy: false,
-    codeCooldown: 0,
+    codeCountdown: 0,
     reservable: true,
   },
   _timer: null,
@@ -102,7 +102,9 @@ Page({
     wx.navigateTo({ url });
   },
   async sendCode() {
-    if (this.data.codeCooldown > 0) return;
+    // Guard must read the same field the countdown writes, or resend is never
+    // actually blocked and every tap costs a real SMS once the provider is live.
+    if (this.data.codeCountdown > 0) return;
     const phone = normalizePhone(this.data.phone);
     if (!phone) {
       wx.showToast({ title: '请先填有效手机号', icon: 'none' });

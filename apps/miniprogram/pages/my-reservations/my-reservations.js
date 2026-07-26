@@ -16,6 +16,11 @@ Page({
     items: [],
     loading: false,
     error: '',
+    codeCountdown: 0,
+  },
+  _timer: null,
+  onUnload() {
+    if (this._timer) clearInterval(this._timer);
   },
   onShow() {
     const app = getApp();
@@ -28,6 +33,9 @@ Page({
   onPhone(e) { this.setData({ phone: e.detail.value }); },
   onCode(e) { this.setData({ code: e.detail.value }); },
   async sendCode() {
+    // Same 60s resend guard as the detail page — every tap past the guard
+    // costs a real SMS once the provider is live.
+    if (this.data.codeCountdown > 0) return;
     const phone = normalizePhone(this.data.phone);
     if (!phone) {
       wx.showToast({ title: '手机号无效', icon: 'none' });
@@ -38,8 +46,20 @@ Page({
       this.setData({
         verificationId: res?.data?.verification_id || '',
         phone,
+        codeCountdown: 60,
       });
       wx.showToast({ title: '验证码已发送', icon: 'none' });
+      if (this._timer) clearInterval(this._timer);
+      this._timer = setInterval(() => {
+        const n = this.data.codeCountdown - 1;
+        if (n <= 0) {
+          clearInterval(this._timer);
+          this._timer = null;
+          this.setData({ codeCountdown: 0 });
+        } else {
+          this.setData({ codeCountdown: n });
+        }
+      }, 1000);
     } catch (err) {
       wx.showToast({ title: err.message || '发送失败', icon: 'none' });
     }
