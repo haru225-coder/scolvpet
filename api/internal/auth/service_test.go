@@ -50,7 +50,7 @@ func TestMockVerificationAndSignedSession(t *testing.T) {
 	}
 }
 
-func TestConsumedRefreshTokenStillResolvesOwnerForIdempotentReplay(t *testing.T) {
+func TestConsumedRefreshTokenNoLongerResolvesOwner(t *testing.T) {
 	service := New("test-secret", "654321")
 	ownerID := uuid.New()
 	_, refreshToken, err := service.CreateSession(context.Background(), ownerID)
@@ -60,12 +60,8 @@ func TestConsumedRefreshTokenStillResolvesOwnerForIdempotentReplay(t *testing.T)
 	if _, _, err := service.Refresh(context.Background(), refreshToken); err != nil {
 		t.Fatalf("refresh failed: %v", err)
 	}
-	gotOwner, err := service.OwnerForRefresh(context.Background(), refreshToken)
-	if err != nil {
-		t.Fatalf("consumed refresh owner lookup failed: %v", err)
-	}
-	if gotOwner != ownerID {
-		t.Fatalf("owner mismatch: got %s want %s", gotOwner, ownerID)
+	if _, err := service.OwnerForRefresh(context.Background(), refreshToken); err != ErrInvalidRefresh {
+		t.Fatalf("expected consumed refresh owner lookup to fail, got %v", err)
 	}
 	if _, _, err := service.Refresh(context.Background(), refreshToken); err != ErrInvalidRefresh {
 		t.Fatalf("expected consumed token refresh to fail, got %v", err)

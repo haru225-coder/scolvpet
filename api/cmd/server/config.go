@@ -19,36 +19,36 @@ const (
 )
 
 type runtimeConfig struct {
-	Environment             string
-	DatabaseURL             string
-	APIAddr                 string
-	JWTSecret               string
-	SMSProvider             string
-	SMSMockCode             string
-	SMSHTTPEndpoint         string
-	SMSHTTPToken            string
-	ObjectStoreProvider     string
-	ObjectStoreLocalRoot    string
-	ObjectStoreEndpoint     string
-	ObjectStoreBucket       string
-	ObjectStoreRegion       string
-	ObjectStoreAccessKey    string
-	ObjectStoreSecretKey    string
-	ObjectStorePathStyle    bool
-	DBMaxConns              int
-	DBMinConns              int
-	OutboxLeaseSeconds      int
-	OutboxPublisherMode     string
-	OutboxPublisherEndpoint string
-	OutboxPublisherToken    string
-	OutboxWorkerDisabled    bool
-	MediaWorkerIntervalSecs int
-	MediaWorkerDisabled     bool
-	MediaCWebPPath          string
-	MediaFFmpegPath         string
-	MediaFFprobePath        string
-	MediaCodecTimeoutSecs   int
-	MediaCodecMaxInputBytes int64
+	Environment              string
+	DatabaseURL              string
+	APIAddr                  string
+	JWTSecret                string
+	SMSProvider              string
+	SMSMockCode              string
+	SMSHTTPEndpoint          string
+	SMSHTTPToken             string
+	ObjectStoreProvider      string
+	ObjectStoreLocalRoot     string
+	ObjectStoreEndpoint      string
+	ObjectStoreBucket        string
+	ObjectStoreRegion        string
+	ObjectStoreAccessKey     string
+	ObjectStoreSecretKey     string
+	ObjectStorePathStyle     bool
+	DBMaxConns               int
+	DBMinConns               int
+	OutboxLeaseSeconds       int
+	OutboxPublisherMode      string
+	OutboxPublisherEndpoint  string
+	OutboxPublisherToken     string
+	OutboxWorkerDisabled     bool
+	MediaWorkerIntervalSecs  int
+	MediaWorkerDisabled      bool
+	MediaCWebPPath           string
+	MediaFFmpegPath          string
+	MediaFFprobePath         string
+	MediaCodecTimeoutSecs    int
+	MediaCodecMaxInputBytes  int64
 	MediaCodecMaxOutputBytes int64
 }
 
@@ -91,29 +91,29 @@ func loadRuntimeConfigFrom(lookup envLookup) (runtimeConfig, error) {
 	}
 
 	config := runtimeConfig{
-		Environment:             environment,
-		DatabaseURL:             envOrDefault(lookup, "DATABASE_URL", defaultDatabaseURL),
-		APIAddr:                 envOrDefault(lookup, "API_ADDR", ":8080"),
-		JWTSecret:               envOrDefault(lookup, "JWT_SECRET", defaultJWTSecret),
-		SMSProvider:             strings.ToLower(strings.TrimSpace(smsProvider)),
-		SMSMockCode:             smsMockCode,
-		SMSHTTPEndpoint:         strings.TrimSpace(envOrDefault(lookup, "SMS_HTTP_ENDPOINT", "")),
-		SMSHTTPToken:            envOrDefault(lookup, "SMS_HTTP_TOKEN", ""),
-		ObjectStoreProvider:     strings.ToLower(strings.TrimSpace(objectStoreProvider)),
-		ObjectStoreLocalRoot:    envOrDefault(lookup, "IMPORT_OBJECT_STORE_DIR", ""),
-		ObjectStoreEndpoint:     strings.TrimRight(strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_ENDPOINT", "")), "/"),
-		ObjectStoreBucket:       strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_BUCKET", "")),
-		ObjectStoreRegion:       strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_REGION", "")),
-		ObjectStoreAccessKey:    envOrDefault(lookup, "OBJECT_STORE_ACCESS_KEY", ""),
-		ObjectStoreSecretKey:    envOrDefault(lookup, "OBJECT_STORE_SECRET_KEY", ""),
-		ObjectStorePathStyle:    pathStyle,
-		DBMaxConns:              getenvIntFrom(lookup, "DB_MAX_CONNS", 8),
-		DBMinConns:              getenvIntFrom(lookup, "DB_MIN_CONNS", 1),
-		OutboxLeaseSeconds:      getenvIntFrom(lookup, "OUTBOX_WORKER_LEASE_SECONDS", 60),
-		OutboxPublisherMode:     outboxPublisherMode,
-		OutboxPublisherEndpoint: strings.TrimRight(strings.TrimSpace(envOrDefault(lookup, "OUTBOX_PUBLISHER_ENDPOINT", "")), "/"),
-		OutboxPublisherToken:    envOrDefault(lookup, "OUTBOX_PUBLISHER_TOKEN", ""),
-		OutboxWorkerDisabled:    envOrDefault(lookup, "OUTBOX_WORKER_DISABLED", "0") == "1",
+		Environment:              environment,
+		DatabaseURL:              envOrDefault(lookup, "DATABASE_URL", defaultDatabaseURL),
+		APIAddr:                  envOrDefault(lookup, "API_ADDR", ":8080"),
+		JWTSecret:                envOrDefault(lookup, "JWT_SECRET", defaultJWTSecret),
+		SMSProvider:              strings.ToLower(strings.TrimSpace(smsProvider)),
+		SMSMockCode:              smsMockCode,
+		SMSHTTPEndpoint:          strings.TrimSpace(envOrDefault(lookup, "SMS_HTTP_ENDPOINT", "")),
+		SMSHTTPToken:             envOrDefault(lookup, "SMS_HTTP_TOKEN", ""),
+		ObjectStoreProvider:      strings.ToLower(strings.TrimSpace(objectStoreProvider)),
+		ObjectStoreLocalRoot:     envOrDefault(lookup, "IMPORT_OBJECT_STORE_DIR", ""),
+		ObjectStoreEndpoint:      strings.TrimRight(strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_ENDPOINT", "")), "/"),
+		ObjectStoreBucket:        strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_BUCKET", "")),
+		ObjectStoreRegion:        strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_REGION", "")),
+		ObjectStoreAccessKey:     envOrDefault(lookup, "OBJECT_STORE_ACCESS_KEY", ""),
+		ObjectStoreSecretKey:     envOrDefault(lookup, "OBJECT_STORE_SECRET_KEY", ""),
+		ObjectStorePathStyle:     pathStyle,
+		DBMaxConns:               getenvIntFrom(lookup, "DB_MAX_CONNS", 8),
+		DBMinConns:               getenvIntFrom(lookup, "DB_MIN_CONNS", 1),
+		OutboxLeaseSeconds:       getenvIntFrom(lookup, "OUTBOX_WORKER_LEASE_SECONDS", 60),
+		OutboxPublisherMode:      outboxPublisherMode,
+		OutboxPublisherEndpoint:  strings.TrimRight(strings.TrimSpace(envOrDefault(lookup, "OUTBOX_PUBLISHER_ENDPOINT", "")), "/"),
+		OutboxPublisherToken:     envOrDefault(lookup, "OUTBOX_PUBLISHER_TOKEN", ""),
+		OutboxWorkerDisabled:     envOrDefault(lookup, "OUTBOX_WORKER_DISABLED", "0") == "1",
 		MediaWorkerIntervalSecs:  getenvIntFrom(lookup, "MEDIA_WORKER_INTERVAL_SECONDS", 2),
 		MediaWorkerDisabled:      envOrDefault(lookup, "MEDIA_WORKER_DISABLED", "0") == "1",
 		MediaCWebPPath:           envOrDefault(lookup, "MEDIA_CWEBP_PATH", "cwebp"),
@@ -137,7 +137,7 @@ func validateProductionConfig(lookup envLookup, config runtimeConfig) error {
 	if value, ok := lookup("DATABASE_URL"); !ok || strings.TrimSpace(value) == "" {
 		issues = append(issues, "DATABASE_URL must be explicitly set")
 	}
-	if value, ok := lookup("JWT_SECRET"); !ok || strings.TrimSpace(value) == "" || value == defaultJWTSecret {
+	if value, ok := lookup("JWT_SECRET"); !ok || strings.TrimSpace(value) == "" || strings.TrimSpace(value) == defaultJWTSecret {
 		issues = append(issues, "JWT_SECRET must be explicitly set to a non-development secret")
 	}
 	if config.SMSProvider != "http" {

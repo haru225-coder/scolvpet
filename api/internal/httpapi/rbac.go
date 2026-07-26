@@ -20,14 +20,18 @@ func (s *Server) rbacMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		value := strings.TrimSpace(r.Header.Get("Authorization"))
-		if len(value) < 8 || !strings.EqualFold(value[:7], "Bearer ") {
+		if value == "" {
 			next.ServeHTTP(w, r)
 			return
 		}
+		if len(value) < 8 || !strings.EqualFold(value[:7], "Bearer ") {
+			writeAPIError(w, r, authRequired())
+			return
+		}
 		token := strings.TrimSpace(value[7:])
-		accountID, err := s.Auth.ParseAccessToken(token)
+		accountID, err := s.Auth.ParseAccessTokenContext(r.Context(), token)
 		if err != nil {
-			next.ServeHTTP(w, r)
+			writeAPIError(w, r, authRequired())
 			return
 		}
 		principal, err := s.resolveRequestPrincipal(r, accountID)
@@ -71,7 +75,9 @@ func rbacExemptPath(path string) bool {
 	return path == "/healthz" ||
 		path == "/readyz" ||
 		strings.HasPrefix(path, "/v1/auth/") ||
-		strings.HasPrefix(path, "/v1/public/")
+		strings.HasPrefix(path, "/v1/public/") ||
+		// Customer bearer (ct_*) is authenticated inside handlers, not staff RBAC.
+		strings.HasPrefix(path, "/v1/customer/")
 }
 
 func principalCanRequest(role, method, path string) bool {

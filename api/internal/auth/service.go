@@ -25,6 +25,7 @@ var (
 	ErrRevokedToken   = errors.New("revoked access token")
 	ErrVerification   = errors.New("verification challenge not found")
 	ErrInvalidRefresh = errors.New("invalid refresh token")
+	ErrRateLimited    = errors.New("rate limited")
 )
 
 type Challenge struct {
@@ -44,6 +45,13 @@ type Persistence interface {
 	CreateRefreshSession(context.Context, string, uuid.UUID, time.Time) error
 	LookupRefreshSession(context.Context, string, time.Time) (uuid.UUID, error)
 	RotateRefreshSession(context.Context, string, string, uuid.UUID, time.Time, time.Time) error
+	RevokeRefreshSession(context.Context, string, time.Time) error
+	RevokeAllRefreshSessionsForOwner(context.Context, uuid.UUID, time.Time) error
+	RevokeAccessToken(context.Context, string, uuid.UUID, time.Time) error
+	IsAccessTokenRevoked(context.Context, string, time.Time) (bool, error)
+	// CheckAndHitRateLimit enforces cooldown/window limits.
+	// Returns remaining cooldown seconds when blocked (0 when allowed).
+	CheckAndHitRateLimit(ctx context.Context, bucketKey string, cooldown time.Duration, maxPerWindow int, window time.Duration, now time.Time) (retryAfterSeconds int, err error)
 }
 
 type SMSProvider interface {
@@ -72,9 +80,17 @@ type Service struct {
 	smsProvider  SMSProvider
 	mu           sync.Mutex
 	challenges   map[uuid.UUID]*Challenge
-	revoked      map[string]time.Time
+	revoked      map[string]time.Time // raw token -> expires (process-local fallback)
 	refresh      map[string]uuid.UUID
-	refreshOwner map[string]uuid.UUID
+	refreshOwner map[string]uuid.UUID // compatibility lookup for active refresh tokens
+	rateBuckets  map[string]rateBucket
+}
+
+type rateBucket struct {
+	windowStart  time.Time
+	hits         int
+	blockedUntil time.Time
+	lastHit      time.Time
 }
 
 func New(secret, mockCode string) *Service {
@@ -98,9 +114,12 @@ func NewWithOptions(secret, mockCode string, options Options) *Service {
 		revoked:      make(map[string]time.Time),
 		refresh:      make(map[string]uuid.UUID),
 		refreshOwner: make(map[string]uuid.UUID),
+		rateBuckets:  make(map[string]rateBucket),
 	}
 }
 
+// RequestCode creates a verification challenge without creating an account.
+// Caller must enforce rate limits first via EnforceRateLimit.
 func (s *Service) RequestCode(ctx context.Context, phone string) (Challenge, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -184,9 +203,6 @@ func (s *Service) OwnerForRefresh(ctx context.Context, refreshToken string) (uui
 	}
 	ownerID, ok := s.refresh[refreshToken]
 	if !ok {
-		ownerID, ok = s.refreshOwner[refreshToken]
-	}
-	if !ok {
 		return uuid.Nil, ErrInvalidRefresh
 	}
 	return ownerID, nil
@@ -219,20 +235,22 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (accessToken
 		return accessToken, nextRefreshToken, nil
 	}
 	delete(s.refresh, refreshToken)
+	delete(s.refreshOwner, refreshToken)
 	s.refresh[nextRefreshToken] = ownerID
 	s.refreshOwner[nextRefreshToken] = ownerID
 	return accessToken, nextRefreshToken, nil
 }
 
 func (s *Service) ParseAccessToken(token string) (uuid.UUID, error) {
+	return s.ParseAccessTokenContext(context.Background(), token)
+}
+
+func (s *Service) ParseAccessTokenContext(ctx context.Context, token string) (uuid.UUID, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if token == "" {
 		return uuid.Nil, ErrInvalidToken
-	}
-	if revokedAt, ok := s.revoked[token]; ok && time.Now().Before(revokedAt) {
-		return uuid.Nil, ErrRevokedToken
 	}
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 || parts[0] != "v1" {
@@ -249,8 +267,22 @@ func (s *Service) ParseAccessToken(token string) (uuid.UUID, error) {
 	if !hmac.Equal([]byte(parts[2]), []byte(s.signature(payload))) {
 		return uuid.Nil, ErrInvalidToken
 	}
-	if time.Now().Unix() >= claims.Expires {
+	now := time.Now()
+	if now.Unix() >= claims.Expires {
 		return uuid.Nil, ErrExpiredToken
+	}
+	s.cleanupRevoked(now)
+	if revokedAt, ok := s.revoked[token]; ok && now.Before(revokedAt) {
+		return uuid.Nil, ErrRevokedToken
+	}
+	if s.persistence != nil {
+		revoked, err := s.persistence.IsAccessTokenRevoked(ctx, digestHex(token), now.UTC())
+		if err != nil {
+			return uuid.Nil, err
+		}
+		if revoked {
+			return uuid.Nil, ErrRevokedToken
+		}
 	}
 	ownerID, err := uuid.Parse(claims.Subject)
 	if err != nil {
@@ -259,10 +291,113 @@ func (s *Service) ParseAccessToken(token string) (uuid.UUID, error) {
 	return ownerID, nil
 }
 
+// Revoke marks the access token invalid until expiry. The public method keeps
+// its historical no-error signature for unit callers; request handlers use
+// RevokeAccess so persistence errors are surfaced.
 func (s *Service) Revoke(token string) {
+	_ = s.RevokeAccess(context.Background(), token)
+}
+
+func (s *Service) RevokeAccess(ctx context.Context, token string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.revoked[token] = time.Now().Add(time.Hour)
+
+	now := time.Now()
+	s.cleanupRevoked(now)
+	parts := strings.Split(token, ".")
+	expiresAt := time.Now().Add(time.Hour)
+	var ownerID uuid.UUID
+	if len(parts) == 3 && parts[0] == "v1" {
+		if payload, err := base64.RawURLEncoding.DecodeString(parts[1]); err == nil {
+			var claims tokenClaims
+			if json.Unmarshal(payload, &claims) == nil {
+				if claims.Expires > 0 {
+					expiresAt = time.Unix(claims.Expires, 0)
+				}
+				if parsed, err := uuid.Parse(claims.Subject); err == nil {
+					ownerID = parsed
+				}
+			}
+		}
+	}
+	s.revoked[token] = expiresAt
+	if s.persistence != nil && ownerID != uuid.Nil {
+		return s.persistence.RevokeAccessToken(ctx, digestHex(token), ownerID, expiresAt.UTC())
+	}
+	return nil
+}
+
+func (s *Service) cleanupRevoked(now time.Time) {
+	for token, expiresAt := range s.revoked {
+		if !now.Before(expiresAt) {
+			delete(s.revoked, token)
+		}
+	}
+}
+
+// RevokeRefresh invalidates a refresh token immediately.
+func (s *Service) RevokeRefresh(ctx context.Context, refreshToken string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := time.Now().UTC()
+	if s.persistence != nil {
+		return s.persistence.RevokeRefreshSession(ctx, digestHex(refreshToken), now)
+	}
+	delete(s.refresh, refreshToken)
+	delete(s.refreshOwner, refreshToken)
+	return nil
+}
+
+// RevokeAllRefreshForOwner invalidates every active refresh session for the owner.
+func (s *Service) RevokeAllRefreshForOwner(ctx context.Context, ownerID uuid.UUID) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := time.Now().UTC()
+	if s.persistence != nil {
+		return s.persistence.RevokeAllRefreshSessionsForOwner(ctx, ownerID, now)
+	}
+	for token, oid := range s.refresh {
+		if oid == ownerID {
+			delete(s.refresh, token)
+			delete(s.refreshOwner, token)
+		}
+	}
+	return nil
+}
+
+// EnforceRateLimit applies cooldown + sliding window limits.
+// Returns retry-after seconds when blocked.
+func (s *Service) EnforceRateLimit(ctx context.Context, bucketKey string, cooldown time.Duration, maxPerWindow int, window time.Duration) (int, error) {
+	now := time.Now().UTC()
+	if s.persistence != nil {
+		return s.persistence.CheckAndHitRateLimit(ctx, bucketKey, cooldown, maxPerWindow, window, now)
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	bucket := s.rateBuckets[bucketKey]
+	if !bucket.blockedUntil.IsZero() && now.Before(bucket.blockedUntil) {
+		return int(bucket.blockedUntil.Sub(now).Seconds()) + 1, ErrRateLimited
+	}
+	if !bucket.lastHit.IsZero() && now.Sub(bucket.lastHit) < cooldown {
+		retry := int(cooldown.Seconds()) - int(now.Sub(bucket.lastHit).Seconds())
+		if retry < 1 {
+			retry = 1
+		}
+		return retry, ErrRateLimited
+	}
+	if bucket.windowStart.IsZero() || now.Sub(bucket.windowStart) >= window {
+		bucket.windowStart = now
+		bucket.hits = 0
+	}
+	if bucket.hits >= maxPerWindow {
+		bucket.blockedUntil = now.Add(window)
+		s.rateBuckets[bucketKey] = bucket
+		return int(window.Seconds()), ErrRateLimited
+	}
+	bucket.hits++
+	bucket.lastHit = now
+	s.rateBuckets[bucketKey] = bucket
+	return 0, nil
 }
 
 func (s *Service) sign(claims tokenClaims) string {

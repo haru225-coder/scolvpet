@@ -2,9 +2,12 @@ package httpapi
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/scolvpet/scolvpet/api/internal/auth"
 )
 
 func TestPrincipalCanRequestRoleMatrix(t *testing.T) {
@@ -63,5 +66,36 @@ func TestPermissionDeniedWritesForbiddenResponse(t *testing.T) {
 	}
 	if response.Error.Details["member_role"] != "viewer" {
 		t.Fatalf("details=%v", response.Error.Details)
+	}
+}
+
+func TestRBACRejectsMalformedAuthorizationHeader(t *testing.T) {
+	server := NewServer(nil, auth.New("test-secret", "123456"), slog.Default())
+	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+	handler := server.rbacMiddleware(next)
+
+	for _, authorization := range []string{"Basic abc", "Bearer", "Bearer not-a-token"} {
+		recorder := httptest.NewRecorder()
+		request := httptest.NewRequest(http.MethodPost, "/v1/hamsters", nil)
+		request.Header.Set("Authorization", authorization)
+		handler.ServeHTTP(recorder, request)
+		if recorder.Code != http.StatusUnauthorized {
+			t.Fatalf("authorization %q status=%d want %d", authorization, recorder.Code, http.StatusUnauthorized)
+		}
+	}
+}
+
+func TestRBACAllowsMissingAuthorizationToContinue(t *testing.T) {
+	server := NewServer(nil, auth.New("test-secret", "123456"), slog.Default())
+	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/v1/hamsters", nil)
+	server.rbacMiddleware(next).ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusNoContent {
+		t.Fatalf("missing authorization status=%d want %d", recorder.Code, http.StatusNoContent)
 	}
 }
