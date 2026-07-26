@@ -1,8 +1,8 @@
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import type { ReactNode } from 'react'
-import { metrics, navBar, motion } from './tokens'
-import { palette } from './theme'
+import { crayon, metrics, navBar, motion } from './tokens'
+import { palette, crayonUnderline } from './theme'
 
 export interface NavBarProps {
   title: string
@@ -46,9 +46,9 @@ export function NavBar({ title, scrollTop = 0, back = false, onBack, right, larg
           right: 0,
           zIndex: 10,
           paddingTop: `${inset}px`,
-          backgroundColor: palette.navBarBackground,
+          backgroundColor: 'rgba(251, 242, 227, 0.96)',
           transition: `border-color ${motion.press}ms linear`,
-          borderBottom: `0.5px solid ${progress >= 1 ? palette.separator : 'transparent'}`
+          borderBottom: `1.5px dashed ${progress >= 1 ? crayon.strokeSoft : 'transparent'}`
         }}
       >
         <View
@@ -92,21 +92,35 @@ export function NavBar({ title, scrollTop = 0, back = false, onBack, right, larg
   )
 }
 
-/** 大标题块:放在页面滚动容器的第一个子节点,随内容滚入导航栏下方。 */
-export function LargeTitle({ title }: { title: string }) {
+/** 大标题块:放在页面滚动容器的第一个子节点,随内容滚入导航栏下方。
+ *  蜡笔手账:标题下压一道蜡笔波浪线,右侧可贴装饰(sticker)。 */
+export function LargeTitle({ title, sticker }: { title: string; sticker?: ReactNode }) {
   return (
-    <View style={{ padding: `4px ${metrics.pagePadding}px 8px` }}>
+    <View
+      style={{
+        padding: `4px ${metrics.pagePadding}px 8px`,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between'
+      }}
+    >
       <Text
         style={{
           fontSize: `${navBar.largeTitleFontSize}px`,
           fontWeight: navBar.largeTitleFontWeight,
           letterSpacing: '-0.4px',
-          lineHeight: 1.1,
-          color: palette.label
+          lineHeight: 1.25,
+          color: crayon.ink,
+          paddingBottom: '8px',
+          backgroundImage: crayonUnderline(crayon.orange),
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'left bottom',
+          backgroundSize: '104px 8px'
         }}
       >
         {title}
       </Text>
+      {sticker}
     </View>
   )
 }

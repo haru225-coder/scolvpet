@@ -1,5 +1,6 @@
 export * from './tokens'
-export { palette, typeStyle, hairlineTop } from './theme'
+export { palette, typeStyle, hairlineTop, wobble, paperGrain, crayonUnderline } from './theme'
+export { Sticker } from './Stickers'
 export { NavBar, LargeTitle, statusBarHeight } from './NavBar'
 export { Section, SectionList } from './SectionList'
 export { Cell } from './Cell'

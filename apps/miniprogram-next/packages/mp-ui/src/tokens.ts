@@ -151,6 +151,24 @@ export const typography: Record<string, TypeToken> = {
   labelSmall: { fontSize: 12, fontWeight: 500, letterSpacing: 0.05, lineHeight: 1.36, color: 'tertiary' }
 }
 
+/**
+ * 蜡笔手账表层(2026-07-27 用户 Gate 裁定:iOS 素面判「AI 味」不过,
+ * 叠加手绘/蜡笔质感;交互结构仍 iOS HIG)。色相与 palette 同族,饱和略提。
+ */
+export const crayon = {
+  /** 牛皮纸底(替代 groupedBackground 用于 B 端新页) */
+  paper: '#FBF2E3',
+  paperDeep: '#F5E7D0',
+  ink: '#46362A',
+  orange: '#E08A4F',
+  green: '#7C9A6D',
+  yellow: '#EFC35F',
+  red: '#D96C5B',
+  /** 蜡笔描边(卡片/按钮/贴纸共用) */
+  stroke: 'rgba(70, 54, 42, 0.35)',
+  strokeSoft: 'rgba(70, 54, 42, 0.18)'
+} as const
+
 /** 导航栏专用(AppBar:title 17/600/-0.41,大标题用 displayMedium 收缩到 title) */
 export const navBar = {
   titleFontSize: 17,

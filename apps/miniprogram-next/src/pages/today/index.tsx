@@ -12,7 +12,9 @@ import {
   Tag,
   Empty,
   ActionPanel,
-  palette,
+  Sticker,
+  crayon,
+  paperGrain,
   metrics
 } from '@scolvpet/mp-ui'
 
@@ -39,7 +41,15 @@ export default function TodayPage() {
   )
 
   return (
-    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.groupedBackground }}>
+    <View
+      style={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: crayon.paper,
+        backgroundImage: paperGrain
+      }}
+    >
       <NavBar title="今日" scrollTop={scrollTop} right={<Tag tone="accent">样例</Tag>} />
       <ScrollView
         scrollY
@@ -49,7 +59,7 @@ export default function TodayPage() {
         showScrollbar={false}
         refresherEnabled
         refresherTriggered={refreshing}
-        refresherBackground={palette.groupedBackground}
+        refresherBackground={crayon.paper}
         onRefresherRefresh={() => {
           if (refreshing) return
           setRefreshing(true)
@@ -59,7 +69,7 @@ export default function TodayPage() {
         style={{ flex: 1 }}
         onScroll={(e: { detail?: { scrollTop?: number } }) => setScrollTop(e.detail?.scrollTop || 0)}
       >
-        <LargeTitle title="今日" />
+        <LargeTitle title="今日" sticker={<Sticker name="hamster" size={52} tilt={4} />} />
         <View style={{ padding: `0 ${metrics.pagePadding}px ${metrics.space16}px` }}>
           <SegmentedControl segments={[...FILTERS]} value={filter} onChange={setFilter} />
         </View>
@@ -93,7 +103,7 @@ export default function TodayPage() {
                 </SwipeAction>
               ))}
             </Section>
-            <Section header="快捷入口">
+            <Section header="快捷入口" seed={1}>
               <Cell
                 title="个体列表(分包样例)"
                 subtitle="packages/animals"

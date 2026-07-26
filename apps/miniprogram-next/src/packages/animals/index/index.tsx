@@ -7,7 +7,9 @@ import {
   SectionList,
   Cell,
   Tag,
-  palette,
+  Sticker,
+  crayon,
+  paperGrain,
   metrics
 } from '@scolvpet/mp-ui'
 
@@ -24,7 +26,15 @@ export default function AnimalsSamplePage() {
   const [scrollTop, setScrollTop] = useState(0)
 
   return (
-    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.groupedBackground }}>
+    <View
+      style={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: crayon.paper,
+        backgroundImage: paperGrain
+      }}
+    >
       <NavBar title="个体" scrollTop={scrollTop} back right={<Tag tone="accent">样例</Tag>} />
       <ScrollView
         scrollY
@@ -35,7 +45,7 @@ export default function AnimalsSamplePage() {
         style={{ flex: 1 }}
         onScroll={(e: { detail?: { scrollTop?: number } }) => setScrollTop(e.detail?.scrollTop || 0)}
       >
-        <LargeTitle title="个体" />
+        <LargeTitle title="个体" sticker={<Sticker name="paw" size={40} tilt={-8} />} />
         <SectionList>
           <Section header="在养个体" footer={`共 ${MOCK_ANIMALS.length} 只 · 静态样例数据`}>
             {MOCK_ANIMALS.map((a) => (

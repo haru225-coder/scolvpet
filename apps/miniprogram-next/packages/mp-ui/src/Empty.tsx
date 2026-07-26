@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { metrics } from './tokens'
 import { palette, typeStyle } from './theme'
 import { Button } from './Button'
+import { Sticker } from './Stickers'
 
 export interface EmptyProps {
   title: string
@@ -24,7 +25,7 @@ export function Empty({ title, description, actionText, onAction, illustration }
         gap: `${metrics.space12}px`
       }}
     >
-      {illustration}
+      {illustration ?? <Sticker name="hamster" size={88} tilt={-3} />}
       <Text style={{ ...typeStyle('titleSmall'), color: palette.label }}>{title}</Text>
       {description ? (
         <Text style={{ ...typeStyle('bodyMedium'), textAlign: 'center' }}>{description}</Text>

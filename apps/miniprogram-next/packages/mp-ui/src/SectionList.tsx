@@ -1,26 +1,43 @@
 import { View, Text } from '@tarojs/components'
 import { Children, cloneElement, isValidElement, type ReactNode } from 'react'
-import { metrics } from './tokens'
-import { palette, typeStyle } from './theme'
+import { crayon, metrics } from './tokens'
+import { typeStyle, wobble, crayonUnderline } from './theme'
 
 export interface SectionProps {
   header?: string
   footer?: string
   children: ReactNode
+  /** 手账卡片笔迹种子(相邻 Section 传不同值,四角笔迹错开) */
+  seed?: number
 }
 
-/** 分组卡片(docs/34 §8):圆角 16 白卡,组头 labelMedium;子行自动补发丝分隔。 */
-export function Section({ header, footer, children }: SectionProps) {
+/** 分组卡片(蜡笔手账):纸白卡 + 蜡笔描边 + 手绘不等圆角;组头带蜡笔波浪线。 */
+export function Section({ header, footer, children, seed = 0 }: SectionProps) {
   const items = Children.toArray(children)
   return (
     <View style={{ display: 'flex', flexDirection: 'column', gap: `${metrics.space8}px` }}>
       {header ? (
-        <Text style={{ ...typeStyle('labelMedium'), padding: `0 ${metrics.tilePadding}px` }}>{header}</Text>
+        <View style={{ padding: `0 ${metrics.tilePadding}px`, display: 'flex' }}>
+          <Text
+            style={{
+              ...typeStyle('labelMedium'),
+              color: crayon.ink,
+              paddingBottom: '7px',
+              backgroundImage: crayonUnderline(crayon.orange),
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'left bottom',
+              transform: 'rotate(-0.6deg)'
+            }}
+          >
+            {header}
+          </Text>
+        </View>
       ) : null}
       <View
         style={{
-          backgroundColor: palette.secondaryGroupedBackground,
-          borderRadius: `${metrics.continuousRadius}px`,
+          backgroundColor: '#FFFDF7',
+          border: `1.5px solid ${crayon.stroke}`,
+          borderRadius: wobble(seed),
           overflow: 'hidden'
         }}
       >
