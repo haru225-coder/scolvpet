@@ -31,6 +31,7 @@ for (const file of fs.readdirSync(modelDir)) {
   source = source.replaceAll("const CreateCrmContactRequestStatusEnum._('lead')", 'CreateCrmContactRequestStatusEnum.lead');
   source = source.replaceAll("const CreateGeneticProfileRequestConfidenceEnum._('unknown')", 'CreateGeneticProfileRequestConfidenceEnum.unknown');
   source = source.replaceAll("const SandboxActivatePlanRequestPlanCodeEnum._('pro')", 'SandboxActivatePlanRequestPlanCodeEnum.pro');
+  source = source.replaceAll("const SendCustomerVerificationCodeRequestPurposeEnum._('login')", 'SendCustomerVerificationCodeRequestPurposeEnum.login');
   if (file === 'import_preflight_request.dart') {
     source = source.replaceAll(
       "defaultValue: 'reject'",
@@ -51,6 +52,12 @@ for (const file of fs.readdirSync(modelDir)) {
   }
   if (file === 'sandbox_activate_plan_request.dart') {
     source = source.replaceAll("defaultValue: 'pro'", 'defaultValue: SandboxActivatePlanRequestPlanCodeEnum.pro');
+  }
+  if (file === 'send_customer_verification_code_request.dart') {
+    source = source.replaceAll(
+      "defaultValue: 'login'",
+      'defaultValue: SendCustomerVerificationCodeRequestPurposeEnum.login',
+    );
   }
   for (const importName of unusedImports.get(file) ?? []) {
     source = source.replaceAll(`import 'package:scolvpet_api/src/model/${importName}';\n`, '');
@@ -80,6 +87,10 @@ for (const file of fs.readdirSync(modelDir).filter((name) => name.endsWith('.g.d
   source = source.replace(
     /\$enumDecodeNullable\(\n\s+_\$SandboxActivatePlanRequestPlanCodeEnumEnumMap,\n\s+v,\n\s+\) \?\?\n\s+'pro'/,
     '$enumDecodeNullable(\n              _$SandboxActivatePlanRequestPlanCodeEnumEnumMap,\n              v,\n            ) ??\n            SandboxActivatePlanRequestPlanCodeEnum.pro',
+  );
+  source = source.replace(
+    /\$enumDecodeNullable\(\n\s+_\$SendCustomerVerificationCodeRequestPurposeEnumEnumMap,\n\s+v,\n\s+\) \?\?\n\s+'login'/,
+    '$enumDecodeNullable(\n              _$SendCustomerVerificationCodeRequestPurposeEnumEnumMap,\n              v,\n            ) ??\n            SendCustomerVerificationCodeRequestPurposeEnum.login',
   );
   fs.writeFileSync(filePath, source);
 }

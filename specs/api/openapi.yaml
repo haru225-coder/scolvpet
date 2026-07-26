@@ -735,6 +735,34 @@ paths:
         '422':
           $ref: '#/components/responses/ValidationError'
 
+  /pedigree-parentages/end:
+    post:
+      tags: [家谱]
+      operationId: endPedigreeParentage
+      summary: 解除当前有效父母关系
+      description: |
+        将 child+role 上当前 accepted 的 pedigree_parentage 标记为 superseded（valid_to=now），
+        保留审计链。必须提供 correction_reason。不物理删除。
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PedigreeParentageEndRequest'
+      responses:
+        '200':
+          description: 父母关系已解除（superseded）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedigreeParentageResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
   /enclosures:
     get:
       tags: [笼舍]
@@ -6219,6 +6247,81 @@ paths:
         '404':
           "$ref": "#/components/responses/NotFound"
 
+  "/v1/public/sites/{slug}/hamsters/{hamster_id}/pedigree":
+    get:
+      tags:
+      - public-growth
+      operationId: getPublicSiteHamsterPedigree
+      summary: 公开仓鼠血统（仅已发布档案名称）
+      security: []
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: hamster_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: generations
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 6
+          default: 3
+      responses:
+        '200':
+          description: 公开血统图节点与边
+        '404':
+          "$ref": "#/components/responses/NotFound"
+
+  "/v1/public/sites/{slug}/simulate":
+    post:
+      tags:
+      - public-growth
+      operationId: postPublicSiteSimulate
+      summary: 公开繁育模拟（权威表型表）
+      description: 可对已发布仓鼠配对做只读表型推算；也可直接传 series + 父母表型。
+      security: []
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                sire_hamster_id:
+                  type: string
+                  format: uuid
+                dam_hamster_id:
+                  type: string
+                  format: uuid
+                series:
+                  type: string
+                sire_phenotype:
+                  type: string
+                dam_phenotype:
+                  type: string
+      responses:
+        '200':
+          description: 模拟结果与为什么说明
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+
   "/v1/public/sites/{slug}/media/{media_id}":
     get:
       tags:
@@ -6332,7 +6435,9 @@ paths:
       description: |
         客户从前台对真实 hamster 创建统一 crm_reservation（status=held）。
         必须传 hamster_id；Backend 校验公开可订与排他；禁止手填品种/毛色。
-      security: []
+        需要客户短信验证后的 Bearer ct_* customer session。
+      security:
+      - customerBearerAuth: []
       parameters:
       - name: slug
         in: path
@@ -6353,12 +6458,157 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/PublicGrowthReservationResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
         '404':
           "$ref": "#/components/responses/NotFound"
         '409':
           "$ref": "#/components/responses/ConflictError"
         '422':
           "$ref": "#/components/responses/ValidationError"
+
+  "/v1/public/customer/verification-codes":
+    post:
+      tags: [customer]
+      operationId: sendCustomerVerificationCode
+      summary: 客户侧发送登录验证码
+      description: 不创建 staff account；仅创建 verification challenge。
+      security: []
+      parameters:
+      - *1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone: { type: string, example: "+8613800138000" }
+                purpose: { type: string, enum: [login], default: login }
+      responses:
+        '202':
+          description: 验证码已接受
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CustomerVerificationCodeResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+        '429':
+          description: 频控
+
+  "/v1/public/customer/sessions":
+    post:
+      tags: [customer]
+      operationId: createCustomerSession
+      summary: 客户验证码登录
+      description: 返回 ct_* customer access token（与 staff bearer 分离）。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, verification_id, code]
+              properties:
+                phone: { type: string }
+                verification_id: { type: string, format: uuid }
+                code: { type: string }
+      responses:
+        '201':
+          description: 客户会话已创建
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CustomerSessionResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+
+  "/v1/customer/sessions/current":
+    delete:
+      tags: [customer]
+      operationId: deleteCustomerSession
+      summary: 客户退出当前会话
+      security:
+      - customerBearerAuth: []
+      responses:
+        '204':
+          description: 已注销
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+
+  "/v1/customer/reservations":
+    get:
+      tags: [customer]
+      operationId: listCustomerReservations
+      summary: 列出当前客户预订
+      security:
+      - customerBearerAuth: []
+      responses:
+        '200':
+          description: 客户预订列表
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CustomerReservationListResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+
+  "/v1/customer/reservations/{reservation_id}":
+    get:
+      tags: [customer]
+      operationId: getCustomerReservation
+      summary: 获取客户预订详情
+      security:
+      - customerBearerAuth: []
+      parameters:
+      - name: reservation_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: 预订详情
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CustomerReservationResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+
+  "/v1/customer/reservations/{reservation_id}/cancel":
+    post:
+      tags: [customer]
+      operationId: cancelCustomerReservation
+      summary: 客户取消 held 预订
+      security:
+      - customerBearerAuth: []
+      parameters:
+      - name: reservation_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: 已取消
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CustomerReservationResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '409':
+          "$ref": "#/components/responses/ConflictError"
 
   "/v1/public/documents/{token}":
     get:
@@ -6394,7 +6644,12 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: 手机验证码登录后取得的访问令牌
+      description: Staff access token（员工 App 登录后的 JWT 风格 access token）
+    customerBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+      description: Customer opaque bearer（ct_ 前缀，短信验证后颁发，非 JWT）
 
   parameters:
     P1P2IdempotencyKey:
@@ -7776,6 +8031,26 @@ components:
           format: date-time
         notes:
           type: [string, 'null']
+          maxLength: 2000
+        correction_reason:
+          type: [string, 'null']
+          maxLength: 2000
+          description: 当 child+role 已有有效父母边时必填，用于 supersede 旧边并写入审计
+      additionalProperties: false
+
+    PedigreeParentageEndRequest:
+      type: object
+      required: [child_hamster_id, role, correction_reason]
+      properties:
+        child_hamster_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [sire, dam]
+        correction_reason:
+          type: string
+          minLength: 1
           maxLength: 2000
       additionalProperties: false
 
@@ -13344,6 +13619,79 @@ components:
       - enforcement
       - plan_code
       additionalProperties: false
+
+    CustomerVerificationCodeResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            verification_id: { type: string, format: uuid }
+            expires_in_seconds: { type: integer }
+            retry_after_seconds: { type: integer }
+        meta:
+          type: object
+          additionalProperties: true
+    CustomerSessionResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          required: [access_token, phone]
+          properties:
+            token_type: { type: string, example: Bearer }
+            access_token: { type: string, description: opaque ct_ token }
+            expires_in_seconds: { type: integer }
+            phone: { type: string }
+        meta:
+          type: object
+          additionalProperties: true
+    CustomerReservation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        status: { type: string }
+        reserved_at: { type: string, format: date-time }
+        hold_expires_at: { type: string, format: date-time, nullable: true }
+        updated_at: { type: string, format: date-time }
+        version: { type: integer }
+        hamster:
+          type: object
+          properties:
+            hamster_id: { type: string, format: uuid, nullable: true }
+            public_name: { type: string }
+            summary: { type: string }
+            price_label: { type: string }
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              doc_type: { type: string }
+              status: { type: string }
+              public_token: { type: string }
+              web_path: { type: string }
+    CustomerReservationResponse:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/CustomerReservation"
+        meta:
+          type: object
+          additionalProperties: true
+    CustomerReservationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CustomerReservation"
+        meta:
+          type: object
+          additionalProperties: true
+
     SandboxActivatePlanRequest:
       type: object
       properties:
