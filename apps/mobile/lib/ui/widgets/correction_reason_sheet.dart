@@ -100,5 +100,5 @@ Future<String?> showCorrectionReasonSheet({
         ),
       );
     },
-  );
+  ).whenComplete(controller.dispose);
 }

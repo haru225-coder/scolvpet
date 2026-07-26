@@ -47,6 +47,28 @@ class I2Controller extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Clears account-scoped state on logout so the next login cannot see the
+  /// previous account's data (import wizard report and weight batch results
+  /// otherwise survive the account switch).
+  void resetForLogout() {
+    snapshotState = const I2AsyncState.idle();
+    hamsterDetailState = const I2AsyncState.idle();
+    enclosureDetailState = const I2AsyncState.idle();
+    cleaningState = const I2AsyncState.idle();
+    weightState = const I2AsyncState.idle();
+    actionState = const I2AsyncState.idle();
+    avatarState = const I2AsyncState.idle();
+    weightBatchResult = null;
+    importStage = I2ImportStage.idle;
+    importJob = null;
+    importRows = const <I2ImportRowResult>[];
+    drafts = const <I2Draft>[];
+    lastSyncLabel = null;
+    _pendingAvatarHamster = null;
+    _pendingAvatarUpload = null;
+    notifyListeners();
+  }
+
   Future<void> restore() async {
     final generation = ++_restoreGeneration;
     snapshotState = const I2AsyncState.loading();

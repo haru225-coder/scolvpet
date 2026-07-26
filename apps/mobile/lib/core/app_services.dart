@@ -69,6 +69,14 @@ class AppServices {
   final GrowthRepository growthRepository;
   final TodayWidgetPublisher? todayWidgetPublisher;
 
+  /// Logs out and resets account-scoped controller state; UI must call this
+  /// instead of `state.logout()` directly so no business snapshot survives
+  /// the account switch.
+  Future<void> logout() async {
+    await state.logout();
+    i2Controller.resetForLogout();
+  }
+
   void disposeControllers() {
     taskController.dispose();
     litterBoardController.dispose();

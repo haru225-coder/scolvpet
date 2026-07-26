@@ -26,6 +26,33 @@ void main() {
     lastSyncedAt: DateTime.utc(2025, 1, 1),
   );
 
+  test('resetForLogout clears import wizard and weight batch residue', () async {
+    final local = MemoryI2LocalStore()..saveSnapshot(cached);
+    final controller = I2Controller(
+      repository: MemoryI2Repository(),
+      localStore: local,
+    );
+    await controller.restore();
+    controller.importStage = I2ImportStage.mapping;
+    controller.importRows = const [
+      I2ImportRowResult(
+        rowNumber: 1,
+        status: 'imported',
+        mappedValues: {'name': '上一账号的仓鼠'},
+        issues: [],
+      ),
+    ];
+
+    controller.resetForLogout();
+
+    expect(controller.importStage, I2ImportStage.idle);
+    expect(controller.importJob, isNull);
+    expect(controller.importRows, isEmpty);
+    expect(controller.weightBatchResult, isNull);
+    expect(controller.snapshotState.status, I2AsyncStatus.idle);
+    expect(controller.drafts, isEmpty);
+  });
+
   test('offline restore exposes cached read-only snapshot', () async {
     final local = MemoryI2LocalStore()..saveSnapshot(cached);
     final controller = I2Controller(

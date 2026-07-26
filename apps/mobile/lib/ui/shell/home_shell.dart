@@ -196,6 +196,7 @@ class _HomeShellState extends State<HomeShell> {
         );
       },
       onOpenAssistant: _openAssistant,
+      onLogout: widget.services.logout,
       onOpenStud: !ProductSurface.exposeStudNetwork
           ? null
           : () {

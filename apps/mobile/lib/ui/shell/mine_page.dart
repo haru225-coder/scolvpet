@@ -14,6 +14,7 @@ class _MinePage extends StatelessWidget {
     this.onOpenPublicSite,
     this.onOpenAssistant,
     this.onOpenStud,
+    this.onLogout,
   });
 
   final AppState state;
@@ -28,6 +29,10 @@ class _MinePage extends StatelessWidget {
   final VoidCallback? onOpenPublicSite;
   final VoidCallback? onOpenAssistant;
   final VoidCallback? onOpenStud;
+
+  /// Full logout including controller resets; falls back to [AppState.logout]
+  /// when the shell does not inject one (widget tests).
+  final Future<void> Function()? onLogout;
 
   @override
   Widget build(BuildContext context) {
@@ -293,7 +298,7 @@ class _MinePage extends StatelessWidget {
                   title: '退出登录',
                   destructive: true,
                   showChevron: false,
-                  onTap: () => state.logout(),
+                  onTap: () => (onLogout ?? state.logout)(),
                 ),
               ],
             ),

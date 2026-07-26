@@ -1038,7 +1038,7 @@ Future<PedigreeNode?> showPedigreeFillSheet({
         },
       );
     },
-  );
+  ).whenComplete(nameCtrl.dispose);
 }
 
 class _SexGlyph extends StatelessWidget {
