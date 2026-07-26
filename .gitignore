@@ -5,4 +5,9 @@
 apps/web/dist/
 *.log
 .DS_Store
+apps/mobile/android/local.properties
+**/local.properties
+# Audit hand-off bundles (30MB+ build artifacts, regenerate instead of committing).
+ScolvPet_*_audit_*.zip
+ScolvPet_*_audit_*.sha256
 
