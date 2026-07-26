@@ -2,6 +2,7 @@
 
 | 日期 | 主题 | 状态 | 入口 |
 |---|---|---|---|
+| 2026-07-26 | ScolvPet 审计 §8-A 回收（AppID 门禁 / env 模板 / readyz 自检） | 已验证（本地）/ 部署环境 smoke 待确认 | [日志](2026-07-26 · ScolvPet-审计A组回收.md)；[报告](../../../docs/31-ScolvPet-全功能收口审计-20260726.md) |
 | 2026-07-26 | ScolvPet 全功能收口审计 | **FAIL**（2 声明不实 / 12 遗留未修 / 4 闭环 P0 未处置 / staging 落后） | [日志](2026-07-26 · ScolvPet-全功能收口审计FAIL.md)；[报告](../../../docs/31-ScolvPet-全功能收口审计-20260726.md) |
 | 2026-07-26 | ScolvPet 发布层 P2 微信身份接线 | 已验证（mock）/ 真机与真实 AppID 待确认 | [日志](2026-07-26 · ScolvPet-发布层P2-微信身份接线.md)；[任务书](../../../docs/30-ScolvPet-发布层-Production-Integration-任务书.md) |
 | 2026-07-26 | ScolvPet 发布层 P1 构建与部署门禁 | 已验证 / VPS compose 待确认 | [日志](2026-07-26 · ScolvPet-发布层P1-构建与部署门禁.md)；[任务书](../../../docs/30-ScolvPet-发布层-Production-Integration-任务书.md) |
