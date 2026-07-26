@@ -298,10 +298,12 @@ func (s *Service) ParseAccessToken(token string) (uuid.UUID, error) {
 	return s.ParseAccessTokenContext(context.Background(), token)
 }
 
+// ParseAccessTokenContext runs on every authenticated request. Parsing and
+// HMAC verification are pure (secret is immutable after construction), so the
+// mutex only guards the in-memory revocation map — holding it across the
+// persistence round-trip would serialize all bearer traffic on one DB latency
+// (docs/31 §5.12).
 func (s *Service) ParseAccessTokenContext(ctx context.Context, token string) (uuid.UUID, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	if token == "" {
 		return uuid.Nil, ErrInvalidToken
 	}
@@ -324,8 +326,11 @@ func (s *Service) ParseAccessTokenContext(ctx context.Context, token string) (uu
 	if now.Unix() >= claims.Expires {
 		return uuid.Nil, ErrExpiredToken
 	}
+	s.mu.Lock()
 	s.cleanupRevoked(now)
-	if revokedAt, ok := s.revoked[token]; ok && now.Before(revokedAt) {
+	revokedAt, revokedInMemory := s.revoked[token]
+	s.mu.Unlock()
+	if revokedInMemory && now.Before(revokedAt) {
 		return uuid.Nil, ErrRevokedToken
 	}
 	if s.persistence != nil {

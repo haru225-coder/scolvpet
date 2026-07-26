@@ -233,8 +233,8 @@ func (s *Store) RevokeAccessToken(ctx context.Context, tokenHash string, ownerID
 }
 
 func (s *Store) IsAccessTokenRevoked(ctx context.Context, tokenHash string, now time.Time) (bool, error) {
-	// best-effort cleanup of expired rows
-	_, _ = s.Pool.Exec(ctx, `DELETE FROM revoked_token WHERE expires_at <= $1`, now)
+	// Expired rows are removed by the hourly CleanupExpiredAuthArtifacts task;
+	// a per-request DELETE here would add a write to every bearer request.
 	var exists bool
 	err := s.Pool.QueryRow(ctx, `
 		SELECT EXISTS(

@@ -92,6 +92,7 @@ func (s *Store) CleanupExpiredAuthArtifacts(ctx context.Context) (int64, error) 
 		`DELETE FROM idempotency_record WHERE expires_at IS NOT NULL AND expires_at <= now()`,
 		`DELETE FROM auth_public_idempotency WHERE expires_at <= now()`,
 		`DELETE FROM auth_rate_limit WHERE window_started_at <= now() - interval '48 hours'`,
+		`DELETE FROM revoked_token WHERE expires_at <= now()`,
 	} {
 		tag, err := s.Pool.Exec(ctx, query)
 		if err != nil {
