@@ -18,6 +18,7 @@ import (
 	"github.com/scolvpet/scolvpet/api/internal/auth"
 	"github.com/scolvpet/scolvpet/api/internal/domain"
 	"github.com/scolvpet/scolvpet/api/internal/objectstore"
+	"github.com/scolvpet/scolvpet/api/internal/ratelimit"
 	"github.com/scolvpet/scolvpet/api/internal/store"
 )
 
@@ -26,6 +27,10 @@ type Server struct {
 	Auth          *auth.Service
 	Logger        *slog.Logger
 	ImportObjects objectstore.ObjectStore
+	RateLimiter   *ratelimit.Postgres
+	// Environment is APP_ENV (development|test|staging|production).
+	// Sandbox entitlement routes are only registered outside production.
+	Environment string
 }
 
 type deviceInfo struct {
@@ -51,6 +56,10 @@ type refreshRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type logoutRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
 type meta struct {
 	RequestID   string    `json:"request_id"`
 	GeneratedAt time.Time `json:"generated_at"`
@@ -68,7 +77,11 @@ func NewServer(store *store.Store, authService *auth.Service, logger *slog.Logge
 		// reports the storage error when an upload is attempted.
 		logger.Warn("import object store unavailable", "error", err)
 	}
-	return &Server{Store: store, Auth: authService, Logger: logger, ImportObjects: objects}
+	var rateLimiter *ratelimit.Postgres
+	if store != nil && store.Pool != nil {
+		rateLimiter = ratelimit.NewPostgres(store.Pool)
+	}
+	return &Server{Store: store, Auth: authService, Logger: logger, ImportObjects: objects, RateLimiter: rateLimiter}
 }
 
 func (s *Server) Handler() http.Handler {
@@ -105,6 +118,8 @@ func (s *Server) Handler() http.Handler {
 	s.registerP2AssistantRoutes(mux)
 	s.registerP2StudRoutes(mux)
 	s.registerP3GrowthRoutes(mux)
+	s.registerOpenAPIConformanceRoutes(mux)
+	s.registerCustomerRoutes(mux)
 	return requestIDMiddleware(s.Logger, s.rbacMiddleware(mux))
 }
 
@@ -127,22 +142,40 @@ func (s *Server) sendVerificationCode(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, validationError("phone/purpose", "请输入有效的中国大陆手机号和 login 用途"))
 		return
 	}
-	_, ownerID, err := s.Store.EnsureAccount(r.Context(), request.Phone)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
 	key := r.Header.Get("Idempotency-Key")
-	result, err := s.Store.RunIdempotent(r.Context(), ownerID, key, http.MethodPost, r.URL.Path, payload, func(ctx context.Context, _ pgx.Tx) (int, any, map[string]string, error) {
+	// Public pre-account idempotency: no EnsureAccount before verification.
+	result, err := s.Store.RunPublicIdempotent(r.Context(), key, http.MethodPost, r.URL.Path, payload, func(ctx context.Context) (int, any, error) {
+		phoneCooldown := 60 * time.Second
+		phoneMax := 5
+		ipMax := 20
+		retryAfterHint := 60
+		if env := strings.ToLower(strings.TrimSpace(s.Environment)); env == "" || env == "development" || env == "test" {
+			// Local smoke logs out and requests a second code immediately; keep
+			// the hourly caps but avoid a development-only 60-second wait.
+			phoneCooldown = 0
+			retryAfterHint = 1
+		}
+		if retry, err := s.enforceRateLimit(ctx, "sms:phone:"+request.Phone, phoneCooldown, phoneMax, time.Hour); err != nil {
+			if isRateLimitError(err) {
+				return 0, nil, rateLimitedError(retry)
+			}
+			return 0, nil, err
+		}
+		if retry, err := s.enforceRateLimit(ctx, "sms:ip:"+clientIP(r), 0, ipMax, time.Hour); err != nil {
+			if isRateLimitError(err) {
+				return 0, nil, rateLimitedError(retry)
+			}
+			return 0, nil, err
+		}
 		challenge, err := s.Auth.RequestCode(ctx, request.Phone)
 		if err != nil {
-			return 0, nil, nil, err
+			return 0, nil, err
 		}
 		return http.StatusAccepted, envelope(r, map[string]any{
 			"verification_id":     challenge.ID,
 			"expires_in_seconds":  300,
-			"retry_after_seconds": 60,
-		}), map[string]string{}, nil
+			"retry_after_seconds": retryAfterHint,
+		}), nil
 	})
 	if err != nil {
 		writeAPIError(w, r, err)
@@ -158,48 +191,80 @@ func (s *Server) createSession(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, validationError("login", "请输入完整的验证码登录信息"))
 		return
 	}
+	// Prefer replaying an existing login idempotency record when the account already
+	// exists, so we never re-consume a verification challenge on retry.
+	if account, ownerID, found, findErr := s.Store.FindAccountByPhone(r.Context(), request.Phone); findErr != nil {
+		writeAPIError(w, r, findErr)
+		return
+	} else if found {
+		key := r.Header.Get("Idempotency-Key")
+		if strings.TrimSpace(key) != "" {
+			result, err := s.Store.RunIdempotent(r.Context(), ownerID, key, http.MethodPost, r.URL.Path, payload, func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
+				if err := s.Auth.VerifyCode(ctx, request.VerificationID, request.Phone, request.Code); err != nil {
+					return 0, nil, nil, err
+				}
+				return s.issueSessionResponse(ctx, tx, r, account, ownerID, request.Phone)
+			})
+			if err != nil {
+				writeAPIError(w, r, err)
+				return
+			}
+			writeStored(w, r, result)
+			return
+		}
+	}
+
+	// First-time or non-idempotent path: verify before any account write.
+	if err := s.Auth.VerifyCode(r.Context(), request.VerificationID, request.Phone, request.Code); err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
 	account, ownerID, err := s.Store.EnsureAccount(r.Context(), request.Phone)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
 	key := r.Header.Get("Idempotency-Key")
+	if strings.TrimSpace(key) == "" {
+		key = "login-" + ownerID.String() + "-" + request.VerificationID.String()
+	}
 	result, err := s.Store.RunIdempotent(r.Context(), ownerID, key, http.MethodPost, r.URL.Path, payload, func(ctx context.Context, tx pgx.Tx) (int, any, map[string]string, error) {
-		if err := s.Auth.VerifyCode(ctx, request.VerificationID, request.Phone, request.Code); err != nil {
-			return 0, nil, nil, err
-		}
-		principal, organization, err := store.ResolveLoginPrincipalTx(
-			ctx,
-			tx,
-			ownerID,
-			request.Phone,
-		)
-		if err != nil {
-			return 0, nil, nil, err
-		}
-		accessToken, refreshToken, err := s.Auth.CreateSession(
-			ctx,
-			principal.AccountID,
-		)
-		if err != nil {
-			return 0, nil, nil, err
-		}
-		return http.StatusCreated, envelope(r, map[string]any{
-			"token_type":           "Bearer",
-			"access_token":         accessToken,
-			"expires_in_seconds":   3600,
-			"refresh_token":        refreshToken,
-			"account":              account,
-			"current_organization": organization,
-			"member_role":          principal.Role,
-			"capabilities":         principalCapabilities(principal.Role),
-		}), map[string]string{}, nil
+		// Challenge already consumed above; only issue tokens + principal.
+		return s.issueSessionResponse(ctx, tx, r, account, ownerID, request.Phone)
 	})
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
 	}
 	writeStored(w, r, result)
+}
+
+func (s *Server) issueSessionResponse(
+	ctx context.Context,
+	tx pgx.Tx,
+	r *http.Request,
+	account domain.Account,
+	ownerID uuid.UUID,
+	phone string,
+) (int, any, map[string]string, error) {
+	principal, organization, err := store.ResolveLoginPrincipalTx(ctx, tx, ownerID, phone)
+	if err != nil {
+		return 0, nil, nil, err
+	}
+	accessToken, refreshToken, err := s.Auth.CreateSession(ctx, principal.AccountID)
+	if err != nil {
+		return 0, nil, nil, err
+	}
+	return http.StatusCreated, envelope(r, map[string]any{
+		"token_type":           "Bearer",
+		"access_token":         accessToken,
+		"expires_in_seconds":   3600,
+		"refresh_token":        refreshToken,
+		"account":              account,
+		"current_organization": organization,
+		"member_role":          principal.Role,
+		"capabilities":         principalCapabilities(principal.Role),
+	}), map[string]string{}, nil
 }
 
 func (s *Server) refreshSession(w http.ResponseWriter, r *http.Request) {
@@ -256,9 +321,34 @@ func (s *Server) deleteSession(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, authRequired())
 		return
 	}
+	var body logoutRequest
+	// Body is optional; when present, revoke the provided refresh token family.
+	if r.Body != nil && r.ContentLength != 0 {
+		_, _ = decodeBody(r, &body)
+	}
+	refreshToken := strings.TrimSpace(body.RefreshToken)
+	if refreshToken == "" {
+		refreshToken = strings.TrimSpace(r.Header.Get("X-Refresh-Token"))
+	}
 	payload := []byte(`{"action":"logout"}`)
-	result, err := s.Store.RunIdempotent(r.Context(), ownerID, r.Header.Get("Idempotency-Key"), http.MethodDelete, r.URL.Path, payload, func(context.Context, pgx.Tx) (int, any, map[string]string, error) {
-		s.Auth.Revoke(accessToken)
+	key := r.Header.Get("Idempotency-Key")
+	if strings.TrimSpace(key) == "" {
+		key = "logout-" + ownerID.String()
+	}
+	result, err := s.Store.RunIdempotent(r.Context(), ownerID, key, http.MethodDelete, r.URL.Path, payload, func(ctx context.Context, _ pgx.Tx) (int, any, map[string]string, error) {
+		if err := s.Auth.RevokeAccess(ctx, accessToken); err != nil {
+			return 0, nil, nil, err
+		}
+		if refreshToken != "" {
+			if err := s.Auth.RevokeRefresh(ctx, refreshToken); err != nil {
+				return 0, nil, nil, err
+			}
+		} else {
+			// Without a refresh token in the request, revoke all active sessions for this account.
+			if err := s.Auth.RevokeAllRefreshForOwner(ctx, ownerID); err != nil {
+				return 0, nil, nil, err
+			}
+		}
 		return http.StatusNoContent, nil, map[string]string{}, nil
 	})
 	if err != nil {
@@ -449,7 +539,7 @@ func (s *Server) authenticate(r *http.Request) (uuid.UUID, string, bool) {
 		return uuid.Nil, "", false
 	}
 	token := strings.TrimSpace(value[7:])
-	accountID, err := s.Auth.ParseAccessToken(token)
+	accountID, err := s.Auth.ParseAccessTokenContext(r.Context(), token)
 	if err != nil {
 		return uuid.Nil, token, false
 	}
@@ -553,8 +643,48 @@ func conflictError(field, message string) error {
 	return &apiError{Status: http.StatusConflict, Code: "CONFLICT", Message: message, Details: map[string]any{"field": field}}
 }
 
+func rateLimitedError(retryAfterSeconds int) error {
+	if retryAfterSeconds < 1 {
+		retryAfterSeconds = 1
+	}
+	return &apiError{
+		Status:  http.StatusTooManyRequests,
+		Code:    "RATE_LIMITED",
+		Message: "请求过于频繁，请稍后再试",
+		Details: map[string]any{"retry_after_seconds": retryAfterSeconds},
+	}
+}
+
+func (s *Server) enforceRateLimit(ctx context.Context, bucketKey string, cooldown time.Duration, maxPerWindow int, window time.Duration) (int, error) {
+	if s.RateLimiter != nil {
+		return s.RateLimiter.CheckAndHit(ctx, bucketKey, cooldown, maxPerWindow, window, time.Now().UTC())
+	}
+	return s.Auth.EnforceRateLimit(ctx, bucketKey, cooldown, maxPerWindow, window)
+}
+
+func isRateLimitError(err error) bool {
+	return errors.Is(err, auth.ErrRateLimited) || errors.Is(err, ratelimit.ErrRateLimited)
+}
+
 func authRequired() error {
 	return &apiError{Status: http.StatusUnauthorized, Code: "AUTHENTICATION_REQUIRED", Message: "请重新登录"}
+}
+
+func clientIP(r *http.Request) string {
+	if forwarded := strings.TrimSpace(r.Header.Get("X-Forwarded-For")); forwarded != "" {
+		parts := strings.Split(forwarded, ",")
+		if len(parts) > 0 {
+			return strings.TrimSpace(parts[0])
+		}
+	}
+	if realIP := strings.TrimSpace(r.Header.Get("X-Real-IP")); realIP != "" {
+		return realIP
+	}
+	host := r.RemoteAddr
+	if i := strings.LastIndex(host, ":"); i >= 0 {
+		return host[:i]
+	}
+	return host
 }
 
 func permissionDenied(role string) error {
@@ -593,10 +723,17 @@ func writeAPIError(w http.ResponseWriter, r *http.Request, err error) {
 			status, code, message = http.StatusUnauthorized, "REFRESH_TOKEN_INVALID", "会话已失效，请重新登录"
 		case errors.Is(err, auth.ErrInvalidToken), errors.Is(err, auth.ErrExpiredToken), errors.Is(err, auth.ErrRevokedToken):
 			status, code, message = http.StatusUnauthorized, "AUTHENTICATION_REQUIRED", "请重新登录"
+		case isRateLimitError(err):
+			status, code, message = http.StatusTooManyRequests, "RATE_LIMITED", "请求过于频繁，请稍后再试"
 		default:
 			if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "unique") {
 				status, code, message = http.StatusConflict, "CONFLICT", "资源状态冲突"
 			}
+		}
+	}
+	if status == http.StatusTooManyRequests {
+		if retry, ok := details["retry_after_seconds"].(int); ok && retry > 0 {
+			w.Header().Set("Retry-After", fmt.Sprintf("%d", retry))
 		}
 	}
 	payload := map[string]any{

@@ -4,8 +4,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 API_PORT="${I1_API_PORT:-18080}"
 API_URL="http://127.0.0.1:$API_PORT"
-PHONE_ONE="+8613800138100"
-PHONE_TWO="+8613800138101"
+# Unique phones per run so durable SMS rate limits on shared DATABASE_URL do not flake.
+PHONE_SUFFIX="$(printf '%04d' "$((RANDOM % 10000))")"
+PHONE_ONE="+8613800${PHONE_SUFFIX}00"
+PHONE_TWO="+8613800${PHONE_SUFFIX}01"
 CODE="${SMS_MOCK_CODE:-123456}"
 BASE=""
 DATA=""
@@ -31,8 +33,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if [[ -n "${DATABASE_URL:-}" ]]; then
+if [[ "${I1_USE_EXTERNAL_DB:-0}" == "1" && -n "${DATABASE_URL:-}" ]]; then
   DB_URL="$DATABASE_URL"
+  # Durable rate-limit rows from prior runs can flake SMS smoke on shared DBs.
+  psql "$DB_URL" -v ON_ERROR_STOP=0 -c "TRUNCATE auth_rate_limit, auth_public_idempotency;" >/dev/null 2>&1 || true
 else
   BASE="$(mktemp -d /tmp/scolvpet-i1-smoke.XXXXXX)"
   DATA="$BASE/data"

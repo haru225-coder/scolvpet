@@ -101,6 +101,25 @@ func (s *Store) EnsureAccount(ctx context.Context, phone string) (domain.Account
 	return account, ownerID, nil
 }
 
+// FindAccountByPhone looks up an existing account without creating one.
+func (s *Store) FindAccountByPhone(ctx context.Context, phone string) (domain.Account, uuid.UUID, bool, error) {
+	var ownerID uuid.UUID
+	var country, number string
+	var displayName *string
+	err := s.Pool.QueryRow(ctx, `
+		SELECT id, phone_country_code, phone_number, display_name
+		FROM account
+		WHERE phone_country_code=$1 AND phone_number=$2 AND deleted_at IS NULL
+	`, "+86", strings.TrimPrefix(phone, "+86")).Scan(&ownerID, &country, &number, &displayName)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return domain.Account{}, uuid.Nil, false, nil
+	}
+	if err != nil {
+		return domain.Account{}, uuid.Nil, false, err
+	}
+	return accountView(ownerID, country, number, displayName), ownerID, true, nil
+}
+
 func (s *Store) GetAccount(ctx context.Context, ownerID uuid.UUID) (domain.Account, error) {
 	var country, number string
 	var displayName *string

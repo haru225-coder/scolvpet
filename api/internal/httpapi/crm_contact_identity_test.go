@@ -8,8 +8,10 @@ func TestNormalizeCrmPhone(t *testing.T) {
 		want string
 	}{
 		{"", ""},
-		{" 13800138000 ", "13800138000"},
+		{" 13800138000 ", "+8613800138000"},
 		{"+86 138-0013-8000", "+8613800138000"},
+		{"8613800138000", "+8613800138000"},
+		// Non-mobile landline-ish: keep digits-only form (no +86 mobile rules).
 		{"(010) 1234 5678", "01012345678"},
 		{"abc", ""},
 	}

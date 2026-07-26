@@ -17,7 +17,20 @@ func (s *Server) registerP1EntitlementRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v1/entitlements/catalog", s.getEntitlementCatalog)
 	mux.HandleFunc("GET /v1/entitlements/current", s.getCurrentEntitlement)
 	mux.HandleFunc("POST /v1/entitlements/check", s.checkEntitlement)
-	mux.HandleFunc("POST /v1/entitlements/sandbox/activate", s.sandboxActivatePlan)
+	// Production must never expose self-serve sandbox activation.
+	if s.sandboxEntitlementsEnabled() {
+		mux.HandleFunc("POST /v1/entitlements/sandbox/activate", s.sandboxActivatePlan)
+	}
+}
+
+func (s *Server) sandboxEntitlementsEnabled() bool {
+	env := strings.ToLower(strings.TrimSpace(s.Environment))
+	if env == "" {
+		// Unit tests / local construction without Environment: keep sandbox for
+		// development ergonomics, but main always sets Environment from APP_ENV.
+		return true
+	}
+	return env != "production"
 }
 
 type entitlementCheckRequest struct {
@@ -81,6 +94,10 @@ func (s *Server) checkEntitlement(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) sandboxActivatePlan(w http.ResponseWriter, r *http.Request) {
+	if !s.sandboxEntitlementsEnabled() {
+		writeAPIError(w, r, &apiError{Status: http.StatusNotFound, Code: "RESOURCE_NOT_FOUND", Message: "资源不存在"})
+		return
+	}
 	ownerID, ok := s.authenticateMemberOwner(w, r)
 	if !ok {
 		return

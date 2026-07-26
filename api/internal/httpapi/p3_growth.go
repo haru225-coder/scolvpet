@@ -37,6 +37,7 @@ func (s *Server) registerP3GrowthRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/public/sites/{slug}/consult", s.postGrowthPublicConsultation)
 	mux.HandleFunc("POST /v1/public/sites/{slug}/leads", s.postGrowthPublicLead)
 	mux.HandleFunc("POST /v1/public/sites/{slug}/reservations", s.postGrowthPublicReservation)
+	s.registerP3PublicShowcaseRoutes(mux)
 }
 
 type growthPublicReservationRequest struct {
@@ -527,8 +528,24 @@ func (s *Server) getGrowthPublicMedia(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postGrowthPublicConsultation(w http.ResponseWriter, r *http.Request) {
+	if retry, err := s.enforceRateLimit(r.Context(), "public:consult:ip:"+clientIP(r), 3*time.Second, 20, time.Hour); err != nil {
+		if isRateLimitError(err) {
+			writeAPIError(w, r, rateLimitedError(retry))
+			return
+		}
+		writeAPIError(w, r, err)
+		return
+	}
 	site, ownerID, err := s.findPublishedGrowthSite(r.Context(), r.PathValue("slug"))
 	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	if retry, err := s.enforceRateLimit(r.Context(), "public:consult:site:"+r.PathValue("slug"), 0, 120, time.Hour); err != nil {
+		if isRateLimitError(err) {
+			writeAPIError(w, r, rateLimitedError(retry))
+			return
+		}
 		writeAPIError(w, r, err)
 		return
 	}
@@ -594,8 +611,24 @@ func (s *Server) postGrowthPublicConsultation(w http.ResponseWriter, r *http.Req
 }
 
 func (s *Server) postGrowthPublicLead(w http.ResponseWriter, r *http.Request) {
+	if retry, err := s.enforceRateLimit(r.Context(), "public:lead:ip:"+clientIP(r), 5*time.Second, 15, time.Hour); err != nil {
+		if isRateLimitError(err) {
+			writeAPIError(w, r, rateLimitedError(retry))
+			return
+		}
+		writeAPIError(w, r, err)
+		return
+	}
 	site, ownerID, err := s.findPublishedGrowthSite(r.Context(), r.PathValue("slug"))
 	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	if retry, err := s.enforceRateLimit(r.Context(), "public:lead:site:"+r.PathValue("slug"), 0, 120, time.Hour); err != nil {
+		if isRateLimitError(err) {
+			writeAPIError(w, r, rateLimitedError(retry))
+			return
+		}
 		writeAPIError(w, r, err)
 		return
 	}
@@ -657,13 +690,13 @@ func (s *Server) postGrowthPublicLead(w http.ResponseWriter, r *http.Request) {
 			_, _ = tx.Exec(ctx, `UPDATE public_consultation SET status='lead_created', last_message_at=now() WHERE owner_id=$1 AND id=$2`, ownerID, *consultationID)
 		}
 		return http.StatusCreated, envelope(r, map[string]any{
-			"contact_id":           contactID,
-			"contact_reused":       !resolved.Created,
-			"attribution_id":       attributionID,
-			"site_id":              site["id"],
-			"campaign_id":          campaignID,
-			"consultation_id":      consultationID,
-			"interest_hamster_id":  interestedID,
+			"contact_id":          contactID,
+			"contact_reused":      !resolved.Created,
+			"attribution_id":      attributionID,
+			"site_id":             site["id"],
+			"campaign_id":         campaignID,
+			"consultation_id":     consultationID,
+			"interest_hamster_id": interestedID,
 		}), map[string]string{}, nil
 	})
 	if err != nil {
@@ -675,9 +708,36 @@ func (s *Server) postGrowthPublicLead(w http.ResponseWriter, r *http.Request) {
 }
 
 // postGrowthPublicReservation 客户从前台提交真实 hamster 预订 → 统一 crm_reservation。
+// 必须携带已短信验证的客户 session（Bearer ct_…），禁止未验证身份占用排他库存。
 func (s *Server) postGrowthPublicReservation(w http.ResponseWriter, r *http.Request) {
 	site, ownerID, err := s.findPublishedGrowthSite(r.Context(), r.PathValue("slug"))
 	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	customer, ok := s.authenticateCustomer(r)
+	if !ok {
+		writeAPIError(w, r, &apiError{
+			Status:  http.StatusUnauthorized,
+			Code:    "CUSTOMER_AUTH_REQUIRED",
+			Message: "请先完成手机号验证后再预订",
+		})
+		return
+	}
+	// Public abuse controls: window caps without multi-second cooldowns (smoke + UX).
+	if retry, err := s.enforceRateLimit(r.Context(), "public:reserve:ip:"+clientIP(r), 0, 30, time.Hour); err != nil {
+		if isRateLimitError(err) {
+			writeAPIError(w, r, rateLimitedError(retry))
+			return
+		}
+		writeAPIError(w, r, err)
+		return
+	}
+	if retry, err := s.enforceRateLimit(r.Context(), "public:reserve:site:"+r.PathValue("slug"), 0, 120, time.Hour); err != nil {
+		if isRateLimitError(err) {
+			writeAPIError(w, r, rateLimitedError(retry))
+			return
+		}
 		writeAPIError(w, r, err)
 		return
 	}
@@ -691,12 +751,20 @@ func (s *Server) postGrowthPublicReservation(w http.ResponseWriter, r *http.Requ
 	request.Phone = strings.TrimSpace(request.Phone)
 	request.Wechat = strings.TrimSpace(request.Wechat)
 	request.Notes = strings.TrimSpace(request.Notes)
+	// Force verified phone from customer session — body phone cannot spoof identity.
+	request.Phone = customer.Phone
 	if request.Name == "" || utf8.RuneCountInString(request.Name) > 120 {
 		writeAPIError(w, r, validationError("name", "称呼必填且不能超过 120 字"))
 		return
 	}
-	if request.Phone == "" && request.Wechat == "" {
-		writeAPIError(w, r, validationError("phone/wechat", "手机号或微信至少填写一项"))
+	// Identity throttle: daily cap only (no inter-request cooldown) so legitimate
+	// retries and conflict (already held) responses are not masked as 429.
+	if retry, err := s.enforceRateLimit(r.Context(), "public:reserve:id:"+customer.Phone, 0, 10, 24*time.Hour); err != nil {
+		if isRateLimitError(err) {
+			writeAPIError(w, r, rateLimitedError(retry))
+			return
+		}
+		writeAPIError(w, r, err)
 		return
 	}
 	hamsterID, err := uuid.Parse(strings.TrimSpace(request.HamsterID))
@@ -720,11 +788,12 @@ func (s *Server) postGrowthPublicReservation(w http.ResponseWriter, r *http.Requ
 			return 0, nil, nil, conflictError("hamster_id", "该仓鼠当前不接受预订")
 		}
 		resolved, err := s.resolveOrCreateCrmContactTx(ctx, tx, ownerID, orgID, resolveCrmContactInput{
-			Name:   request.Name,
-			Phone:  request.Phone,
-			Wechat: request.Wechat,
-			Notes:  emptyToNil(&request.Notes),
-			Status: "lead",
+			Name:                 request.Name,
+			Phone:                request.Phone,
+			Wechat:               request.Wechat,
+			Notes:                emptyToNil(&request.Notes),
+			Status:               "lead",
+			RequireVerifiedPhone: true,
 		})
 		if err != nil {
 			return 0, nil, nil, err

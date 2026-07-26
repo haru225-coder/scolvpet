@@ -301,6 +301,31 @@ func (s *Server) transitionCrmReservation(w http.ResponseWriter, r *http.Request
 			if err := requireCrmIfMatch(r.Header.Get("If-Match"), current.Version); err != nil {
 				return 0, nil, nil, err
 			}
+			// Refuse confirming expired holds even if worker has not swept yet.
+			if next == "confirmed" && current.Status == "held" {
+				var expired bool
+				if err := tx.QueryRow(ctx, `
+					SELECT EXISTS(
+						SELECT 1 FROM crm_reservation
+						WHERE owner_id=$1 AND id=$2 AND status='held'
+						  AND hold_expires_at IS NOT NULL AND hold_expires_at <= now()
+					)
+				`, ownerID, reservationID).Scan(&expired); err != nil {
+					return 0, nil, nil, err
+				}
+				if expired {
+					_, _ = tx.Exec(ctx, `
+						UPDATE crm_reservation
+						SET status='cancelled', version=version+1, updated_at=now(),
+						    notes = CASE
+						      WHEN notes IS NULL OR btrim(notes)='' THEN '系统：预订 hold 已过期，禁止确认'
+						      ELSE notes || E'\n系统：预订 hold 已过期，禁止确认'
+						    END
+						WHERE owner_id=$1 AND id=$2 AND status='held'
+					`, ownerID, reservationID)
+					return 0, nil, nil, conflictError("status", "预订已过期，无法确认")
+				}
+			}
 			if err := validateReservationTransition(current.Status, next); err != nil {
 				return 0, nil, nil, err
 			}
@@ -797,12 +822,15 @@ func (s *Server) createCrmReservationTx(
 	}
 
 	var id uuid.UUID
+	// Public holds auto-expire; staff-created holds also get a default TTL so
+	// inventory cannot be locked forever without confirmation.
+	holdExpires := time.Now().UTC().Add(30 * time.Minute)
 	err := tx.QueryRow(ctx, `
 		INSERT INTO crm_reservation (
-			owner_id, organization_id, contact_id, hamster_id, title, status, notes
-		) VALUES ($1,$2,$3,$4,$5,'held',$6)
+			owner_id, organization_id, contact_id, hamster_id, title, status, notes, hold_expires_at
+		) VALUES ($1,$2,$3,$4,$5,'held',$6,$7)
 		RETURNING id
-	`, ownerID, orgID, input.ContactID, input.HamsterID, title, emptyToNil(input.Notes)).Scan(&id)
+	`, ownerID, orgID, input.ContactID, input.HamsterID, title, emptyToNil(input.Notes), holdExpires).Scan(&id)
 	if err != nil {
 		// Unique index 兜底并发。
 		if strings.Contains(strings.ToLower(err.Error()), "ux_crm_reservation_open_hamster") ||
@@ -868,23 +896,69 @@ func (s *Server) hasOpenReservationForHamsterTx(
 	tx pgx.Tx,
 	ownerID, hamsterID uuid.UUID,
 ) (bool, error) {
+	// Auto-release expired holds before exclusivity checks.
+	if _, err := tx.Exec(ctx, `
+		UPDATE crm_reservation
+		SET status='cancelled',
+		    version=version+1,
+		    updated_at=now(),
+		    notes = CASE
+		      WHEN notes IS NULL OR btrim(notes) = '' THEN '系统：预订 hold 已过期自动释放'
+		      ELSE notes || E'\n系统：预订 hold 已过期自动释放'
+		    END
+		WHERE owner_id=$1
+		  AND hamster_id=$2
+		  AND status='held'
+		  AND hold_expires_at IS NOT NULL
+		  AND hold_expires_at <= now()
+	`, ownerID, hamsterID); err != nil {
+		return false, err
+	}
 	var exists bool
 	err := tx.QueryRow(ctx, `
 		SELECT EXISTS(
 			SELECT 1 FROM crm_reservation
-			WHERE owner_id=$1 AND hamster_id=$2 AND status IN ('held','confirmed')
+			WHERE owner_id=$1 AND hamster_id=$2
+			  AND (
+			    status = 'confirmed'
+			    OR (
+			      status = 'held'
+			      AND (hold_expires_at IS NULL OR hold_expires_at > now())
+			    )
+			  )
 		)
 	`, ownerID, hamsterID).Scan(&exists)
 	return exists, err
 }
 
 func (s *Server) openReservedHamsterIDs(ctx context.Context, ownerID uuid.UUID) (map[uuid.UUID]struct{}, error) {
+	// Best-effort global expiry sweep for this owner.
+	_, _ = s.Store.Pool.Exec(ctx, `
+		UPDATE crm_reservation
+		SET status='cancelled',
+		    version=version+1,
+		    updated_at=now(),
+		    notes = CASE
+		      WHEN notes IS NULL OR btrim(notes) = '' THEN '系统：预订 hold 已过期自动释放'
+		      ELSE notes || E'\n系统：预订 hold 已过期自动释放'
+		    END
+		WHERE owner_id=$1
+		  AND status='held'
+		  AND hold_expires_at IS NOT NULL
+		  AND hold_expires_at <= now()
+	`, ownerID)
 	rows, err := s.Store.Pool.Query(ctx, `
 		SELECT DISTINCT hamster_id
 		FROM crm_reservation
 		WHERE owner_id=$1
 		  AND hamster_id IS NOT NULL
-		  AND status IN ('held','confirmed')
+		  AND (
+		    status = 'confirmed'
+		    OR (
+		      status = 'held'
+		      AND (hold_expires_at IS NULL OR hold_expires_at > now())
+		    )
+		  )
 	`, ownerID)
 	if err != nil {
 		return nil, err
@@ -901,9 +975,33 @@ func (s *Server) openReservedHamsterIDs(ctx context.Context, ownerID uuid.UUID) 
 	return out, rows.Err()
 }
 
+// ReleaseExpiredReservationHolds cancels held rows past hold_expires_at.
+// Safe to call from a background worker.
+func (s *Server) ReleaseExpiredReservationHolds(ctx context.Context) (int64, error) {
+	tag, err := s.Store.Pool.Exec(ctx, `
+		UPDATE crm_reservation
+		SET status='cancelled',
+		    version=version+1,
+		    updated_at=now(),
+		    notes = CASE
+		      WHEN notes IS NULL OR btrim(notes) = '' THEN '系统：预订 hold 已过期自动释放'
+		      ELSE notes || E'\n系统：预订 hold 已过期自动释放'
+		    END
+		WHERE status='held'
+		  AND hold_expires_at IS NOT NULL
+		  AND hold_expires_at <= now()
+	`)
+	if err != nil {
+		return 0, err
+	}
+	return tag.RowsAffected(), nil
+}
+
 // resolveCrmContactInput 客户身份解析输入。
 // phone / wechat 应已 normalize；至少一项非空时才能稳定去重。
+// RequireVerifiedPhone：公开预订等路径必须仅按已验证 phone 匹配，禁止 wechat 回落错绑。
 type resolveCrmContactInput struct {
+	RequireVerifiedPhone bool
 	Name   string
 	Phone  string
 	Wechat string
@@ -917,11 +1015,35 @@ type resolveCrmContactResult struct {
 	Created bool
 }
 
-// normalizeCrmPhone 去掉空白与常见分隔，保留数字与前导 +。
+// normalizeCrmPhone canonicalizes CN mobiles to +86###########.
 func normalizeCrmPhone(raw string) string {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
 		return ""
+	}
+	// Strip common separators first.
+	raw = strings.Map(func(r rune) rune {
+		switch r {
+		case ' ', '-', '(', ')', '\t':
+			return -1
+		default:
+			return r
+		}
+	}, raw)
+	if phonePattern.MatchString(raw) {
+		return raw
+	}
+	if strings.HasPrefix(raw, "86") && len(raw) == 13 {
+		candidate := "+" + raw
+		if phonePattern.MatchString(candidate) {
+			return candidate
+		}
+	}
+	if len(raw) == 11 && raw[0] == '1' {
+		candidate := "+86" + raw
+		if phonePattern.MatchString(candidate) {
+			return candidate
+		}
 	}
 	var b strings.Builder
 	for i, r := range raw {
@@ -933,7 +1055,24 @@ func normalizeCrmPhone(raw string) string {
 			b.WriteRune(r)
 		}
 	}
-	return b.String()
+	out := b.String()
+	if phonePattern.MatchString(out) {
+		return out
+	}
+	digits := strings.TrimPrefix(out, "+")
+	if strings.HasPrefix(digits, "86") && len(digits) == 13 {
+		candidate := "+" + digits
+		if phonePattern.MatchString(candidate) {
+			return candidate
+		}
+	}
+	if len(digits) == 11 && digits[0] == '1' {
+		candidate := "+86" + digits
+		if phonePattern.MatchString(candidate) {
+			return candidate
+		}
+	}
+	return out
 }
 
 func normalizeCrmWechat(raw string) string {
@@ -978,26 +1117,55 @@ func (s *Server) resolveOrCreateCrmContactTx(
 			existingStatus string
 			version        int
 		)
-		// 优先 phone 精确命中；其次 wechat；非归档优先；最近更新优先。
-		err := tx.QueryRow(ctx, `
-			SELECT id, phone, wechat, notes, status::text, version
-			FROM crm_contact
-			WHERE owner_id=$1
-			  AND (
-			    ($2::text <> '' AND phone = $2)
-			    OR ($3::text <> '' AND wechat = $3)
-			  )
-			ORDER BY
-			  CASE WHEN status = 'archived' THEN 1 ELSE 0 END,
-			  CASE
-			    WHEN $2::text <> '' AND phone = $2 THEN 0
-			    ELSE 1
-			  END,
-			  updated_at DESC,
-			  id DESC
-			LIMIT 1
-			FOR UPDATE
-		`, ownerID, phone, wechat).Scan(&id, &existingPhone, &existingWechat, &existingNotes, &existingStatus, &version)
+		// Verified-phone path (public reservation): ONLY match by phone.
+		// Never fall back to wechat — that can attach a booking to another contact.
+		var err error
+		if input.RequireVerifiedPhone {
+			if phone == "" {
+				return resolveCrmContactResult{}, validationError("phone", "已验证手机号必填")
+			}
+			err = tx.QueryRow(ctx, `
+				SELECT id, phone, wechat, notes, status::text, version
+				FROM crm_contact
+				WHERE owner_id=$1 AND phone=$2
+				ORDER BY
+				  CASE WHEN status = 'archived' THEN 1 ELSE 0 END,
+				  updated_at DESC, id DESC
+				LIMIT 1
+				FOR UPDATE
+			`, ownerID, phone).Scan(&id, &existingPhone, &existingWechat, &existingNotes, &existingStatus, &version)
+		} else {
+			// Staff/public lead path: phone 优先，其次 wechat。
+			err = tx.QueryRow(ctx, `
+				SELECT id, phone, wechat, notes, status::text, version
+				FROM crm_contact
+				WHERE owner_id=$1
+				  AND (
+				    ($2::text <> '' AND phone = $2)
+				    OR ($3::text <> '' AND wechat = $3)
+				  )
+				ORDER BY
+				  CASE WHEN status = 'archived' THEN 1 ELSE 0 END,
+				  CASE
+				    WHEN $2::text <> '' AND phone = $2 THEN 0
+				    ELSE 1
+				  END,
+				  updated_at DESC,
+				  id DESC
+				LIMIT 1
+				FOR UPDATE
+			`, ownerID, phone, wechat).Scan(&id, &existingPhone, &existingWechat, &existingNotes, &existingStatus, &version)
+		}
+		if err == nil {
+			// Refuse wechat-only reuse when existing contact already has a different phone.
+			if !input.RequireVerifiedPhone && phone != "" && existingPhone != nil {
+				existing := normalizeCrmPhone(*existingPhone)
+				if existing != "" && existing != phone {
+					// Treat as no match — create a new contact for this phone.
+					err = pgx.ErrNoRows
+				}
+			}
+		}
 		if err == nil {
 			nextPhone := existingPhone
 			if (nextPhone == nil || strings.TrimSpace(*nextPhone) == "") && phone != "" {

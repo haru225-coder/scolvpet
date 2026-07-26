@@ -120,11 +120,35 @@ RESERVABLE="$(printf '%s' "$CATALOG" | jq -r --arg id "$HAMSTER_ID" \
   exit 1
 }
 
-# --- Customer public reservation (no staff token) ---
-RESERVE_PAYLOAD="$(jq -cn --arg hid "$HAMSTER_ID" \
-  '{hamster_id:$hid,name:"阿雪",phone:"13900001111",wechat:"axue_wx",notes:"周末方便看鼠"}')"
+# --- Customer verified session required before public reservation ---
+CUST_PHONE="+8613900001111"
+CODE_RESP="$(curl -fsS -X POST "$API_URL/v1/public/customer/verification-codes" \
+  -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: pr-$RUN_ID-cust-code" \
+  -d "{\"phone\":\"$CUST_PHONE\",\"purpose\":\"login\"}")"
+CUST_VID="$(printf '%s' "$CODE_RESP" | json_field '.data.verification_id')"
+CUST_SESSION="$(curl -fsS -X POST "$API_URL/v1/public/customer/sessions" \
+  -H 'Content-Type: application/json' \
+  -d "{\"phone\":\"$CUST_PHONE\",\"verification_id\":\"$CUST_VID\",\"code\":\"$CODE\"}")"
+CUST_TOKEN="$(printf '%s' "$CUST_SESSION" | json_field '.data.access_token')"
+[[ -n "$CUST_TOKEN" && "$CUST_TOKEN" != "null" ]] || { printf 'customer session failed: %s\n' "$CUST_SESSION" >&2; exit 1; }
+
+# Unverified reservation must be rejected.
+UNAUTH_STATUS="$(curl -sS -o /tmp/scolvpet-pr-unauth.json -w '%{http_code}' \
+  -X POST "$API_URL/v1/public/sites/$SLUG/reservations" \
+  -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: pr-$RUN_ID-reserve-unauth" \
+  -d "{\"hamster_id\":\"$HAMSTER_ID\",\"name\":\"阿雪\",\"phone\":\"$CUST_PHONE\"}")"
+[[ "$UNAUTH_STATUS" == "401" ]] || {
+  printf 'unverified reserve want 401 got %s body=%s\n' "$UNAUTH_STATUS" "$(cat /tmp/scolvpet-pr-unauth.json)" >&2
+  exit 1
+}
+
+RESERVE_PAYLOAD="$(jq -cn --arg hid "$HAMSTER_ID" --arg phone "$CUST_PHONE" \
+  '{hamster_id:$hid,name:"阿雪",phone:$phone,wechat:"axue_wx",notes:"周末方便看鼠"}')"
 RESERVE="$(curl -fsS -X POST "$API_URL/v1/public/sites/$SLUG/reservations" \
   -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $CUST_TOKEN" \
   -H "Idempotency-Key: pr-$RUN_ID-reserve" \
   -d "$RESERVE_PAYLOAD")"
 RESERVATION_ID="$(printf '%s' "$RESERVE" | json_field '.data.reservation_id')"
@@ -133,10 +157,17 @@ STATUS="$(printf '%s' "$RESERVE" | json_field '.data.status')"
 [[ -n "$RESERVATION_ID" && "$RESERVATION_ID" != "null" ]] || { printf 'reserve failed: %s\n' "$RESERVE" >&2; exit 1; }
 [[ "$STATUS" == "held" ]] || { printf 'status want held got %s\n' "$STATUS" >&2; exit 1; }
 
+# Customer list sees the held reservation.
+CUST_LIST="$(curl -fsS "$API_URL/v1/customer/reservations" -H "Authorization: Bearer $CUST_TOKEN")"
+CUST_FOUND="$(printf '%s' "$CUST_LIST" | jq -r --arg id "$RESERVATION_ID" \
+  '[.data[]? | select(.id==$id)] | length')"
+[[ "$CUST_FOUND" == "1" ]] || { printf 'customer list missing reservation: %s\n' "$CUST_LIST" >&2; exit 1; }
+
 # --- Contact reuse on second lead/reserve attempt with same phone ---
 RESERVE2_STATUS="$(curl -sS -o /tmp/scolvpet-pr-reserve2.json -w '%{http_code}' \
   -X POST "$API_URL/v1/public/sites/$SLUG/reservations" \
   -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $CUST_TOKEN" \
   -H "Idempotency-Key: pr-$RUN_ID-reserve-dup" \
   -d "$RESERVE_PAYLOAD")"
 [[ "$RESERVE2_STATUS" == "409" ]] || {
@@ -327,5 +358,180 @@ DRAFT_STATUS="$(curl -sS -o /tmp/scolvpet-pr-public-draft.json -w '%{http_code}'
   exit 1
 }
 
-printf 'public-reservation smoke PASS: reservation=%s contact=%s hamster=%s contract=%s handover=%s receipt=%s income_notes=handover:%s public_token=%s slug=%s\n' \
+# =============================================================================
+# Document truth-source negatives (CORE CODE FREEZE regression nails)
+# =============================================================================
+# 1) reservation A + contact B → reject
+# 2) reservation A + handover(reservation_id=NULL) → reject
+# 3) reservation A + handover(reservation B) → reject
+# 4) reservation A + fake hamster_name → server uses reservation hamster (not client string)
+# 5) happy path above already: reservation → handover → contract/receipt → PASS
+if [[ -z "${TPL_ID:-}" || "$TPL_ID" == "null" ]]; then
+  printf 'template id missing; cannot run document truth negatives\n' >&2
+  exit 1
+fi
+
+# --- 1) Cross-bind isolation: reservation A cannot attach contact B ---
+OTHER_CONTACT="$(curl -fsS -X POST "$API_URL/v1/crm/contacts" "${AUTH[@]}" \
+  -H 'Content-Type: application/json' -H "Idempotency-Key: pr-$RUN_ID-other-contact" \
+  -d '{"name":"其他人","phone":"+8613900002222","status":"lead"}' | json_field '.data.id')"
+[[ -n "$OTHER_CONTACT" && "$OTHER_CONTACT" != "null" ]] || {
+  printf 'other contact create failed\n' >&2
+  exit 1
+}
+CROSS_STATUS="$(curl -sS -o /tmp/scolvpet-pr-cross.json -w '%{http_code}' \
+  -X POST "$API_URL/v1/contracts" "${AUTH[@]}" \
+  -H 'Content-Type: application/json' -H "Idempotency-Key: pr-$RUN_ID-cross-doc" \
+  -d "$(jq -cn --arg t "$TPL_ID" --arg r "$RESERVATION_ID" --arg c "$OTHER_CONTACT" \
+    '{template_id:$t,reservation_id:$r,contact_id:$c,title:"cross-bind-should-fail"}')")"
+[[ "$CROSS_STATUS" == "409" || "$CROSS_STATUS" == "422" ]] || {
+  printf 'cross-bind contract want 409/422 got %s body=%s\n' "$CROSS_STATUS" "$(cat /tmp/scolvpet-pr-cross.json)" >&2
+  exit 1
+}
+
+# --- 2) reservation A + handover with reservation_id NULL → reject ---
+# Create a walk-in handover (same contact, new hamster) with no reservation_id.
+NULL_HAMSTER_PAYLOAD="$(jq -cn --arg rule "$RULE_ID" --arg code "PR-NULL-$RUN_ID" \
+  '{internal_code:$code,name:"无预订个体",variety_code:"syrian",species_rule_version_id:$rule,sex:"male",birth_date:"2026-05-01",source_type:"introduced"}')"
+NULL_HAMSTER="$(curl -fsS -X POST "$API_URL/v1/hamsters" \
+  "${AUTH[@]}" -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: pr-$RUN_ID-null-hamster" -d "$NULL_HAMSTER_PAYLOAD")"
+NULL_HAMSTER_ID="$(printf '%s' "$NULL_HAMSTER" | json_field '.data.id')"
+[[ -n "$NULL_HAMSTER_ID" && "$NULL_HAMSTER_ID" != "null" ]] || {
+  printf 'null-reservation hamster create failed: %s\n' "$NULL_HAMSTER" >&2
+  exit 1
+}
+NULL_HANDOVER="$(curl -fsS -X POST "$API_URL/v1/crm/handovers" \
+  "${AUTH[@]}" -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: pr-$RUN_ID-null-handover" \
+  -d "$(jq -cn --arg c "$CONTACT_ID" --arg h "$NULL_HAMSTER_ID" \
+    '{contact_id:$c,hamster_id:$h,notes:"walk-in no reservation"}')")"
+NULL_HANDOVER_ID="$(printf '%s' "$NULL_HANDOVER" | json_field '.data.id')"
+[[ -n "$NULL_HANDOVER_ID" && "$NULL_HANDOVER_ID" != "null" ]] || {
+  printf 'null-reservation handover create failed: %s\n' "$NULL_HANDOVER" >&2
+  exit 1
+}
+# Confirm DB row really has NULL reservation_id (not silently filled).
+NULL_RES_FIELD="$(printf '%s' "$NULL_HANDOVER" | jq -r '.data.reservation_id // empty')"
+[[ -z "$NULL_RES_FIELD" || "$NULL_RES_FIELD" == "null" ]] || {
+  printf 'expected handover without reservation_id, got %s\n' "$NULL_RES_FIELD" >&2
+  exit 1
+}
+NULL_BIND_STATUS="$(curl -sS -o /tmp/scolvpet-pr-null-ho.json -w '%{http_code}' \
+  -X POST "$API_URL/v1/contracts" "${AUTH[@]}" \
+  -H 'Content-Type: application/json' -H "Idempotency-Key: pr-$RUN_ID-null-ho-doc" \
+  -d "$(jq -cn --arg t "$TPL_ID" --arg r "$RESERVATION_ID" --arg h "$NULL_HANDOVER_ID" \
+    '{template_id:$t,reservation_id:$r,handover_id:$h,title:"null-handover-should-fail"}')")"
+[[ "$NULL_BIND_STATUS" == "409" || "$NULL_BIND_STATUS" == "422" ]] || {
+  printf 'null-handover bind want 409/422 got %s body=%s\n' "$NULL_BIND_STATUS" "$(cat /tmp/scolvpet-pr-null-ho.json)" >&2
+  exit 1
+}
+NULL_BIND_MSG="$(jq -r '.error.message // .message // .error // empty' /tmp/scolvpet-pr-null-ho.json 2>/dev/null || true)"
+printf '%s' "$NULL_BIND_MSG$(cat /tmp/scolvpet-pr-null-ho.json)" | grep -qE '绑定预订|reservation|交付单' || {
+  printf 'null-handover reject body should mention handover/reservation: %s\n' "$(cat /tmp/scolvpet-pr-null-ho.json)" >&2
+  exit 1
+}
+
+# --- 3) reservation A + handover of reservation B → reject ---
+HAMSTER_B_PAYLOAD="$(jq -cn --arg rule "$RULE_ID" --arg code "PR-B-$RUN_ID" \
+  '{internal_code:$code,name:"跨预订个体",variety_code:"syrian",species_rule_version_id:$rule,sex:"female",birth_date:"2026-05-10",source_type:"introduced"}')"
+HAMSTER_B="$(curl -fsS -X POST "$API_URL/v1/hamsters" \
+  "${AUTH[@]}" -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: pr-$RUN_ID-hamster-b" -d "$HAMSTER_B_PAYLOAD")"
+HAMSTER_B_ID="$(printf '%s' "$HAMSTER_B" | json_field '.data.id')"
+[[ -n "$HAMSTER_B_ID" && "$HAMSTER_B_ID" != "null" ]] || {
+  printf 'hamster B create failed: %s\n' "$HAMSTER_B" >&2
+  exit 1
+}
+PROFILE_B="$(jq -cn \
+  '{public_name:"跨预订个体",summary:"B",traits:["测试"],filming_status:"ready",published:true,consultable:true,cta_text:"预订",price_label:"咨询"}')"
+curl -fsS -X PUT "$API_URL/v1/growth/public-hamsters/$HAMSTER_B_ID" \
+  "${AUTH[@]}" -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: pr-$RUN_ID-profile-b" -d "$PROFILE_B" >/dev/null
+# Customer B verified session (different phone from A).
+PHONE_B="+8613900003333"
+CODE_RESP_B="$(curl -fsS -X POST "$API_URL/v1/public/customer/verification-codes" \
+  -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: pr-$RUN_ID-cust-code-b" \
+  -d "{\"phone\":\"$PHONE_B\",\"purpose\":\"login\"}")"
+CUST_VID_B="$(printf '%s' "$CODE_RESP_B" | json_field '.data.verification_id')"
+CUST_SESSION_B="$(curl -fsS -X POST "$API_URL/v1/public/customer/sessions" \
+  -H 'Content-Type: application/json' \
+  -d "{\"phone\":\"$PHONE_B\",\"verification_id\":\"$CUST_VID_B\",\"code\":\"$CODE\"}")"
+CUST_TOKEN_B="$(printf '%s' "$CUST_SESSION_B" | json_field '.data.access_token')"
+[[ -n "$CUST_TOKEN_B" && "$CUST_TOKEN_B" != "null" ]] || {
+  printf 'customer B session failed: %s\n' "$CUST_SESSION_B" >&2
+  exit 1
+}
+RESERVE_B="$(curl -fsS -X POST "$API_URL/v1/public/sites/$SLUG/reservations" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $CUST_TOKEN_B" \
+  -H "Idempotency-Key: pr-$RUN_ID-reserve-b" \
+  -d "$(jq -cn --arg hid "$HAMSTER_B_ID" --arg phone "$PHONE_B" \
+    '{hamster_id:$hid,name:"跨预订客户",phone:$phone,wechat:"b_wx",notes:"B"}')")"
+RESERVATION_B_ID="$(printf '%s' "$RESERVE_B" | json_field '.data.reservation_id')"
+CONTACT_B_ID="$(printf '%s' "$RESERVE_B" | json_field '.data.contact_id')"
+[[ -n "$RESERVATION_B_ID" && "$RESERVATION_B_ID" != "null" ]] || {
+  printf 'reservation B create failed: %s\n' "$RESERVE_B" >&2
+  exit 1
+}
+[[ -n "$CONTACT_B_ID" && "$CONTACT_B_ID" != "null" ]] || {
+  printf 'contact B missing from reserve B: %s\n' "$RESERVE_B" >&2
+  exit 1
+}
+LIST_B="$(curl -fsS "$API_URL/v1/crm/reservations" "${AUTH[@]}")"
+RES_B_VER="$(printf '%s' "$LIST_B" | jq -r --arg id "$RESERVATION_B_ID" \
+  '.data[]? | select(.id==$id) | .version // empty')"
+[[ -n "$RES_B_VER" && "$RES_B_VER" != "null" ]] || RES_B_VER=1
+CONFIRMED_B="$(curl -fsS -X POST "$API_URL/v1/crm/reservations/$RESERVATION_B_ID/confirm" \
+  "${AUTH[@]}" -H "Idempotency-Key: pr-$RUN_ID-confirm-b" -H "If-Match: \"$RES_B_VER\"")"
+[[ "$(printf '%s' "$CONFIRMED_B" | json_field '.data.status')" == "confirmed" ]] || {
+  printf 'confirm B failed: %s\n' "$CONFIRMED_B" >&2
+  exit 1
+}
+HANDOVER_B="$(curl -fsS -X POST "$API_URL/v1/crm/handovers" \
+  "${AUTH[@]}" -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: pr-$RUN_ID-handover-b" \
+  -d "$(jq -cn --arg c "$CONTACT_B_ID" --arg r "$RESERVATION_B_ID" --arg h "$HAMSTER_B_ID" \
+    '{contact_id:$c,reservation_id:$r,hamster_id:$h,notes:"handover for B"}')")"
+HANDOVER_B_ID="$(printf '%s' "$HANDOVER_B" | json_field '.data.id')"
+[[ -n "$HANDOVER_B_ID" && "$HANDOVER_B_ID" != "null" ]] || {
+  printf 'handover B create failed: %s\n' "$HANDOVER_B" >&2
+  exit 1
+}
+CROSS_HO_STATUS="$(curl -sS -o /tmp/scolvpet-pr-cross-ho.json -w '%{http_code}' \
+  -X POST "$API_URL/v1/contracts" "${AUTH[@]}" \
+  -H 'Content-Type: application/json' -H "Idempotency-Key: pr-$RUN_ID-cross-ho-doc" \
+  -d "$(jq -cn --arg t "$TPL_ID" --arg r "$RESERVATION_ID" --arg h "$HANDOVER_B_ID" \
+    '{template_id:$t,reservation_id:$r,handover_id:$h,title:"cross-reservation-handover-should-fail"}')")"
+[[ "$CROSS_HO_STATUS" == "409" || "$CROSS_HO_STATUS" == "422" ]] || {
+  printf 'cross-reservation handover bind want 409/422 got %s body=%s\n' \
+    "$CROSS_HO_STATUS" "$(cat /tmp/scolvpet-pr-cross-ho.json)" >&2
+  exit 1
+}
+
+# --- 4) Fake hamster_name must not poison title when reservation is truth source ---
+FAKE_STATUS="$(curl -sS -o /tmp/scolvpet-pr-fake-name.json -w '%{http_code}' \
+  -X POST "$API_URL/v1/contracts" "${AUTH[@]}" \
+  -H 'Content-Type: application/json' -H "Idempotency-Key: pr-$RUN_ID-fake-name" \
+  -d "$(jq -cn --arg t "$TPL_ID" --arg r "$RESERVATION_ID" \
+    '{template_id:$t,reservation_id:$r,hamster_name:"客户端伪造仓鼠",title:""}')")"
+[[ "$FAKE_STATUS" == "201" || "$FAKE_STATUS" == "200" ]] || {
+  printf 'fake hamster_name contract create failed: %s %s\n' "$FAKE_STATUS" "$(cat /tmp/scolvpet-pr-fake-name.json)" >&2
+  exit 1
+}
+FAKE_TITLE="$(jq -r '.data.title // empty' /tmp/scolvpet-pr-fake-name.json)"
+FAKE_BODY="$(jq -r '.data.body_filled // empty' /tmp/scolvpet-pr-fake-name.json)"
+printf '%s' "$FAKE_TITLE$FAKE_BODY" | grep -q '客户端伪造仓鼠' && {
+  printf 'server accepted client fake hamster_name into title/body: title=%s\n' "$FAKE_TITLE" >&2
+  exit 1
+} || true
+# Positive: server projection should still mention reservation hamster 奶茶
+printf '%s' "$FAKE_TITLE$FAKE_BODY" | grep -q '奶茶' || {
+  printf 'server hamster projection missing 奶茶 in fake-name contract: title=%s body=%s\n' \
+    "$FAKE_TITLE" "$FAKE_BODY" >&2
+  exit 1
+}
+
+printf 'public-reservation smoke PASS: reservation=%s contact=%s hamster=%s contract=%s handover=%s receipt=%s income_notes=handover:%s public_token=%s slug=%s negatives=contact_b+null_ho+cross_ho+fake_name\n' \
   "$RESERVATION_ID" "$CONTACT_ID" "$HAMSTER_ID" "$CONTRACT_ID" "$HANDOVER_ID" "$RECEIPT_ID" "$HANDOVER_ID" "$RECEIPT_TOKEN" "$SLUG"

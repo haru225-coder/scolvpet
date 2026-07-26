@@ -134,11 +134,6 @@ func (s *Server) createContract(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, err)
 		return
 	}
-	contactID, contactName, err := s.resolveContactRef(r.Context(), ownerID, request.ContactID, request.ContactName)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
 	handoverID, err := parseOptionalUUID(request.HandoverID)
 	if err != nil {
 		writeAPIError(w, r, validationError("handover_id", "交付单 ID 无效"))
@@ -149,49 +144,19 @@ func (s *Server) createContract(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, validationError("reservation_id", "预订 ID 无效"))
 		return
 	}
-	hamsterName := stringOrEmpty(request.HamsterName)
-	// 优先从 Reservation 继承客户/个体（Golden Path：确认预订后直接生成合同）。
-	if reservationID != nil {
-		context, contextErr := s.getDocReservationContext(r.Context(), ownerID, *reservationID)
-		if contextErr != nil {
-			writeAPIError(w, r, contextErr)
-			return
-		}
-		if contactID == nil {
-			contact := context.ContactID
-			contactID = &contact
-		}
-		if contactName == "" {
-			contactName = context.ContactName
-		}
-		if hamsterName == "" {
-			hamsterName = context.HamsterName
-		}
-		if handoverID == nil && context.HandoverID != nil {
-			handoverID = context.HandoverID
-		}
+	// Golden Path: reservation_id is identity truth source; never allow cross-bind.
+	bound, err := s.bindDocumentParties(r.Context(), ownerID, documentPartyInput{
+		ReservationID: reservationID,
+		ContactID:     request.ContactID,
+		ContactName:   request.ContactName,
+		HandoverID:    handoverID,
+		HamsterName:   stringOrEmpty(request.HamsterName),
+	})
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
 	}
-	if handoverID != nil {
-		context, contextErr := s.getDocHandoverContext(r.Context(), ownerID, *handoverID)
-		if contextErr != nil {
-			writeAPIError(w, r, contextErr)
-			return
-		}
-		if contactID == nil {
-			contact := context.ContactID
-			contactID = &contact
-		}
-		if contactName == "" {
-			contactName = context.ContactName
-		}
-		if hamsterName == "" {
-			hamsterName = context.HamsterName
-		}
-		if err := s.ensureHandoverOwned(r.Context(), ownerID, *handoverID); err != nil {
-			writeAPIError(w, r, err)
-			return
-		}
-	}
+	contactID, contactName, handoverID, reservationID, hamsterName := bound.ContactID, bound.ContactName, bound.HandoverID, bound.ReservationID, bound.HamsterName
 	title := strings.TrimSpace(request.Title)
 	if title == "" {
 		if hamsterName != "" {
@@ -216,11 +181,11 @@ func (s *Server) createContract(w http.ResponseWriter, r *http.Request) {
 	var id uuid.UUID
 	err = s.Store.Pool.QueryRow(r.Context(), `
 		INSERT INTO doc_document (
-			owner_id, organization_id, template_id, kind, contact_id, handover_id,
+			owner_id, organization_id, template_id, kind, contact_id, handover_id, reservation_id,
 			title, body_filled, currency, notes
-		) VALUES ($1,$2,$3,'contract',$4,$5,$6,$7,'CNY',$8)
+		) VALUES ($1,$2,$3,'contract',$4,$5,$6,$7,$8,'CNY',$9)
 		RETURNING id
-	`, ownerID, orgID, templateID, contactID, handoverID, title, filled, emptyToNil(request.Notes)).Scan(&id)
+	`, ownerID, orgID, templateID, contactID, handoverID, reservationID, title, filled, emptyToNil(request.Notes)).Scan(&id)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
@@ -273,11 +238,6 @@ func (s *Server) createReceipt(w http.ResponseWriter, r *http.Request) {
 	if currency == "" {
 		currency = "CNY"
 	}
-	contactID, contactName, err := s.resolveContactRef(r.Context(), ownerID, request.ContactID, request.ContactName)
-	if err != nil {
-		writeAPIError(w, r, err)
-		return
-	}
 	handoverID, err := parseOptionalUUID(request.HandoverID)
 	if err != nil {
 		writeAPIError(w, r, validationError("handover_id", "交付单 ID 无效"))
@@ -288,45 +248,18 @@ func (s *Server) createReceipt(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, validationError("reservation_id", "预订 ID 无效"))
 		return
 	}
-	hamsterName := stringOrEmpty(request.HamsterName)
-	// 预订优先：继承客户/个体，并尽量关联已有交付单。
-	if reservationID != nil {
-		context, contextErr := s.getDocReservationContext(r.Context(), ownerID, *reservationID)
-		if contextErr != nil {
-			writeAPIError(w, r, contextErr)
-			return
-		}
-		if contactID == nil {
-			contact := context.ContactID
-			contactID = &contact
-		}
-		if contactName == "" {
-			contactName = context.ContactName
-		}
-		if hamsterName == "" {
-			hamsterName = context.HamsterName
-		}
-		if handoverID == nil && context.HandoverID != nil {
-			handoverID = context.HandoverID
-		}
+	bound, err := s.bindDocumentParties(r.Context(), ownerID, documentPartyInput{
+		ReservationID: reservationID,
+		ContactID:     request.ContactID,
+		ContactName:   request.ContactName,
+		HandoverID:    handoverID,
+		HamsterName:   stringOrEmpty(request.HamsterName),
+	})
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
 	}
-	if handoverID != nil {
-		context, contextErr := s.getDocHandoverContext(r.Context(), ownerID, *handoverID)
-		if contextErr != nil {
-			writeAPIError(w, r, contextErr)
-			return
-		}
-		if contactID == nil {
-			contact := context.ContactID
-			contactID = &contact
-		}
-		if contactName == "" {
-			contactName = context.ContactName
-		}
-		if hamsterName == "" {
-			hamsterName = context.HamsterName
-		}
-	}
+	contactID, contactName, handoverID, reservationID, hamsterName := bound.ContactID, bound.ContactName, bound.HandoverID, bound.ReservationID, bound.HamsterName
 	title := strings.TrimSpace(request.Title)
 	if title == "" {
 		if hamsterName != "" {
@@ -353,11 +286,11 @@ func (s *Server) createReceipt(w http.ResponseWriter, r *http.Request) {
 	var id uuid.UUID
 	err = s.Store.Pool.QueryRow(r.Context(), `
 		INSERT INTO doc_document (
-			owner_id, organization_id, template_id, kind, contact_id, handover_id,
+			owner_id, organization_id, template_id, kind, contact_id, handover_id, reservation_id,
 			title, body_filled, amount_cents, currency, notes
-		) VALUES ($1,$2,$3,'receipt',$4,$5,$6,$7,$8,$9,$10)
+		) VALUES ($1,$2,$3,'receipt',$4,$5,$6,$7,$8,$9,$10,$11)
 		RETURNING id
-	`, ownerID, orgID, templateID, contactID, handoverID, title, filled, amount, currency, emptyToNil(request.Notes)).Scan(&id)
+	`, ownerID, orgID, templateID, contactID, handoverID, reservationID, title, filled, amount, currency, emptyToNil(request.Notes)).Scan(&id)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
@@ -791,6 +724,110 @@ func (s *Server) ensureHandoverOwned(ctx context.Context, ownerID, handoverID uu
 		return validationError("handover_id", "交付单不存在")
 	}
 	return nil
+}
+
+type documentPartyInput struct {
+	ReservationID *uuid.UUID
+	ContactID     *string
+	ContactName   *string
+	HandoverID    *uuid.UUID
+	HamsterName   string
+}
+
+type documentPartyBound struct {
+	ContactID     *uuid.UUID
+	ContactName   string
+	HandoverID    *uuid.UUID
+	ReservationID *uuid.UUID
+	HamsterName   string
+}
+
+// bindDocumentParties enforces reservation as identity truth source when present.
+// Explicit contact/handover that disagree with the reservation are rejected.
+func (s *Server) bindDocumentParties(ctx context.Context, ownerID uuid.UUID, input documentPartyInput) (documentPartyBound, error) {
+	var out documentPartyBound
+	out.HamsterName = strings.TrimSpace(input.HamsterName)
+	out.HandoverID = input.HandoverID
+	out.ReservationID = input.ReservationID
+
+	requestedContactID, contactName, err := s.resolveContactRef(ctx, ownerID, input.ContactID, input.ContactName)
+	if err != nil {
+		return out, err
+	}
+	out.ContactID = requestedContactID
+	out.ContactName = contactName
+
+	if input.ReservationID != nil {
+		resCtx, err := s.getDocReservationContext(ctx, ownerID, *input.ReservationID)
+		if err != nil {
+			return out, err
+		}
+		// Reservation is the sole identity truth source: client cannot override.
+		if requestedContactID != nil && *requestedContactID != resCtx.ContactID {
+			return out, conflictError("contact_id", "合同客户必须与预订客户一致")
+		}
+		contact := resCtx.ContactID
+		out.ContactID = &contact
+		out.ContactName = resCtx.ContactName
+		// Always server-side hamster projection — ignore client hamster_name.
+		out.HamsterName = resCtx.HamsterName
+		if out.HandoverID == nil && resCtx.HandoverID != nil {
+			out.HandoverID = resCtx.HandoverID
+		}
+		if out.HandoverID != nil {
+			// Explicit/implicit handover must be bound to THIS reservation (not null, not other).
+			var handContact uuid.UUID
+			var handReservation *uuid.UUID
+			var handHamster *uuid.UUID
+			var resHamster *uuid.UUID
+			err := s.Store.Pool.QueryRow(ctx, `
+				SELECT h.contact_id, h.reservation_id, h.hamster_id, r.hamster_id
+				FROM crm_handover h
+				JOIN crm_reservation r ON r.owner_id=h.owner_id AND r.id=$3
+				WHERE h.owner_id=$1 AND h.id=$2
+			`, ownerID, *out.HandoverID, *input.ReservationID).Scan(&handContact, &handReservation, &handHamster, &resHamster)
+			if errors.Is(err, pgx.ErrNoRows) {
+				return out, validationError("handover_id", "交付单不存在")
+			}
+			if err != nil {
+				return out, err
+			}
+			if handContact != resCtx.ContactID {
+				return out, conflictError("handover_id", "交付单客户必须与预订客户一致")
+			}
+			if handReservation == nil {
+				return out, conflictError("handover_id", "交付单必须绑定预订，不能关联 reservation_id 为空的交付单")
+			}
+			if *handReservation != *input.ReservationID {
+				return out, conflictError("handover_id", "交付单必须属于同一预订")
+			}
+			// Hamster linkage must match when both sides set.
+			if handHamster != nil && resHamster != nil && *handHamster != *resHamster {
+				return out, conflictError("handover_id", "交付单仓鼠必须与预订仓鼠一致")
+			}
+		}
+		return out, nil
+	}
+
+	// No reservation: still validate handover ↔ contact consistency.
+	if out.HandoverID != nil {
+		handCtx, err := s.getDocHandoverContext(ctx, ownerID, *out.HandoverID)
+		if err != nil {
+			return out, err
+		}
+		if out.ContactID != nil && *out.ContactID != handCtx.ContactID {
+			return out, conflictError("handover_id", "交付单客户必须与合同客户一致")
+		}
+		if out.ContactID == nil {
+			c := handCtx.ContactID
+			out.ContactID = &c
+			out.ContactName = handCtx.ContactName
+		}
+		if out.HamsterName == "" {
+			out.HamsterName = handCtx.HamsterName
+		}
+	}
+	return out, nil
 }
 
 type docHandoverContext struct {

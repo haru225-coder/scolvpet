@@ -80,6 +80,7 @@ func main() {
 	// NewServer keeps a local default for unit tests; the process entrypoint
 	// replaces it with the configured local or S3-compatible implementation.
 	apiServer.ImportObjects = importObjects
+	apiServer.Environment = config.Environment
 	outboxWorker := worker.New(pool, logger)
 	outboxWorker.LeaseDuration = time.Duration(config.OutboxLeaseSeconds) * time.Second
 	switch config.OutboxPublisherMode {
@@ -105,6 +106,23 @@ func main() {
 	if !config.MediaWorkerDisabled {
 		go mediaWorker.Run(ctx, time.Duration(config.MediaWorkerIntervalSecs)*time.Second)
 	}
+	// Auto-release expired public/staff reservation holds (P0-03).
+	go func() {
+		ticker := time.NewTicker(60 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if n, err := apiServer.ReleaseExpiredReservationHolds(ctx); err != nil {
+					logger.Warn("reservation hold release failed", "error", err)
+				} else if n > 0 {
+					logger.Info("reservation holds released", "count", n)
+				}
+			}
+		}
+	}()
 
 	// WriteTimeout covers the whole handler lifetime after request headers.
 	// Assistant chat may call upstream LLM + tools for 30–90s; 15s caused empty
