@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
 import '../../ui/theme/ios_theme.dart';
+import '../../ui/widgets/correction_reason_sheet.dart';
 import '../../ui/widgets/ios_widgets.dart';
 import '../i2/i2_models.dart';
 import '../i2/i2_widgets.dart';
@@ -807,87 +808,18 @@ class _PedigreeGeneticNode extends StatelessWidget {
 }
 
 /// Ask for a non-empty correction reason (required for replace / end).
+///
+/// Thin wrapper over the shared sheet so the pedigree widget keys stay stable.
 Future<String?> showPedigreeCorrectionReasonSheet({
   required BuildContext context,
   required String title,
   String hint = '请说明原因（会写入审计）',
-}) {
-  final ctrl = TextEditingController();
-  return showCupertinoModalPopup<String>(
-    context: context,
-    builder: (ctx) {
-      final p = ScolvPalette.of(ctx);
-      return Material(
-        color: Colors.transparent,
-        child: Container(
-          key: const Key('pedigree-correction-reason-sheet'),
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
-          ),
-          decoration: BoxDecoration(
-            color: p.secondaryGroupedBackground,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(IosMetrics.continuousRadius),
-            ),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  hint,
-                  style: Theme.of(
-                    ctx,
-                  ).textTheme.bodySmall?.copyWith(color: p.secondaryLabel),
-                ),
-                const SizedBox(height: 12),
-                CupertinoTextField(
-                  key: const Key('pedigree-correction-reason'),
-                  controller: ctrl,
-                  placeholder: '纠错原因',
-                  maxLines: 3,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: p.secondaryFill,
-                    borderRadius: BorderRadius.circular(
-                      IosMetrics.continuousRadius,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                CupertinoButton.filled(
-                  key: const Key('pedigree-correction-confirm'),
-                  onPressed: () {
-                    final text = ctrl.text.trim();
-                    if (text.isEmpty) return;
-                    Navigator.pop(ctx, text);
-                  },
-                  child: const Text('确认'),
-                ),
-                CupertinoButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('取消'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    },
-  );
-}
+}) => showCorrectionReasonSheet(
+  context: context,
+  title: title,
+  keyPrefix: 'pedigree',
+  hint: hint,
+);
 
 /// Simple fill sheet: quick name create + pick from existing roster.
 Future<PedigreeNode?> showPedigreeFillSheet({
