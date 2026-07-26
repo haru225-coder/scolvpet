@@ -169,7 +169,7 @@ class CustomerReservation {
         title.hashCode +
         status.hashCode +
         reservedAt.hashCode +
-        holdExpiresAt.hashCode +
+        (holdExpiresAt == null ? 0 : holdExpiresAt.hashCode) +
         updatedAt.hashCode +
         version.hashCode +
         hamster.hashCode +

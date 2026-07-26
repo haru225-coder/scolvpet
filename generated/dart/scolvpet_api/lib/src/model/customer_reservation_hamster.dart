@@ -88,7 +88,7 @@ class CustomerReservationHamster {
 
     @override
     int get hashCode =>
-        hamsterId.hashCode +
+        (hamsterId == null ? 0 : hamsterId.hashCode) +
         publicName.hashCode +
         summary.hashCode +
         priceLabel.hashCode;

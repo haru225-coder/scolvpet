@@ -254,17 +254,24 @@ paths:
       tags: [认证]
       operationId: deleteCurrentSession
       summary: 退出当前会话
-      description: 使当前访问令牌与对应刷新令牌失效。
+      description: |
+        使当前访问令牌与对应刷新令牌失效。登出是状态收敛操作，天然幂等：
+        服务端每次都真实执行撤销、不做重放（不发送 Idempotency-Replayed）。
+        Idempotency-Key 为兼容旧客户端的可选头，提供时原样回显。
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: Idempotency-Key
+          in: header
+          required: false
+          description: 可选；仅回显，不参与重放。
+          schema:
+            type: string
+            maxLength: 200
       responses:
         '204':
           description: 会话已失效
           headers:
             Idempotency-Key:
               $ref: '#/components/headers/IdempotencyKey'
-            Idempotency-Replayed:
-              $ref: '#/components/headers/IdempotencyReplayed'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -13869,13 +13876,13 @@ components:
         title: { type: string }
         status: { type: string }
         reserved_at: { type: string, format: date-time }
-        hold_expires_at: { type: string, format: date-time, nullable: true }
+        hold_expires_at: { type: ['string', 'null'], format: date-time }
         updated_at: { type: string, format: date-time }
         version: { type: integer }
         hamster:
           type: object
           properties:
-            hamster_id: { type: string, format: uuid, nullable: true }
+            hamster_id: { type: ['string', 'null'], format: uuid }
             public_name: { type: string }
             summary: { type: string }
             price_label: { type: string }

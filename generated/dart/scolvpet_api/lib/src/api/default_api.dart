@@ -3125,10 +3125,10 @@ _responseData = rawData == null ? null : deserialize<WeightRecordResponse, Weigh
   }
 
   /// 退出当前会话
-  /// 使当前访问令牌与对应刷新令牌失效。
+  /// 使当前访问令牌与对应刷新令牌失效。登出是状态收敛操作，天然幂等： 服务端每次都真实执行撤销、不做重放（不发送 Idempotency-Replayed）。 Idempotency-Key 为兼容旧客户端的可选头，提供时原样回显。
   ///
   /// Parameters:
-  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [idempotencyKey] - 可选；仅回显，不参与重放。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3139,7 +3139,7 @@ _responseData = rawData == null ? null : deserialize<WeightRecordResponse, Weigh
   /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
   Future<Response<void>> deleteCurrentSession({
-    required String idempotencyKey,
+    String? idempotencyKey,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -3151,7 +3151,7 @@ _responseData = rawData == null ? null : deserialize<WeightRecordResponse, Weigh
     final _options = Options(
       method: r'DELETE',
       headers: <String, dynamic>{
-        r'Idempotency-Key': idempotencyKey,
+        if (idempotencyKey != null) r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
       extra: <String, dynamic>{

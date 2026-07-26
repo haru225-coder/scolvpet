@@ -1492,14 +1492,14 @@ Name | Type | Description  | Notes
 
 退出当前会话
 
-使当前访问令牌与对应刷新令牌失效。
+使当前访问令牌与对应刷新令牌失效。登出是状态收敛操作，天然幂等： 服务端每次都真实执行撤销、不做重放（不发送 Idempotency-Replayed）。 Idempotency-Key 为兼容旧客户端的可选头，提供时原样回显。
 
 ### Example
 ```dart
 import 'package:scolvpet_api/api.dart';
 
 final api = ScolvpetApi().getDefaultApi();
-final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final String idempotencyKey = idempotencyKey_example; // String | 可选；仅回显，不参与重放。
 
 try {
     api.deleteCurrentSession(idempotencyKey);
@@ -1512,7 +1512,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **idempotencyKey** | **String**| 可选；仅回显，不参与重放。 | [optional]
 
 ### Return type
 
