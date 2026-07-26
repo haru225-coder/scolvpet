@@ -23,6 +23,11 @@ flutter build ios --release --dart-define=API_BASE_URL=http://192.168.31.58:8080
 flutter build ios --release --dart-define=API_BASE_URL=https://p.scolv.com:8443
 ```
 
+> **正式发布禁止裸 `flutter build`**：`app_config.dart` 的编译期默认值指向 staging
+> （`p.scolv.com`），只有仓库根的 `make release-android` / `make release-ios` 会
+> fail-closed 校验并注入 `API_BASE_URL` 与 `PUBLIC_SITE_HOST`，绕过它们打的包
+> 会把 staging 主机烧进产物。
+
 仓库根目录提供带超时保护的 `make flutter-pub-get`、`make flutter-analyze`、`make flutter-test` 和 `make flutter-build-android`；默认 Flutter 命令超时 900 秒、Android 构建超时 1800 秒，Gradle 网络连接/读取超时 60000 毫秒。
 
 应用层通过 `generated/dart/scolvpet_api` 的 `DefaultApi` 访问 `/v1`。安全令牌写入 `flutter_secure_storage`，壳层/账号/熊舍/规则写入只读缓存；离线时主壳可浏览，业务写入口关闭。
