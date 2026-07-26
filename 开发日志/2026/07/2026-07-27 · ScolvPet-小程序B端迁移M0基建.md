@@ -48,6 +48,10 @@
 Brief:README 重写为工程简报(一屏状态/硬约定/真机 Gate 清单/M1 交接);docs/34 增补 §10 真机 Gate 验收清单(6 项判据 + 回退流程)。
 门禁复跑全绿(vitest 18、原生 15、tsc、build、体积门禁,主包 0.373MB)。
 
+## 追加:视觉方向变更(同日,Gate 裁定)
+
+用户看 HTML 预览判**不通过**:iOS 素面「AI 味浓」。按其指定方向换「蜡笔手账」表层(纸纹底/蜡笔描边/wobble 手绘圆角/蜡笔波浪线/内联 SVG 贴纸:金丝熊·爪印·瓜子/贴纸微歪/虚断分隔线/按钮按压"捏一下"),交互结构与触target 仍 iOS HIG,表层与结构分离、可整层回退。docs/16「不新增手绘 SVG」在小程序端解除(用户拍板),docs/34 §1 已留痕。预览 Artifact 已按手账桌面重做(含载入动效/浮动贴纸/深浅双主题)。门禁复跑绿(vitest 18、原生 15、tsc、build、主包 0.377MB)。**真机 Gate 重置为待确认**,验收对象为蜡笔版。
+
 ## 提交
 
 - `feat(contracts): typescript-fetch client generation with drift gate (M0-4)`
