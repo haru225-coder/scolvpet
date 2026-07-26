@@ -1,0 +1,31 @@
+.gen-label {
+  font-weight: 700;
+  color: #1f6b4a;
+  margin-bottom: 12rpx;
+}
+.gen-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+.node {
+  flex: 1;
+  min-width: 140rpx;
+  background: #f3efe8;
+  border-radius: 12rpx;
+  padding: 16rpx;
+  border: 2rpx solid #e5ddd2;
+}
+.node.dim {
+  opacity: 0.65;
+}
+.role {
+  font-size: 20rpx;
+  color: #1f6b4a;
+  font-weight: 700;
+}
+.name {
+  font-weight: 700;
+  margin-top: 6rpx;
+  font-size: 26rpx;
+}

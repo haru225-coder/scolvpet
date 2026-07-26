@@ -1,0 +1,58 @@
+.hero {
+  width: 100%;
+  height: 360rpx;
+  border-radius: 16rpx;
+  background: #efe8df;
+}
+.hero.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 96rpx;
+}
+.traits {
+  margin-top: 12rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+.tag {
+  background: #e8f3ed;
+  color: #1f6b4a;
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+}
+.row-btns {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+.btn-ghost {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid #1f6b4a;
+  color: #1f6b4a;
+  font-weight: 600;
+  font-size: 26rpx;
+}
+.code-row {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 16rpx;
+  align-items: center;
+}
+.code-input {
+  flex: 1;
+  margin-top: 0;
+}
+.code-btn {
+  padding: 16rpx 20rpx;
+  white-space: nowrap;
+  font-size: 24rpx;
+}
+.code-btn.disabled {
+  opacity: 0.5;
+}

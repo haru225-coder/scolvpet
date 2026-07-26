@@ -1,0 +1,48 @@
+.hamster-card {
+  display: flex;
+  gap: 20rpx;
+  align-items: stretch;
+  padding: 20rpx;
+}
+.cover {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  background: #efe8df;
+  flex-shrink: 0;
+}
+.cover.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56rpx;
+}
+.body {
+  flex: 1;
+  min-width: 0;
+}
+.name {
+  font-weight: 800;
+  font-size: 32rpx;
+}
+.traits {
+  margin-top: 8rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+.tag {
+  background: #e8f3ed;
+  color: #1f6b4a;
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+}
+.ok {
+  color: #1f6b4a;
+  font-weight: 600;
+}
+.link {
+  color: #1f6b4a;
+  font-size: 26rpx;
+}

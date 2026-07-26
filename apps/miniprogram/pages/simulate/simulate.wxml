@@ -1,0 +1,45 @@
+<view class="card">
+  <view style="font-weight:800;font-size:34rpx;">🔮 繁育模拟</view>
+  <view class="muted" style="margin-top:8rpx;">基于权威表型表，对两只已公开仓鼠做配对预测（客户展示用）。</view>
+</view>
+
+<view class="card">
+  <view class="label">个体 A</view>
+  <picker mode="selector" range="{{hamsters}}" range-key="public_name" bindchange="onSelfChange">
+    <view class="field">{{selfName || '选择仓鼠'}}</view>
+  </picker>
+  <view class="label" style="margin-top:16rpx;">个体 B</view>
+  <picker mode="selector" range="{{hamsters}}" range-key="public_name" bindchange="onMateChange">
+    <view class="field">{{mateName || '选择配对'}}</view>
+  </picker>
+  <view class="btn-primary" style="margin-top:24rpx;" bindtap="run">开始模拟</view>
+</view>
+
+<view wx:if="{{loading}}" class="card muted">计算中…</view>
+<view wx:elif="{{error}}" class="card">
+  <view>{{error}}</view>
+  <view class="btn-primary" style="margin-top:20rpx;" bindtap="run">重试</view>
+</view>
+
+<block wx:if="{{result}}">
+  <view class="card">
+    <view style="font-weight:700;">配对</view>
+    <view class="muted" style="margin-top:8rpx;">
+      {{result.sire_name || result.sire_phenotype}} × {{result.dam_name || result.dam_phenotype}}
+    </view>
+    <view class="muted" wx:if="{{result.series}}">系列 · {{result.series}}</view>
+  </view>
+  <view class="card" wx:if="{{result.why}}">
+    <view style="font-weight:700;">为什么？</view>
+    <view class="muted" style="margin-top:8rpx;">父本表现「{{result.why.sire}}」</view>
+    <view class="muted">母本表现「{{result.why.dam}}」</view>
+    <view style="margin-top:12rpx;line-height:1.55;">{{result.why.therefore}}</view>
+  </view>
+  <view class="card">
+    <view style="font-weight:700;margin-bottom:12rpx;">可能后代</view>
+    <view class="outcome" wx:for="{{result.outcomes}}" wx:key="phenotype">
+      <view class="out-name">{{item.phenotype}}</view>
+      <view class="out-pct">{{item.percentLabel}}</view>
+    </view>
+  </view>
+</block>

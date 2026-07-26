@@ -1,0 +1,4 @@
+{
+  "desc": "ScolvPet customer miniprogram",
+  "rules": [{ "action": "allow", "page": "*" }]
+}

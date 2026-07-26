@@ -1,0 +1,16 @@
+{
+  "description": "ScolvPet customer miniprogram",
+  "packOptions": { "ignore": [], "include": [] },
+  "setting": {
+    "bundle": false,
+    "es6": true,
+    "postcss": true,
+    "minified": true,
+    "urlCheck": false
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.5.5",
+  "appid": "touristappid",
+  "projectname": "scolvpet-customer",
+  "condition": {}
+}

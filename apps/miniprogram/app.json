@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/catalog/catalog",
+    "pages/detail/detail",
+    "pages/pedigree/pedigree",
+    "pages/simulate/simulate",
+    "pages/my-reservations/my-reservations",
+    "pages/contract/contract"
+  ],
+  "window": {
+    "navigationBarTitleText": "ScolvPet 熊舍",
+    "navigationBarBackgroundColor": "#1F6B4A",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F6F3EE"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
