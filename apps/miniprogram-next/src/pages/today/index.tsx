@@ -1,4 +1,4 @@
-import { ScrollView, View, Text } from '@tarojs/components'
+import { ScrollView, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useState } from 'react'
 import {
@@ -12,8 +12,7 @@ import {
   Empty,
   ActionPanel,
   palette,
-  metrics,
-  statusBarHeight
+  metrics
 } from '@scolvpet/mp-ui'
 
 // M0-6 样例页:今日照护队列(静态假数据,只读;真机手感 Gate 用)。
@@ -43,6 +42,9 @@ export default function TodayPage() {
       <ScrollView
         scrollY
         type="list"
+        bounces
+        enhanced
+        showScrollbar={false}
         style={{ flex: 1 }}
         onScroll={(e: { detail?: { scrollTop?: number } }) => setScrollTop(e.detail?.scrollTop || 0)}
       >
@@ -94,7 +96,6 @@ export default function TodayPage() {
             </Section>
           </SectionList>
         )}
-        <View style={{ height: `${statusBarHeight()}px` }} />
       </ScrollView>
       <ActionPanel
         open={panelFor != null}
@@ -102,7 +103,6 @@ export default function TodayPage() {
         actions={[{ text: '跳过一次', danger: true }, { text: '顺延到明天' }]}
         onClose={() => setPanelFor(null)}
       />
-      <Text style={{ display: 'none' }}>M0 sample</Text>
     </View>
   )
 }

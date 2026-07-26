@@ -17,6 +17,9 @@ export interface SwipeActionProps {
 
 const ACTION_WIDTH = 72
 
+// ponytail: 位移走 setState(每次 touchmove 一帧),WebView 桥上会有可感延迟;
+// 天花板即此。若真机 Gate 判不过,升级路径是 Skyline worklet 手势动画。
+
 /** 行左滑操作:触摸位移 + spring 回弹;点击动作后收起。 */
 export function SwipeAction({ children, actions }: SwipeActionProps) {
   const [offset, setOffset] = useState(0)

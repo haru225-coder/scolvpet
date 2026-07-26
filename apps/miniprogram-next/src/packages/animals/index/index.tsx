@@ -28,6 +28,9 @@ export default function AnimalsSamplePage() {
       <ScrollView
         scrollY
         type="list"
+        bounces
+        enhanced
+        showScrollbar={false}
         style={{ flex: 1 }}
         onScroll={(e: { detail?: { scrollTop?: number } }) => setScrollTop(e.detail?.scrollTop || 0)}
       >

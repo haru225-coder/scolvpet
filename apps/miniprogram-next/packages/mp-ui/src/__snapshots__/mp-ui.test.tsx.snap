@@ -216,7 +216,7 @@ exports[`mp-ui snapshots > NavBar 大标题态 1`] = `
       >
         <div
           data-taro="View"
-          style="width: 60px; display: flex; justify-content: flex-start;"
+          style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: flex-start;"
         />
         <div
           data-taro="View"
@@ -270,7 +270,7 @@ exports[`mp-ui snapshots > NavBar 收缩态(含返回与右操作) 1`] = `
       >
         <div
           data-taro="View"
-          style="width: 60px; display: flex; justify-content: flex-start;"
+          style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: flex-start;"
         >
           <span
             data-taro="Text"
@@ -331,7 +331,7 @@ exports[`mp-ui snapshots > SectionList + Section + Cell 1`] = `
 <DocumentFragment>
   <div
     data-taro="View"
-    style="display: flex; flex-direction: column; gap: 24px; padding: 0px 16px 32px;"
+    style="display: flex; flex-direction: column; gap: 24px; padding: 0px 16px calc(32px + env(safe-area-inset-bottom));"
   >
     <div
       data-taro="View"
@@ -348,6 +348,8 @@ exports[`mp-ui snapshots > SectionList + Section + Cell 1`] = `
         style="background-color: rgb(255, 255, 255); border-radius: 16px; overflow: hidden;"
       >
         <div
+          data-hover-class="none"
+          data-hover-stay="90"
           data-taro="View"
           style="display: flex; align-items: center; min-height: 48px; padding: 12px 16px; box-sizing: border-box; gap: 12px;"
         >
@@ -382,6 +384,8 @@ exports[`mp-ui snapshots > SectionList + Section + Cell 1`] = `
           </span>
         </div>
         <div
+          data-hover-class="none"
+          data-hover-stay="90"
           data-taro="View"
           style="display: flex; align-items: center; min-height: 48px; padding: 12px 16px; box-sizing: border-box; gap: 12px; border-top: 0.5px solid rgb(232, 223, 214);"
         >
@@ -482,6 +486,8 @@ exports[`mp-ui snapshots > Sheet 打开态 1`] = `
         />
       </div>
       <div
+        data-hover-class="none"
+        data-hover-stay="90"
         data-taro="View"
         style="display: flex; align-items: center; min-height: 48px; padding: 12px 16px; box-sizing: border-box; gap: 12px;"
       >
@@ -540,6 +546,8 @@ exports[`mp-ui snapshots > SwipeAction 静止态 1`] = `
       style="position: relative; background-color: rgb(255, 255, 255); transform: translateX(0px); transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);"
     >
       <div
+        data-hover-class="none"
+        data-hover-stay="90"
         data-taro="View"
         style="display: flex; align-items: center; min-height: 48px; padding: 12px 16px; box-sizing: border-box; gap: 12px;"
       >

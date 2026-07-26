@@ -1,3 +1,14 @@
+/* —— mp-ui 全局钩子(组件走内联样式,仅动画/hover 需落 class)—— */
+@keyframes mp-sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* Cell 按压反馈:走平台原生 hover-class,不写 JS(docs/34 press 90ms) */
+.mp-press {
+  background-color: rgba(58, 47, 41, 0.06);
+}
+
 /* —— C 端混写页共享样式:原样迁自 apps/miniprogram/app.wxss,勿改动 ——
    (page 底色/字色沿用旧 C 端观感;新 B 端页在页面根节点自设
    groupedBackground,一律走 @scolvpet/mp-ui tokens,docs/34) */

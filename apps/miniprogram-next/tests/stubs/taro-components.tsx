@@ -10,7 +10,9 @@ type AnyProps = PropsWithChildren<{
 
 function domify(tag: string, displayName: string) {
   const C = forwardRef<HTMLElement, AnyProps>((props, ref) => {
-    const { children, onTouchStart, onTouchMove, onTouchEnd, onInput, ...rest } = props
+    const { children, onTouchStart, onTouchMove, onTouchEnd, onInput, hoverClass, hoverStayTime, ...rest } = props
+    if (hoverClass != null) (rest as Record<string, unknown>)['data-hover-class'] = hoverClass
+    if (hoverStayTime != null) (rest as Record<string, unknown>)['data-hover-stay'] = hoverStayTime
     const Tag = tag as 'div'
     return (
       <Tag

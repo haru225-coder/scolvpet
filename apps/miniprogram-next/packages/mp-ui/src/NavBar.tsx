@@ -60,14 +60,13 @@ export function NavBar({ title, scrollTop = 0, back = false, onBack, right, larg
             boxSizing: 'border-box'
           }}
         >
-          <View style={{ width: '60px', display: 'flex', justifyContent: 'flex-start' }}>
+          {/* 触控目标 ≥44pt:点击落在整个左槽,不只箭头字形(docs/16 §4.2) */}
+          <View
+            style={{ width: '60px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}
+            onClick={back ? onBack || (() => Taro.navigateBack()) : undefined}
+          >
             {back ? (
-              <Text
-                style={{ fontSize: `${navBar.iconSize}px`, color: palette.accent }}
-                onClick={onBack || (() => Taro.navigateBack())}
-              >
-                ‹
-              </Text>
+              <Text style={{ fontSize: `${navBar.iconSize}px`, color: palette.accent }}>‹</Text>
             ) : null}
           </View>
           <View style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>

@@ -45,7 +45,8 @@ export function SectionList({ children }: { children: ReactNode }) {
         display: 'flex',
         flexDirection: 'column',
         gap: `${metrics.sectionGap}px`,
-        padding: `0 ${metrics.pagePadding}px ${metrics.bottomSafePadding}px`
+        // 原生 env() 处理 iPhone 底部指示条,免 JS 探测
+        padding: `0 ${metrics.pagePadding}px calc(${metrics.bottomSafePadding}px + env(safe-area-inset-bottom))`
       }}
     >
       {children}

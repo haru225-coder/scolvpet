@@ -28,6 +28,8 @@ export function Cell({ title, subtitle, value, chevron = false, divider = false,
         gap: `${metrics.space12}px`,
         ...(divider ? hairlineTop : {})
       }}
+      hoverClass={onClick ? 'mp-press' : 'none'}
+      hoverStayTime={90}
       onClick={onClick}
     >
       <View style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
