@@ -1,7 +1,7 @@
 name: scolvpet_mobile
 description: 熊舍管家 I1 Flutter 客户端
 publish_to: none
-version: 0.0.4+5
+version: 0.0.4+6
 
 environment:
   sdk: '>=3.8.0 <4.0.0'

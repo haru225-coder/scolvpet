@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/api_client.dart';
+import 'core/app_config.dart';
 import 'core/app_services.dart';
 import 'core/app_state.dart';
 import 'core/session_store.dart';
@@ -34,16 +35,30 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final sessionStore = SessionStore();
   final apiClient = ApiClient(
-    baseUrl: const String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: 'https://p.scolv.com:8443',
-    ),
+    baseUrl: appApiBaseUrl,
     sessionStore: sessionStore,
   );
-  final state = AppState(
-    repository: ApiI1Repository(client: apiClient, sessionStore: sessionStore),
+  final repository = ApiI1Repository(
+    client: apiClient,
     sessionStore: sessionStore,
   );
+  // Single-flight 401 refresh shared by both Dio clients.
+  apiClient.setTokenRefresher(() async {
+    final refresh = await sessionStore.readRefreshToken();
+    if (refresh == null || refresh.isEmpty) return false;
+    try {
+      await repository.refresh(refresh);
+      return true;
+    } on Object {
+      try {
+        await sessionStore.clear();
+      } on Object {
+        // ignore storage failures during forced logout
+      }
+      return false;
+    }
+  });
+  final state = AppState(repository: repository, sessionStore: sessionStore);
   SharedPreferences? preferences;
   try {
     preferences = await SharedPreferences.getInstance().timeout(

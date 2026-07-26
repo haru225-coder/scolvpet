@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/app_config.dart';
 import '../../ui/theme/ios_theme.dart';
 import '../../ui/widgets/ios_widgets.dart';
 import '../i2/i2_models.dart';
@@ -178,11 +179,12 @@ class _PublicSiteEditorPageState extends State<PublicSiteEditorPage> {
                 key: const Key('public-site-slug'),
                 controller: _slugCtrl,
                 textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: '公开主页地址',
                   hintText: 'my-cattery',
                   border: OutlineInputBorder(),
-                  helperText: '链接格式：p.scolv.com/p/自定义地址',
+                  helperText:
+                      '链接格式：${publicSiteHost.replaceFirst(RegExp(r"^https?://"), "")}/p/自定义地址',
                 ),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[a-z0-9-]')),

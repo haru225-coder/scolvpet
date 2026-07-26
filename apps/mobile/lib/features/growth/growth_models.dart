@@ -1,3 +1,5 @@
+import '../../core/app_config.dart';
+
 class GrowthMedia {
   const GrowthMedia({
     this.id,
@@ -384,7 +386,7 @@ class GrowthCampaign {
     _ => status,
   };
 
-  String publicUrl({String host = 'https://p.scolv.com'}) {
+  String publicUrl({String host = publicSiteHost}) {
     final path = publicUrlPath;
     if (path == null || path.isEmpty) return '$host/p/?campaign=$campaignCode';
     if (path.startsWith('http://') || path.startsWith('https://')) return path;

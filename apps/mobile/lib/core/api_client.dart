@@ -1,11 +1,19 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:scolvpet_api/scolvpet_api.dart';
 
 import 'session_store.dart';
 
+typedef TokenRefresher = Future<bool> Function();
+
 class ApiClient {
-  ApiClient({required String baseUrl, required SessionStorePort sessionStore})
-    : _sessionStore = sessionStore {
+  ApiClient({
+    required String baseUrl,
+    required SessionStorePort sessionStore,
+    TokenRefresher? tokenRefresher,
+  }) : _sessionStore = sessionStore,
+       _tokenRefresher = tokenRefresher {
     final root = _apiRootBase(baseUrl);
     // DefaultApi / existing feature paths are relative to /v1 (e.g. /breeding-plans).
     _dio = Dio(
@@ -38,6 +46,14 @@ class ApiClient {
     p2Api = P2Api(_p2Dio);
   }
 
+  TokenRefresher? _tokenRefresher;
+  Future<bool>? _refreshInFlight;
+
+  /// Wire a single-flight refresh callback after construction (avoids cycles).
+  void setTokenRefresher(TokenRefresher refresher) {
+    _tokenRefresher = refresher;
+  }
+
   QueuedInterceptorsWrapper _authInterceptor({
     required bool normalizeHostRootPaths,
   }) => QueuedInterceptorsWrapper(
@@ -51,7 +67,54 @@ class ApiClient {
       }
       handler.next(options);
     },
+    onError: (error, handler) async {
+      final status = error.response?.statusCode;
+      final request = error.requestOptions;
+      final alreadyRetried = request.extra['auth_retried'] == true;
+      final isAuthPath =
+          request.path.contains('/auth/sessions') ||
+          request.path.contains('/auth/verification-codes');
+      if (status != 401 ||
+          alreadyRetried ||
+          isAuthPath ||
+          _tokenRefresher == null) {
+        handler.next(error);
+        return;
+      }
+      try {
+        final ok = await _singleFlightRefresh();
+        if (!ok) {
+          handler.next(error);
+          return;
+        }
+        final token = await _sessionStore.readAccessToken();
+        final opts = request.copyWith(
+          headers: Map<String, dynamic>.from(request.headers)
+            ..['Authorization'] = 'Bearer ${token ?? ''}',
+          extra: Map<String, dynamic>.from(request.extra)
+            ..['auth_retried'] = true,
+        );
+        final response = await _dio.fetch(opts);
+        handler.resolve(response);
+      } catch (_) {
+        handler.next(error);
+      }
+    },
   );
+
+  Future<bool> _singleFlightRefresh() {
+    final existing = _refreshInFlight;
+    if (existing != null) return existing;
+    final future = () async {
+      try {
+        return await _tokenRefresher!.call();
+      } finally {
+        _refreshInFlight = null;
+      }
+    }();
+    _refreshInFlight = future;
+    return future;
+  }
 
   /// Collapse accidental `/v1/v1/...` and bare `/assistant/...` (404 on prod).
   static String _normalizeV1Path(String path) {

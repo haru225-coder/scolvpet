@@ -1,3 +1,5 @@
+import '../../core/app_config.dart';
+
 class PublicSite {
   const PublicSite({
     this.id,
@@ -37,7 +39,7 @@ class PublicSite {
 
   String get canonicalPublicPath => '/p/$slug';
 
-  String publicUrl({String host = 'https://p.scolv.com'}) {
+  String publicUrl({String host = publicSiteHost}) {
     final normalizedHost = host.replaceFirst(RegExp(r'/$'), '');
     return '$normalizedHost$canonicalPublicPath';
   }

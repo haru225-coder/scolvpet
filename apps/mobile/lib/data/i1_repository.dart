@@ -1,8 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:scolvpet_api/scolvpet_api.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/api_client.dart';
+import '../core/app_version.dart';
 import '../core/session_store.dart';
 
 abstract interface class I1Repository {
@@ -67,7 +69,10 @@ class ApiI1Repository implements I1Repository {
         phone: phone,
         verificationId: verificationId,
         code: code,
-        device: DeviceInfo(platform: _devicePlatform, appVersion: '0.0.3'),
+        device: DeviceInfo(
+          platform: _devicePlatform,
+          appVersion: appVersionLabel,
+        ),
       ),
     );
     final session = response.data!.data;
@@ -167,7 +172,18 @@ class ApiI1Repository implements I1Repository {
   @override
   Future<void> logout() async {
     try {
-      await _client.api.deleteCurrentSession(idempotencyKey: _uuid.v4());
+      final refresh = await _sessionStore.readRefreshToken();
+      // Prefer generated client; also send refresh token header so server can
+      // revoke the refresh session family (audit P0-05).
+      await _client.dio.delete<void>(
+        '/auth/sessions/current',
+        options: Options(
+          headers: {
+            'Idempotency-Key': _uuid.v4(),
+            if (refresh != null && refresh.isNotEmpty) 'X-Refresh-Token': refresh,
+          },
+        ),
+      );
     } finally {
       await _sessionStore.clear();
     }
