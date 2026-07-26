@@ -2,6 +2,7 @@
 
 | 日期 | 主题 | 状态 | 入口 |
 |---|---|---|---|
+| 2026-07-27 | ScolvPet 小程序 B 端全量迁移任务书(定位反转:小程序为主要经营入口;Taro+Skyline;M0–M4 分期) | 已写入 / 待用户确认范围后开 M0 | [日志](2026-07-27 · ScolvPet-小程序B端迁移任务书.md);[任务书](../../../docs/32-ScolvPet-小程序B端全量迁移任务书.md) |
 | 2026-07-27 | ScolvPet 审计 §8-D 工程面回收（logout 残留 / 密钥面 / 表清理 / 鉴权去串行 / 契约漂移） | 已验证 / 产品决策项仍开放 | [日志](2026-07-27 · ScolvPet-审计D组工程面回收.md)；[报告](../../../docs/31-ScolvPet-全功能收口审计-20260726.md) |
 | 2026-07-27 | ScolvPet 发布层 P3 短信薄适配器（阿里云，dry-run 部署） | 已验证（契约层）/ 真发待供应商资质 | [日志](2026-07-27 · ScolvPet-发布层P3-短信薄适配器.md)；[任务书](../../../docs/30-ScolvPet-发布层-Production-Integration-任务书.md) |
 | 2026-07-27 | ScolvPet 审计 §8-B 回收与 staging 对账（SVG XSS / XFF / 外键 0041 / iOS 门禁 / confirm 越权 / LA1 部署） | 已验证 / RBAC-GET 与 token 落库留产品决策 | [日志](2026-07-27 · ScolvPet-审计B组回收与staging对账.md)；[报告](../../../docs/31-ScolvPet-全功能收口审计-20260726.md) |
