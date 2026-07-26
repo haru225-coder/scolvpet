@@ -71,6 +71,7 @@ import 'package:scolvpet_api/src/model/create_contract_request.dart';
 import 'package:scolvpet_api/src/model/create_crm_contact_request.dart';
 import 'package:scolvpet_api/src/model/create_crm_handover_request.dart';
 import 'package:scolvpet_api/src/model/create_crm_reservation_request.dart';
+import 'package:scolvpet_api/src/model/create_customer_session_request.dart';
 import 'package:scolvpet_api/src/model/create_document_template_request.dart';
 import 'package:scolvpet_api/src/model/create_genetic_profile_request.dart';
 import 'package:scolvpet_api/src/model/create_miniprogram_release_request.dart';
@@ -89,6 +90,15 @@ import 'package:scolvpet_api/src/model/crm_reservation_list_response.dart';
 import 'package:scolvpet_api/src/model/crm_reservation_response.dart';
 import 'package:scolvpet_api/src/model/current_account_response.dart';
 import 'package:scolvpet_api/src/model/current_account_response_data.dart';
+import 'package:scolvpet_api/src/model/customer_reservation.dart';
+import 'package:scolvpet_api/src/model/customer_reservation_documents_inner.dart';
+import 'package:scolvpet_api/src/model/customer_reservation_hamster.dart';
+import 'package:scolvpet_api/src/model/customer_reservation_list_response.dart';
+import 'package:scolvpet_api/src/model/customer_reservation_response.dart';
+import 'package:scolvpet_api/src/model/customer_session_response.dart';
+import 'package:scolvpet_api/src/model/customer_session_response_data.dart';
+import 'package:scolvpet_api/src/model/customer_verification_code_response.dart';
+import 'package:scolvpet_api/src/model/customer_verification_code_response_data.dart';
 import 'package:scolvpet_api/src/model/dam_condition.dart';
 import 'package:scolvpet_api/src/model/data_center_summary_response.dart';
 import 'package:scolvpet_api/src/model/data_center_summary_response_data.dart';
@@ -298,6 +308,7 @@ import 'package:scolvpet_api/src/model/retry_import_request.dart';
 import 'package:scolvpet_api/src/model/retry_job_request.dart';
 import 'package:scolvpet_api/src/model/revoke_share_request.dart';
 import 'package:scolvpet_api/src/model/sandbox_activate_plan_request.dart';
+import 'package:scolvpet_api/src/model/send_customer_verification_code_request.dart';
 import 'package:scolvpet_api/src/model/send_verification_code_request.dart';
 import 'package:scolvpet_api/src/model/separate_pairing_request.dart';
 import 'package:scolvpet_api/src/model/separate_pairing_response.dart';
@@ -538,6 +549,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return CreateCrmHandoverRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateCrmReservationRequest':
           return CreateCrmReservationRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateCustomerSessionRequest':
+          return CreateCustomerSessionRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateDocumentTemplateRequest':
           return CreateDocumentTemplateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateGeneticProfileRequest':
@@ -574,6 +587,24 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return CurrentAccountResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CurrentAccountResponseData':
           return CurrentAccountResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CustomerReservation':
+          return CustomerReservation.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CustomerReservationDocumentsInner':
+          return CustomerReservationDocumentsInner.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CustomerReservationHamster':
+          return CustomerReservationHamster.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CustomerReservationListResponse':
+          return CustomerReservationListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CustomerReservationResponse':
+          return CustomerReservationResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CustomerSessionResponse':
+          return CustomerSessionResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CustomerSessionResponseData':
+          return CustomerSessionResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CustomerVerificationCodeResponse':
+          return CustomerVerificationCodeResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CustomerVerificationCodeResponseData':
+          return CustomerVerificationCodeResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'DamCondition':
           return DamCondition.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'DataCenterSummaryResponse':
@@ -1040,6 +1071,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return RevokeShareRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'SandboxActivatePlanRequest':
           return SandboxActivatePlanRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'SendCustomerVerificationCodeRequest':
+          return SendCustomerVerificationCodeRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'SendVerificationCodeRequest':
           return SendVerificationCodeRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'SeparatePairingRequest':

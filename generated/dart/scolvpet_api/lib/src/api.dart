@@ -8,6 +8,7 @@ import 'package:scolvpet_api/src/auth/basic_auth.dart';
 import 'package:scolvpet_api/src/auth/bearer_auth.dart';
 import 'package:scolvpet_api/src/auth/oauth.dart';
 import 'package:scolvpet_api/src/api/default_api.dart';
+import 'package:scolvpet_api/src/api/customer_api.dart';
 import 'package:scolvpet_api/src/api/genetic_api.dart';
 import 'package:scolvpet_api/src/api/growth_api.dart';
 import 'package:scolvpet_api/src/api/p1_api.dart';
@@ -111,6 +112,12 @@ class ScolvpetApi {
   /// by doing that all interceptors will not be executed
   DefaultApi getDefaultApi() {
     return DefaultApi(dio);
+  }
+
+  /// Get CustomerApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  CustomerApi getCustomerApi() {
+    return CustomerApi(dio);
   }
 
   /// Get GeneticApi instance, base route and serializer can be overridden by a given but be careful,

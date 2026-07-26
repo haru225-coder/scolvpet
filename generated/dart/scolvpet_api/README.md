@@ -195,6 +195,12 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**updateSpeciesRuleVersion**](doc/DefaultApi.md#updatespeciesruleversion) | **PATCH** /species-rule-versions/{rule_version_id} | 更新尚未冻结的规则版本
 [*DefaultApi*](doc/DefaultApi.md) | [**updateTask**](doc/DefaultApi.md#updatetask) | **PATCH** /tasks/{task_id} | 更新任务非状态字段
 [*DefaultApi*](doc/DefaultApi.md) | [**weanLitter**](doc/DefaultApi.md#weanlitter) | **POST** /litters/{litter_id}/wean | 完成断奶
+[*CustomerApi*](doc/CustomerApi.md) | [**cancelCustomerReservation**](doc/CustomerApi.md#cancelcustomerreservation) | **POST** /v1/customer/reservations/{reservation_id}/cancel | 客户取消 held 预订
+[*CustomerApi*](doc/CustomerApi.md) | [**createCustomerSession**](doc/CustomerApi.md#createcustomersession) | **POST** /v1/public/customer/sessions | 客户验证码登录
+[*CustomerApi*](doc/CustomerApi.md) | [**deleteCustomerSession**](doc/CustomerApi.md#deletecustomersession) | **DELETE** /v1/customer/sessions/current | 客户退出当前会话
+[*CustomerApi*](doc/CustomerApi.md) | [**getCustomerReservation**](doc/CustomerApi.md#getcustomerreservation) | **GET** /v1/customer/reservations/{reservation_id} | 获取客户预订详情
+[*CustomerApi*](doc/CustomerApi.md) | [**listCustomerReservations**](doc/CustomerApi.md#listcustomerreservations) | **GET** /v1/customer/reservations | 列出当前客户预订
+[*CustomerApi*](doc/CustomerApi.md) | [**sendCustomerVerificationCode**](doc/CustomerApi.md#sendcustomerverificationcode) | **POST** /v1/public/customer/verification-codes | 客户侧发送登录验证码
 [*GeneticApi*](doc/GeneticApi.md) | [**compareGeneticActual**](doc/GeneticApi.md#comparegeneticactual) | **POST** /v1/genetic/compare-actual | Compare actual litter phenotype counts to core table expectation
 [*GeneticApi*](doc/GeneticApi.md) | [**listGeneticFeedbackSummary**](doc/GeneticApi.md#listgeneticfeedbacksummary) | **GET** /v1/genetic/feedback-summary | Summarize historical phenotype prediction feedback
 [*GeneticApi*](doc/GeneticApi.md) | [**listGeneticPhenotypeCatalog**](doc/GeneticApi.md#listgeneticphenotypecatalog) | **GET** /v1/genetic/phenotype-catalog | List phenotype series catalog from authority table
@@ -368,6 +374,7 @@ Class | Method | HTTP request | Description
  - [CreateCrmContactRequest](doc/CreateCrmContactRequest.md)
  - [CreateCrmHandoverRequest](doc/CreateCrmHandoverRequest.md)
  - [CreateCrmReservationRequest](doc/CreateCrmReservationRequest.md)
+ - [CreateCustomerSessionRequest](doc/CreateCustomerSessionRequest.md)
  - [CreateDocumentTemplateRequest](doc/CreateDocumentTemplateRequest.md)
  - [CreateGeneticProfileRequest](doc/CreateGeneticProfileRequest.md)
  - [CreateMiniprogramReleaseRequest](doc/CreateMiniprogramReleaseRequest.md)
@@ -386,6 +393,15 @@ Class | Method | HTTP request | Description
  - [CrmReservationResponse](doc/CrmReservationResponse.md)
  - [CurrentAccountResponse](doc/CurrentAccountResponse.md)
  - [CurrentAccountResponseData](doc/CurrentAccountResponseData.md)
+ - [CustomerReservation](doc/CustomerReservation.md)
+ - [CustomerReservationDocumentsInner](doc/CustomerReservationDocumentsInner.md)
+ - [CustomerReservationHamster](doc/CustomerReservationHamster.md)
+ - [CustomerReservationListResponse](doc/CustomerReservationListResponse.md)
+ - [CustomerReservationResponse](doc/CustomerReservationResponse.md)
+ - [CustomerSessionResponse](doc/CustomerSessionResponse.md)
+ - [CustomerSessionResponseData](doc/CustomerSessionResponseData.md)
+ - [CustomerVerificationCodeResponse](doc/CustomerVerificationCodeResponse.md)
+ - [CustomerVerificationCodeResponseData](doc/CustomerVerificationCodeResponseData.md)
  - [DamCondition](doc/DamCondition.md)
  - [DataCenterSummaryResponse](doc/DataCenterSummaryResponse.md)
  - [DataCenterSummaryResponseData](doc/DataCenterSummaryResponseData.md)
@@ -611,6 +627,7 @@ Class | Method | HTTP request | Description
  - [RetryJobRequest](doc/RetryJobRequest.md)
  - [RevokeShareRequest](doc/RevokeShareRequest.md)
  - [SandboxActivatePlanRequest](doc/SandboxActivatePlanRequest.md)
+ - [SendCustomerVerificationCodeRequest](doc/SendCustomerVerificationCodeRequest.md)
  - [SendVerificationCodeRequest](doc/SendVerificationCodeRequest.md)
  - [SeparatePairingRequest](doc/SeparatePairingRequest.md)
  - [SeparatePairingResponse](doc/SeparatePairingResponse.md)
@@ -689,6 +706,10 @@ Authentication schemes defined for the API:
 ### bearerAuth
 
 - **Type**: HTTP Bearer Token authentication (JWT)
+
+### customerBearerAuth
+
+- **Type**: HTTP Bearer Token authentication (opaque)
 
 
 ## Author

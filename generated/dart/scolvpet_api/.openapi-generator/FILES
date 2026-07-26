@@ -79,6 +79,7 @@ doc/CreateContractRequest.md
 doc/CreateCrmContactRequest.md
 doc/CreateCrmHandoverRequest.md
 doc/CreateCrmReservationRequest.md
+doc/CreateCustomerSessionRequest.md
 doc/CreateDocumentTemplateRequest.md
 doc/CreateGeneticProfileRequest.md
 doc/CreateMiniprogramReleaseRequest.md
@@ -97,6 +98,16 @@ doc/CrmReservationListResponse.md
 doc/CrmReservationResponse.md
 doc/CurrentAccountResponse.md
 doc/CurrentAccountResponseData.md
+doc/CustomerApi.md
+doc/CustomerReservation.md
+doc/CustomerReservationDocumentsInner.md
+doc/CustomerReservationHamster.md
+doc/CustomerReservationListResponse.md
+doc/CustomerReservationResponse.md
+doc/CustomerSessionResponse.md
+doc/CustomerSessionResponseData.md
+doc/CustomerVerificationCodeResponse.md
+doc/CustomerVerificationCodeResponseData.md
 doc/DamCondition.md
 doc/DataCenterSummaryResponse.md
 doc/DataCenterSummaryResponseData.md
@@ -330,6 +341,7 @@ doc/RetryImportRequest.md
 doc/RetryJobRequest.md
 doc/RevokeShareRequest.md
 doc/SandboxActivatePlanRequest.md
+doc/SendCustomerVerificationCodeRequest.md
 doc/SendVerificationCodeRequest.md
 doc/SeparatePairingRequest.md
 doc/SeparatePairingResponse.md
@@ -401,6 +413,7 @@ doc/WeightRecordOneOf2.md
 doc/WeightRecordResponse.md
 lib/scolvpet_api.dart
 lib/src/api.dart
+lib/src/api/customer_api.dart
 lib/src/api/default_api.dart
 lib/src/api/genetic_api.dart
 lib/src/api/growth_api.dart
@@ -492,6 +505,7 @@ lib/src/model/create_contract_request.dart
 lib/src/model/create_crm_contact_request.dart
 lib/src/model/create_crm_handover_request.dart
 lib/src/model/create_crm_reservation_request.dart
+lib/src/model/create_customer_session_request.dart
 lib/src/model/create_document_template_request.dart
 lib/src/model/create_genetic_profile_request.dart
 lib/src/model/create_miniprogram_release_request.dart
@@ -510,6 +524,15 @@ lib/src/model/crm_reservation_list_response.dart
 lib/src/model/crm_reservation_response.dart
 lib/src/model/current_account_response.dart
 lib/src/model/current_account_response_data.dart
+lib/src/model/customer_reservation.dart
+lib/src/model/customer_reservation_documents_inner.dart
+lib/src/model/customer_reservation_hamster.dart
+lib/src/model/customer_reservation_list_response.dart
+lib/src/model/customer_reservation_response.dart
+lib/src/model/customer_session_response.dart
+lib/src/model/customer_session_response_data.dart
+lib/src/model/customer_verification_code_response.dart
+lib/src/model/customer_verification_code_response_data.dart
 lib/src/model/dam_condition.dart
 lib/src/model/data_center_summary_response.dart
 lib/src/model/data_center_summary_response_data.dart
@@ -735,6 +758,7 @@ lib/src/model/retry_import_request.dart
 lib/src/model/retry_job_request.dart
 lib/src/model/revoke_share_request.dart
 lib/src/model/sandbox_activate_plan_request.dart
+lib/src/model/send_customer_verification_code_request.dart
 lib/src/model/send_verification_code_request.dart
 lib/src/model/separate_pairing_request.dart
 lib/src/model/separate_pairing_response.dart
@@ -882,6 +906,7 @@ test/create_contract_request_test.dart
 test/create_crm_contact_request_test.dart
 test/create_crm_handover_request_test.dart
 test/create_crm_reservation_request_test.dart
+test/create_customer_session_request_test.dart
 test/create_document_template_request_test.dart
 test/create_genetic_profile_request_test.dart
 test/create_miniprogram_release_request_test.dart
@@ -900,6 +925,16 @@ test/crm_reservation_response_test.dart
 test/crm_reservation_test.dart
 test/current_account_response_data_test.dart
 test/current_account_response_test.dart
+test/customer_api_test.dart
+test/customer_reservation_documents_inner_test.dart
+test/customer_reservation_hamster_test.dart
+test/customer_reservation_list_response_test.dart
+test/customer_reservation_response_test.dart
+test/customer_reservation_test.dart
+test/customer_session_response_data_test.dart
+test/customer_session_response_test.dart
+test/customer_verification_code_response_data_test.dart
+test/customer_verification_code_response_test.dart
 test/dam_condition_test.dart
 test/data_center_summary_response_data_test.dart
 test/data_center_summary_response_test.dart
@@ -1133,6 +1168,7 @@ test/retry_import_request_test.dart
 test/retry_job_request_test.dart
 test/revoke_share_request_test.dart
 test/sandbox_activate_plan_request_test.dart
+test/send_customer_verification_code_request_test.dart
 test/send_verification_code_request_test.dart
 test/separate_pairing_request_test.dart
 test/separate_pairing_response_data_test.dart

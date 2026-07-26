@@ -109,7 +109,7 @@ No authorization required
 
 客户提交公开仓鼠预订
 
-客户从前台对真实 hamster 创建统一 crm_reservation（status=held）。 必须传 hamster_id；Backend 校验公开可订与排他；禁止手填品种/毛色。
+客户从前台对真实 hamster 创建统一 crm_reservation（status=held）。 必须传 hamster_id；Backend 校验公开可订与排他；禁止手填品种/毛色。 需要客户短信验证后的 Bearer ct_* customer session。
 
 ### Example
 ```dart
@@ -142,7 +142,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[customerBearerAuth](../README.md#customerBearerAuth)
 
 ### HTTP request headers
 
