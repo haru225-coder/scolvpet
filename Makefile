@@ -18,7 +18,7 @@ GRADLE_NETWORK_TIMEOUT_MS ?= 60000
 FLUTTER_GRADLE_OPTS = -Dhttp.connectionTimeout=$(GRADLE_NETWORK_TIMEOUT_MS) -Dhttp.socketTimeout=$(GRADLE_NETWORK_TIMEOUT_MS) -Dhttps.connectionTimeout=$(GRADLE_NETWORK_TIMEOUT_MS) -Dhttps.socketTimeout=$(GRADLE_NETWORK_TIMEOUT_MS)
 TIMEOUT_SCRIPT := $(CURDIR)/scripts/with-timeout.sh
 
-.PHONY: help api-test api-run db-verify db-seed generate-migrations migration-drift openapi-lint openapi-conformance client-drift web-test web-build web-lint miniprogram-test flutter-pub-get flutter-analyze flutter-test flutter-build-android release-android release-ios release-miniprogram smoke reservation-smoke media-smoke objectstore-smoke outbox-test timeout-test ci
+.PHONY: help api-test api-run db-verify db-seed generate-migrations migration-drift openapi-lint openapi-conformance client-drift ts-client-drift generate-ts-client web-test web-build web-lint miniprogram-test miniprogram-next-test miniprogram-next-build flutter-pub-get flutter-analyze flutter-test flutter-build-android release-android release-ios release-miniprogram release-miniprogram-next smoke reservation-smoke media-smoke objectstore-smoke outbox-test timeout-test ci
 
 help:
 	@printf '%s\n' '主入口:' '  make ci              运行可执行的 I1 检查' '  make db-verify       新建临时 PostgreSQL 并验证迁移复跑/种子/checksum' '  make api-test        API 单元测试' '  make generate-client 用固定 OpenAPI Generator 生成 dart-dio 客户端' '  make smoke            启动 API 并跑 I1 演示链' '  make reservation-smoke 经营闭环：公开预订→合同→交付→回执→客户只读' '  make flutter-test    Flutter 单元/Widget/契约模型测试'
@@ -60,6 +60,21 @@ generate-client:
 client-drift:
 	OPENAPI_GENERATOR_VERSION=$(OPENAPI_GENERATOR_VERSION) tools/check-generated-dart-client.sh
 
+generate-ts-client:
+	OPENAPI_GENERATOR_VERSION=$(OPENAPI_GENERATOR_VERSION) tools/generate-ts-client.sh
+
+ts-client-drift:
+	OPENAPI_GENERATOR_VERSION=$(OPENAPI_GENERATOR_VERSION) tools/check-generated-ts-client.sh
+
+# miniprogram-next(docs/33 M0):vitest 组件快照 + 迁移的 C 端原生单测。
+miniprogram-next-test:
+	cd apps/miniprogram-next && npm test && node --test test/*.test.mjs
+
+# 开发默认 touristappid + staging;产物体积过分包门禁(单分包<2MB,预警1.6MB)。
+miniprogram-next-build:
+	cd apps/miniprogram-next && npx taro build --type weapp
+	node scripts/check-mp-bundle-size.mjs apps/miniprogram-next/dist
+
 web-test:
 	cd apps/web && npm test
 
@@ -89,6 +104,15 @@ flutter-build-android:
 # run scripts/build-miniprogram.sh --restore to get development defaults back.
 release-miniprogram:
 	@MP_APP_ENV=production scripts/build-miniprogram.sh
+
+# Formal miniprogram-next build: same fail-closed rules (AppID/https/staging/port),
+# then Taro production compile + subpackage size gate.
+# Overwrites apps/miniprogram-next/src/utils/config.js + project.config.json appid;
+# run scripts/build-miniprogram-next.sh --restore to get development defaults back.
+release-miniprogram-next:
+	@MP_APP_ENV=production scripts/build-miniprogram-next.sh
+	cd apps/miniprogram-next && NODE_ENV=production npx taro build --type weapp
+	node scripts/check-mp-bundle-size.mjs apps/miniprogram-next/dist
 
 # Shared fail-closed check for release URL env vars ($(1)=name, $(2)=value).
 define check_release_url
@@ -163,4 +187,4 @@ media-smoke:
 objectstore-smoke:
 	scripts/i6-objectstore-smoke.sh
 
-ci: db-verify migration-drift openapi-lint openapi-conformance client-drift api-test smoke reservation-smoke media-smoke objectstore-smoke outbox-test timeout-test web-lint web-test web-build miniprogram-test flutter-pub-get flutter-analyze flutter-test flutter-build-android
+ci: db-verify migration-drift openapi-lint openapi-conformance client-drift ts-client-drift api-test smoke reservation-smoke media-smoke objectstore-smoke outbox-test timeout-test web-lint web-test web-build miniprogram-test miniprogram-next-test miniprogram-next-build flutter-pub-get flutter-analyze flutter-test flutter-build-android

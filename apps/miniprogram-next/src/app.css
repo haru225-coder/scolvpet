@@ -1,0 +1,41 @@
+/* —— C 端混写页共享样式:原样迁自 apps/miniprogram/app.wxss,勿改动 ——
+   (page 底色/字色沿用旧 C 端观感;新 B 端页在页面根节点自设
+   groupedBackground,一律走 @scolvpet/mp-ui tokens,docs/34) */
+page {
+  background: #f6f3ee;
+  color: #1c1b1a;
+  font-size: 28rpx;
+  line-height: 1.5;
+}
+
+.card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(28, 27, 26, 0.06);
+}
+
+.btn-primary {
+  background: #1f6b4a;
+  color: #fff;
+  border-radius: 999rpx;
+  padding: 20rpx 32rpx;
+  text-align: center;
+}
+
+.btn-primary[disabled] {
+  opacity: 0.5;
+}
+
+.muted {
+  color: #6b6560;
+  font-size: 24rpx;
+}
+
+.field {
+  margin-top: 16rpx;
+  padding: 16rpx 20rpx;
+  background: #f3efe8;
+  border-radius: 12rpx;
+}

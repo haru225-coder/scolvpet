@@ -1,0 +1,7 @@
+{
+  "name": "@scolvpet/mp-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ScolvPet 小程序仿 iOS 组件库(docs/34;经 Taro alias 以源码形态引用,不单独发布)",
+  "main": "src/index.ts"
+}

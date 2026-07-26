@@ -1,0 +1,41 @@
+<view class="card" wx:if="{{siteTitle}}">
+  <view style="font-weight:800;font-size:34rpx;">{{siteTitle}}</view>
+  <view class="muted" style="margin-top:6rpx;">公开在售 · 可看血统与繁育模拟</view>
+  <view class="link" style="margin-top:12rpx;" bindtap="goMy">我的预订</view>
+</view>
+
+<view wx:if="{{loading}}" class="card muted">加载中…</view>
+<view wx:elif="{{error}}" class="card">
+  <view>{{error}}</view>
+  <view class="btn-primary" style="margin-top:20rpx;" bindtap="reload">重试</view>
+</view>
+<block wx:else>
+  <view
+    class="card hamster-card"
+    wx:for="{{hamsters}}"
+    wx:key="hamster_id"
+    bindtap="openDetail"
+    data-id="{{item.hamster_id}}"
+  >
+    <image
+      wx:if="{{item.cover_url}}"
+      class="cover"
+      src="{{item.cover_url}}"
+      mode="aspectFill"
+    />
+    <view class="cover placeholder" wx:else>🐹</view>
+    <view class="body">
+      <view class="name">{{item.public_name || '仓鼠'}}</view>
+      <view class="muted">{{item.summary || '点击查看详情与血统'}}</view>
+      <view class="traits" wx:if="{{item.traits.length}}">
+        <text class="tag" wx:for="{{item.traits}}" wx:for-item="t" wx:key="*this">{{t}}</text>
+      </view>
+      <view class="muted" style="margin-top:8rpx;">
+        <text class="{{item.reservable ? 'ok' : ''}}">{{item.reservable ? '可预订' : '暂不可预订'}}</text>
+        <text wx:if="{{item.price_label}}"> · {{item.price_label}}</text>
+        <text wx:if="{{item.variety}}"> · {{item.variety}}</text>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{!hamsters.length}}" class="card muted">暂无公开仓鼠</view>
+</block>

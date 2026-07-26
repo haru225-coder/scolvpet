@@ -1,0 +1,9 @@
+.hero-title {
+  font-weight: 800;
+  font-size: 40rpx;
+  color: #1f6b4a;
+}
+.link {
+  color: #1f6b4a;
+  font-size: 28rpx;
+}

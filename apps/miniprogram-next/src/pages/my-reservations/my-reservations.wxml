@@ -1,0 +1,58 @@
+<view class="card">
+  <view style="font-weight:700;">我的预订</view>
+  <view class="muted" style="margin-top:8rpx;">
+    {{token ? '已登录，可查看状态、取消待确认预订、打开合同/回执。' : '使用已验证手机号查看状态、取消待确认预订、打开合同/回执。'}}
+  </view>
+  <block wx:if="{{!token}}">
+    <input class="field" placeholder="手机号" value="{{phone}}" bindinput="onPhone" />
+    <view style="display:flex;gap:12rpx;margin-top:16rpx;align-items:center;">
+      <input class="field" style="flex:1;margin-top:0;" placeholder="验证码" value="{{code}}" bindinput="onCode" />
+      <view
+        class="btn-primary {{codeCountdown > 0 ? 'disabled' : ''}}"
+        style="padding:16rpx 20rpx;"
+        bindtap="sendCode"
+      >{{codeCountdown > 0 ? codeCountdown + 's' : '获取验证码'}}</view>
+    </view>
+  </block>
+  <view class="btn-primary" style="margin-top:20rpx;" bindtap="loginAndLoad">{{token ? '刷新' : '登录并刷新'}}</view>
+  <view
+    wx:if="{{token}}"
+    class="btn-primary"
+    style="margin-top:12rpx;background:#6b6560;"
+    bindtap="logout"
+  >退出登录</view>
+</view>
+
+<view wx:if="{{error}}" class="card">{{error}}</view>
+<view wx:if="{{loading}}" class="card muted">加载中…</view>
+
+<block wx:for="{{items}}" wx:key="id">
+  <view class="card">
+    <view style="font-weight:700;">{{item.title || '预订'}}</view>
+    <view class="muted">状态：{{item.status_label}}</view>
+    <view class="muted" wx:if="{{item.hamster && item.hamster.public_name}}">
+      仓鼠：{{item.hamster.public_name}}
+    </view>
+    <view class="muted" wx:if="{{item.hold_expires_at && item.status==='held'}}">
+      hold 截止：{{item.hold_expires_at}}
+    </view>
+    <view style="display:flex;gap:16rpx;margin-top:16rpx;flex-wrap:wrap;">
+      <view
+        wx:if="{{item.status==='held'}}"
+        class="btn-primary"
+        style="padding:12rpx 20rpx;"
+        data-id="{{item.id}}"
+        bindtap="cancelOne"
+      >取消预订</view>
+      <view
+        wx:if="{{item.documents && item.documents.length}}"
+        class="btn-primary"
+        style="padding:12rpx 20rpx;background:#4a5d73;"
+        data-token="{{item.documents[0].public_token}}"
+        bindtap="openDoc"
+      >查看合同/回执</view>
+    </view>
+  </view>
+</block>
+
+<view wx:if="{{!loading && !items.length && token}}" class="card muted">暂无预订记录</view>

@@ -1,0 +1,64 @@
+<view class="card" wx:if="{{hamster}}">
+  <image
+    wx:if="{{hamster.cover_url}}"
+    class="hero"
+    src="{{hamster.cover_url}}"
+    mode="aspectFill"
+  />
+  <view class="hero placeholder" wx:else>🐹</view>
+  <view style="font-weight:800;font-size:36rpx;margin-top:16rpx;">{{hamster.public_name || hamster.name}}</view>
+  <view class="muted" style="margin-top:8rpx;">{{hamster.summary || ''}}</view>
+  <view class="traits" wx:if="{{hamster.traits && hamster.traits.length}}">
+    <text class="tag" wx:for="{{hamster.traits}}" wx:key="*this">{{item}}</text>
+  </view>
+  <view class="muted" style="margin-top:8rpx;">
+    {{hamster.variety || ''}}
+    <text wx:if="{{hamster.price_label}}"> · {{hamster.price_label}}</text>
+  </view>
+  <view class="muted" style="margin-top:8rpx;">
+    {{reservable ? '当前可预订' : '当前不可预订'}}
+  </view>
+  <view class="row-btns">
+    <view class="btn-ghost" bindtap="openPedigree">🧬 血统档案</view>
+    <view class="btn-ghost" bindtap="openSimulate">🔮 繁育模拟</view>
+  </view>
+  <view class="muted" wx:if="{{mates.length}}" style="margin-top:12rpx;">
+    模拟配对对象（可选）
+    <picker mode="selector" range="{{mates}}" range-key="public_name" bindchange="onMateChange">
+      <view class="field" style="margin-top:8rpx;">
+        {{mates[0] && mateId ? (mates.filter(function(){return true})[0].public_name) : '选择配对'}}
+        <block wx:for="{{mates}}" wx:key="hamster_id">
+          <text wx:if="{{item.hamster_id === mateId}}">{{item.public_name}}</text>
+        </block>
+      </view>
+    </picker>
+  </view>
+</view>
+
+<view class="card">
+  <view style="font-weight:700;">提交预订</view>
+  <view class="muted" style="margin-top:8rpx;">
+    {{customerToken ? '已通过微信登录，可直接提交预订。' : '需短信验证手机号后才能占用预订库存。'}}
+  </view>
+  <input class="field" placeholder="称呼" value="{{name}}" bindinput="onName" />
+  <input class="field" placeholder="手机号" value="{{phone}}" bindinput="onPhone" type="number" />
+  <view class="code-row" wx:if="{{!customerToken}}">
+    <input class="field code-input" placeholder="6 位验证码" value="{{code}}" bindinput="onCode" type="number" />
+    <view
+      class="btn-primary code-btn {{codeCountdown > 0 ? 'disabled' : ''}}"
+      bindtap="sendCode"
+    >
+      {{codeCountdown > 0 ? codeCountdown + 's' : '获取验证码'}}
+    </view>
+  </view>
+  <input class="field" placeholder="微信号（选填）" value="{{wechat}}" bindinput="onWechat" />
+  <input class="field" placeholder="备注（选填）" value="{{notes}}" bindinput="onNotes" />
+  <view class="muted" style="margin-top:12rpx;">预订将占用约 30 分钟 hold；可在「我的预订」查看状态与合同。</view>
+  <view
+    class="btn-primary"
+    style="margin-top:24rpx;{{(!reservable || busy) ? 'opacity:0.5;' : ''}}"
+    bindtap="submit"
+  >
+    {{busy ? '提交中…' : (reservable ? '验证并预订' : '暂不可预订')}}
+  </view>
+</view>

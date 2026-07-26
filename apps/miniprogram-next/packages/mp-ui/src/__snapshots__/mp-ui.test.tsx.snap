@@ -1,0 +1,621 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`mp-ui snapshots > ActionPanel 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="position: fixed; top: 0px; left: 0px; right: 0px; bottom: 0px; z-index: 100;"
+  >
+    <div
+      data-taro="View"
+      style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: rgba(0, 0, 0, 0.35);"
+    />
+    <div
+      data-taro="View"
+      style="position: absolute; left: 0px; right: 0px; bottom: 0px; background-color: rgb(255, 248, 239); border-radius: 24px 24px 0 0; padding-bottom: 32px; animation: mp-sheet-in 280ms cubic-bezier(0.22, 1, 0.36, 1);"
+    >
+      <div
+        data-taro="View"
+        style="display: flex; justify-content: center; padding: 8px 0px;"
+      >
+        <div
+          data-taro="View"
+          style="width: 36px; height: 5px; border-radius: 3px; background-color: rgba(58, 47, 41, 0.14);"
+        />
+      </div>
+      <div
+        data-taro="View"
+        style="padding: 0px 16px; display: flex; flex-direction: column; gap: 8px;"
+      >
+        <div
+          data-taro="View"
+          style="background-color: rgb(255, 255, 255); border-radius: 16px; overflow: hidden;"
+        >
+          <div
+            data-taro="View"
+            style="display: flex; justify-content: center; padding: 12px;"
+          >
+            <span
+              data-taro="Text"
+              style="font-size: 13px; color: rgb(122, 110, 102);"
+            >
+              对「布丁」执行
+            </span>
+          </div>
+          <div
+            data-taro="View"
+            style="display: flex; justify-content: center; padding: 14px; border-top: 0.5px solid rgb(232, 223, 214);"
+          >
+            <span
+              data-taro="Text"
+              style="font-size: 17px; color: rgb(58, 47, 41);"
+            >
+              移笼
+            </span>
+          </div>
+          <div
+            data-taro="View"
+            style="display: flex; justify-content: center; padding: 14px; border-top: 0.5px solid rgb(232, 223, 214);"
+          >
+            <span
+              data-taro="Text"
+              style="font-size: 17px; color: rgb(226, 104, 91);"
+            >
+              删除个体
+            </span>
+          </div>
+        </div>
+        <div
+          data-taro="View"
+          style="display: flex; justify-content: center; padding: 14px; background-color: rgb(255, 255, 255); border-radius: 16px;"
+        >
+          <span
+            data-taro="Text"
+            style="font-size: 17px; font-weight: 600; color: rgb(217, 139, 85);"
+          >
+            取消
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`mp-ui snapshots > Button 三变体与禁用 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 52px; padding: 14px 20px; border-radius: 16px; background-color: rgb(217, 139, 85); color: rgb(255, 248, 239); font-size: 17px; font-weight: 600; letter-spacing: -0.41px;"
+  >
+    <span
+      data-taro="Text"
+    >
+      保存
+    </span>
+  </div>
+  <div
+    data-taro="View"
+    style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 36px; padding: 8px 14px; border-radius: 980px; border: 1px solid rgb(217, 207, 197); color: rgb(217, 139, 85); font-size: 15px; font-weight: 500; letter-spacing: -0.24px;"
+  >
+    <span
+      data-taro="Text"
+    >
+      次要
+    </span>
+  </div>
+  <div
+    data-taro="View"
+    style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; color: rgb(217, 139, 85); font-size: 17px; font-weight: 400; letter-spacing: -0.41px;"
+  >
+    <span
+      data-taro="Text"
+    >
+      跳过
+    </span>
+  </div>
+  <div
+    data-taro="View"
+    style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 52px; padding: 14px 20px; border-radius: 16px; background-color: rgba(58, 47, 41, 0.06); color: rgb(160, 149, 140); font-size: 17px; font-weight: 600; letter-spacing: -0.41px;"
+  >
+    <span
+      data-taro="Text"
+    >
+      保存
+    </span>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`mp-ui snapshots > Empty 空态 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="display: flex; flex-direction: column; align-items: center; padding: 32px 16px; gap: 12px;"
+  >
+    <span
+      data-taro="Text"
+      style="font-size: 15px; font-weight: 600; letter-spacing: -0.16px; line-height: 1.28; color: rgb(58, 47, 41);"
+    >
+      暂无今日任务
+    </span>
+    <span
+      data-taro="Text"
+      style="font-size: 15px; font-weight: 400; letter-spacing: -0.08px; line-height: 1.56; color: rgb(122, 110, 102); text-align: center;"
+    >
+      今天的照护任务都完成了
+    </span>
+    <div
+      data-taro="View"
+      style="margin-top: 8px;"
+    >
+      <div
+        data-taro="View"
+        style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 36px; padding: 8px 14px; border-radius: 980px; border: 1px solid rgb(217, 207, 197); color: rgb(217, 139, 85); font-size: 15px; font-weight: 500; letter-spacing: -0.24px;"
+      >
+        <span
+          data-taro="Text"
+        >
+          去看看个体
+        </span>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`mp-ui snapshots > FormRow 含错误提示 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="display: flex; flex-direction: column; gap: 4px; padding: 12px 16px;"
+  >
+    <div
+      data-taro="View"
+      style="display: flex; align-items: center; gap: 12px; min-height: 24px;"
+    >
+      <span
+        data-taro="Text"
+        style="font-size: 15px; font-weight: 400; letter-spacing: -0.08px; line-height: 1.56; color: rgb(122, 110, 102); width: 88px; flex-shrink: 0;"
+      >
+        体重(g)
+      </span>
+      <div
+        data-taro="View"
+        style="flex: 1 1 0%; min-width: 0;"
+      >
+        <input
+          data-taro="Input"
+          value="abc"
+        />
+      </div>
+    </div>
+    <span
+      data-taro="Text"
+      style="font-size: 13px; line-height: 1.38; color: rgb(226, 104, 91); padding-left: 100px;"
+    >
+      必须是 1–500 的数字
+    </span>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`mp-ui snapshots > NavBar 大标题态 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="position: relative; z-index: 10;"
+  >
+    <div
+      data-taro="View"
+      style="position: fixed; top: 0px; left: 0px; right: 0px; z-index: 10; padding-top: 44px; background-color: transparent; transition: background-color 90ms linear;"
+    >
+      <div
+        data-taro="View"
+        style="display: flex; align-items: center; height: 44px; padding: 0px 16px; box-sizing: border-box;"
+      >
+        <div
+          data-taro="View"
+          style="width: 60px; display: flex; justify-content: flex-start;"
+        />
+        <div
+          data-taro="View"
+          style="flex: 1 1 0%; display: flex; justify-content: center;"
+        >
+          <span
+            data-taro="Text"
+            style="font-size: 17px; font-weight: 600; letter-spacing: -0.41px; color: rgb(58, 47, 41); opacity: 0;"
+          >
+            今日
+          </span>
+        </div>
+        <div
+          data-taro="View"
+          style="width: 60px; display: flex; justify-content: flex-end;"
+        />
+      </div>
+    </div>
+    <div
+      data-taro="View"
+      style="height: 88px;"
+    />
+    <div
+      data-taro="View"
+      style="padding: 4px 16px 8px;"
+    >
+      <span
+        data-taro="Text"
+        style="font-size: 32px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.1; color: rgb(58, 47, 41); opacity: 1;"
+      >
+        今日
+      </span>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`mp-ui snapshots > NavBar 收缩态(含返回与右操作) 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="position: relative; z-index: 10;"
+  >
+    <div
+      data-taro="View"
+      style="position: fixed; top: 0px; left: 0px; right: 0px; z-index: 10; padding-top: 44px; background-color: rgba(255, 253, 249, 0.97); transition: background-color 90ms linear; border-bottom: 0.5px solid rgb(232, 223, 214);"
+    >
+      <div
+        data-taro="View"
+        style="display: flex; align-items: center; height: 44px; padding: 0px 16px; box-sizing: border-box;"
+      >
+        <div
+          data-taro="View"
+          style="width: 60px; display: flex; justify-content: flex-start;"
+        >
+          <span
+            data-taro="Text"
+            style="font-size: 22px; color: rgb(217, 139, 85);"
+          >
+            ‹
+          </span>
+        </div>
+        <div
+          data-taro="View"
+          style="flex: 1 1 0%; display: flex; justify-content: center;"
+        >
+          <span
+            data-taro="Text"
+            style="font-size: 17px; font-weight: 600; letter-spacing: -0.41px; color: rgb(58, 47, 41); opacity: 1;"
+          >
+            个体
+          </span>
+        </div>
+        <div
+          data-taro="View"
+          style="width: 60px; display: flex; justify-content: flex-end;"
+        >
+          <div
+            data-taro="View"
+            style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 980px; background-color: rgb(251, 232, 216);"
+          >
+            <span
+              data-taro="Text"
+              style="font-size: 13px; font-weight: 500; line-height: 1.38; color: rgb(178, 107, 59);"
+            >
+              3 项
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      data-taro="View"
+      style="height: 88px;"
+    />
+    <div
+      data-taro="View"
+      style="padding: 4px 16px 8px;"
+    >
+      <span
+        data-taro="Text"
+        style="font-size: 32px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.1; color: rgb(58, 47, 41); opacity: 0;"
+      >
+        个体
+      </span>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`mp-ui snapshots > SectionList + Section + Cell 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="display: flex; flex-direction: column; gap: 24px; padding: 0px 16px 32px;"
+  >
+    <div
+      data-taro="View"
+      style="display: flex; flex-direction: column; gap: 8px;"
+    >
+      <span
+        data-taro="Text"
+        style="font-size: 13px; font-weight: 500; letter-spacing: 0px; line-height: 1.38; color: rgb(122, 110, 102); padding: 0px 16px;"
+      >
+        今日照护
+      </span>
+      <div
+        data-taro="View"
+        style="background-color: rgb(255, 255, 255); border-radius: 16px; overflow: hidden;"
+      >
+        <div
+          data-taro="View"
+          style="display: flex; align-items: center; min-height: 48px; padding: 12px 16px; box-sizing: border-box; gap: 12px;"
+        >
+          <div
+            data-taro="View"
+            style="flex: 1 1 0%; display: flex; flex-direction: column; gap: 2px; min-width: 0;"
+          >
+            <span
+              data-taro="Text"
+              style="font-size: 17px; font-weight: 400; letter-spacing: -0.16px; line-height: 1.52; color: rgb(58, 47, 41);"
+            >
+              喂食 · 全部笼舍
+            </span>
+            <span
+              data-taro="Text"
+              style="font-size: 15px; font-weight: 400; letter-spacing: -0.08px; line-height: 1.56; color: rgb(122, 110, 102);"
+            >
+              每日 20:00
+            </span>
+          </div>
+          <span
+            data-taro="Text"
+            style="font-size: 17px; font-weight: 400; letter-spacing: -0.16px; line-height: 1.52; color: rgb(122, 110, 102);"
+          >
+            待办
+          </span>
+          <span
+            data-taro="Text"
+            style="font-size: 17px; color: rgb(160, 149, 140);"
+          >
+            ›
+          </span>
+        </div>
+        <div
+          data-taro="View"
+          style="display: flex; align-items: center; min-height: 48px; padding: 12px 16px; box-sizing: border-box; gap: 12px; border-top: 0.5px solid rgb(232, 223, 214);"
+        >
+          <div
+            data-taro="View"
+            style="flex: 1 1 0%; display: flex; flex-direction: column; gap: 2px; min-width: 0;"
+          >
+            <span
+              data-taro="Text"
+              style="font-size: 17px; font-weight: 400; letter-spacing: -0.16px; line-height: 1.52; color: rgb(58, 47, 41);"
+            >
+              体重记录 · 布丁
+            </span>
+          </div>
+          <span
+            data-taro="Text"
+            style="font-size: 17px; font-weight: 400; letter-spacing: -0.16px; line-height: 1.52; color: rgb(122, 110, 102);"
+          >
+            已完成
+          </span>
+        </div>
+      </div>
+      <span
+        data-taro="Text"
+        style="font-size: 13px; font-weight: 400; letter-spacing: 0px; line-height: 1.48; color: rgb(122, 110, 102); padding: 0px 16px;"
+      >
+        共 2 项
+      </span>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`mp-ui snapshots > SegmentedControl 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="display: flex; background-color: rgba(58, 47, 41, 0.09); border-radius: 9px; padding: 2px; gap: 2px;"
+  >
+    <div
+      data-taro="View"
+      style="flex: 1 1 0%; display: flex; justify-content: center; align-items: center; min-height: 28px; border-radius: 7px; background-color: transparent; transition: background-color 90ms ease;"
+    >
+      <span
+        data-taro="Text"
+        style="font-size: 13px; font-weight: 500; color: rgb(122, 110, 102); padding: 0px 8px;"
+      >
+        全部
+      </span>
+    </div>
+    <div
+      data-taro="View"
+      style="flex: 1 1 0%; display: flex; justify-content: center; align-items: center; min-height: 28px; border-radius: 7px; background-color: rgb(255, 255, 255); transition: background-color 90ms ease; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);"
+    >
+      <span
+        data-taro="Text"
+        style="font-size: 13px; font-weight: 500; color: rgb(58, 47, 41); padding: 0px 8px;"
+      >
+        待办
+      </span>
+    </div>
+    <div
+      data-taro="View"
+      style="flex: 1 1 0%; display: flex; justify-content: center; align-items: center; min-height: 28px; border-radius: 7px; background-color: transparent; transition: background-color 90ms ease;"
+    >
+      <span
+        data-taro="Text"
+        style="font-size: 13px; font-weight: 500; color: rgb(122, 110, 102); padding: 0px 8px;"
+      >
+        已完成
+      </span>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`mp-ui snapshots > Sheet 打开态 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="position: fixed; top: 0px; left: 0px; right: 0px; bottom: 0px; z-index: 100;"
+  >
+    <div
+      data-taro="View"
+      style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: rgba(0, 0, 0, 0.35);"
+    />
+    <div
+      data-taro="View"
+      style="position: absolute; left: 0px; right: 0px; bottom: 0px; background-color: rgb(255, 248, 239); border-radius: 24px 24px 0 0; padding-bottom: 32px; animation: mp-sheet-in 280ms cubic-bezier(0.22, 1, 0.36, 1);"
+    >
+      <div
+        data-taro="View"
+        style="display: flex; justify-content: center; padding: 8px 0px;"
+      >
+        <div
+          data-taro="View"
+          style="width: 36px; height: 5px; border-radius: 3px; background-color: rgba(58, 47, 41, 0.14);"
+        />
+      </div>
+      <div
+        data-taro="View"
+        style="display: flex; align-items: center; min-height: 48px; padding: 12px 16px; box-sizing: border-box; gap: 12px;"
+      >
+        <div
+          data-taro="View"
+          style="flex: 1 1 0%; display: flex; flex-direction: column; gap: 2px; min-width: 0;"
+        >
+          <span
+            data-taro="Text"
+            style="font-size: 17px; font-weight: 400; letter-spacing: -0.16px; line-height: 1.52; color: rgb(58, 47, 41);"
+          >
+            内容
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`mp-ui snapshots > SwipeAction 静止态 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="position: relative; overflow: hidden;"
+  >
+    <div
+      data-taro="View"
+      style="position: absolute; top: 0px; bottom: 0px; right: 0px; display: flex;"
+    >
+      <div
+        data-taro="View"
+        style="width: 72px; display: flex; align-items: center; justify-content: center; background-color: rgba(58, 47, 41, 0.14);"
+      >
+        <span
+          data-taro="Text"
+          style="font-size: 15px; color: rgb(58, 47, 41);"
+        >
+          归档
+        </span>
+      </div>
+      <div
+        data-taro="View"
+        style="width: 72px; display: flex; align-items: center; justify-content: center; background-color: rgb(226, 104, 91);"
+      >
+        <span
+          data-taro="Text"
+          style="font-size: 15px; color: rgb(255, 255, 255);"
+        >
+          删除
+        </span>
+      </div>
+    </div>
+    <div
+      data-taro="View"
+      style="position: relative; background-color: rgb(255, 255, 255); transform: translateX(0px); transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);"
+    >
+      <div
+        data-taro="View"
+        style="display: flex; align-items: center; min-height: 48px; padding: 12px 16px; box-sizing: border-box; gap: 12px;"
+      >
+        <div
+          data-taro="View"
+          style="flex: 1 1 0%; display: flex; flex-direction: column; gap: 2px; min-width: 0;"
+        >
+          <span
+            data-taro="Text"
+            style="font-size: 17px; font-weight: 400; letter-spacing: -0.16px; line-height: 1.52; color: rgb(58, 47, 41);"
+          >
+            小仓鼠
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`mp-ui snapshots > Tag 各语义 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 980px; background-color: rgba(58, 47, 41, 0.09);"
+  >
+    <span
+      data-taro="Text"
+      style="font-size: 13px; font-weight: 500; line-height: 1.38; color: rgb(122, 110, 102);"
+    >
+      默认
+    </span>
+  </div>
+  <div
+    data-taro="View"
+    style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 980px; background-color: rgb(251, 232, 216);"
+  >
+    <span
+      data-taro="Text"
+      style="font-size: 13px; font-weight: 500; line-height: 1.38; color: rgb(178, 107, 59);"
+    >
+      品牌
+    </span>
+  </div>
+  <div
+    data-taro="View"
+    style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 980px; background-color: rgba(107, 125, 107, 0.15);"
+  >
+    <span
+      data-taro="Text"
+      style="font-size: 13px; font-weight: 500; line-height: 1.38; color: rgb(107, 125, 107);"
+    >
+      健康
+    </span>
+  </div>
+  <div
+    data-taro="View"
+    style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 980px; background-color: rgba(226, 104, 91, 0.14);"
+  >
+    <span
+      data-taro="Text"
+      style="font-size: 13px; font-weight: 500; line-height: 1.38; color: rgb(226, 104, 91);"
+    >
+      逾期
+    </span>
+  </div>
+  <div
+    data-taro="View"
+    style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 980px; background-color: rgba(217, 139, 85, 0.16);"
+  >
+    <span
+      data-taro="Text"
+      style="font-size: 13px; font-weight: 500; line-height: 1.38; color: rgb(178, 107, 59);"
+    >
+      待观察
+    </span>
+  </div>
+</DocumentFragment>
+`;
