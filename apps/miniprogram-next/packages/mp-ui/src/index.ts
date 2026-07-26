@@ -1,6 +1,6 @@
 export * from './tokens'
 export { palette, typeStyle, hairlineTop } from './theme'
-export { NavBar, statusBarHeight } from './NavBar'
+export { NavBar, LargeTitle, statusBarHeight } from './NavBar'
 export { Section, SectionList } from './SectionList'
 export { Cell } from './Cell'
 export { FormRow } from './FormRow'

@@ -2,6 +2,7 @@ import { ScrollView, View } from '@tarojs/components'
 import { useState } from 'react'
 import {
   NavBar,
+  LargeTitle,
   Section,
   SectionList,
   Cell,
@@ -34,6 +35,7 @@ export default function AnimalsSamplePage() {
         style={{ flex: 1 }}
         onScroll={(e: { detail?: { scrollTop?: number } }) => setScrollTop(e.detail?.scrollTop || 0)}
       >
+        <LargeTitle title="个体" />
         <SectionList>
           <Section header="在养个体" footer={`共 ${MOCK_ANIMALS.length} 只 · 静态样例数据`}>
             {MOCK_ANIMALS.map((a) => (

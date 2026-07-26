@@ -6,18 +6,18 @@ import { palette } from './theme'
 
 export interface NavBarProps {
   title: string
-  /** 页面滚动距离(px);超过 largeTitle 高度后收缩为居中小标题 */
+  /** 页面滚动距离(px);大标题滚过此距离后小标题淡入 */
   scrollTop?: number
   /** 显示返回箭头;默认点击 Taro.navigateBack */
   back?: boolean
   onBack?: () => void
   /** 右侧操作位 */
   right?: ReactNode
-  /** 关闭大标题模式(纯居中小标题) */
+  /** 关闭大标题模式(小标题常显) */
   largeTitle?: boolean
 }
 
-const COLLAPSE_RANGE = 52
+const COLLAPSE_RANGE = 44
 
 export function statusBarHeight(): number {
   try {
@@ -28,9 +28,9 @@ export function statusBarHeight(): number {
 }
 
 /**
- * iOS 风自定义导航栏(docs/34 §6):大标题(displayMedium 32)随滚动收缩为
- * 居中 17/600 标题。navigationStyle: custom 页面专用;Skyline 手势返回由
- * 页面路由配置承担,组件不感知渲染引擎。
+ * iOS 风自定义导航栏(docs/34 §6)。固定栏 + 占位;大标题用 <LargeTitle>
+ * 放进页面滚动容器首部,随内容真实滚走(iOS 原生行为),小标题按
+ * scrollTop 淡入。Skyline 手势返回由页面路由配置承担,组件不感知引擎。
  */
 export function NavBar({ title, scrollTop = 0, back = false, onBack, right, largeTitle = true }: NavBarProps) {
   const inset = statusBarHeight()
@@ -46,9 +46,9 @@ export function NavBar({ title, scrollTop = 0, back = false, onBack, right, larg
           right: 0,
           zIndex: 10,
           paddingTop: `${inset}px`,
-          backgroundColor: progress >= 1 ? palette.navBarBackground : 'transparent',
-          transition: `background-color ${motion.press}ms linear`,
-          ...(progress >= 1 ? { borderBottom: `0.5px solid ${palette.separator}` } : {})
+          backgroundColor: palette.navBarBackground,
+          transition: `border-color ${motion.press}ms linear`,
+          borderBottom: `0.5px solid ${progress >= 1 ? palette.separator : 'transparent'}`
         }}
       >
         <View
@@ -76,7 +76,8 @@ export function NavBar({ title, scrollTop = 0, back = false, onBack, right, larg
                 fontWeight: navBar.titleFontWeight,
                 letterSpacing: `${navBar.titleLetterSpacing}px`,
                 color: palette.label,
-                opacity: progress
+                opacity: progress,
+                transition: `opacity ${motion.press}ms linear`
               }}
             >
               {title}
@@ -85,24 +86,27 @@ export function NavBar({ title, scrollTop = 0, back = false, onBack, right, larg
           <View style={{ width: '60px', display: 'flex', justifyContent: 'flex-end' }}>{right}</View>
         </View>
       </View>
-      {/* 占位 + 大标题区(随滚动淡出) */}
+      {/* 固定栏占位 */}
       <View style={{ height: `${inset + metrics.navBarHeight}px` }} />
-      {largeTitle ? (
-        <View style={{ padding: `4px ${metrics.pagePadding}px 8px` }}>
-          <Text
-            style={{
-              fontSize: `${navBar.largeTitleFontSize}px`,
-              fontWeight: navBar.largeTitleFontWeight,
-              letterSpacing: '-0.4px',
-              lineHeight: 1.1,
-              color: palette.label,
-              opacity: 1 - progress
-            }}
-          >
-            {title}
-          </Text>
-        </View>
-      ) : null}
+    </View>
+  )
+}
+
+/** 大标题块:放在页面滚动容器的第一个子节点,随内容滚入导航栏下方。 */
+export function LargeTitle({ title }: { title: string }) {
+  return (
+    <View style={{ padding: `4px ${metrics.pagePadding}px 8px` }}>
+      <Text
+        style={{
+          fontSize: `${navBar.largeTitleFontSize}px`,
+          fontWeight: navBar.largeTitleFontWeight,
+          letterSpacing: '-0.4px',
+          lineHeight: 1.1,
+          color: palette.label
+        }}
+      >
+        {title}
+      </Text>
     </View>
   )
 }

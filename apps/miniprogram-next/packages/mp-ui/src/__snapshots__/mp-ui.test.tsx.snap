@@ -200,60 +200,6 @@ exports[`mp-ui snapshots > FormRow 含错误提示 1`] = `
 </DocumentFragment>
 `;
 
-exports[`mp-ui snapshots > NavBar 大标题态 1`] = `
-<DocumentFragment>
-  <div
-    data-taro="View"
-    style="position: relative; z-index: 10;"
-  >
-    <div
-      data-taro="View"
-      style="position: fixed; top: 0px; left: 0px; right: 0px; z-index: 10; padding-top: 44px; background-color: transparent; transition: background-color 90ms linear;"
-    >
-      <div
-        data-taro="View"
-        style="display: flex; align-items: center; height: 44px; padding: 0px 16px; box-sizing: border-box;"
-      >
-        <div
-          data-taro="View"
-          style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: flex-start;"
-        />
-        <div
-          data-taro="View"
-          style="flex: 1 1 0%; display: flex; justify-content: center;"
-        >
-          <span
-            data-taro="Text"
-            style="font-size: 17px; font-weight: 600; letter-spacing: -0.41px; color: rgb(58, 47, 41); opacity: 0;"
-          >
-            今日
-          </span>
-        </div>
-        <div
-          data-taro="View"
-          style="width: 60px; display: flex; justify-content: flex-end;"
-        />
-      </div>
-    </div>
-    <div
-      data-taro="View"
-      style="height: 88px;"
-    />
-    <div
-      data-taro="View"
-      style="padding: 4px 16px 8px;"
-    >
-      <span
-        data-taro="Text"
-        style="font-size: 32px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.1; color: rgb(58, 47, 41); opacity: 1;"
-      >
-        今日
-      </span>
-    </div>
-  </div>
-</DocumentFragment>
-`;
-
 exports[`mp-ui snapshots > NavBar 收缩态(含返回与右操作) 1`] = `
 <DocumentFragment>
   <div
@@ -262,7 +208,7 @@ exports[`mp-ui snapshots > NavBar 收缩态(含返回与右操作) 1`] = `
   >
     <div
       data-taro="View"
-      style="position: fixed; top: 0px; left: 0px; right: 0px; z-index: 10; padding-top: 44px; background-color: rgba(255, 253, 249, 0.97); transition: background-color 90ms linear; border-bottom: 0.5px solid rgb(232, 223, 214);"
+      style="position: fixed; top: 0px; left: 0px; right: 0px; z-index: 10; padding-top: 44px; background-color: rgba(255, 253, 249, 0.97); transition: border-color 90ms linear; border-bottom: 0.5px solid rgb(232, 223, 214);"
     >
       <div
         data-taro="View"
@@ -285,7 +231,7 @@ exports[`mp-ui snapshots > NavBar 收缩态(含返回与右操作) 1`] = `
         >
           <span
             data-taro="Text"
-            style="font-size: 17px; font-weight: 600; letter-spacing: -0.41px; color: rgb(58, 47, 41); opacity: 1;"
+            style="font-size: 17px; font-weight: 600; letter-spacing: -0.41px; color: rgb(58, 47, 41); opacity: 1; transition: opacity 90ms linear;"
           >
             个体
           </span>
@@ -312,17 +258,60 @@ exports[`mp-ui snapshots > NavBar 收缩态(含返回与右操作) 1`] = `
       data-taro="View"
       style="height: 88px;"
     />
+  </div>
+</DocumentFragment>
+`;
+
+exports[`mp-ui snapshots > NavBar 顶部态(小标题隐藏)+ LargeTitle 1`] = `
+<DocumentFragment>
+  <div
+    data-taro="View"
+    style="position: relative; z-index: 10;"
+  >
     <div
       data-taro="View"
-      style="padding: 4px 16px 8px;"
+      style="position: fixed; top: 0px; left: 0px; right: 0px; z-index: 10; padding-top: 44px; background-color: rgba(255, 253, 249, 0.97); transition: border-color 90ms linear; border-bottom: 0.5px solid transparent;"
     >
-      <span
-        data-taro="Text"
-        style="font-size: 32px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.1; color: rgb(58, 47, 41); opacity: 0;"
+      <div
+        data-taro="View"
+        style="display: flex; align-items: center; height: 44px; padding: 0px 16px; box-sizing: border-box;"
       >
-        个体
-      </span>
+        <div
+          data-taro="View"
+          style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: flex-start;"
+        />
+        <div
+          data-taro="View"
+          style="flex: 1 1 0%; display: flex; justify-content: center;"
+        >
+          <span
+            data-taro="Text"
+            style="font-size: 17px; font-weight: 600; letter-spacing: -0.41px; color: rgb(58, 47, 41); opacity: 0; transition: opacity 90ms linear;"
+          >
+            今日
+          </span>
+        </div>
+        <div
+          data-taro="View"
+          style="width: 60px; display: flex; justify-content: flex-end;"
+        />
+      </div>
     </div>
+    <div
+      data-taro="View"
+      style="height: 88px;"
+    />
+  </div>
+  <div
+    data-taro="View"
+    style="padding: 4px 16px 8px;"
+  >
+    <span
+      data-taro="Text"
+      style="font-size: 32px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.1; color: rgb(58, 47, 41);"
+    >
+      今日
+    </span>
   </div>
 </DocumentFragment>
 `;

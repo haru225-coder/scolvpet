@@ -3,6 +3,7 @@ import Taro from '@tarojs/taro'
 import { useState } from 'react'
 import {
   NavBar,
+  LargeTitle,
   Section,
   SectionList,
   Cell,
@@ -31,6 +32,7 @@ export default function TodayPage() {
   const [filter, setFilter] = useState(0)
   const [scrollTop, setScrollTop] = useState(0)
   const [panelFor, setPanelFor] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   const tasks = MOCK_TASKS.filter((t) =>
     filter === 0 ? true : filter === 1 ? t.state !== 'done' : t.state === 'done'
@@ -45,9 +47,19 @@ export default function TodayPage() {
         bounces
         enhanced
         showScrollbar={false}
+        refresherEnabled
+        refresherTriggered={refreshing}
+        refresherBackground={palette.groupedBackground}
+        onRefresherRefresh={() => {
+          if (refreshing) return
+          setRefreshing(true)
+          // ponytail: 假数据无可刷,600ms 只为让 Gate 摸到回弹手感;M1 换真拉取
+          setTimeout(() => setRefreshing(false), 600)
+        }}
         style={{ flex: 1 }}
         onScroll={(e: { detail?: { scrollTop?: number } }) => setScrollTop(e.detail?.scrollTop || 0)}
       >
+        <LargeTitle title="今日" />
         <View style={{ padding: `0 ${metrics.pagePadding}px ${metrics.space16}px` }}>
           <SegmentedControl segments={[...FILTERS]} value={filter} onChange={setFilter} />
         </View>

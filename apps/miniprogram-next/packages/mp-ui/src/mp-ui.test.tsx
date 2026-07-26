@@ -9,6 +9,7 @@ import {
   Empty,
   FormRow,
   NavBar,
+  LargeTitle,
   Section,
   SectionList,
   SegmentedControl,
@@ -36,8 +37,13 @@ describe('tokens', () => {
 })
 
 describe('mp-ui snapshots', () => {
-  it('NavBar 大标题态', () => {
-    const { asFragment } = render(<NavBar title="今日" scrollTop={0} />)
+  it('NavBar 顶部态(小标题隐藏)+ LargeTitle', () => {
+    const { asFragment } = render(
+      <>
+        <NavBar title="今日" scrollTop={0} />
+        <LargeTitle title="今日" />
+      </>
+    )
     expect(asFragment()).toMatchSnapshot()
   })
 
