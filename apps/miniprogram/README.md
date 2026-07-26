@@ -30,6 +30,21 @@ apps/miniprogram/
 3. 在 `utils/config.js` 设置 `API_BASE`（开发环境指向本地或 `https://p.scolv.com:8443`）。
 4. 开发阶段可关闭域名校验；生产必须配置合法 request 域名。
 
+## 生产构建
+
+发布前用构建脚本注入生产配置（fail-closed，坏值直接退出非零）：
+
+```bash
+MP_APPID=wx真实AppID MP_API_BASE=https://api.example.com make release-miniprogram
+```
+
+脚本覆盖写入 `utils/config.js` 与 `project.config.json` 的 appid；生产模式拒绝
+`touristappid`、`p.scolv.com`、显式端口、非 https。构建上传后恢复开发默认值：
+
+```bash
+scripts/build-miniprogram.sh --restore
+```
+
 ## 与后端对齐
 
 | 能力 | API |
