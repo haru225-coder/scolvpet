@@ -158,6 +158,8 @@ I2WeightRecord buildWeightRecord({
     birthWeightG: previous?.birthWeightG ?? previousG,
     alertFlags: const [],
     notes: draft.notes,
+    correctsWeightRecordId: draft.correctsWeightRecordId,
+    correctionReason: draft.correctionReason,
   );
   final flags = evaluateWeightFlags(provisional, rules: rules);
   return I2WeightRecord(
@@ -174,5 +176,7 @@ I2WeightRecord buildWeightRecord({
     birthWeightG: provisional.birthWeightG,
     alertFlags: flags,
     notes: provisional.notes,
+    correctsWeightRecordId: provisional.correctsWeightRecordId,
+    correctionReason: provisional.correctionReason,
   );
 }

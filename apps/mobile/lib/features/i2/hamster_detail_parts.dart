@@ -655,35 +655,60 @@ class _HamsterDetailTaskRow extends StatelessWidget {
 }
 
 class _HamsterDetailWeightRow extends StatelessWidget {
-  const _HamsterDetailWeightRow({required this.weight});
+  const _HamsterDetailWeightRow({required this.weight, this.onCorrect});
 
   final I2WeightRecord weight;
+
+  /// Null for read-only members — a reading they cannot supersede stays inert.
+  final VoidCallback? onCorrect;
 
   @override
   Widget build(BuildContext context) {
     final p = ScolvPalette.of(context);
     final flags = evaluateWeightFlags(weight);
-    return Padding(
+    final row = Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Expanded(
-            child: Text(
-              '${weight.weightG} g',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: flags.isEmpty ? p.label : IosColors.systemOrange,
-              ),
+          Text(
+            '${weight.weightG} g',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: flags.isEmpty ? p.label : IosColors.systemOrange,
             ),
           ),
+          if (weight.isCorrection) ...[
+            const SizedBox(width: 6),
+            Text(
+              '已纠正',
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: IosColors.systemOrange),
+            ),
+          ],
+          const Spacer(),
           Text(
             i2DateTimeLabel(weight.recordedAt),
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: p.secondaryLabel),
           ),
+          if (onCorrect != null) ...[
+            const SizedBox(width: 8),
+            Icon(
+              CupertinoIcons.pencil_circle,
+              size: 18,
+              color: p.secondaryLabel,
+            ),
+          ],
         ],
       ),
+    );
+    if (onCorrect == null) return row;
+    return InkWell(
+      key: Key('weight-row-${weight.id}'),
+      onTap: onCorrect,
+      child: row,
     );
   }
 }

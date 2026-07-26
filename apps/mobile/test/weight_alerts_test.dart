@@ -137,6 +137,30 @@ void main() {
       expect(next.birthWeightG, 12);
       expect(next.alertFlags, contains('drop_from_previous'));
     });
+
+    // Wave 1: the audit chain has to survive the local alert computation,
+    // otherwise a corrected reading looks like an ordinary new one offline.
+    test('carries the correction chain through', () {
+      final next = buildWeightRecord(
+        id: 'w-next',
+        draft: I2WeightDraft(
+          hamsterId: 'h1',
+          weightG: 45,
+          recordedAt: t1,
+          correctsWeightRecordId: 'w-prev',
+          correctionReason: '秤没归零',
+        ),
+        previous: record(
+          id: 'w-prev',
+          hamsterId: 'h1',
+          weightG: 50,
+          recordedAt: t0,
+        ),
+      );
+      expect(next.correctsWeightRecordId, 'w-prev');
+      expect(next.correctionReason, '秤没归零');
+      expect(next.isCorrection, isTrue);
+    });
   });
 
   group('buildWeightAlerts', () {

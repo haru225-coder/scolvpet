@@ -388,6 +388,16 @@ class MemoryI2Repository implements I2Repository {
     if (draft.weightG <= 0) {
       throw const I2RepositoryException('体重必须大于 0 克');
     }
+    // Mirrors the API's 422: an id without a reason is not a correction.
+    final corrects = draft.correctsWeightRecordId;
+    if (corrects != null && corrects.isNotEmpty) {
+      if ((draft.correctionReason ?? '').trim().isEmpty) {
+        throw const I2RepositoryException('纠错必须填写原因');
+      }
+      if (!_weights.any((w) => w.id == corrects)) {
+        throw const I2RepositoryException('被纠正的体重记录不存在');
+      }
+    }
     final hamsterId = draft.hamsterId;
     I2WeightRecord? previous;
     if (hamsterId != null) {

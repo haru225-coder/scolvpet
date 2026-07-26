@@ -387,6 +387,8 @@ class I2Controller extends ChangeNotifier {
           'weight_g': draft.weightG,
           'recorded_at': draft.recordedAt.toIso8601String(),
           'notes': draft.notes,
+          'corrects_weight_record_id': draft.correctsWeightRecordId,
+          'correction_reason': draft.correctionReason,
         },
       ),
     )) {

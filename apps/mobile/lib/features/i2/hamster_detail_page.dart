@@ -7,6 +7,7 @@ class HamsterDetailPage extends StatefulWidget {
     required this.hamsterId,
     this.onEdit,
     this.onAddWeight,
+    this.onCorrectWeight,
     this.onOpenPedigree,
     this.onOpenHealth,
     this.onOpenGenetic,
@@ -18,6 +19,9 @@ class HamsterDetailPage extends StatefulWidget {
   final String hamsterId;
   final VoidCallback? onEdit;
   final VoidCallback? onAddWeight;
+
+  /// Supersedes a mistaken reading (Wave 1 correction loop).
+  final void Function(I2WeightRecord)? onCorrectWeight;
   final VoidCallback? onOpenPedigree;
   final VoidCallback? onOpenHealth;
 
@@ -559,7 +563,14 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                       const _HamsterDetailEmptyRow(text: '暂无体重记录')
                     else
                       for (final weight in detail.weights.take(4))
-                        _HamsterDetailWeightRow(weight: weight),
+                        _HamsterDetailWeightRow(
+                          weight: weight,
+                          onCorrect:
+                              widget.onCorrectWeight == null ||
+                                  !widget.controller.canWrite
+                              ? null
+                              : () => widget.onCorrectWeight!(weight),
+                        ),
                   ],
                 ),
               ),

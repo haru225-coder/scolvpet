@@ -312,18 +312,25 @@ class _HomeShellState extends State<HomeShell> {
     await widget.services.i2Controller.retry();
   }
 
-  Future<void> _openWeightEntry(String hamsterId) async {
-    if (!_requireWrite(AppCapability.writeWeight, '记录体重')) return;
+  Future<void> _openWeightEntry(
+    String hamsterId, {
+    I2WeightRecord? correcting,
+  }) async {
+    final action = correcting == null ? '记录体重' : '纠正体重';
+    if (!_requireWrite(AppCapability.writeWeight, action)) return;
     final saved = await Navigator.of(context).push<bool>(
       iosPageRoute(
         builder: (pageContext) => WeightEntryPage(
           controller: widget.services.i2Controller,
           hamsterId: hamsterId,
+          correcting: correcting,
           onSaved: () => Navigator.of(pageContext).pop(true),
         ),
       ),
     );
-    if (saved == true && mounted) showIosMessage(context, '体重已保存');
+    if (saved == true && mounted) {
+      showIosMessage(context, correcting == null ? '体重已保存' : '体重已纠正');
+    }
     await widget.services.i2Controller.loadHamsterDetail(hamsterId);
     await widget.services.i2Controller.retry();
   }
@@ -465,6 +472,9 @@ class _HomeShellState extends State<HomeShell> {
               : null,
           onAddWeight: canWriteWeight
               ? () => _openWeightEntry(hamster.id)
+              : null,
+          onCorrectWeight: canWriteWeight
+              ? (record) => _openWeightEntry(hamster.id, correcting: record)
               : null,
           onOpenGenetic: () async {
             final current =

@@ -705,6 +705,8 @@ class DefaultApiI2Repository implements I2Repository, I2AvatarRepository {
         recordedAt: draft.recordedAt,
         source_: WeightRecordCreateRequestSource_Enum.manual,
         notes: draft.notes,
+        correctsWeightRecordId: draft.correctsWeightRecordId,
+        correctionReason: draft.correctionReason,
       ),
     );
     return I2WeightRecord.fromJson(response.data!.data.toJson());

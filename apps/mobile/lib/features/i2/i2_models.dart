@@ -487,6 +487,8 @@ class I2WeightRecord {
     this.birthWeightG,
     this.alertFlags = const <String>[],
     required this.notes,
+    this.correctsWeightRecordId,
+    this.correctionReason,
   });
 
   final String id;
@@ -503,7 +505,14 @@ class I2WeightRecord {
   final List<String> alertFlags;
   final String? notes;
 
+  /// Wave 1 audit chain: a mistaken reading is superseded by a new record that
+  /// points back at it, never deleted. Follow this id to walk the chain.
+  final String? correctsWeightRecordId;
+  final String? correctionReason;
+
   bool get hasAlert => alertFlags.isNotEmpty;
+
+  bool get isCorrection => (correctsWeightRecordId ?? '').isNotEmpty;
 
   factory I2WeightRecord.fromJson(Map<String, dynamic> json) => I2WeightRecord(
     id: json['id'] as String? ?? '',
@@ -522,6 +531,8 @@ class I2WeightRecord {
         .map((e) => e.toString())
         .toList(),
     notes: json['notes'] as String?,
+    correctsWeightRecordId: json['corrects_weight_record_id'] as String?,
+    correctionReason: json['correction_reason'] as String?,
   );
 
   Map<String, dynamic> toJson() => {
@@ -538,6 +549,8 @@ class I2WeightRecord {
     'birth_weight_g': birthWeightG,
     'alert_flags': alertFlags,
     'notes': notes,
+    'corrects_weight_record_id': correctsWeightRecordId,
+    'correction_reason': correctionReason,
   };
 }
 
@@ -550,6 +563,8 @@ class I2WeightDraft {
     required this.weightG,
     required this.recordedAt,
     this.notes,
+    this.correctsWeightRecordId,
+    this.correctionReason,
   });
 
   final String? hamsterId;
@@ -559,6 +574,13 @@ class I2WeightDraft {
   final num weightG;
   final DateTime recordedAt;
   final String? notes;
+
+  /// Set together to supersede a mistaken reading. The API returns 422 when an
+  /// id arrives without a reason, so keep them paired on the client too.
+  final String? correctsWeightRecordId;
+  final String? correctionReason;
+
+  bool get isCorrection => (correctsWeightRecordId ?? '').isNotEmpty;
 }
 
 class I2WeightBatchFailure {
