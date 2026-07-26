@@ -11,7 +11,10 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**cancelCustomerReservation**](CustomerApi.md#cancelcustomerreservation) | **POST** /v1/customer/reservations/{reservation_id}/cancel | 客户取消 held 预订
 [**createCustomerSession**](CustomerApi.md#createcustomersession) | **POST** /v1/public/customer/sessions | 客户验证码登录
+[**createCustomerWechatBinding**](CustomerApi.md#createcustomerwechatbinding) | **POST** /v1/public/customer/wechat-bindings | 短信验证并绑定微信身份
+[**createCustomerWechatSession**](CustomerApi.md#createcustomerwechatsession) | **POST** /v1/public/customer/wechat-sessions | 微信 wx.login 静默登录
 [**deleteCustomerSession**](CustomerApi.md#deletecustomersession) | **DELETE** /v1/customer/sessions/current | 客户退出当前会话
+[**deleteCustomerWechatBinding**](CustomerApi.md#deletecustomerwechatbinding) | **DELETE** /v1/customer/wechat-bindings/current | 解绑当前客户的微信身份
 [**getCustomerReservation**](CustomerApi.md#getcustomerreservation) | **GET** /v1/customer/reservations/{reservation_id} | 获取客户预订详情
 [**listCustomerReservations**](CustomerApi.md#listcustomerreservations) | **GET** /v1/customer/reservations | 列出当前客户预订
 [**sendCustomerVerificationCode**](CustomerApi.md#sendcustomerverificationcode) | **POST** /v1/public/customer/verification-codes | 客户侧发送登录验证码
@@ -101,6 +104,92 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **createCustomerWechatBinding**
+> CustomerSessionResponse createCustomerWechatBinding(createCustomerWechatBindingRequest)
+
+短信验证并绑定微信身份
+
+消费 wechat-sessions 下发的一次性票据：短信验证通过后写入 openid↔phone 绑定 并发放 ct_* 会话。票据过期/已用返回 422，客户端应降级到普通验证码登录。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getCustomerApi();
+final CreateCustomerWechatBindingRequest createCustomerWechatBindingRequest = ; // CreateCustomerWechatBindingRequest |
+
+try {
+    final response = api.createCustomerWechatBinding(createCustomerWechatBindingRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling CustomerApi->createCustomerWechatBinding: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createCustomerWechatBindingRequest** | [**CreateCustomerWechatBindingRequest**](CreateCustomerWechatBindingRequest.md)|  |
+
+### Return type
+
+[**CustomerSessionResponse**](CustomerSessionResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createCustomerWechatSession**
+> CustomerWechatBindTicketResponse createCustomerWechatSession(createCustomerWechatSessionRequest)
+
+微信 wx.login 静默登录
+
+用 wx.login 的 js_code 换取身份：openid 已绑定手机号则直接发放 ct_* 会话（201）； 未绑定则返回一次性绑定票据（200，10 分钟有效），随后经短信验证完成绑定。 session_key 永不返回客户端。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getCustomerApi();
+final CreateCustomerWechatSessionRequest createCustomerWechatSessionRequest = ; // CreateCustomerWechatSessionRequest |
+
+try {
+    final response = api.createCustomerWechatSession(createCustomerWechatSessionRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling CustomerApi->createCustomerWechatSession: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createCustomerWechatSessionRequest** | [**CreateCustomerWechatSessionRequest**](CreateCustomerWechatSessionRequest.md)|  |
+
+### Return type
+
+[**CustomerWechatBindTicketResponse**](CustomerWechatBindTicketResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **deleteCustomerSession**
 > deleteCustomerSession()
 
@@ -116,6 +205,44 @@ try {
     api.deleteCustomerSession();
 } on DioException catch (e) {
     print('Exception when calling CustomerApi->deleteCustomerSession: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[customerBearerAuth](../README.md#customerBearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **deleteCustomerWechatBinding**
+> deleteCustomerWechatBinding()
+
+解绑当前客户的微信身份
+
+审计链保留绑定行（revoked_at），解绑后下次 wx.login 回到绑定流程。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getCustomerApi();
+
+try {
+    api.deleteCustomerWechatBinding();
+} on DioException catch (e) {
+    print('Exception when calling CustomerApi->deleteCustomerWechatBinding: $e\n');
 }
 ```
 

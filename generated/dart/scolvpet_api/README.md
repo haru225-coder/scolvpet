@@ -200,7 +200,10 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**weanLitter**](doc/DefaultApi.md#weanlitter) | **POST** /litters/{litter_id}/wean | 完成断奶
 [*CustomerApi*](doc/CustomerApi.md) | [**cancelCustomerReservation**](doc/CustomerApi.md#cancelcustomerreservation) | **POST** /v1/customer/reservations/{reservation_id}/cancel | 客户取消 held 预订
 [*CustomerApi*](doc/CustomerApi.md) | [**createCustomerSession**](doc/CustomerApi.md#createcustomersession) | **POST** /v1/public/customer/sessions | 客户验证码登录
+[*CustomerApi*](doc/CustomerApi.md) | [**createCustomerWechatBinding**](doc/CustomerApi.md#createcustomerwechatbinding) | **POST** /v1/public/customer/wechat-bindings | 短信验证并绑定微信身份
+[*CustomerApi*](doc/CustomerApi.md) | [**createCustomerWechatSession**](doc/CustomerApi.md#createcustomerwechatsession) | **POST** /v1/public/customer/wechat-sessions | 微信 wx.login 静默登录
 [*CustomerApi*](doc/CustomerApi.md) | [**deleteCustomerSession**](doc/CustomerApi.md#deletecustomersession) | **DELETE** /v1/customer/sessions/current | 客户退出当前会话
+[*CustomerApi*](doc/CustomerApi.md) | [**deleteCustomerWechatBinding**](doc/CustomerApi.md#deletecustomerwechatbinding) | **DELETE** /v1/customer/wechat-bindings/current | 解绑当前客户的微信身份
 [*CustomerApi*](doc/CustomerApi.md) | [**getCustomerReservation**](doc/CustomerApi.md#getcustomerreservation) | **GET** /v1/customer/reservations/{reservation_id} | 获取客户预订详情
 [*CustomerApi*](doc/CustomerApi.md) | [**listCustomerReservations**](doc/CustomerApi.md#listcustomerreservations) | **GET** /v1/customer/reservations | 列出当前客户预订
 [*CustomerApi*](doc/CustomerApi.md) | [**sendCustomerVerificationCode**](doc/CustomerApi.md#sendcustomerverificationcode) | **POST** /v1/public/customer/verification-codes | 客户侧发送登录验证码
@@ -380,6 +383,8 @@ Class | Method | HTTP request | Description
  - [CreateCrmHandoverRequest](doc/CreateCrmHandoverRequest.md)
  - [CreateCrmReservationRequest](doc/CreateCrmReservationRequest.md)
  - [CreateCustomerSessionRequest](doc/CreateCustomerSessionRequest.md)
+ - [CreateCustomerWechatBindingRequest](doc/CreateCustomerWechatBindingRequest.md)
+ - [CreateCustomerWechatSessionRequest](doc/CreateCustomerWechatSessionRequest.md)
  - [CreateDocumentTemplateRequest](doc/CreateDocumentTemplateRequest.md)
  - [CreateGeneticProfileRequest](doc/CreateGeneticProfileRequest.md)
  - [CreateMiniprogramReleaseRequest](doc/CreateMiniprogramReleaseRequest.md)
@@ -407,6 +412,8 @@ Class | Method | HTTP request | Description
  - [CustomerSessionResponseData](doc/CustomerSessionResponseData.md)
  - [CustomerVerificationCodeResponse](doc/CustomerVerificationCodeResponse.md)
  - [CustomerVerificationCodeResponseData](doc/CustomerVerificationCodeResponseData.md)
+ - [CustomerWechatBindTicketResponse](doc/CustomerWechatBindTicketResponse.md)
+ - [CustomerWechatBindTicketResponseData](doc/CustomerWechatBindTicketResponseData.md)
  - [DamCondition](doc/DamCondition.md)
  - [DataCenterSummaryResponse](doc/DataCenterSummaryResponse.md)
  - [DataCenterSummaryResponseData](doc/DataCenterSummaryResponseData.md)

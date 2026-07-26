@@ -80,6 +80,8 @@ doc/CreateCrmContactRequest.md
 doc/CreateCrmHandoverRequest.md
 doc/CreateCrmReservationRequest.md
 doc/CreateCustomerSessionRequest.md
+doc/CreateCustomerWechatBindingRequest.md
+doc/CreateCustomerWechatSessionRequest.md
 doc/CreateDocumentTemplateRequest.md
 doc/CreateGeneticProfileRequest.md
 doc/CreateMiniprogramReleaseRequest.md
@@ -108,6 +110,8 @@ doc/CustomerSessionResponse.md
 doc/CustomerSessionResponseData.md
 doc/CustomerVerificationCodeResponse.md
 doc/CustomerVerificationCodeResponseData.md
+doc/CustomerWechatBindTicketResponse.md
+doc/CustomerWechatBindTicketResponseData.md
 doc/DamCondition.md
 doc/DataCenterSummaryResponse.md
 doc/DataCenterSummaryResponseData.md
@@ -509,6 +513,8 @@ lib/src/model/create_crm_contact_request.dart
 lib/src/model/create_crm_handover_request.dart
 lib/src/model/create_crm_reservation_request.dart
 lib/src/model/create_customer_session_request.dart
+lib/src/model/create_customer_wechat_binding_request.dart
+lib/src/model/create_customer_wechat_session_request.dart
 lib/src/model/create_document_template_request.dart
 lib/src/model/create_genetic_profile_request.dart
 lib/src/model/create_miniprogram_release_request.dart
@@ -536,6 +542,8 @@ lib/src/model/customer_session_response.dart
 lib/src/model/customer_session_response_data.dart
 lib/src/model/customer_verification_code_response.dart
 lib/src/model/customer_verification_code_response_data.dart
+lib/src/model/customer_wechat_bind_ticket_response.dart
+lib/src/model/customer_wechat_bind_ticket_response_data.dart
 lib/src/model/dam_condition.dart
 lib/src/model/data_center_summary_response.dart
 lib/src/model/data_center_summary_response_data.dart
@@ -913,6 +921,8 @@ test/create_crm_contact_request_test.dart
 test/create_crm_handover_request_test.dart
 test/create_crm_reservation_request_test.dart
 test/create_customer_session_request_test.dart
+test/create_customer_wechat_binding_request_test.dart
+test/create_customer_wechat_session_request_test.dart
 test/create_document_template_request_test.dart
 test/create_genetic_profile_request_test.dart
 test/create_miniprogram_release_request_test.dart
@@ -941,6 +951,8 @@ test/customer_session_response_data_test.dart
 test/customer_session_response_test.dart
 test/customer_verification_code_response_data_test.dart
 test/customer_verification_code_response_test.dart
+test/customer_wechat_bind_ticket_response_data_test.dart
+test/customer_wechat_bind_ticket_response_test.dart
 test/dam_condition_test.dart
 test/data_center_summary_response_data_test.dart
 test/data_center_summary_response_test.dart

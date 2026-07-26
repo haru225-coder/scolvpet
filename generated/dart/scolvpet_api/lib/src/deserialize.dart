@@ -72,6 +72,8 @@ import 'package:scolvpet_api/src/model/create_crm_contact_request.dart';
 import 'package:scolvpet_api/src/model/create_crm_handover_request.dart';
 import 'package:scolvpet_api/src/model/create_crm_reservation_request.dart';
 import 'package:scolvpet_api/src/model/create_customer_session_request.dart';
+import 'package:scolvpet_api/src/model/create_customer_wechat_binding_request.dart';
+import 'package:scolvpet_api/src/model/create_customer_wechat_session_request.dart';
 import 'package:scolvpet_api/src/model/create_document_template_request.dart';
 import 'package:scolvpet_api/src/model/create_genetic_profile_request.dart';
 import 'package:scolvpet_api/src/model/create_miniprogram_release_request.dart';
@@ -99,6 +101,8 @@ import 'package:scolvpet_api/src/model/customer_session_response.dart';
 import 'package:scolvpet_api/src/model/customer_session_response_data.dart';
 import 'package:scolvpet_api/src/model/customer_verification_code_response.dart';
 import 'package:scolvpet_api/src/model/customer_verification_code_response_data.dart';
+import 'package:scolvpet_api/src/model/customer_wechat_bind_ticket_response.dart';
+import 'package:scolvpet_api/src/model/customer_wechat_bind_ticket_response_data.dart';
 import 'package:scolvpet_api/src/model/dam_condition.dart';
 import 'package:scolvpet_api/src/model/data_center_summary_response.dart';
 import 'package:scolvpet_api/src/model/data_center_summary_response_data.dart';
@@ -554,6 +558,10 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return CreateCrmReservationRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateCustomerSessionRequest':
           return CreateCustomerSessionRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateCustomerWechatBindingRequest':
+          return CreateCustomerWechatBindingRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateCustomerWechatSessionRequest':
+          return CreateCustomerWechatSessionRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateDocumentTemplateRequest':
           return CreateDocumentTemplateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateGeneticProfileRequest':
@@ -608,6 +616,10 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return CustomerVerificationCodeResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CustomerVerificationCodeResponseData':
           return CustomerVerificationCodeResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CustomerWechatBindTicketResponse':
+          return CustomerWechatBindTicketResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CustomerWechatBindTicketResponseData':
+          return CustomerWechatBindTicketResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'DamCondition':
           return DamCondition.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'DataCenterSummaryResponse':
