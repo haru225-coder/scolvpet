@@ -119,6 +119,9 @@ type i2WeightCreateRequest struct {
 	Source          string     `json:"source"`
 	DeviceReadingID *string    `json:"device_reading_id"`
 	Notes           *string    `json:"notes"`
+	// Correction chain: a new record supersedes an earlier one without deleting it.
+	CorrectsWeightRecordID *uuid.UUID `json:"corrects_weight_record_id"`
+	CorrectionReason       *string    `json:"correction_reason"`
 }
 
 type i2WeightBatchItemRequest struct {
@@ -203,10 +206,26 @@ func (request i2WeightCreateRequest) coreInput() (i2core.CreateWeightInput, erro
 	if subjects != 1 || request.Notes != nil && len(*request.Notes) > 1000 {
 		return i2core.CreateWeightInput{}, i2core.ErrInvalidWeight
 	}
+	// A correction must say why: the audit chain is worthless without a reason.
+	var correctionReason *string
+	if request.CorrectsWeightRecordID != nil {
+		if *request.CorrectsWeightRecordID == uuid.Nil {
+			return i2core.CreateWeightInput{}, validationError("corrects_weight_record_id", "被纠错的体重记录 ID 无效")
+		}
+		reason := ""
+		if request.CorrectionReason != nil {
+			reason = strings.TrimSpace(*request.CorrectionReason)
+		}
+		if reason == "" || len(reason) > 500 {
+			return i2core.CreateWeightInput{}, validationError("correction_reason", "纠错时必须填写 1-500 字的纠错原因")
+		}
+		correctionReason = &reason
+	}
 	return i2core.CreateWeightInput{
 		SubjectType: subjectType, HamsterID: request.HamsterID, PupIdentityID: request.PupIdentityID, LitterID: request.LitterID,
 		MeasurementKind: measurementKind, SubjectCount: request.SubjectCount, WeightG: request.WeightG,
 		RecordedAt: recordedAt, Source: source, AcquisitionKey: request.DeviceReadingID,
+		CorrectsWeightRecordID: request.CorrectsWeightRecordID, CorrectionReason: correctionReason,
 	}, nil
 }
 

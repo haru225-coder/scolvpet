@@ -504,6 +504,87 @@ func completeCareTaskTx(ctx context.Context, tx pgx.Tx, ownerID, taskID uuid.UUI
 	return CompleteTaskResult{Task: updated, ItemResults: items, AutoClosed: allDone}, nil
 }
 
+// careTaskReturning mirrors the column order scanCareTask expects, so an UPDATE
+// can hand back the full task without a second round trip.
+const careTaskReturning = `
+	RETURNING id, owner_id, organization_id, task_type, target_type, target_id,
+		title, description, scheduled_at, priority, status,
+		COALESCE((SELECT jsonb_agg(s.subject_id ORDER BY s.created_at) FROM care_task_subject s WHERE s.owner_id=care_task.owner_id AND s.care_task_id=care_task.id), '[]'::jsonb),
+		COALESCE((SELECT jsonb_agg(s.subject_id ORDER BY s.created_at) FROM care_task_subject s WHERE s.owner_id=care_task.owner_id AND s.care_task_id=care_task.id AND s.completed_at IS NOT NULL), '[]'::jsonb),
+		stage_total, stage_done, source_event_id, completed_at, version, created_at, updated_at`
+
+func cancelCareTaskTx(ctx context.Context, tx pgx.Tx, ownerID, taskID uuid.UUID, input CancelTaskInput, key string) (CareTask, error) {
+	task, err := scanCareTask(tx.QueryRow(ctx, careTaskSelect+` WHERE t.owner_id=$1 AND t.id=$2 FOR UPDATE`, ownerID, taskID))
+	if err != nil {
+		return CareTask{}, err
+	}
+	if task.Version != input.ExpectedVersion {
+		return CareTask{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, task.Version)
+	}
+	if !CanCancelTask(task.State) {
+		return CareTask{}, fmt.Errorf("%w: task in state %s cannot be cancelled", ErrValidation, task.State)
+	}
+	reason := strings.TrimSpace(input.Reason)
+	updated, err := scanCareTask(tx.QueryRow(ctx, `
+		UPDATE care_task
+		SET status='cancelled', cancelled_at=now(), cancellation_reason=$4,
+			version=version+1, updated_by=$1, updated_at=now()
+		WHERE owner_id=$1 AND id=$2 AND version=$3
+	`+careTaskReturning, ownerID, taskID, input.ExpectedVersion, reason))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return CareTask{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, task.Version)
+		}
+		return CareTask{}, mapPostgresError(err)
+	}
+	if err := appendEventTx(ctx, tx, ownerID, updated.OrganizationID, "care_task", taskID, "CARE_TASK_CANCELLED",
+		map[string]any{"reason": reason, "from_state": task.State}, key); err != nil {
+		return CareTask{}, err
+	}
+	return updated, nil
+}
+
+func reopenCareTaskTx(ctx context.Context, tx pgx.Tx, ownerID, taskID uuid.UUID, input ReopenTaskInput, key string) (CareTask, error) {
+	task, err := scanCareTask(tx.QueryRow(ctx, careTaskSelect+` WHERE t.owner_id=$1 AND t.id=$2 FOR UPDATE`, ownerID, taskID))
+	if err != nil {
+		return CareTask{}, err
+	}
+	if task.Version != input.ExpectedVersion {
+		return CareTask{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, task.Version)
+	}
+	if !CanReopenTask(task.State) {
+		return CareTask{}, fmt.Errorf("%w: only a completed or cancelled task can be reopened", ErrValidation)
+	}
+	// Subject-level completion has to go too, otherwise the task reads as pending
+	// while every subject still claims to be done.
+	if _, err := tx.Exec(ctx, `
+		UPDATE care_task_subject
+		SET completed_at=NULL, completed_by=NULL, completion_record_refs='[]'::jsonb,
+			exception_reason=NULL, version=version+1, updated_at=now()
+		WHERE owner_id=$1 AND care_task_id=$2 AND completed_at IS NOT NULL
+	`, ownerID, taskID); err != nil {
+		return CareTask{}, mapPostgresError(err)
+	}
+	reason := strings.TrimSpace(input.Reason)
+	updated, err := scanCareTask(tx.QueryRow(ctx, `
+		UPDATE care_task
+		SET status='pending', completed_at=NULL, cancelled_at=NULL, cancellation_reason=NULL,
+			version=version+1, updated_by=$1, updated_at=now()
+		WHERE owner_id=$1 AND id=$2 AND version=$3
+	`+careTaskReturning, ownerID, taskID, input.ExpectedVersion))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return CareTask{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, task.Version)
+		}
+		return CareTask{}, mapPostgresError(err)
+	}
+	if err := appendEventTx(ctx, tx, ownerID, updated.OrganizationID, "care_task", taskID, "CARE_TASK_REOPENED",
+		map[string]any{"reason": reason, "from_state": task.State}, key); err != nil {
+		return CareTask{}, err
+	}
+	return updated, nil
+}
+
 func organizationIDTx(ctx context.Context, tx pgx.Tx, ownerID uuid.UUID) (uuid.UUID, error) {
 	var organizationID uuid.UUID
 	err := tx.QueryRow(ctx, `SELECT id FROM organization WHERE owner_id=$1 AND deleted_at IS NULL ORDER BY created_at LIMIT 1`, ownerID).Scan(&organizationID)

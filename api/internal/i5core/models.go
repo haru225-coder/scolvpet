@@ -121,6 +121,35 @@ type CompleteTaskInput struct {
 	Notes           *string
 }
 
+// CanCancelTask reports whether a task in the given state may be cancelled.
+// A finished task must be reopened first — cancelling it outright would
+// silently drop completion evidence that is already recorded.
+func CanCancelTask(state string) bool {
+	return state == "pending" || state == "in_progress" || state == "snoozed"
+}
+
+// CanReopenTask reports whether a task may be returned to pending. Only an end
+// state can be undone; reopening a pending task would be a no-op that still
+// bumps the version and confuses concurrent clients.
+func CanReopenTask(state string) bool {
+	return state == "completed" || state == "cancelled"
+}
+
+// CancelTaskInput ends a task that will never be carried out. The reason is
+// mandatory: a cancelled task with no explanation is indistinguishable from
+// data loss when read back later.
+type CancelTaskInput struct {
+	ExpectedVersion int
+	Reason          string
+}
+
+// ReopenTaskInput undoes a completion or a cancellation, returning the task to
+// pending so the operator can redo it. Subject-level completion is cleared too.
+type ReopenTaskInput struct {
+	ExpectedVersion int
+	Reason          string
+}
+
 type CompletedTaskItem struct {
 	SubjectID          uuid.UUID  `json:"subject_id"`
 	Status             string     `json:"status"`

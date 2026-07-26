@@ -493,6 +493,7 @@ func i2WeightRecordJSON(record i2core.WeightRecord) any {
 		"source": record.Source, "birth_weight_g": record.BirthWeightG, "previous_weight_g": record.PreviousWeightG,
 		"change_from_previous_g": record.ChangeFromPreviousG, "change_from_birth_g": record.ChangeFromBirthG,
 		"alert_flags": alerts, "notes": nil, "created_at": record.CreatedAt,
+		"corrects_weight_record_id": record.CorrectsWeightRecordID, "correction_reason": record.CorrectionReason,
 	}
 }
 

@@ -23,6 +23,8 @@ func (s *Server) registerI5Routes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/tasks", s.createI5Task)
 	mux.HandleFunc("GET /v1/tasks/{task_id}", s.getI5Task)
 	mux.HandleFunc("POST /v1/tasks/{task_id}/complete", s.completeI5Task)
+	mux.HandleFunc("POST /v1/tasks/{task_id}/cancel", s.cancelI5Task)
+	mux.HandleFunc("POST /v1/tasks/{task_id}/reopen", s.reopenI5Task)
 
 	mux.HandleFunc("GET /v1/reminders", s.listI5Reminders)
 	mux.HandleFunc("GET /v1/reminders/{reminder_id}", s.getI5Reminder)
@@ -271,6 +273,65 @@ func (s *Server) completeI5Task(w http.ResponseWriter, r *http.Request) {
 	}
 	writeI5Stored(w, r, http.StatusOK, envelope(r, completeTaskJSON(result.Value)), result.Replayed,
 		store.FormatETag(result.Value.Task.Version), "")
+}
+
+// i5TaskCorrectionRequest carries the mandatory reason for cancelling a task or
+// undoing its completion.
+type i5TaskCorrectionRequest struct {
+	Reason string `json:"reason"`
+}
+
+func (s *Server) cancelI5Task(w http.ResponseWriter, r *http.Request) {
+	s.correctI5Task(w, r, func(ownerID, taskID uuid.UUID, options i5core.WriteOptions, version int, reason string) (i5core.WriteResult[i5core.CareTask], error) {
+		return s.i5CoreService().CancelTask(r.Context(), ownerID, taskID, options, i5core.CancelTaskInput{
+			ExpectedVersion: version, Reason: reason,
+		})
+	})
+}
+
+func (s *Server) reopenI5Task(w http.ResponseWriter, r *http.Request) {
+	s.correctI5Task(w, r, func(ownerID, taskID uuid.UUID, options i5core.WriteOptions, version int, reason string) (i5core.WriteResult[i5core.CareTask], error) {
+		return s.i5CoreService().ReopenTask(r.Context(), ownerID, taskID, options, i5core.ReopenTaskInput{
+			ExpectedVersion: version, Reason: reason,
+		})
+	})
+}
+
+func (s *Server) correctI5Task(w http.ResponseWriter, r *http.Request,
+	apply func(ownerID, taskID uuid.UUID, options i5core.WriteOptions, version int, reason string) (i5core.WriteResult[i5core.CareTask], error),
+) {
+	ownerID, ok := s.authenticateI5(w, r)
+	if !ok {
+		return
+	}
+	taskID, err := uuid.Parse(r.PathValue("task_id"))
+	if err != nil || taskID == uuid.Nil {
+		writeI5Error(w, r, i5core.ErrNotFound)
+		return
+	}
+	expectedVersion, err := parseI2IfMatch(r)
+	if err != nil {
+		writeI5Error(w, r, err)
+		return
+	}
+	var request i5TaskCorrectionRequest
+	payload, err := decodeI2Body(r, &request)
+	if err != nil {
+		writeI5Error(w, r, validationError("body", "任务纠错请求体格式不正确"))
+		return
+	}
+	reason := strings.TrimSpace(request.Reason)
+	if reason == "" || len(reason) > 500 {
+		writeI5Error(w, r, validationError("reason", "必须填写 1-500 字的原因"))
+		return
+	}
+	result, err := apply(ownerID, taskID, i5WriteOptions(r, payload), expectedVersion, reason)
+	if err != nil {
+		writeI5Error(w, r, err)
+		return
+	}
+	writeI5Stored(w, r, http.StatusOK, envelope(r, careTaskJSONValue(result.Value)), result.Replayed,
+		store.FormatETag(result.Value.Version), "")
 }
 
 func (s *Server) listI5Reminders(w http.ResponseWriter, r *http.Request) {

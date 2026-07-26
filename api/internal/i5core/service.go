@@ -108,6 +108,43 @@ func (s *Service) CompleteTask(ctx context.Context, ownerID, taskID uuid.UUID, o
 	return WriteResult[CompleteTaskResult]{Value: completed, Replayed: result.Replayed}, nil
 }
 
+func (s *Service) CancelTask(ctx context.Context, ownerID, taskID uuid.UUID, options WriteOptions, input CancelTaskInput) (WriteResult[CareTask], error) {
+	if strings.TrimSpace(input.Reason) == "" || len(input.Reason) > 500 || input.ExpectedVersion <= 0 {
+		return WriteResult[CareTask]{}, fmt.Errorf("%w: cancellation reason is required", ErrValidation)
+	}
+	return s.writeTask(ctx, ownerID, options, input, func(ctx context.Context, tx pgx.Tx) (any, error) {
+		return cancelCareTaskTx(ctx, tx, ownerID, taskID, input, options.IdempotencyKey)
+	})
+}
+
+func (s *Service) ReopenTask(ctx context.Context, ownerID, taskID uuid.UUID, options WriteOptions, input ReopenTaskInput) (WriteResult[CareTask], error) {
+	if strings.TrimSpace(input.Reason) == "" || len(input.Reason) > 500 || input.ExpectedVersion <= 0 {
+		return WriteResult[CareTask]{}, fmt.Errorf("%w: reopen reason is required", ErrValidation)
+	}
+	return s.writeTask(ctx, ownerID, options, input, func(ctx context.Context, tx pgx.Tx) (any, error) {
+		return reopenCareTaskTx(ctx, tx, ownerID, taskID, input, options.IdempotencyKey)
+	})
+}
+
+func (s *Service) writeTask(ctx context.Context, ownerID uuid.UUID, options WriteOptions, input any, action func(context.Context, pgx.Tx) (any, error)) (WriteResult[CareTask], error) {
+	payload := options.RequestPayload
+	if len(payload) == 0 {
+		payload, _ = json.Marshal(input)
+	}
+	result, err := s.repository.execute(ctx, command{
+		OwnerID: ownerID, IdempotencyKey: options.IdempotencyKey, Method: options.RequestMethod,
+		Path: options.RequestPath, Payload: payload, SuccessStatus: 200,
+	}, action)
+	if err != nil {
+		return WriteResult[CareTask]{}, err
+	}
+	var task CareTask
+	if err := json.Unmarshal(result.Body, &task); err != nil {
+		return WriteResult[CareTask]{}, err
+	}
+	return WriteResult[CareTask]{Value: task, Replayed: result.Replayed}, nil
+}
+
 func (s *Service) ListReminders(ctx context.Context, ownerID uuid.UUID, filter ReminderFilter) ([]Reminder, error) {
 	filter.Page = normalizePage(filter.Page)
 	return s.repository.listReminders(ctx, ownerID, filter)

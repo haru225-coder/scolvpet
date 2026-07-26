@@ -2839,6 +2839,92 @@ paths:
         '422':
           $ref: '#/components/responses/ValidationError'
 
+  /tasks/{task_id}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    post:
+      tags: [任务提醒]
+      operationId: cancelTask
+      summary: 取消任务
+      description: |
+        取消一个不会再执行的任务，必须填写原因。已完成或已取消的任务不能直接取消，
+        需先调用 reopen 撤销。原因写入 care_task.cancellation_reason 并记入
+        CARE_TASK_CANCELLED 领域事件，任务本身不物理删除。
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCorrectionRequest'
+            example:
+              reason: 该窝已转出，无需再称重
+      responses:
+        '200':
+          description: 任务已取消
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Idempotency-Key:
+              $ref: '#/components/headers/IdempotencyKey'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareTaskResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /tasks/{task_id}/reopen:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    post:
+      tags: [任务提醒]
+      operationId: reopenTask
+      summary: 撤销任务的完成或取消
+      description: |
+        把已完成或已取消的任务退回 pending，用于纠正误点完成/误取消，必须填写原因。
+        subject 级完成痕迹一并清除，否则任务显示待办而每个成员仍标记已完成。
+        原因记入 CARE_TASK_REOPENED 领域事件。
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCorrectionRequest'
+            example:
+              reason: 误点完成，实际尚未称重
+      responses:
+        '200':
+          description: 任务已退回待办
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Idempotency-Key:
+              $ref: '#/components/headers/IdempotencyKey'
+            Idempotency-Replayed:
+              $ref: '#/components/headers/IdempotencyReplayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareTaskResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
   /reminders:
     get:
       tags: [任务提醒]
@@ -10184,6 +10270,13 @@ components:
         notes:
           type: [string, 'null']
           maxLength: 1000
+        corrects_weight_record_id:
+          type: [string, 'null']
+          format: uuid
+          description: 若非空，本条记录是对该历史记录的纠错，原记录仍然保留。
+        correction_reason:
+          type: [string, 'null']
+          maxLength: 500
         created_at:
           type: string
           format: date-time
@@ -10257,6 +10350,16 @@ components:
         notes:
           type: [string, 'null']
           maxLength: 1000
+        corrects_weight_record_id:
+          type: [string, 'null']
+          format: uuid
+          description: |
+            纠错链：本条记录用于更正指定的历史体重记录。原记录不删除、不修改，
+            读取时可沿 corrects_weight_record_id 回溯完整审计链。
+        correction_reason:
+          type: [string, 'null']
+          maxLength: 500
+          description: 纠错原因。传了 corrects_weight_record_id 就必须填写，否则返回 422。
       oneOf:
         - required: [hamster_id]
           properties:
@@ -10681,6 +10784,17 @@ components:
           $ref: '#/components/schemas/PageInfo'
         meta:
           $ref: '#/components/schemas/ResponseMeta'
+      additionalProperties: false
+
+    TaskCorrectionRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: 取消或撤销的原因，必填。留空返回 422。
       additionalProperties: false
 
     CompleteTaskRequest:
