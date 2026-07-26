@@ -6,6 +6,7 @@ import 'core/app_config.dart';
 import 'core/app_services.dart';
 import 'core/app_state.dart';
 import 'core/session_store.dart';
+import 'core/token_refresh.dart';
 import 'data/i1_repository.dart';
 import 'data/i2_repository.dart';
 import 'features/breeding/breeding.dart';
@@ -42,22 +43,12 @@ Future<void> main() async {
     client: apiClient,
     sessionStore: sessionStore,
   );
-  // Single-flight 401 refresh shared by both Dio clients.
-  apiClient.setTokenRefresher(() async {
-    final refresh = await sessionStore.readRefreshToken();
-    if (refresh == null || refresh.isEmpty) return false;
-    try {
-      await repository.refresh(refresh);
-      return true;
-    } on Object {
-      try {
-        await sessionStore.clear();
-      } on Object {
-        // ignore storage failures during forced logout
-      }
-      return false;
-    }
-  });
+  apiClient.setTokenRefresher(
+    buildTokenRefresher(
+      sessionStore: sessionStore,
+      refresh: repository.refresh,
+    ),
+  );
   final state = AppState(repository: repository, sessionStore: sessionStore);
   SharedPreferences? preferences;
   try {
