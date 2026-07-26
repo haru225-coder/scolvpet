@@ -82,6 +82,11 @@ func main() {
 	// replaces it with the configured local or S3-compatible implementation.
 	apiServer.ImportObjects = importObjects
 	apiServer.Environment = config.Environment
+	apiServer.Ready = &httpapi.ReadyChecks{
+		SMSProvider:    config.SMSProvider,
+		SMSMockCodeSet: config.SMSMockCode != "",
+		WechatProvider: config.WechatProvider,
+	}
 	switch config.WechatProvider {
 	case "mock":
 		apiServer.Wechat = wechat.MockProvider{}

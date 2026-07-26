@@ -34,6 +34,18 @@ type Server struct {
 	// Environment is APP_ENV (development|test|staging|production).
 	// Sandbox entitlement routes are only registered outside production.
 	Environment string
+	// Ready surfaces deploy-relevant config facts on /readyz so the
+	// production smoke can assert the runtime wiring (docs/30 P1-2).
+	// Nil keeps the legacy {"status":"ready"} shape for unit tests.
+	Ready *ReadyChecks
+}
+
+// ReadyChecks is the /readyz "checks" payload; values come from the process
+// runtime config, not from re-reading the environment.
+type ReadyChecks struct {
+	SMSProvider    string `json:"sms_provider"`
+	SMSMockCodeSet bool   `json:"sms_mock_code_set"`
+	WechatProvider string `json:"wechat_provider"`
 }
 
 type deviceInfo struct {
@@ -135,7 +147,18 @@ func (s *Server) ready(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, r, http.StatusServiceUnavailable, map[string]any{"status": "not_ready", "error": "database unavailable"})
 		return
 	}
-	writeJSON(w, r, http.StatusOK, map[string]any{"status": "ready"})
+	writeJSON(w, r, http.StatusOK, s.readyBody())
+}
+
+func (s *Server) readyBody() map[string]any {
+	body := map[string]any{"status": "ready"}
+	if env := strings.TrimSpace(s.Environment); env != "" {
+		body["environment"] = env
+	}
+	if s.Ready != nil {
+		body["checks"] = s.Ready
+	}
+	return body
 }
 
 func (s *Server) sendVerificationCode(w http.ResponseWriter, r *http.Request) {
