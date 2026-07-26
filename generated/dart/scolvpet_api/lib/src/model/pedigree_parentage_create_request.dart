@@ -33,6 +33,8 @@ class PedigreeParentageCreateRequest {
     required  this.validFrom,
 
      this.notes,
+
+     this.correctionReason,
   });
 
   @JsonKey(
@@ -121,6 +123,19 @@ class PedigreeParentageCreateRequest {
 
 
 
+      /// 当 child+role 已有有效父母边时必填，用于 supersede 旧边并写入审计
+  @JsonKey(
+
+    name: r'correction_reason',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? correctionReason;
+
+
+
 
 
     @override
@@ -131,7 +146,8 @@ class PedigreeParentageCreateRequest {
       other.evidenceType == evidenceType &&
       other.confidence == confidence &&
       other.validFrom == validFrom &&
-      other.notes == notes;
+      other.notes == notes &&
+      other.correctionReason == correctionReason;
 
     @override
     int get hashCode =>
@@ -141,7 +157,8 @@ class PedigreeParentageCreateRequest {
         evidenceType.hashCode +
         confidence.hashCode +
         validFrom.hashCode +
-        (notes == null ? 0 : notes.hashCode);
+        (notes == null ? 0 : notes.hashCode) +
+        (correctionReason == null ? 0 : correctionReason.hashCode);
 
   factory PedigreeParentageCreateRequest.fromJson(Map<String, dynamic> json) => _$PedigreeParentageCreateRequestFromJson(json);
 

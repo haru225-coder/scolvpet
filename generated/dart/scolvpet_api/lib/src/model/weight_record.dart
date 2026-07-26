@@ -51,6 +51,10 @@ class WeightRecord {
 
      this.notes,
 
+     this.correctsWeightRecordId,
+
+     this.correctionReason,
+
     required  this.createdAt,
   });
 
@@ -237,6 +241,31 @@ class WeightRecord {
 
 
 
+      /// 若非空，本条记录是对该历史记录的纠错，原记录仍然保留。
+  @JsonKey(
+
+    name: r'corrects_weight_record_id',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? correctsWeightRecordId;
+
+
+
+  @JsonKey(
+
+    name: r'correction_reason',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? correctionReason;
+
+
+
   @JsonKey(
 
     name: r'created_at',
@@ -268,6 +297,8 @@ class WeightRecord {
       other.changeFromBirthG == changeFromBirthG &&
       other.alertFlags == alertFlags &&
       other.notes == notes &&
+      other.correctsWeightRecordId == correctsWeightRecordId &&
+      other.correctionReason == correctionReason &&
       other.createdAt == createdAt;
 
     @override
@@ -287,6 +318,8 @@ class WeightRecord {
         (changeFromBirthG == null ? 0 : changeFromBirthG.hashCode) +
         alertFlags.hashCode +
         (notes == null ? 0 : notes.hashCode) +
+        (correctsWeightRecordId == null ? 0 : correctsWeightRecordId.hashCode) +
+        (correctionReason == null ? 0 : correctionReason.hashCode) +
         createdAt.hashCode;
 
   factory WeightRecord.fromJson(Map<String, dynamic> json) => _$WeightRecordFromJson(json);

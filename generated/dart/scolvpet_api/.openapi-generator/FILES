@@ -287,11 +287,13 @@ doc/PedigreeGraphResponseData.md
 doc/PedigreeGraphResponseDataCommonAncestorsInner.md
 doc/PedigreeParentage.md
 doc/PedigreeParentageCreateRequest.md
+doc/PedigreeParentageEndRequest.md
 doc/PedigreeParentageListResponse.md
 doc/PedigreeParentageResponse.md
 doc/PhenotypeTableOutcome.md
 doc/PhoneCodeLoginRequest.md
 doc/PlanCatalogEntry.md
+doc/PostPublicSiteSimulateRequest.md
 doc/PublicDocumentResponse.md
 doc/PublicDocumentResponseData.md
 doc/PublicDocumentsApi.md
@@ -380,6 +382,7 @@ doc/StudDealResponse.md
 doc/StudListing.md
 doc/StudListingListResponse.md
 doc/StudListingResponse.md
+doc/TaskCorrectionRequest.md
 doc/TaskPriority.md
 doc/TaskState.md
 doc/UpdateOrganizationMemberRequest.md
@@ -706,11 +709,13 @@ lib/src/model/pedigree_graph_response_data.dart
 lib/src/model/pedigree_graph_response_data_common_ancestors_inner.dart
 lib/src/model/pedigree_parentage.dart
 lib/src/model/pedigree_parentage_create_request.dart
+lib/src/model/pedigree_parentage_end_request.dart
 lib/src/model/pedigree_parentage_list_response.dart
 lib/src/model/pedigree_parentage_response.dart
 lib/src/model/phenotype_table_outcome.dart
 lib/src/model/phone_code_login_request.dart
 lib/src/model/plan_catalog_entry.dart
+lib/src/model/post_public_site_simulate_request.dart
 lib/src/model/public_document_response.dart
 lib/src/model/public_document_response_data.dart
 lib/src/model/public_growth_catalog.dart
@@ -797,6 +802,7 @@ lib/src/model/stud_deal_response.dart
 lib/src/model/stud_listing.dart
 lib/src/model/stud_listing_list_response.dart
 lib/src/model/stud_listing_response.dart
+lib/src/model/task_correction_request.dart
 lib/src/model/task_priority.dart
 lib/src/model/task_state.dart
 lib/src/model/update_organization_member_request.dart
@@ -1113,12 +1119,14 @@ test/pedigree_graph_response_data_common_ancestors_inner_test.dart
 test/pedigree_graph_response_data_test.dart
 test/pedigree_graph_response_test.dart
 test/pedigree_parentage_create_request_test.dart
+test/pedigree_parentage_end_request_test.dart
 test/pedigree_parentage_list_response_test.dart
 test/pedigree_parentage_response_test.dart
 test/pedigree_parentage_test.dart
 test/phenotype_table_outcome_test.dart
 test/phone_code_login_request_test.dart
 test/plan_catalog_entry_test.dart
+test/post_public_site_simulate_request_test.dart
 test/public_document_response_data_test.dart
 test/public_document_response_test.dart
 test/public_documents_api_test.dart
@@ -1207,6 +1215,7 @@ test/stud_deal_test.dart
 test/stud_listing_list_response_test.dart
 test/stud_listing_response_test.dart
 test/stud_listing_test.dart
+test/task_correction_request_test.dart
 test/task_priority_test.dart
 test/task_state_test.dart
 test/update_organization_member_request_test.dart

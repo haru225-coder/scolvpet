@@ -259,11 +259,13 @@ import 'package:scolvpet_api/src/model/pedigree_graph_response_data.dart';
 import 'package:scolvpet_api/src/model/pedigree_graph_response_data_common_ancestors_inner.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage_create_request.dart';
+import 'package:scolvpet_api/src/model/pedigree_parentage_end_request.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage_list_response.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage_response.dart';
 import 'package:scolvpet_api/src/model/phenotype_table_outcome.dart';
 import 'package:scolvpet_api/src/model/phone_code_login_request.dart';
 import 'package:scolvpet_api/src/model/plan_catalog_entry.dart';
+import 'package:scolvpet_api/src/model/post_public_site_simulate_request.dart';
 import 'package:scolvpet_api/src/model/public_document_response.dart';
 import 'package:scolvpet_api/src/model/public_document_response_data.dart';
 import 'package:scolvpet_api/src/model/public_growth_catalog.dart';
@@ -343,6 +345,7 @@ import 'package:scolvpet_api/src/model/stud_deal_response.dart';
 import 'package:scolvpet_api/src/model/stud_listing.dart';
 import 'package:scolvpet_api/src/model/stud_listing_list_response.dart';
 import 'package:scolvpet_api/src/model/stud_listing_response.dart';
+import 'package:scolvpet_api/src/model/task_correction_request.dart';
 import 'package:scolvpet_api/src/model/update_organization_member_request.dart';
 import 'package:scolvpet_api/src/model/upload_session.dart';
 import 'package:scolvpet_api/src/model/upsert_miniprogram_config_request.dart';
@@ -964,6 +967,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return PedigreeParentage.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PedigreeParentageCreateRequest':
           return PedigreeParentageCreateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PedigreeParentageEndRequest':
+          return PedigreeParentageEndRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PedigreeParentageListResponse':
           return PedigreeParentageListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PedigreeParentageResponse':
@@ -974,6 +979,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return PhoneCodeLoginRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PlanCatalogEntry':
           return PlanCatalogEntry.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'PostPublicSiteSimulateRequest':
+          return PostPublicSiteSimulateRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublicDocumentResponse':
           return PublicDocumentResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'PublicDocumentResponseData':
@@ -1153,6 +1160,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return StudListingListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'StudListingResponse':
           return StudListingResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'TaskCorrectionRequest':
+          return TaskCorrectionRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'TaskPriority':
 
 

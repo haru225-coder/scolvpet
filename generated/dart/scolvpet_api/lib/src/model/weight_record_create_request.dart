@@ -40,6 +40,10 @@ class WeightRecordCreateRequest {
      this.deviceReadingId,
 
      this.notes,
+
+     this.correctsWeightRecordId,
+
+     this.correctionReason,
   });
 
   @JsonKey(
@@ -165,6 +169,32 @@ class WeightRecordCreateRequest {
 
 
 
+      /// 纠错链：本条记录用于更正指定的历史体重记录。原记录不删除、不修改， 读取时可沿 corrects_weight_record_id 回溯完整审计链。
+  @JsonKey(
+
+    name: r'corrects_weight_record_id',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? correctsWeightRecordId;
+
+
+
+      /// 纠错原因。传了 corrects_weight_record_id 就必须填写，否则返回 422。
+  @JsonKey(
+
+    name: r'correction_reason',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? correctionReason;
+
+
+
 
 
     @override
@@ -178,7 +208,9 @@ class WeightRecordCreateRequest {
       other.recordedAt == recordedAt &&
       other.source_ == source_ &&
       other.deviceReadingId == deviceReadingId &&
-      other.notes == notes;
+      other.notes == notes &&
+      other.correctsWeightRecordId == correctsWeightRecordId &&
+      other.correctionReason == correctionReason;
 
     @override
     int get hashCode =>
@@ -191,7 +223,9 @@ class WeightRecordCreateRequest {
         recordedAt.hashCode +
         source_.hashCode +
         (deviceReadingId == null ? 0 : deviceReadingId.hashCode) +
-        (notes == null ? 0 : notes.hashCode);
+        (notes == null ? 0 : notes.hashCode) +
+        (correctsWeightRecordId == null ? 0 : correctsWeightRecordId.hashCode) +
+        (correctionReason == null ? 0 : correctionReason.hashCode);
 
   factory WeightRecordCreateRequest.fromJson(Map<String, dynamic> json) => _$WeightRecordCreateRequestFromJson(json);
 

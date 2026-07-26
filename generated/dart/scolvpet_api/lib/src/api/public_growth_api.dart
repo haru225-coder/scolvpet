@@ -11,6 +11,7 @@ import 'package:dio/dio.dart';
 
 import 'dart:typed_data';
 import 'package:scolvpet_api/src/model/error_response.dart';
+import 'package:scolvpet_api/src/model/post_public_site_simulate_request.dart';
 import 'package:scolvpet_api/src/model/public_growth_catalog_response.dart';
 import 'package:scolvpet_api/src/model/public_growth_consult_request.dart';
 import 'package:scolvpet_api/src/model/public_growth_consult_response.dart';
@@ -468,6 +469,130 @@ _responseData = rawData == null ? null : rawData as Uint8List;
       statusMessage: _response.statusMessage,
       extra: _response.extra,
     );
+  }
+
+  /// 公开仓鼠血统（仅已发布档案名称）
+  ///
+  ///
+  /// Parameters:
+  /// * [slug]
+  /// * [hamsterId]
+  /// * [generations]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future]
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<void>> getPublicSiteHamsterPedigree({
+    required String slug,
+    required String hamsterId,
+    int? generations = 3,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/public/sites/{slug}/hamsters/{hamster_id}/pedigree'.replaceAll('{' r'slug' '}', slug.toString()).replaceAll('{' r'hamster_id' '}', hamsterId.toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (generations != null) r'generations': generations,
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    return _response;
+  }
+
+  /// 公开繁育模拟（权威表型表）
+  /// 可对已发布仓鼠配对做只读表型推算；也可直接传 series + 父母表型。
+  ///
+  /// Parameters:
+  /// * [slug]
+  /// * [postPublicSiteSimulateRequest]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future]
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<void>> postPublicSiteSimulate({
+    required String slug,
+    required PostPublicSiteSimulateRequest postPublicSiteSimulateRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/public/sites/{slug}/simulate'.replaceAll('{' r'slug' '}', slug.toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = jsonEncode(postPublicSiteSimulateRequest);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    return _response;
   }
 
 }

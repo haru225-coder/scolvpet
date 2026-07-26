@@ -1,4 +1,4 @@
-# scolvpet_api.model.PedigreeParentageCreateRequest
+# scolvpet_api.model.PedigreeParentageEndRequest
 
 ## Load the model package
 ```dart
@@ -9,12 +9,7 @@ import 'package:scolvpet_api/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **childHamsterId** | **String** |  |
-**parentHamsterId** | **String** |  |
 **role** | **String** |  |
-**evidenceType** | **String** |  |
-**confidence** | **num** |  |
-**validFrom** | [**DateTime**](DateTime.md) |  |
-**notes** | **String** |  | [optional]
-**correctionReason** | **String** | 当 child+role 已有有效父母边时必填，用于 supersede 旧边并写入审计 | [optional]
+**correctionReason** | **String** |  |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

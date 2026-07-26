@@ -103,6 +103,7 @@ import 'package:scolvpet_api/src/model/pairing_attempt_list_response.dart';
 import 'package:scolvpet_api/src/model/pairing_attempt_response.dart';
 import 'package:scolvpet_api/src/model/pedigree_graph_response.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage_create_request.dart';
+import 'package:scolvpet_api/src/model/pedigree_parentage_end_request.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage_list_response.dart';
 import 'package:scolvpet_api/src/model/pedigree_parentage_response.dart';
 import 'package:scolvpet_api/src/model/phone_code_login_request.dart';
@@ -141,6 +142,7 @@ import 'package:scolvpet_api/src/model/start_gestation_request.dart';
 import 'package:scolvpet_api/src/model/start_gestation_response.dart';
 import 'package:scolvpet_api/src/model/start_pairing_request.dart';
 import 'package:scolvpet_api/src/model/start_pairing_response.dart';
+import 'package:scolvpet_api/src/model/task_correction_request.dart';
 import 'package:scolvpet_api/src/model/task_priority.dart';
 import 'package:scolvpet_api/src/model/task_state.dart';
 import 'package:scolvpet_api/src/model/usage_response.dart';
@@ -454,6 +456,111 @@ _responseData = rawData == null ? null : deserialize<WeightRecordBatchCreateResp
     }
 
     return Response<WeightRecordBatchCreateResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 取消任务
+  /// 取消一个不会再执行的任务，必须填写原因。已完成或已取消的任务不能直接取消， 需先调用 reopen 撤销。原因写入 care_task.cancellation_reason 并记入 CARE_TASK_CANCELLED 领域事件，任务本身不物理删除。
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+  /// * [taskId]
+  /// * [taskCorrectionRequest]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CareTaskResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CareTaskResponse>> cancelTask({
+    required String idempotencyKey,
+    required String ifMatch,
+    required String taskId,
+    required TaskCorrectionRequest taskCorrectionRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/tasks/{task_id}/cancel'.replaceAll('{' r'task_id' '}', taskId.toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        r'If-Match': ifMatch,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = jsonEncode(taskCorrectionRequest);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CareTaskResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<CareTaskResponse, CareTaskResponse>(rawData, 'CareTaskResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CareTaskResponse>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -3069,6 +3176,106 @@ _responseData = rawData == null ? null : deserialize<WeightRecordResponse, Weigh
     );
 
     return _response;
+  }
+
+  /// 解除当前有效父母关系
+  /// 将 child+role 上当前 accepted 的 pedigree_parentage 标记为 superseded（valid_to&#x3D;now）， 保留审计链。必须提供 correction_reason。不物理删除。
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [pedigreeParentageEndRequest]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [PedigreeParentageResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<PedigreeParentageResponse>> endPedigreeParentage({
+    required String idempotencyKey,
+    required PedigreeParentageEndRequest pedigreeParentageEndRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/pedigree-parentages/end';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = jsonEncode(pedigreeParentageEndRequest);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    PedigreeParentageResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<PedigreeParentageResponse, PedigreeParentageResponse>(rawData, 'PedigreeParentageResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<PedigreeParentageResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// 获取通用异步作业
@@ -8579,6 +8786,111 @@ _responseData = rawData == null ? null : deserialize<SessionResponse, SessionRes
     }
 
     return Response<SessionResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 撤销任务的完成或取消
+  /// 把已完成或已取消的任务退回 pending，用于纠正误点完成/误取消，必须填写原因。 subject 级完成痕迹一并清除，否则任务显示待办而每个成员仍标记已完成。 原因记入 CARE_TASK_REOPENED 领域事件。
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [ifMatch] - 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+  /// * [taskId]
+  /// * [taskCorrectionRequest]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CareTaskResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CareTaskResponse>> reopenTask({
+    required String idempotencyKey,
+    required String ifMatch,
+    required String taskId,
+    required TaskCorrectionRequest taskCorrectionRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/tasks/{task_id}/reopen'.replaceAll('{' r'task_id' '}', taskId.toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        r'If-Match': ifMatch,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = jsonEncode(taskCorrectionRequest);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CareTaskResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<CareTaskResponse, CareTaskResponse>(rawData, 'CareTaskResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CareTaskResponse>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

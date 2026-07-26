@@ -14,6 +14,8 @@ Method | HTTP request | Description
 [**createPublicGrowthReservation**](PublicGrowthApi.md#createpublicgrowthreservation) | **POST** /v1/public/sites/{slug}/reservations | 客户提交公开仓鼠预订
 [**getPublicGrowthCatalog**](PublicGrowthApi.md#getpublicgrowthcatalog) | **GET** /v1/public/sites/{slug}/catalog | 查看公开熊舍获客目录
 [**getPublicGrowthMedia**](PublicGrowthApi.md#getpublicgrowthmedia) | **GET** /v1/public/sites/{slug}/media/{media_id} | 读取公开仓鼠封面图片
+[**getPublicSiteHamsterPedigree**](PublicGrowthApi.md#getpublicsitehamsterpedigree) | **GET** /v1/public/sites/{slug}/hamsters/{hamster_id}/pedigree | 公开仓鼠血统（仅已发布档案名称）
+[**postPublicSiteSimulate**](PublicGrowthApi.md#postpublicsitesimulate) | **POST** /v1/public/sites/{slug}/simulate | 公开繁育模拟（权威表型表）
 
 
 # **consultPublicGrowthAdvisor**
@@ -236,5 +238,93 @@ No authorization required
 
  - **Content-Type**: Not defined
  - **Accept**: image/*, application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getPublicSiteHamsterPedigree**
+> getPublicSiteHamsterPedigree(slug, hamsterId, generations)
+
+公开仓鼠血统（仅已发布档案名称）
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getPublicGrowthApi();
+final String slug = slug_example; // String |
+final String hamsterId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final int generations = 56; // int |
+
+try {
+    api.getPublicSiteHamsterPedigree(slug, hamsterId, generations);
+} on DioException catch (e) {
+    print('Exception when calling PublicGrowthApi->getPublicSiteHamsterPedigree: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **slug** | **String**|  |
+ **hamsterId** | **String**|  |
+ **generations** | **int**|  | [optional] [default to 3]
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **postPublicSiteSimulate**
+> postPublicSiteSimulate(slug, postPublicSiteSimulateRequest)
+
+公开繁育模拟（权威表型表）
+
+可对已发布仓鼠配对做只读表型推算；也可直接传 series + 父母表型。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getPublicGrowthApi();
+final String slug = slug_example; // String |
+final PostPublicSiteSimulateRequest postPublicSiteSimulateRequest = ; // PostPublicSiteSimulateRequest |
+
+try {
+    api.postPublicSiteSimulate(slug, postPublicSiteSimulateRequest);
+} on DioException catch (e) {
+    print('Exception when calling PublicGrowthApi->postPublicSiteSimulate: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **slug** | **String**|  |
+ **postPublicSiteSimulateRequest** | [**PostPublicSiteSimulateRequest**](PostPublicSiteSimulateRequest.md)|  |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

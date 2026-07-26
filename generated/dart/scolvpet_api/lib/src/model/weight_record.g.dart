@@ -39,6 +39,10 @@ abstract class _$WeightRecordCWProxy {
 
   WeightRecord notes(String? notes);
 
+  WeightRecord correctsWeightRecordId(String? correctsWeightRecordId);
+
+  WeightRecord correctionReason(String? correctionReason);
+
   WeightRecord createdAt(DateTime createdAt);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `WeightRecord(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
@@ -63,6 +67,8 @@ abstract class _$WeightRecordCWProxy {
     num? changeFromBirthG,
     List<WeightRecordAlertFlagsEnum> alertFlags,
     String? notes,
+    String? correctsWeightRecordId,
+    String? correctionReason,
     DateTime createdAt,
   });
 }
@@ -129,6 +135,14 @@ class _$WeightRecordCWProxyImpl implements _$WeightRecordCWProxy {
   WeightRecord notes(String? notes) => this(notes: notes);
 
   @override
+  WeightRecord correctsWeightRecordId(String? correctsWeightRecordId) =>
+      this(correctsWeightRecordId: correctsWeightRecordId);
+
+  @override
+  WeightRecord correctionReason(String? correctionReason) =>
+      this(correctionReason: correctionReason);
+
+  @override
   WeightRecord createdAt(DateTime createdAt) => this(createdAt: createdAt);
 
   @override
@@ -154,6 +168,8 @@ class _$WeightRecordCWProxyImpl implements _$WeightRecordCWProxy {
     Object? changeFromBirthG = const $CopyWithPlaceholder(),
     Object? alertFlags = const $CopyWithPlaceholder(),
     Object? notes = const $CopyWithPlaceholder(),
+    Object? correctsWeightRecordId = const $CopyWithPlaceholder(),
+    Object? correctionReason = const $CopyWithPlaceholder(),
     Object? createdAt = const $CopyWithPlaceholder(),
   }) {
     return WeightRecord(
@@ -217,6 +233,15 @@ class _$WeightRecordCWProxyImpl implements _$WeightRecordCWProxy {
           ? _value.notes
           // ignore: cast_nullable_to_non_nullable
           : notes as String?,
+      correctsWeightRecordId:
+          correctsWeightRecordId == const $CopyWithPlaceholder()
+          ? _value.correctsWeightRecordId
+          // ignore: cast_nullable_to_non_nullable
+          : correctsWeightRecordId as String?,
+      correctionReason: correctionReason == const $CopyWithPlaceholder()
+          ? _value.correctionReason
+          // ignore: cast_nullable_to_non_nullable
+          : correctionReason as String?,
       createdAt: createdAt == const $CopyWithPlaceholder()
           ? _value.createdAt
           // ignore: cast_nullable_to_non_nullable
@@ -291,6 +316,14 @@ WeightRecord _$WeightRecordFromJson(
             .toList(),
       ),
       notes: $checkedConvert('notes', (v) => v as String?),
+      correctsWeightRecordId: $checkedConvert(
+        'corrects_weight_record_id',
+        (v) => v as String?,
+      ),
+      correctionReason: $checkedConvert(
+        'correction_reason',
+        (v) => v as String?,
+      ),
       createdAt: $checkedConvert(
         'created_at',
         (v) => DateTime.parse(v as String),
@@ -312,6 +345,8 @@ WeightRecord _$WeightRecordFromJson(
     'changeFromPreviousG': 'change_from_previous_g',
     'changeFromBirthG': 'change_from_birth_g',
     'alertFlags': 'alert_flags',
+    'correctsWeightRecordId': 'corrects_weight_record_id',
+    'correctionReason': 'correction_reason',
     'createdAt': 'created_at',
   },
 );
@@ -336,6 +371,8 @@ Map<String, dynamic> _$WeightRecordToJson(WeightRecord instance) =>
           .map((e) => _$WeightRecordAlertFlagsEnumEnumMap[e]!)
           .toList(),
       'notes': ?instance.notes,
+      'corrects_weight_record_id': ?instance.correctsWeightRecordId,
+      'correction_reason': ?instance.correctionReason,
       'created_at': instance.createdAt.toIso8601String(),
     };
 

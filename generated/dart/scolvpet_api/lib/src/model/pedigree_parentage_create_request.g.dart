@@ -25,6 +25,8 @@ abstract class _$PedigreeParentageCreateRequestCWProxy {
 
   PedigreeParentageCreateRequest notes(String? notes);
 
+  PedigreeParentageCreateRequest correctionReason(String? correctionReason);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `PedigreeParentageCreateRequest(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -39,6 +41,7 @@ abstract class _$PedigreeParentageCreateRequestCWProxy {
     num confidence,
     DateTime validFrom,
     String? notes,
+    String? correctionReason,
   });
 }
 
@@ -79,6 +82,10 @@ class _$PedigreeParentageCreateRequestCWProxyImpl
   PedigreeParentageCreateRequest notes(String? notes) => this(notes: notes);
 
   @override
+  PedigreeParentageCreateRequest correctionReason(String? correctionReason) =>
+      this(correctionReason: correctionReason);
+
+  @override
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `PedigreeParentageCreateRequest(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -93,6 +100,7 @@ class _$PedigreeParentageCreateRequestCWProxyImpl
     Object? confidence = const $CopyWithPlaceholder(),
     Object? validFrom = const $CopyWithPlaceholder(),
     Object? notes = const $CopyWithPlaceholder(),
+    Object? correctionReason = const $CopyWithPlaceholder(),
   }) {
     return PedigreeParentageCreateRequest(
       childHamsterId: childHamsterId == const $CopyWithPlaceholder()
@@ -123,6 +131,10 @@ class _$PedigreeParentageCreateRequestCWProxyImpl
           ? _value.notes
           // ignore: cast_nullable_to_non_nullable
           : notes as String?,
+      correctionReason: correctionReason == const $CopyWithPlaceholder()
+          ? _value.correctionReason
+          // ignore: cast_nullable_to_non_nullable
+          : correctionReason as String?,
     );
   }
 }
@@ -176,6 +188,10 @@ PedigreeParentageCreateRequest _$PedigreeParentageCreateRequestFromJson(
         (v) => DateTime.parse(v as String),
       ),
       notes: $checkedConvert('notes', (v) => v as String?),
+      correctionReason: $checkedConvert(
+        'correction_reason',
+        (v) => v as String?,
+      ),
     );
     return val;
   },
@@ -184,6 +200,7 @@ PedigreeParentageCreateRequest _$PedigreeParentageCreateRequestFromJson(
     'parentHamsterId': 'parent_hamster_id',
     'evidenceType': 'evidence_type',
     'validFrom': 'valid_from',
+    'correctionReason': 'correction_reason',
   },
 );
 
@@ -199,6 +216,7 @@ Map<String, dynamic> _$PedigreeParentageCreateRequestToJson(
   'confidence': instance.confidence,
   'valid_from': instance.validFrom.toIso8601String(),
   'notes': ?instance.notes,
+  'correction_reason': ?instance.correctionReason,
 };
 
 const _$PedigreeParentageCreateRequestRoleEnumEnumMap = {

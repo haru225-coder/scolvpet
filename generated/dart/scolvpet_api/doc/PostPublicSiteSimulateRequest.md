@@ -1,0 +1,17 @@
+# scolvpet_api.model.PostPublicSiteSimulateRequest
+
+## Load the model package
+```dart
+import 'package:scolvpet_api/api.dart';
+```
+
+## Properties
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**sireHamsterId** | **String** |  | [optional]
+**damHamsterId** | **String** |  | [optional]
+**series** | **String** |  | [optional]
+**sirePhenotype** | **String** |  | [optional]
+**damPhenotype** | **String** |  | [optional]
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

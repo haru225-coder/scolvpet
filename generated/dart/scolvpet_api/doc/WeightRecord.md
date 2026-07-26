@@ -23,6 +23,8 @@ Name | Type | Description | Notes
 **changeFromBirthG** | **num** |  | [optional]
 **alertFlags** | **List&lt;String&gt;** |  |
 **notes** | **String** |  | [optional]
+**correctsWeightRecordId** | **String** | 若非空，本条记录是对该历史记录的纠错，原记录仍然保留。 | [optional]
+**correctionReason** | **String** |  | [optional]
 **createdAt** | [**DateTime**](DateTime.md) |  |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

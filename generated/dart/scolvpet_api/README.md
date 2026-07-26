@@ -84,6 +84,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**adjustBreedingBaseline**](doc/DefaultApi.md#adjustbreedingbaseline) | **POST** /breeding-plans/{plan_id}/adjust-baseline | 修正配对基准时间
 [*DefaultApi*](doc/DefaultApi.md) | [**batchCreateHamsters**](doc/DefaultApi.md#batchcreatehamsters) | **POST** /hamsters/batch | 批量创建仓鼠
 [*DefaultApi*](doc/DefaultApi.md) | [**batchCreateWeightRecords**](doc/DefaultApi.md#batchcreateweightrecords) | **POST** /weight-records/batch | 批量创建体重记录
+[*DefaultApi*](doc/DefaultApi.md) | [**cancelTask**](doc/DefaultApi.md#canceltask) | **POST** /tasks/{task_id}/cancel | 取消任务
 [*DefaultApi*](doc/DefaultApi.md) | [**commitImportJob**](doc/DefaultApi.md#commitimportjob) | **POST** /data-center/import-jobs/{job_id}/commit | 提交正式导入
 [*DefaultApi*](doc/DefaultApi.md) | [**completeBreedingPlan**](doc/DefaultApi.md#completebreedingplan) | **POST** /breeding-plans/{plan_id}/complete | 完成繁育计划
 [*DefaultApi*](doc/DefaultApi.md) | [**completeMediaUpload**](doc/DefaultApi.md#completemediaupload) | **POST** /media/uploads/{upload_id}/complete | 完成媒体上传
@@ -110,6 +111,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**createTask**](doc/DefaultApi.md#createtask) | **POST** /tasks | 创建手工任务
 [*DefaultApi*](doc/DefaultApi.md) | [**createWeightRecord**](doc/DefaultApi.md#createweightrecord) | **POST** /weight-records | 创建体重记录
 [*DefaultApi*](doc/DefaultApi.md) | [**deleteCurrentSession**](doc/DefaultApi.md#deletecurrentsession) | **DELETE** /auth/sessions/current | 退出当前会话
+[*DefaultApi*](doc/DefaultApi.md) | [**endPedigreeParentage**](doc/DefaultApi.md#endpedigreeparentage) | **POST** /pedigree-parentages/end | 解除当前有效父母关系
 [*DefaultApi*](doc/DefaultApi.md) | [**getAsyncJob**](doc/DefaultApi.md#getasyncjob) | **GET** /jobs/{job_id} | 获取通用异步作业
 [*DefaultApi*](doc/DefaultApi.md) | [**getBackupDownload**](doc/DefaultApi.md#getbackupdownload) | **GET** /data-center/backup-jobs/{job_id}/download | 获取备份下载链接
 [*DefaultApi*](doc/DefaultApi.md) | [**getBackupJob**](doc/DefaultApi.md#getbackupjob) | **GET** /data-center/backup-jobs/{job_id} | 获取备份任务
@@ -174,6 +176,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**publishBreedingPlan**](doc/DefaultApi.md#publishbreedingplan) | **POST** /breeding-plans/{plan_id}/publish | 发布繁育计划
 [*DefaultApi*](doc/DefaultApi.md) | [**recordPairingObservation**](doc/DefaultApi.md#recordpairingobservation) | **POST** /pairing-attempts/{attempt_id}/record-observation | 记录配对观察
 [*DefaultApi*](doc/DefaultApi.md) | [**refreshSession**](doc/DefaultApi.md#refreshsession) | **POST** /auth/sessions/refresh | 刷新当前会话
+[*DefaultApi*](doc/DefaultApi.md) | [**reopenTask**](doc/DefaultApi.md#reopentask) | **POST** /tasks/{task_id}/reopen | 撤销任务的完成或取消
 [*DefaultApi*](doc/DefaultApi.md) | [**retryBackupJob**](doc/DefaultApi.md#retrybackupjob) | **POST** /data-center/backup-jobs/{job_id}/retry | 重试失败备份
 [*DefaultApi*](doc/DefaultApi.md) | [**retryExportJob**](doc/DefaultApi.md#retryexportjob) | **POST** /data-center/export-jobs/{job_id}/retry | 重试失败导出
 [*DefaultApi*](doc/DefaultApi.md) | [**retryImportJob**](doc/DefaultApi.md#retryimportjob) | **POST** /data-center/import-jobs/{job_id}/retry | 重试失败导入行
@@ -293,6 +296,8 @@ Class | Method | HTTP request | Description
 [*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**createPublicGrowthReservation**](doc/PublicGrowthApi.md#createpublicgrowthreservation) | **POST** /v1/public/sites/{slug}/reservations | 客户提交公开仓鼠预订
 [*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**getPublicGrowthCatalog**](doc/PublicGrowthApi.md#getpublicgrowthcatalog) | **GET** /v1/public/sites/{slug}/catalog | 查看公开熊舍获客目录
 [*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**getPublicGrowthMedia**](doc/PublicGrowthApi.md#getpublicgrowthmedia) | **GET** /v1/public/sites/{slug}/media/{media_id} | 读取公开仓鼠封面图片
+[*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**getPublicSiteHamsterPedigree**](doc/PublicGrowthApi.md#getpublicsitehamsterpedigree) | **GET** /v1/public/sites/{slug}/hamsters/{hamster_id}/pedigree | 公开仓鼠血统（仅已发布档案名称）
+[*PublicGrowthApi*](doc/PublicGrowthApi.md) | [**postPublicSiteSimulate**](doc/PublicGrowthApi.md#postpublicsitesimulate) | **POST** /v1/public/sites/{slug}/simulate | 公开繁育模拟（权威表型表）
 
 
 ## Documentation For Models
@@ -575,11 +580,13 @@ Class | Method | HTTP request | Description
  - [PedigreeGraphResponseDataCommonAncestorsInner](doc/PedigreeGraphResponseDataCommonAncestorsInner.md)
  - [PedigreeParentage](doc/PedigreeParentage.md)
  - [PedigreeParentageCreateRequest](doc/PedigreeParentageCreateRequest.md)
+ - [PedigreeParentageEndRequest](doc/PedigreeParentageEndRequest.md)
  - [PedigreeParentageListResponse](doc/PedigreeParentageListResponse.md)
  - [PedigreeParentageResponse](doc/PedigreeParentageResponse.md)
  - [PhenotypeTableOutcome](doc/PhenotypeTableOutcome.md)
  - [PhoneCodeLoginRequest](doc/PhoneCodeLoginRequest.md)
  - [PlanCatalogEntry](doc/PlanCatalogEntry.md)
+ - [PostPublicSiteSimulateRequest](doc/PostPublicSiteSimulateRequest.md)
  - [PublicDocumentResponse](doc/PublicDocumentResponse.md)
  - [PublicDocumentResponseData](doc/PublicDocumentResponseData.md)
  - [PublicGrowthCatalog](doc/PublicGrowthCatalog.md)
@@ -666,6 +673,7 @@ Class | Method | HTTP request | Description
  - [StudListing](doc/StudListing.md)
  - [StudListingListResponse](doc/StudListingListResponse.md)
  - [StudListingResponse](doc/StudListingResponse.md)
+ - [TaskCorrectionRequest](doc/TaskCorrectionRequest.md)
  - [TaskPriority](doc/TaskPriority.md)
  - [TaskState](doc/TaskState.md)
  - [UpdateOrganizationMemberRequest](doc/UpdateOrganizationMemberRequest.md)

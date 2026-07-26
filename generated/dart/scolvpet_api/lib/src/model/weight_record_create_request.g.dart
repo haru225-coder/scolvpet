@@ -31,6 +31,12 @@ abstract class _$WeightRecordCreateRequestCWProxy {
 
   WeightRecordCreateRequest notes(String? notes);
 
+  WeightRecordCreateRequest correctsWeightRecordId(
+    String? correctsWeightRecordId,
+  );
+
+  WeightRecordCreateRequest correctionReason(String? correctionReason);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `WeightRecordCreateRequest(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -48,6 +54,8 @@ abstract class _$WeightRecordCreateRequestCWProxy {
     WeightRecordCreateRequestSource_Enum source_,
     String? deviceReadingId,
     String? notes,
+    String? correctsWeightRecordId,
+    String? correctionReason,
   });
 }
 
@@ -99,6 +107,15 @@ class _$WeightRecordCreateRequestCWProxyImpl
   WeightRecordCreateRequest notes(String? notes) => this(notes: notes);
 
   @override
+  WeightRecordCreateRequest correctsWeightRecordId(
+    String? correctsWeightRecordId,
+  ) => this(correctsWeightRecordId: correctsWeightRecordId);
+
+  @override
+  WeightRecordCreateRequest correctionReason(String? correctionReason) =>
+      this(correctionReason: correctionReason);
+
+  @override
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `WeightRecordCreateRequest(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -116,6 +133,8 @@ class _$WeightRecordCreateRequestCWProxyImpl
     Object? source_ = const $CopyWithPlaceholder(),
     Object? deviceReadingId = const $CopyWithPlaceholder(),
     Object? notes = const $CopyWithPlaceholder(),
+    Object? correctsWeightRecordId = const $CopyWithPlaceholder(),
+    Object? correctionReason = const $CopyWithPlaceholder(),
   }) {
     return WeightRecordCreateRequest(
       hamsterId: hamsterId == const $CopyWithPlaceholder()
@@ -158,6 +177,15 @@ class _$WeightRecordCreateRequestCWProxyImpl
           ? _value.notes
           // ignore: cast_nullable_to_non_nullable
           : notes as String?,
+      correctsWeightRecordId:
+          correctsWeightRecordId == const $CopyWithPlaceholder()
+          ? _value.correctsWeightRecordId
+          // ignore: cast_nullable_to_non_nullable
+          : correctsWeightRecordId as String?,
+      correctionReason: correctionReason == const $CopyWithPlaceholder()
+          ? _value.correctionReason
+          // ignore: cast_nullable_to_non_nullable
+          : correctionReason as String?,
     );
   }
 }
@@ -209,6 +237,14 @@ WeightRecordCreateRequest _$WeightRecordCreateRequestFromJson(
         (v) => v as String?,
       ),
       notes: $checkedConvert('notes', (v) => v as String?),
+      correctsWeightRecordId: $checkedConvert(
+        'corrects_weight_record_id',
+        (v) => v as String?,
+      ),
+      correctionReason: $checkedConvert(
+        'correction_reason',
+        (v) => v as String?,
+      ),
     );
     return val;
   },
@@ -222,6 +258,8 @@ WeightRecordCreateRequest _$WeightRecordCreateRequestFromJson(
     'recordedAt': 'recorded_at',
     'source_': 'source',
     'deviceReadingId': 'device_reading_id',
+    'correctsWeightRecordId': 'corrects_weight_record_id',
+    'correctionReason': 'correction_reason',
   },
 );
 
@@ -240,6 +278,8 @@ Map<String, dynamic> _$WeightRecordCreateRequestToJson(
   'source': _$WeightRecordCreateRequestSource_EnumEnumMap[instance.source_]!,
   'device_reading_id': ?instance.deviceReadingId,
   'notes': ?instance.notes,
+  'corrects_weight_record_id': ?instance.correctsWeightRecordId,
+  'correction_reason': ?instance.correctionReason,
 };
 
 const _$WeightRecordCreateRequestMeasurementKindEnumEnumMap = {

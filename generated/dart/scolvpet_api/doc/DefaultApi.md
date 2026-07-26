@@ -12,6 +12,7 @@ Method | HTTP request | Description
 [**adjustBreedingBaseline**](DefaultApi.md#adjustbreedingbaseline) | **POST** /breeding-plans/{plan_id}/adjust-baseline | 修正配对基准时间
 [**batchCreateHamsters**](DefaultApi.md#batchcreatehamsters) | **POST** /hamsters/batch | 批量创建仓鼠
 [**batchCreateWeightRecords**](DefaultApi.md#batchcreateweightrecords) | **POST** /weight-records/batch | 批量创建体重记录
+[**cancelTask**](DefaultApi.md#canceltask) | **POST** /tasks/{task_id}/cancel | 取消任务
 [**commitImportJob**](DefaultApi.md#commitimportjob) | **POST** /data-center/import-jobs/{job_id}/commit | 提交正式导入
 [**completeBreedingPlan**](DefaultApi.md#completebreedingplan) | **POST** /breeding-plans/{plan_id}/complete | 完成繁育计划
 [**completeMediaUpload**](DefaultApi.md#completemediaupload) | **POST** /media/uploads/{upload_id}/complete | 完成媒体上传
@@ -38,6 +39,7 @@ Method | HTTP request | Description
 [**createTask**](DefaultApi.md#createtask) | **POST** /tasks | 创建手工任务
 [**createWeightRecord**](DefaultApi.md#createweightrecord) | **POST** /weight-records | 创建体重记录
 [**deleteCurrentSession**](DefaultApi.md#deletecurrentsession) | **DELETE** /auth/sessions/current | 退出当前会话
+[**endPedigreeParentage**](DefaultApi.md#endpedigreeparentage) | **POST** /pedigree-parentages/end | 解除当前有效父母关系
 [**getAsyncJob**](DefaultApi.md#getasyncjob) | **GET** /jobs/{job_id} | 获取通用异步作业
 [**getBackupDownload**](DefaultApi.md#getbackupdownload) | **GET** /data-center/backup-jobs/{job_id}/download | 获取备份下载链接
 [**getBackupJob**](DefaultApi.md#getbackupjob) | **GET** /data-center/backup-jobs/{job_id} | 获取备份任务
@@ -102,6 +104,7 @@ Method | HTTP request | Description
 [**publishBreedingPlan**](DefaultApi.md#publishbreedingplan) | **POST** /breeding-plans/{plan_id}/publish | 发布繁育计划
 [**recordPairingObservation**](DefaultApi.md#recordpairingobservation) | **POST** /pairing-attempts/{attempt_id}/record-observation | 记录配对观察
 [**refreshSession**](DefaultApi.md#refreshsession) | **POST** /auth/sessions/refresh | 刷新当前会话
+[**reopenTask**](DefaultApi.md#reopentask) | **POST** /tasks/{task_id}/reopen | 撤销任务的完成或取消
 [**retryBackupJob**](DefaultApi.md#retrybackupjob) | **POST** /data-center/backup-jobs/{job_id}/retry | 重试失败备份
 [**retryExportJob**](DefaultApi.md#retryexportjob) | **POST** /data-center/export-jobs/{job_id}/retry | 重试失败导出
 [**retryImportJob**](DefaultApi.md#retryimportjob) | **POST** /data-center/import-jobs/{job_id}/retry | 重试失败导入行
@@ -252,6 +255,55 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**WeightRecordBatchCreateResponse**](WeightRecordBatchCreateResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **cancelTask**
+> CareTaskResponse cancelTask(idempotencyKey, ifMatch, taskId, taskCorrectionRequest)
+
+取消任务
+
+取消一个不会再执行的任务，必须填写原因。已完成或已取消的任务不能直接取消， 需先调用 reopen 撤销。原因写入 care_task.cancellation_reason 并记入 CARE_TASK_CANCELLED 领域事件，任务本身不物理删除。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+final String taskId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final TaskCorrectionRequest taskCorrectionRequest = {"reason":"该窝已转出，无需再称重"}; // TaskCorrectionRequest |
+
+try {
+    final response = api.cancelTask(idempotencyKey, ifMatch, taskId, taskCorrectionRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->cancelTask: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **taskId** | **String**|  |
+ **taskCorrectionRequest** | [**TaskCorrectionRequest**](TaskCorrectionRequest.md)|  |
+
+### Return type
+
+[**CareTaskResponse**](CareTaskResponse.md)
 
 ### Authorization
 
@@ -1473,6 +1525,51 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **endPedigreeParentage**
+> PedigreeParentageResponse endPedigreeParentage(idempotencyKey, pedigreeParentageEndRequest)
+
+解除当前有效父母关系
+
+将 child+role 上当前 accepted 的 pedigree_parentage 标记为 superseded（valid_to=now）， 保留审计链。必须提供 correction_reason。不物理删除。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final PedigreeParentageEndRequest pedigreeParentageEndRequest = ; // PedigreeParentageEndRequest |
+
+try {
+    final response = api.endPedigreeParentage(idempotencyKey, pedigreeParentageEndRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->endPedigreeParentage: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **pedigreeParentageEndRequest** | [**PedigreeParentageEndRequest**](PedigreeParentageEndRequest.md)|  |
+
+### Return type
+
+[**PedigreeParentageResponse**](PedigreeParentageResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -4387,6 +4484,55 @@ Name | Type | Description  | Notes
 ### Authorization
 
 No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **reopenTask**
+> CareTaskResponse reopenTask(idempotencyKey, ifMatch, taskId, taskCorrectionRequest)
+
+撤销任务的完成或取消
+
+把已完成或已取消的任务退回 pending，用于纠正误点完成/误取消，必须填写原因。 subject 级完成痕迹一并清除，否则任务显示待办而每个成员仍标记已完成。 原因记入 CARE_TASK_REOPENED 领域事件。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final String ifMatch = "7"; // String | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+final String taskId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final TaskCorrectionRequest taskCorrectionRequest = {"reason":"误点完成，实际尚未称重"}; // TaskCorrectionRequest |
+
+try {
+    final response = api.reopenTask(idempotencyKey, ifMatch, taskId, taskCorrectionRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->reopenTask: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **ifMatch** | **String**| 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 |
+ **taskId** | **String**|  |
+ **taskCorrectionRequest** | [**TaskCorrectionRequest**](TaskCorrectionRequest.md)|  |
+
+### Return type
+
+[**CareTaskResponse**](CareTaskResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
 
 ### HTTP request headers
 

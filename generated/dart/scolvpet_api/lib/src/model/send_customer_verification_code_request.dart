@@ -8,6 +8,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'send_customer_verification_code_request.g.dart';
 
+
 @CopyWith()
 @JsonSerializable(
   checked: true,
@@ -18,13 +19,23 @@ part 'send_customer_verification_code_request.g.dart';
 class SendCustomerVerificationCodeRequest {
   /// Returns a new [SendCustomerVerificationCodeRequest] instance.
   SendCustomerVerificationCodeRequest({
-    required this.phone,
 
-    this.purpose = SendCustomerVerificationCodeRequestPurposeEnum.login,
+    required  this.phone,
+
+     this.purpose = SendCustomerVerificationCodeRequestPurposeEnum.login,
   });
 
-  @JsonKey(name: r'phone', required: true, includeIfNull: false)
+  @JsonKey(
+
+    name: r'phone',
+    required: true,
+    includeIfNull: false,
+  )
+
+
   final String phone;
+
+
 
   @JsonKey(
     defaultValue: SendCustomerVerificationCodeRequestPurposeEnum.login,
@@ -32,39 +43,44 @@ class SendCustomerVerificationCodeRequest {
     required: false,
     includeIfNull: false,
   )
+
+
   final SendCustomerVerificationCodeRequestPurposeEnum? purpose;
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SendCustomerVerificationCodeRequest &&
-          other.phone == phone &&
-          other.purpose == purpose;
 
-  @override
-  int get hashCode => phone.hashCode + purpose.hashCode;
 
-  factory SendCustomerVerificationCodeRequest.fromJson(
-    Map<String, dynamic> json,
-  ) => _$SendCustomerVerificationCodeRequestFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$SendCustomerVerificationCodeRequestToJson(this);
+
+    @override
+    bool operator ==(Object other) => identical(this, other) || other is SendCustomerVerificationCodeRequest &&
+      other.phone == phone &&
+      other.purpose == purpose;
+
+    @override
+    int get hashCode =>
+        phone.hashCode +
+        purpose.hashCode;
+
+  factory SendCustomerVerificationCodeRequest.fromJson(Map<String, dynamic> json) => _$SendCustomerVerificationCodeRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$SendCustomerVerificationCodeRequestToJson(this);
 
   @override
   String toString() {
     return toJson().toString();
   }
+
 }
 
+
 enum SendCustomerVerificationCodeRequestPurposeEnum {
-  @JsonValue(r'login')
-  login(r'login');
+@JsonValue(r'login')
+login(r'login');
 
-  const SendCustomerVerificationCodeRequestPurposeEnum(this.value);
+const SendCustomerVerificationCodeRequestPurposeEnum(this.value);
 
-  final String value;
+final String value;
 
-  @override
-  String toString() => value;
+@override
+String toString() => value;
 }
