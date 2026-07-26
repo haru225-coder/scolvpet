@@ -3,7 +3,19 @@
   "spaces": 2,
   "generator-cli": {
     "version": "7.23.0",
-    "storageDir": ".cache/openapi-generator"
+    "storageDir": ".cache/openapi-generator",
+    "generators": {
+      "ts": {
+        "generatorName": "typescript-fetch",
+        "inputSpec": "specs/api/openapi.yaml",
+        "output": "generated/ts/scolvpet-api",
+        "additionalProperties": {
+          "supportsES6": true,
+          "npmName": "@scolvpet/scolvpet-api",
+          "npmVersion": "1.0.0"
+        }
+      }
+    }
   }
 }
 
