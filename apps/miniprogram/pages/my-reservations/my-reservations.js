@@ -1,4 +1,5 @@
 const api = require('../../utils/api');
+const wechatLogin = require('../../utils/wechat_login');
 
 const STATUS_LABEL = {
   held: '待确认（已锁定）',
@@ -66,16 +67,12 @@ Page({
   },
   async loginAndLoad() {
     try {
-      const phone = normalizePhone(this.data.phone);
-      if (!phone) {
-        wx.showToast({ title: '请输入有效手机号', icon: 'none' });
-        return;
-      }
       const app = getApp();
       let token = this.data.token;
+      const phone = normalizePhone(this.data.phone);
       const sessionPhone = normalizePhone(app.globalData.phone || '');
       // If UI phone differs from token phone, force re-auth (no identity illusion).
-      if (token && sessionPhone && sessionPhone !== phone) {
+      if (token && phone && sessionPhone && sessionPhone !== phone) {
         try {
           await api.logoutCustomer(token);
         } catch (_) {
@@ -86,15 +83,28 @@ Page({
         app.saveCustomer({ customerToken: '' });
       }
       if (!token) {
+        if (!phone) {
+          wx.showToast({ title: '请输入有效手机号', icon: 'none' });
+          return;
+        }
         const code = (this.data.code || '').trim();
         if (!code || !this.data.verificationId) {
           wx.showToast({ title: '请先完成验证码', icon: 'none' });
           return;
         }
-        const res = await api.createCustomerSession({
+        // 有未过期 wechat_ticket 时短信验证顺带绑定微信；绑定失败自动降级 session。
+        const { res } = await wechatLogin.loginWithSms({
           phone,
-          verification_id: this.data.verificationId,
+          verificationId: this.data.verificationId,
           code,
+          ticket: app.globalData.wechatTicket,
+          ticketObtainedAt: app.globalData.wechatTicketObtainedAt,
+          bindFn: api.bindWechatIdentity,
+          sessionFn: api.createCustomerSession,
+          onTicketConsumed: () => {
+            app.globalData.wechatTicket = '';
+            app.globalData.wechatTicketObtainedAt = 0;
+          },
         });
         token = res?.data?.access_token || '';
         if (!token) throw new Error('登录失败');

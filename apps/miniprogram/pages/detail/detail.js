@@ -1,4 +1,5 @@
 const api = require('../../utils/api');
+const wechatLogin = require('../../utils/wechat_login');
 
 function hamsterIdOf(item) {
   if (!item || typeof item !== 'object') return '';
@@ -35,6 +36,16 @@ Page({
       customerToken: app.globalData.customerToken || '',
     });
     this.loadCatalogItem();
+  },
+  onShow() {
+    // 静默登录在 onLoad 之后才完成时，回来同步 token（wxml 据此隐藏验证码区块）。
+    const app = getApp();
+    if (!this.data.customerToken && app.globalData.customerToken) {
+      this.setData({
+        customerToken: app.globalData.customerToken,
+        phone: this.data.phone || app.globalData.phone || '',
+      });
+    }
   },
   onUnload() {
     if (this._timer) clearInterval(this._timer);
@@ -155,10 +166,20 @@ Page({
     if (!phone || !code || !verificationId) {
       throw new Error('请先获取并填写短信验证码');
     }
-    const res = await api.createCustomerSession({
+    // 有未过期 wechat_ticket → 短信验证通过后顺带绑定微信；否则维持现有 session 流程。
+    // 绑定失败（ticket 过期/已用）由 loginWithSms 自动降级重试 createCustomerSession。
+    const { res } = await wechatLogin.loginWithSms({
       phone,
-      verification_id: verificationId,
+      verificationId,
       code,
+      ticket: app.globalData.wechatTicket,
+      ticketObtainedAt: app.globalData.wechatTicketObtainedAt,
+      bindFn: api.bindWechatIdentity,
+      sessionFn: api.createCustomerSession,
+      onTicketConsumed: () => {
+        app.globalData.wechatTicket = '';
+        app.globalData.wechatTicketObtainedAt = 0;
+      },
     });
     const token = res?.data?.access_token || res?.access_token || '';
     if (!token) throw new Error('登录失败，请重试');

@@ -1,5 +1,6 @@
 const config = require('./utils/config');
 const api = require('./utils/api');
+const wechatLogin = require('./utils/wechat_login');
 
 App({
   globalData: {
@@ -9,6 +10,9 @@ App({
     wechat: '',
     customerToken: '',
     siteTitle: '',
+    // In-memory only (never persisted): one-shot bind ticket from wechat-sessions.
+    wechatTicket: '',
+    wechatTicketObtainedAt: 0,
   },
   onLaunch(options) {
     config.assertRuntimeConfig();
@@ -33,6 +37,32 @@ App({
       }
     }
     this._launchEntry = entry;
+    // P2-3 静默微信登录：有缓存 token 维持现状；任何失败都无感降级到短信流程。
+    this._silentLoginPromise = this.silentWechatLogin();
+  },
+  silentWechatLogin() {
+    if (this.globalData.customerToken) {
+      return Promise.resolve({ state: 'session', cached: true });
+    }
+    return wechatLogin.performSilentLogin({
+      wxLogin: () =>
+        new Promise((resolve) => {
+          wx.login({
+            success: (res) => resolve((res && res.code) || ''),
+            fail: () => resolve(''),
+          });
+        }),
+      createSession: (jsCode) => api.createWechatSession(jsCode),
+      onToken: ({ token, phone }) => {
+        const partial = { customerToken: token };
+        if (phone) partial.phone = phone;
+        this.saveCustomer(partial);
+      },
+      onTicket: ({ ticket, obtainedAt }) => {
+        this.globalData.wechatTicket = ticket;
+        this.globalData.wechatTicketObtainedAt = obtainedAt;
+      },
+    });
   },
   saveCustomer(partial) {
     const next = {

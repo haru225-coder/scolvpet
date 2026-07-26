@@ -92,6 +92,30 @@ function createCustomerSession(body) {
   });
 }
 
+function createWechatSession(jsCode) {
+  return request({
+    path: '/v1/public/customer/wechat-sessions',
+    method: 'POST',
+    data: { js_code: jsCode },
+  });
+}
+
+function bindWechatIdentity({ wechat_ticket, phone, verification_id, code }) {
+  return request({
+    path: '/v1/public/customer/wechat-bindings',
+    method: 'POST',
+    data: { wechat_ticket, phone, verification_id, code },
+  });
+}
+
+function unbindWechat(token) {
+  return request({
+    path: '/v1/customer/wechat-bindings/current',
+    method: 'DELETE',
+    token,
+  });
+}
+
 function listMyReservations(token) {
   return request({ path: '/v1/customer/reservations', token });
 }
@@ -170,6 +194,9 @@ module.exports = {
   createReservation,
   sendCustomerCode,
   createCustomerSession,
+  createWechatSession,
+  bindWechatIdentity,
+  unbindWechat,
   listMyReservations,
   cancelMyReservation,
   getPublicDocument,
