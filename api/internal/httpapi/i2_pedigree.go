@@ -88,7 +88,8 @@ func (s *Server) createI2PedigreeParentage(w http.ResponseWriter, r *http.Reques
 	}
 	input := i2core.CreatePedigreeParentageInput{
 		ParentID: request.ParentHamsterID, ChildID: request.ChildHamsterID, Role: request.Role,
-		EvidenceType: request.EvidenceType, Confidence: request.Confidence, ValidFrom: validFrom, Notes: request.Notes,
+		EvidenceType: request.EvidenceType, Confidence: request.Confidence, ValidFrom: validFrom,
+		Notes: request.Notes, CorrectionReason: request.CorrectionReason,
 	}
 	result, err := s.i2CoreService().CreatePedigreeParentage(r.Context(), ownerID, i2WriteOptions(r, payload), input)
 	if err != nil {
@@ -96,5 +97,28 @@ func (s *Server) createI2PedigreeParentage(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	writeI2Stored(w, r, http.StatusCreated, envelope(r, i2PedigreeParentageJSON(result.Value)), result.Replayed,
+		store.FormatETag(result.Value.Version), "/v1/pedigree-parentages/"+result.Value.ID.String())
+}
+
+func (s *Server) endI2PedigreeParentage(w http.ResponseWriter, r *http.Request) {
+	ownerID, ok := s.authenticateI2(w, r)
+	if !ok {
+		return
+	}
+	var request i2PedigreeParentageEndRequest
+	payload, err := decodeI2Body(r, &request)
+	if err != nil || request.ChildHamsterID == uuid.Nil || strings.TrimSpace(request.Role) == "" || strings.TrimSpace(request.CorrectionReason) == "" {
+		writeI2CoreError(w, r, validationError("body", "解除父母关系请求体格式不正确（需 child_hamster_id、role、correction_reason）"))
+		return
+	}
+	input := i2core.EndPedigreeParentageInput{
+		ChildID: request.ChildHamsterID, Role: request.Role, CorrectionReason: request.CorrectionReason,
+	}
+	result, err := s.i2CoreService().EndPedigreeParentage(r.Context(), ownerID, i2WriteOptions(r, payload), input)
+	if err != nil {
+		writeI2CoreError(w, r, err)
+		return
+	}
+	writeI2Stored(w, r, http.StatusOK, envelope(r, i2PedigreeParentageJSON(result.Value)), result.Replayed,
 		store.FormatETag(result.Value.Version), "/v1/pedigree-parentages/"+result.Value.ID.String())
 }

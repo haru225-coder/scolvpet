@@ -90,6 +90,8 @@ type Transaction interface {
 	InsertLitterParent(context.Context, uuid.UUID, CreateLitterParentInput, *uuid.UUID) (LitterParent, error)
 	TouchLitter(context.Context, uuid.UUID, uuid.UUID, int) (Litter, error)
 	CheckPedigreeCycle(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (bool, error)
-	InsertPedigreeParentage(context.Context, uuid.UUID, CreatePedigreeParentageInput) (PedigreeParentage, error)
+	GetActivePedigreeParentageForUpdate(context.Context, uuid.UUID, uuid.UUID, string) (*PedigreeParentage, error)
+	SupersedePedigreeParentage(context.Context, uuid.UUID, uuid.UUID, string) error
+	InsertPedigreeParentage(context.Context, uuid.UUID, CreatePedigreeParentageInput, *uuid.UUID) (PedigreeParentage, error)
 	AppendEvent(context.Context, DomainEvent) error
 }

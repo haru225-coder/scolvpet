@@ -667,16 +667,51 @@ func (t *postgresTransaction) CheckPedigreeCycle(ctx context.Context, ownerID, p
 	return cycle, mapPostgresError(err)
 }
 
-func (t *postgresTransaction) InsertPedigreeParentage(ctx context.Context, ownerID uuid.UUID, input CreatePedigreeParentageInput) (PedigreeParentage, error) {
+func (t *postgresTransaction) GetActivePedigreeParentageForUpdate(ctx context.Context, ownerID, childID uuid.UUID, role string) (*PedigreeParentage, error) {
+	parentage, err := scanParentage(t.tx.QueryRow(ctx, `
+		SELECT id, owner_id, parent_id, child_id, role, evidence_type, evidence_payload,
+			confidence, status, valid_from, valid_to, relationship_assertion_id,
+			version, created_at, updated_at
+		FROM pedigree_parentage
+		WHERE owner_id=$1 AND child_id=$2 AND role=$3 AND status='accepted' AND valid_to IS NULL
+		FOR UPDATE
+	`, ownerID, childID, role))
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, mapPostgresError(err)
+	}
+	return &parentage, nil
+}
+
+func (t *postgresTransaction) SupersedePedigreeParentage(ctx context.Context, ownerID, parentageID uuid.UUID, correctionReason string) error {
+	result, err := t.tx.Exec(ctx, `
+		UPDATE pedigree_parentage
+		SET status='superseded', valid_to=now(), correction_note=$3, updated_by=$1, updated_at=now()
+		WHERE owner_id=$1 AND id=$2 AND status='accepted' AND valid_to IS NULL
+	`, ownerID, parentageID, correctionReason)
+	if err != nil {
+		return mapPostgresError(err)
+	}
+	if result.RowsAffected() != 1 {
+		return ErrVersionConflict
+	}
+	return nil
+}
+
+func (t *postgresTransaction) InsertPedigreeParentage(ctx context.Context, ownerID uuid.UUID, input CreatePedigreeParentageInput, correctsID *uuid.UUID) (PedigreeParentage, error) {
 	parentage, err := scanParentage(t.tx.QueryRow(ctx, `
 		INSERT INTO pedigree_parentage (
 			owner_id, parent_id, child_id, role, evidence_type, evidence_payload,
-			confidence, status, valid_from, created_by, updated_by
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,'accepted',$8,$1,$1)
+			confidence, status, valid_from, corrects_parentage_id, correction_note,
+			created_by, updated_by
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,'accepted',$8,$9,$10,$1,$1)
 		RETURNING id, owner_id, parent_id, child_id, role, evidence_type, evidence_payload,
 			confidence, status, valid_from, valid_to, relationship_assertion_id,
 			version, created_at, updated_at
-	`, ownerID, input.ParentID, input.ChildID, input.Role, input.EvidenceType, jsonBytes(input.EvidencePayload), input.Confidence, input.ValidFrom))
+	`, ownerID, input.ParentID, input.ChildID, input.Role, input.EvidenceType, jsonBytes(input.EvidencePayload),
+		input.Confidence, input.ValidFrom, correctsID, input.CorrectionReason))
 	return parentage, mapPostgresError(err)
 }
 

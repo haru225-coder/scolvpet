@@ -871,13 +871,40 @@ func (r *memoryRepository) CheckPedigreeCycle(_ context.Context, ownerID, parent
 	return false, nil
 }
 
-func (r *memoryRepository) InsertPedigreeParentage(_ context.Context, ownerID uuid.UUID, input CreatePedigreeParentageInput) (PedigreeParentage, error) {
+func (r *memoryRepository) GetActivePedigreeParentageForUpdate(_ context.Context, ownerID, childID uuid.UUID, role string) (*PedigreeParentage, error) {
+	for _, existing := range r.parentages {
+		if existing.OwnerID == ownerID && existing.ChildID == childID && existing.Role == role && existing.Status == "accepted" && existing.ValidTo == nil {
+			copy := existing
+			return &copy, nil
+		}
+	}
+	return nil, nil
+}
+
+func (r *memoryRepository) SupersedePedigreeParentage(_ context.Context, ownerID, parentageID uuid.UUID, correctionReason string) error {
+	existing, ok := r.parentages[parentageID]
+	if !ok || existing.OwnerID != ownerID || existing.Status != "accepted" || existing.ValidTo != nil {
+		return ErrVersionConflict
+	}
+	now := time.Now().UTC()
+	existing.Status = "superseded"
+	existing.ValidTo = &now
+	existing.Notes = &correctionReason
+	existing.UpdatedAt = now
+	r.parentages[parentageID] = existing
+	return nil
+}
+
+func (r *memoryRepository) InsertPedigreeParentage(_ context.Context, ownerID uuid.UUID, input CreatePedigreeParentageInput, correctsID *uuid.UUID) (PedigreeParentage, error) {
 	for _, existing := range r.parentages {
 		if existing.OwnerID == ownerID && existing.ChildID == input.ChildID && existing.Role == input.Role && existing.Status == "accepted" && existing.ValidTo == nil {
 			return PedigreeParentage{}, ErrDuplicate
 		}
 	}
 	now := input.ValidFrom
+	if now.IsZero() {
+		now = time.Now().UTC()
+	}
 	parentage := PedigreeParentage{
 		ID: uuid.New(), OwnerID: ownerID, ParentID: input.ParentID, ChildID: input.ChildID,
 		Role: input.Role, EvidenceType: input.EvidenceType, EvidencePayload: input.EvidencePayload,
@@ -885,6 +912,10 @@ func (r *memoryRepository) InsertPedigreeParentage(_ context.Context, ownerID uu
 	}
 	parentage.EvidenceType = publicPedigreeEvidence(parentage.EvidenceType)
 	parentage.Notes = input.Notes
+	if input.CorrectionReason != nil {
+		parentage.Notes = input.CorrectionReason
+	}
+	_ = correctsID
 	r.parentages[parentage.ID] = parentage
 	return parentage, nil
 }

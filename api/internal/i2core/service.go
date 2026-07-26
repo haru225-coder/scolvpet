@@ -712,15 +712,88 @@ func (s *Service) CreatePedigreeParentage(ctx context.Context, ownerID uuid.UUID
 		if cycle {
 			return PedigreeParentage{}, ErrPedigreeCycle
 		}
-		parentage, err := tx.InsertPedigreeParentage(ctx, ownerID, input)
+		current, err := tx.GetActivePedigreeParentageForUpdate(ctx, ownerID, input.ChildID, input.Role)
 		if err != nil {
 			return PedigreeParentage{}, err
 		}
+		var correctsID *uuid.UUID
+		if current != nil {
+			if current.ParentID == input.ParentID {
+				return *current, nil // already the active edge
+			}
+			if input.CorrectionReason == nil || strings.TrimSpace(*input.CorrectionReason) == "" {
+				return PedigreeParentage{}, ErrDuplicate
+			}
+			correctsID = &current.ID
+			if err := tx.SupersedePedigreeParentage(ctx, ownerID, current.ID, strings.TrimSpace(*input.CorrectionReason)); err != nil {
+				return PedigreeParentage{}, err
+			}
+		}
+		parentage, err := tx.InsertPedigreeParentage(ctx, ownerID, input, correctsID)
+		if err != nil {
+			return PedigreeParentage{}, err
+		}
+		eventType := "PEDIGREE_PARENTAGE_CREATED"
+		if correctsID != nil {
+			eventType = "PEDIGREE_PARENTAGE_REPLACED"
+		}
 		err = tx.AppendEvent(ctx, DomainEvent{
 			OwnerID: ownerID, OrganizationID: child.OrganizationID, AggregateType: "hamster", AggregateID: child.ID,
-			EventType: "PEDIGREE_PARENTAGE_CREATED", Payload: map[string]any{"parentage_id": parentage.ID, "parent_id": parent.ID, "role": parentage.Role}, IdempotencyKey: command.IdempotencyKey,
+			EventType: eventType, Payload: map[string]any{
+				"parentage_id": parentage.ID, "parent_id": parent.ID, "role": parentage.Role,
+				"corrects_parentage_id": correctsID, "correction_reason": input.CorrectionReason,
+			}, IdempotencyKey: command.IdempotencyKey,
 		})
 		return parentage, err
+	})
+}
+
+// EndPedigreeParentage supersedes the active parentage for child+role without replacement.
+func (s *Service) EndPedigreeParentage(ctx context.Context, ownerID uuid.UUID, options WriteOptions, input EndPedigreeParentageInput) (WriteResult[PedigreeParentage], error) {
+	role := strings.TrimSpace(strings.ToLower(input.Role))
+	if role != "sire" && role != "dam" {
+		return WriteResult[PedigreeParentage]{}, validationError("invalid parentage role")
+	}
+	reason := strings.TrimSpace(input.CorrectionReason)
+	if reason == "" {
+		return WriteResult[PedigreeParentage]{}, validationError("correction_reason is required to end parentage")
+	}
+	input.Role = role
+	input.CorrectionReason = reason
+	command, err := buildCommand(ownerID, options, "POST", "/i2core/pedigree-parentages/end", input, 200)
+	if err != nil {
+		return WriteResult[PedigreeParentage]{}, err
+	}
+	return runWrite(ctx, s.repository, command, func(ctx context.Context, tx Transaction) (PedigreeParentage, error) {
+		child, err := tx.GetHamsterForUpdate(ctx, ownerID, input.ChildID)
+		if err != nil {
+			return PedigreeParentage{}, err
+		}
+		current, err := tx.GetActivePedigreeParentageForUpdate(ctx, ownerID, input.ChildID, input.Role)
+		if err != nil {
+			return PedigreeParentage{}, err
+		}
+		if current == nil {
+			return PedigreeParentage{}, ErrNotFound
+		}
+		if err := tx.SupersedePedigreeParentage(ctx, ownerID, current.ID, reason); err != nil {
+			return PedigreeParentage{}, err
+		}
+		// Re-read for response (superseded row).
+		ended := *current
+		now := time.Now().UTC()
+		ended.Status = "superseded"
+		ended.ValidTo = &now
+		note := reason
+		ended.Notes = &note
+		err = tx.AppendEvent(ctx, DomainEvent{
+			OwnerID: ownerID, OrganizationID: child.OrganizationID, AggregateType: "hamster", AggregateID: child.ID,
+			EventType: "PEDIGREE_PARENTAGE_ENDED", Payload: map[string]any{
+				"parentage_id": current.ID, "parent_id": current.ParentID, "role": current.Role,
+				"correction_reason": reason,
+			}, IdempotencyKey: command.IdempotencyKey,
+		})
+		return ended, err
 	})
 }
 

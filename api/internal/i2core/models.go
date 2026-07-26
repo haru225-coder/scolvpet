@@ -447,6 +447,16 @@ type CreatePedigreeParentageInput struct {
 	Confidence            float64
 	ValidFrom             time.Time
 	Notes                 *string
+	// CorrectionReason is required when an active parentage already exists for
+	// the same child+role (replace). Empty + existing → ErrDuplicate.
+	CorrectionReason      *string
 	ExpectedParentVersion int
 	ExpectedChildVersion  int
+}
+
+// EndPedigreeParentageInput ends the active parentage for child+role (no replacement).
+type EndPedigreeParentageInput struct {
+	ChildID          uuid.UUID
+	Role             string
+	CorrectionReason string
 }

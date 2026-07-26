@@ -18,6 +18,7 @@ func (s *Server) registerI2CoreRoutes(mux *http.ServeMux) {
 
 	mux.HandleFunc("GET /v1/pedigree-parentages", s.listI2PedigreeParentages)
 	mux.HandleFunc("POST /v1/pedigree-parentages", s.createI2PedigreeParentage)
+	mux.HandleFunc("POST /v1/pedigree-parentages/end", s.endI2PedigreeParentage)
 
 	mux.HandleFunc("GET /v1/enclosures", s.listI2Enclosures)
 	mux.HandleFunc("POST /v1/enclosures", s.createI2Enclosure)

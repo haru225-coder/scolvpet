@@ -1,9 +1,11 @@
 package httpapi
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -20,6 +22,7 @@ func (s *Server) registerI4Routes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/litters/{litter_id}/sex-and-separate", s.sexAndSeparateI4Litter)
 	mux.HandleFunc("GET /v1/litters/{litter_id}/individualization-eligibility", s.getI4Eligibility)
 	mux.HandleFunc("POST /v1/litters/{litter_id}/individualize", s.individualizeI4Litter)
+	mux.HandleFunc("GET /v1/litters/{litter_id}/pup-identities", s.listI4PupIdentities)
 }
 
 func (s *Server) i4CoreService() *i4core.Service {
@@ -308,6 +311,100 @@ func (s *Server) individualizeI4Litter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeI4Stored(w, r, http.StatusOK, envelope(r, result.Value), result.Replayed, result.Value.LitterVersion)
+}
+
+func (s *Server) listI4PupIdentities(w http.ResponseWriter, r *http.Request) {
+	ownerID, ok := s.authenticateI4(w, r)
+	if !ok {
+		return
+	}
+	litterID, err := uuid.Parse(r.PathValue("litter_id"))
+	if err != nil || litterID == uuid.Nil {
+		writeI4Error(w, r, i4Validation("litter_id", "窝次 ID 无效"))
+		return
+	}
+	var litterExists bool
+	if err := s.Store.Pool.QueryRow(r.Context(), `
+		SELECT EXISTS(SELECT 1 FROM litter WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL)
+	`, ownerID, litterID).Scan(&litterExists); err != nil {
+		writeI4Error(w, r, err)
+		return
+	}
+	if !litterExists {
+		writeI4Error(w, r, i4core.ErrNotFound)
+		return
+	}
+	outcome := strings.TrimSpace(r.URL.Query().Get("outcome_status"))
+	profile := strings.TrimSpace(r.URL.Query().Get("profile_status"))
+	limit := 50
+	if raw := strings.TrimSpace(r.URL.Query().Get("limit")); raw != "" {
+		if n, err := strconv.Atoi(raw); err == nil && n > 0 {
+			limit = n
+		}
+		if limit > 100 {
+			limit = 100
+		}
+	}
+	query := `
+		SELECT id, owner_id, litter_id, temporary_code, sex, sex_confidence, profile_status, outcome_status,
+		       weaned_at, current_enclosure_id, individualized_hamster_id, phenotype_summary,
+		       destination_code, status_reason, version, created_at, updated_at
+		FROM pup_identity
+		WHERE owner_id=$1 AND litter_id=$2 AND deleted_at IS NULL`
+	args := []any{ownerID, litterID}
+	argN := 3
+	if outcome != "" {
+		query += fmt.Sprintf(` AND outcome_status=$%d`, argN)
+		args = append(args, outcome)
+		argN++
+	}
+	if profile != "" {
+		query += fmt.Sprintf(` AND profile_status=$%d`, argN)
+		args = append(args, profile)
+		argN++
+	}
+	query += fmt.Sprintf(` ORDER BY temporary_code, id LIMIT $%d`, argN)
+	args = append(args, limit)
+	rows, err := s.Store.Pool.Query(r.Context(), query, args...)
+	if err != nil {
+		writeI4Error(w, r, err)
+		return
+	}
+	defer rows.Close()
+	items := make([]any, 0)
+	for rows.Next() {
+		var (
+			id, owner, litter                                                   uuid.UUID
+			temporaryCode, sex, profileStatus, outcomeStatus                    string
+			sexConfidence                                                       *float64
+			weanedAt                                                            *time.Time
+			enclosureID, hamsterID                                              *uuid.UUID
+			phenotype                                                           []byte
+			destination, reason                                                 *string
+			version                                                             int
+			createdAt, updatedAt                                                time.Time
+		)
+		if err := rows.Scan(&id, &owner, &litter, &temporaryCode, &sex, &sexConfidence, &profileStatus, &outcomeStatus, &weanedAt, &enclosureID, &hamsterID, &phenotype, &destination, &reason, &version, &createdAt, &updatedAt); err != nil {
+			writeI4Error(w, r, err)
+			return
+		}
+		pheno := map[string]any{}
+		if len(phenotype) > 0 {
+			_ = json.Unmarshal(phenotype, &pheno)
+		}
+		items = append(items, map[string]any{
+			"id": id, "owner_id": owner, "litter_id": litter, "temporary_code": temporaryCode,
+			"sex": sex, "sex_confidence": sexConfidence, "profile_status": profileStatus,
+			"outcome_status": outcomeStatus, "weaned_at": weanedAt, "current_enclosure_id": enclosureID,
+			"hamster_id": hamsterID, "phenotype_summary": pheno, "destination": destination,
+			"status_reason": reason, "version": version, "created_at": createdAt, "updated_at": updatedAt,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		writeI4Error(w, r, err)
+		return
+	}
+	writeJSON(w, r, http.StatusOK, envelope(r, items))
 }
 
 func i4Options(r *http.Request, payload []byte) i4core.WriteOptions {

@@ -257,6 +257,78 @@ func TestI2PedigreeRejectsSelfAndMultiGenerationCycles(t *testing.T) {
 	}
 }
 
+func TestI2PedigreeReplaceAndEndRequireCorrectionReason(t *testing.T) {
+	fixture := newServiceFixture(t)
+	sireA := fixture.createHamsterWithSex(t, "HAM-SIRE-A", "male")
+	sireB := fixture.createHamsterWithSex(t, "HAM-SIRE-B", "male")
+	child := fixture.createHamsterWithSex(t, "HAM-CHILD-R", "female")
+	now := time.Date(2026, 7, 25, 12, 0, 0, 0, time.UTC)
+
+	_, err := fixture.service.CreatePedigreeParentage(context.Background(), fixture.ownerID, writeOptions("ped-first"), CreatePedigreeParentageInput{
+		ParentID: sireA.ID, ChildID: child.ID, Role: "sire", EvidenceType: "manual", Confidence: 1, ValidFrom: now,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Replace without reason → duplicate.
+	_, err = fixture.service.CreatePedigreeParentage(context.Background(), fixture.ownerID, writeOptions("ped-replace-no-reason"), CreatePedigreeParentageInput{
+		ParentID: sireB.ID, ChildID: child.ID, Role: "sire", EvidenceType: "manual", Confidence: 1, ValidFrom: now,
+	})
+	if !errors.Is(err, ErrDuplicate) {
+		t.Fatalf("replace without reason: got %v", err)
+	}
+
+	reason := "选错父本"
+	replaced, err := fixture.service.CreatePedigreeParentage(context.Background(), fixture.ownerID, writeOptions("ped-replace"), CreatePedigreeParentageInput{
+		ParentID: sireB.ID, ChildID: child.ID, Role: "sire", EvidenceType: "manual", Confidence: 1, ValidFrom: now,
+		CorrectionReason: &reason,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if replaced.Value.ParentID != sireB.ID {
+		t.Fatalf("replaced parent: %#v", replaced.Value)
+	}
+
+	listed, err := fixture.service.ListPedigreeParentages(context.Background(), fixture.ownerID, PedigreeParentageFilter{ChildHamsterID: &child.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	active := 0
+	for _, p := range listed {
+		if p.Status == "accepted" && p.ValidTo == nil {
+			active++
+			if p.ParentID != sireB.ID {
+				t.Fatalf("active parent should be B: %#v", p)
+			}
+		}
+	}
+	if active != 1 {
+		t.Fatalf("expected 1 active parentage, listed=%#v", listed)
+	}
+
+	ended, err := fixture.service.EndPedigreeParentage(context.Background(), fixture.ownerID, writeOptions("ped-end"), EndPedigreeParentageInput{
+		ChildID: child.ID, Role: "sire", CorrectionReason: "核实后无父本记录",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ended.Value.Status != "superseded" {
+		t.Fatalf("ended status: %#v", ended.Value)
+	}
+
+	listed, err = fixture.service.ListPedigreeParentages(context.Background(), fixture.ownerID, PedigreeParentageFilter{ChildHamsterID: &child.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range listed {
+		if p.Status == "accepted" && p.ValidTo == nil {
+			t.Fatalf("still active after end: %#v", p)
+		}
+	}
+}
+
 func TestI2PedigreeListAndGraphExposeCommonAncestor(t *testing.T) {
 	fixture := newServiceFixture(t)
 	grandparent := fixture.createHamsterWithSex(t, "HAM-GRAPH-GP", "male")

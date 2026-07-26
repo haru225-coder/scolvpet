@@ -56,13 +56,20 @@ type i2HamsterBatchRequest struct {
 }
 
 type i2PedigreeParentageCreateRequest struct {
-	ChildHamsterID  uuid.UUID `json:"child_hamster_id"`
-	ParentHamsterID uuid.UUID `json:"parent_hamster_id"`
-	Role            string    `json:"role"`
-	EvidenceType    string    `json:"evidence_type"`
-	Confidence      float64   `json:"confidence"`
-	ValidFrom       string    `json:"valid_from"`
-	Notes           *string   `json:"notes"`
+	ChildHamsterID   uuid.UUID `json:"child_hamster_id"`
+	ParentHamsterID  uuid.UUID `json:"parent_hamster_id"`
+	Role             string    `json:"role"`
+	EvidenceType     string    `json:"evidence_type"`
+	Confidence       float64   `json:"confidence"`
+	ValidFrom        string    `json:"valid_from"`
+	Notes            *string   `json:"notes"`
+	CorrectionReason *string   `json:"correction_reason"`
+}
+
+type i2PedigreeParentageEndRequest struct {
+	ChildHamsterID   uuid.UUID `json:"child_hamster_id"`
+	Role             string    `json:"role"`
+	CorrectionReason string    `json:"correction_reason"`
 }
 
 type i2EnclosureCreateRequest struct {
