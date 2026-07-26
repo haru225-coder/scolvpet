@@ -405,6 +405,21 @@ test('growth media is proxied without exposing the API origin', async (t) => {
   assert.equal(response.headers.get('content-type'), 'image/webp');
   assert.equal(Buffer.from(await response.arrayBuffer()).toString(), 'image-bytes');
   assert.equal(requestedUrl, 'https://api.example.test/root/v1/public/sites/snow-cattery/media/media-1');
+  assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+});
+
+test('growth media proxy refuses script-capable content types', async (t) => {
+  const server = createServer({
+    apiBaseUrl: 'https://api.example.test/root',
+    fetchImpl: async () => binaryResponse('<svg onload="alert(1)"/>', 'image/svg+xml'),
+  });
+  const port = await listen(server);
+  t.after(() => server.close());
+
+  const response = await fetch(`http://127.0.0.1:${port}/p/snow-cattery/media/media-1`);
+  assert.equal(response.status, 404);
+  const body = await response.text();
+  assert.ok(!body.includes('onload'), 'svg payload must not be echoed');
 });
 
 test('unknown routes use the Chinese 404 page', async (t) => {

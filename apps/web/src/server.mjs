@@ -610,6 +610,14 @@ export async function fetchPublicGrowthCatalog({ apiBaseUrl, fetchImpl = globalT
   return data;
 }
 
+export const PROXYABLE_IMAGE_TYPES = new Set([
+  'image/avif',
+  'image/webp',
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+]);
+
 export async function fetchPublicGrowthMedia({ apiBaseUrl, fetchImpl = globalThis.fetch, slug, mediaId }) {
   if (!apiBaseUrl || typeof fetchImpl !== 'function' || !slug || !mediaId) return null;
   try {
@@ -617,12 +625,15 @@ export async function fetchPublicGrowthMedia({ apiBaseUrl, fetchImpl = globalThi
       headers: { Accept: 'image/avif,image/webp,image/*,*/*;q=0.8' },
     });
     const contentType = response?.headers?.get?.('content-type') || '';
-    if (!response || response.status !== 200 || !contentType.startsWith('image/') || typeof response.arrayBuffer !== 'function') {
+    // Raster whitelist only: image/svg+xml is a script-capable document and
+    // must never be proxied onto this origin.
+    const mediaType = contentType.split(';')[0].trim().toLowerCase();
+    if (!response || response.status !== 200 || !PROXYABLE_IMAGE_TYPES.has(mediaType) || typeof response.arrayBuffer !== 'function') {
       return null;
     }
     return {
       body: Buffer.from(await response.arrayBuffer()),
-      contentType,
+      contentType: mediaType,
       etag: response.headers?.get?.('etag') || '',
     };
   } catch {
@@ -861,6 +872,7 @@ function sendBinary(response, status, value, contentType, etag = '') {
   const headers = {
     'Cache-Control': 'public, no-store, max-age=0',
     'Content-Type': contentType,
+    'X-Content-Type-Options': 'nosniff',
   };
   if (etag) headers.ETag = etag;
   response.writeHead(status, headers);
