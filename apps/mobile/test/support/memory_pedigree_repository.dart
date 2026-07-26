@@ -9,6 +9,9 @@ class MemoryPedigreeRepository implements PedigreeRepository {
     : _graphs = {...?graphs};
 
   final Map<String, PedigreeGraph> _graphs;
+  final List<({String childId, String parentId, String role, String? reason})>
+  created = [];
+  final List<({String childId, String role, String reason})> ended = [];
 
   /// Seed a linear 3-generation sire/dam tree for tests.
   PedigreeGraph seedThreeGenerationTree({String rootId = 'h-root'}) {
@@ -83,5 +86,88 @@ class MemoryPedigreeRepository implements PedigreeRepository {
       throw const PedigreeRepositoryException('谱系不存在');
     }
     return graph;
+  }
+
+  @override
+  Future<void> createParentage({
+    required String childHamsterId,
+    required String parentHamsterId,
+    required String role,
+    String? correctionReason,
+  }) async {
+    created.add((
+      childId: childHamsterId,
+      parentId: parentHamsterId,
+      role: role,
+      reason: correctionReason,
+    ));
+    for (final entry in _graphs.entries.toList()) {
+      final g = entry.value;
+      final hasChild = g.nodes.any((n) => n.id == childHamsterId);
+      if (!hasChild) continue;
+      final parent = g.nodes.cast<PedigreeNode?>().firstWhere(
+        (n) => n?.id == parentHamsterId,
+        orElse: () => null,
+      );
+      final existing = g.edges.any(
+        (e) => e.childId == childHamsterId && e.role == role,
+      );
+      if (existing &&
+          (correctionReason == null || correctionReason.trim().isEmpty)) {
+        throw const PedigreeRepositoryException('该位置已有父母关系');
+      }
+      final nodes = [
+        ...g.nodes,
+        if (parent == null)
+          PedigreeNode(
+            id: parentHamsterId,
+            internalCode: parentHamsterId,
+            name: '插入',
+            sex: role == 'sire' ? 'male' : 'female',
+          ),
+      ];
+      final edges = [
+        ...g.edges.where(
+          (e) => !(e.childId == childHamsterId && e.role == role),
+        ),
+        PedigreeEdge(
+          childId: childHamsterId,
+          parentId: parentHamsterId,
+          role: role,
+          evidenceType: 'manual',
+        ),
+      ];
+      _graphs[entry.key] = PedigreeGraph(
+        rootHamsterId: g.rootHamsterId,
+        nodes: nodes,
+        edges: edges,
+        commonAncestors: g.commonAncestors,
+      );
+    }
+  }
+
+  @override
+  Future<void> endParentage({
+    required String childHamsterId,
+    required String role,
+    required String correctionReason,
+  }) async {
+    ended.add((
+      childId: childHamsterId,
+      role: role,
+      reason: correctionReason,
+    ));
+    for (final entry in _graphs.entries.toList()) {
+      final g = entry.value;
+      final edges = g.edges
+          .where((e) => !(e.childId == childHamsterId && e.role == role))
+          .toList();
+      _graphs[entry.key] = PedigreeGraph(
+        rootHamsterId: g.rootHamsterId,
+        nodes: g.nodes,
+        edges: edges,
+        commonAncestors: g.commonAncestors,
+      );
+    }
   }
 }

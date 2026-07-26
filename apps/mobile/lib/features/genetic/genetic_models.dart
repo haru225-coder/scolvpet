@@ -740,6 +740,150 @@ String formatProbabilityPercent(double probability) {
   return '${(p * 100).toStringAsFixed(1)}%';
 }
 
+/// Consumer-facing “为什么？” block — pure presentation over authority results.
+///
+/// Does **not** recompute genetics; only formats fields already returned by
+/// phenotype-table / Mendel simulators.
+class SimulationWhyExplanation {
+  const SimulationWhyExplanation({
+    required this.sireSummary,
+    required this.damSummary,
+    required this.therefore,
+    required this.highlights,
+    required this.basisNote,
+  });
+
+  /// e.g. 表现「蜜波利」 / 携带 A=A/a
+  final String sireSummary;
+  final String damSummary;
+
+  /// One-line conclusion for the pair.
+  final String therefore;
+
+  /// Top outcomes as short bullets (phenotype + %).
+  final List<String> highlights;
+
+  /// Authority / history basis for the user.
+  final String basisNote;
+}
+
+/// Summarize a genotype map without inventing new allele rules.
+String summarizeGenotypeCarries(Map<String, String> genotype) {
+  if (genotype.isEmpty) return '基因型未提供';
+  // Phenotype-table path stores series/phenotype keys, not locus alleles.
+  final ph = genotype['phenotype']?.trim();
+  if (ph != null && ph.isNotEmpty) return '表现「$ph」';
+
+  final parts = <String>[];
+  for (final locus in defaultGeneticLoci) {
+    final raw = genotype[locus.code];
+    if (raw == null || raw.trim().isEmpty) continue;
+    final norm = normalizeAllelePair(locus, raw);
+    if (norm == null) {
+      parts.add('${locus.code}=$raw');
+      continue;
+    }
+    final alleles = norm.split('/');
+    final bothRecessive =
+        alleles[0] == locus.recessiveAllele &&
+        alleles[1] == locus.recessiveAllele;
+    final bothDominant =
+        alleles[0] == locus.dominantAllele &&
+        alleles[1] == locus.dominantAllele;
+    if (bothRecessive) {
+      parts.add('表现${locus.recessiveLabel}（${locus.code}=$norm）');
+    } else if (bothDominant) {
+      parts.add('表现${locus.dominantLabel}（${locus.code}=$norm）');
+    } else {
+      parts.add(
+        '表现${locus.dominantLabel}、携带${locus.recessiveLabel}隐性'
+        '（${locus.code}=$norm）',
+      );
+    }
+  }
+  if (parts.isEmpty) {
+    // Fallback: print remaining keys (still authority payload, not recomputed).
+    final keys = genotype.keys.toList()..sort();
+    return keys.map((k) => '$k=${genotype[k]}').join(' · ');
+  }
+  return parts.join('；');
+}
+
+/// Build the “为什么？” explanation from an existing simulation result only.
+SimulationWhyExplanation buildSimulationWhyExplanation(
+  GeneticSimulationResult result, {
+  int topN = 3,
+}) {
+  final sirePh =
+      result.sirePhenotype?.trim().isNotEmpty == true
+      ? result.sirePhenotype!.trim()
+      : (result.sire['phenotype']?.trim().isNotEmpty == true
+            ? result.sire['phenotype']!.trim()
+            : null);
+  final damPh =
+      result.damPhenotype?.trim().isNotEmpty == true
+      ? result.damPhenotype!.trim()
+      : (result.dam['phenotype']?.trim().isNotEmpty == true
+            ? result.dam['phenotype']!.trim()
+            : null);
+
+  final sireSummary = sirePh != null
+      ? '表现「$sirePh」'
+      : summarizeGenotypeCarries(result.sire);
+  final damSummary = damPh != null
+      ? '表现「$damPh」'
+      : summarizeGenotypeCarries(result.dam);
+
+  final ranked = List<GeneticOutcome>.from(result.outcomes)
+    ..sort((a, b) {
+      final byP = b.probability.compareTo(a.probability);
+      if (byP != 0) return byP;
+      return a.phenotypeLabel.compareTo(b.phenotypeLabel);
+    });
+  final n = topN < 1 ? 1 : topN;
+  final top = ranked.take(n).toList();
+  final highlights = <String>[
+    for (final o in top)
+      '${o.phenotypeLabel} ${o.percentLabel}'
+          '${o.genotype['fraction'] != null && o.genotype['fraction']!.isNotEmpty ? '（${o.genotype['fraction']}）' : ''}',
+  ];
+
+  final most = top.isEmpty ? null : top.first;
+  final seriesPart = (result.seriesName ?? result.series)?.trim();
+  final pairPart = (sirePh != null && damPh != null)
+      ? '「$sirePh」×「$damPh」'
+      : '该配对';
+
+  final String therefore;
+  if (most == null) {
+    therefore = '$pairPart 暂无可用后代概率结果。';
+  } else if (result.isPhenotypeTable) {
+    therefore =
+        '${seriesPart == null || seriesPart.isEmpty ? '' : '$seriesPart 系列中，'}'
+        '$pairPart 后代最可能出现「${most.phenotypeLabel}」'
+        '（${most.percentLabel}）'
+        '${top.length > 1 ? '，并可能出现 ${top.skip(1).map((o) => o.phenotypeLabel).join('、')}' : ''}。';
+  } else {
+    therefore =
+        '按位点孟德尔组合，$pairPart 后代最可能表型为「${most.phenotypeLabel}」'
+        '（${most.percentLabel}）。';
+  }
+
+  final basisNote = result.usesHistoricalRecords
+      ? '已结合历史繁殖记录校准；单窝仍会有随机波动，以下为期望比例。'
+      : (result.isPhenotypeTable
+            ? '基于权威表型表${result.tableVersion == null || result.tableVersion!.isEmpty ? '' : '（${result.tableVersion}）'}；以下为理论概率，单窝不保证按比例出现。'
+            : '基于位点组合理论概率；单窝不保证按比例出现。');
+
+  return SimulationWhyExplanation(
+    sireSummary: sireSummary,
+    damSummary: damSummary,
+    therefore: therefore,
+    highlights: highlights,
+    basisNote: basisNote,
+  );
+}
+
 /// Validates phenotype counts against declared live pup total.
 class PhenotypeCountValidation {
   const PhenotypeCountValidation({

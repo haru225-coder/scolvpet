@@ -347,7 +347,7 @@ class _GeneticHubPageState extends State<GeneticHubPage>
       builder: (context, _) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('遗传推算'),
+            title: const Text('繁育模拟'),
             actions: [
               IconButton(
                 key: const Key('genetic-refresh'),
@@ -380,7 +380,7 @@ class _GeneticHubPageState extends State<GeneticHubPage>
               foregroundColor: ScolvPalette.of(context).groupedBackground,
               elevation: 0,
               icon: const Icon(CupertinoIcons.lab_flask_solid),
-              label: const Text('开始推算'),
+              label: const Text('开始模拟'),
             ),
             1 => FloatingActionButton.extended(
               key: const Key('genetic-run-target'),
@@ -957,7 +957,8 @@ class _PairSimTab extends StatelessWidget {
             ),
             const SizedBox(height: IosMetrics.sectionGap),
             Text(
-              '下一窝模拟结果',
+              '模拟结果',
+              key: const Key('genetic-result-title'),
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -968,7 +969,7 @@ class _PairSimTab extends StatelessWidget {
               onRetry: onRetrySim,
               emptyBuilder: (_) => const I2StateMessage(
                 icon: CupertinoIcons.lab_flask,
-                message: '选择父母表型后点击「开始推算」',
+                message: '选择父母表型后点击「开始模拟」',
               ),
               builder: (result) {
                 final mostLikely = mostLikelyOutcome(result.outcomes);
@@ -980,6 +981,8 @@ class _PairSimTab extends StatelessWidget {
                   targetProbability,
                   litterSize,
                 );
+                final why = buildSimulationWhyExplanation(result);
+                final p = ScolvPalette.of(context);
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -988,6 +991,15 @@ class _PairSimTab extends StatelessWidget {
                       key: const Key('genetic-prediction-basis'),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // —— 可能后代（基础结果）——
+                    Text(
+                      '可能后代',
+                      key: const Key('genetic-offspring-heading'),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -1000,9 +1012,9 @@ class _PairSimTab extends StatelessWidget {
                               icon: CupertinoIcons.star_fill,
                               color: IosColors.systemOrange,
                             ),
-                            title: '最可能：${mostLikely.phenotypeLabel}',
+                            title: '毛色 · ${mostLikely.phenotypeLabel}',
                             subtitle:
-                                '预计约 ${formatExpectedCount(mostLikely.probability, litterSize)} 只',
+                                '最可能 · 预计约 ${formatExpectedCount(mostLikely.probability, litterSize)} 只 / $litterSize',
                             trailing: Text(
                               mostLikely.percentLabel,
                               style: const TextStyle(
@@ -1011,6 +1023,48 @@ class _PairSimTab extends StatelessWidget {
                             ),
                             showChevron: false,
                           ),
+                          if (result.seriesName != null ||
+                              result.series != null) ...[
+                            Divider(
+                              height: 1,
+                              thickness: IosMetrics.hairline,
+                              color: p.separator,
+                            ),
+                            IosListTile(
+                              key: const Key('genetic-series-line'),
+                              leading: const IosGlyph(
+                                icon: CupertinoIcons.tag,
+                                color: IosColors.systemIndigo,
+                              ),
+                              title:
+                                  '品种 / 系列 · ${result.seriesName ?? result.series}',
+                              subtitle: result.isPhenotypeTable
+                                  ? '权威表型表配对结果'
+                                  : '位点组合推算',
+                              showChevron: false,
+                            ),
+                          ],
+                          if (!result.isPhenotypeTable &&
+                              (result.sire.isNotEmpty ||
+                                  result.dam.isNotEmpty)) ...[
+                            Divider(
+                              height: 1,
+                              thickness: IosMetrics.hairline,
+                              color: p.separator,
+                            ),
+                            IosListTile(
+                              key: const Key('genetic-carry-line'),
+                              leading: const IosGlyph(
+                                icon: CupertinoIcons.lab_flask,
+                                color: IosColors.systemTeal,
+                              ),
+                              title: '携带',
+                              subtitle:
+                                  '父 ${summarizeGenotypeCarries(result.sire)}\n'
+                                  '母 ${summarizeGenotypeCarries(result.dam)}',
+                              showChevron: false,
+                            ),
+                          ],
                         ],
                       ),
                     if (targetPhenotype != null &&
@@ -1038,6 +1092,9 @@ class _PairSimTab extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: IosMetrics.sectionGap),
+                    // —— 为什么？（遗传说明，不重算）——
+                    _WhyExplanationCard(why: why),
+                    const SizedBox(height: IosMetrics.sectionGap),
                     Text(
                       '各表型概率',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -1054,7 +1111,8 @@ class _PairSimTab extends StatelessWidget {
                             ),
                             title: outcome.phenotypeLabel,
                             subtitle:
-                                '约 ${formatExpectedCount(outcome.probability, litterSize)} 只（按 $litterSize 只计算）',
+                                '约 ${formatExpectedCount(outcome.probability, litterSize)} 只（按 $litterSize 只计算）'
+                                '${outcome.genotype['fraction'] != null && outcome.genotype['fraction']!.isNotEmpty ? ' · ${outcome.genotype['fraction']}' : ''}',
                             trailing: Text(
                               outcome.percentLabel,
                               style: const TextStyle(
@@ -1064,13 +1122,15 @@ class _PairSimTab extends StatelessWidget {
                           ),
                       ],
                     ),
-                    if (canCreatePlan)
+                    if (canCreatePlan) ...[
+                      const SizedBox(height: 12),
                       FilledButton.icon(
                         key: const Key('genetic-create-plan'),
                         onPressed: onCreatePlan,
                         icon: const Icon(CupertinoIcons.doc_on_clipboard),
                         label: const Text('加入繁育计划'),
                       ),
+                    ],
                   ],
                 );
               },
@@ -1078,6 +1138,138 @@ class _PairSimTab extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// 「为什么？」说明卡：只展示 [buildSimulationWhyExplanation] 的结果。
+class _WhyExplanationCard extends StatelessWidget {
+  const _WhyExplanationCard({required this.why});
+
+  final SimulationWhyExplanation why;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
+    final theme = Theme.of(context);
+    return Container(
+      key: const Key('genetic-why-card'),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: p.secondaryGroupedBackground,
+        borderRadius: BorderRadius.circular(IosMetrics.continuousRadius),
+        border: Border.all(color: p.separator, width: IosMetrics.hairline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Text('为什么？', style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              )),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  why.basisNote,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: p.tertiaryLabel,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _WhyLine(label: '父本', body: why.sireSummary, color: IosColors.systemBlue),
+          const SizedBox(height: 8),
+          _WhyLine(label: '母本', body: why.damSummary, color: IosColors.systemRed),
+          const SizedBox(height: 12),
+          Text(
+            '因此',
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: p.accent,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            why.therefore,
+            key: const Key('genetic-why-therefore'),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: p.label,
+              height: 1.45,
+            ),
+          ),
+          if (why.highlights.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            for (final line in why.highlights)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('· ', style: TextStyle(color: p.secondaryLabel)),
+                    Expanded(
+                      child: Text(
+                        line,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: p.secondaryLabel,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _WhyLine extends StatelessWidget {
+  const _WhyLine({
+    required this.label,
+    required this.body,
+    required this.color,
+  });
+
+  final String label;
+  final String body;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = ScolvPalette.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(IosMetrics.smallRadius),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            body,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: p.label,
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

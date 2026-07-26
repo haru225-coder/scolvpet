@@ -85,6 +85,28 @@ void main() {
     expect(controller.targetState.hasValue, isTrue);
   });
 
+  test('buildSimulationWhyExplanation formats authority result only', () async {
+    final repo = MemoryGeneticRepository();
+    final sim = await repo.simulatePhenotype(
+      series: 'poly',
+      sirePhenotype: '蜜波利',
+      damPhenotype: '火波利',
+    );
+    final why = buildSimulationWhyExplanation(sim, topN: 3);
+    expect(why.sireSummary, contains('蜜波利'));
+    expect(why.damSummary, contains('火波利'));
+    expect(why.therefore, contains('蜜波利'));
+    expect(why.therefore, contains('火波利'));
+    expect(why.highlights, isNotEmpty);
+    expect(why.basisNote, contains('权威表型表'));
+  });
+
+  test('summarizeGenotypeCarries reports heterozygous carrier', () {
+    final line = summarizeGenotypeCarries({'A': 'A/a'});
+    expect(line, contains('携带'));
+    expect(line, contains('A/a'));
+  });
+
   test('phenotype count validation', () {
     expect(
       const PhenotypeCountValidation(
