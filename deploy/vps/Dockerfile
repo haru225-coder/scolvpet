@@ -11,8 +11,16 @@ RUN cd api && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 FROM debian:bookworm-slim
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends bash ca-certificates postgresql-client \
-  && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y --no-install-recommends \
+    bash \
+    ca-certificates \
+    postgresql-client \
+    ffmpeg \
+    webp \
+  && rm -rf /var/lib/apt/lists/* \
+  && command -v ffmpeg \
+  && command -v ffprobe \
+  && command -v cwebp
 
 WORKDIR /app
 COPY --from=build /out/scolvpet-api /app/scolvpet-api

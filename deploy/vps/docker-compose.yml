@@ -34,6 +34,33 @@ services:
       - 127.0.0.1:8080:8080
     volumes:
       - scolvpet_objects:/var/lib/scolvpet/objects
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080'"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+
+  web:
+    build:
+      context: ../..
+      dockerfile: deploy/vps/Dockerfile.web
+    restart: unless-stopped
+    env_file:
+      - ../../.env
+    environment:
+      WEB_PORT: ${WEB_PORT:-3000}
+      # Root host only — web URL builder appends /v1 itself (avoid /v1/v1).
+      WEB_API_BASE_URL: ${WEB_API_BASE_URL:-http://api:8080}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - 127.0.0.1:3000:3000
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/3000'"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
 
 volumes:
   scolvpet_postgres:
