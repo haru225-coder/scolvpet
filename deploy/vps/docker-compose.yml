@@ -1,9 +1,19 @@
+# ScolvPet VPS compose，staging / production 共用一份（P1-2 方案：env_file 参数化，
+# 不拆 override 文件，staging 行为保持不变）。
+#   staging   : 默认加载 ../../.env（相对本文件），命令不变：
+#               docker compose -f deploy/vps/docker-compose.yml up -d --build
+#   production: 用 ENV_FILE 指向 production env 文件（模板见 .env.production.example，
+#               SMS_MOCK_CODE 必须为空），同一文件再传给 --env-file 供 compose 插值
+#               （POSTGRES_* 等）：
+#               ENV_FILE=/opt/scolvpet/.env.production docker compose \
+#                 --env-file /opt/scolvpet/.env.production -f docker-compose.yml up -d --build
+# 注意：ENV_FILE 用相对路径时是相对本 compose 文件目录，建议直接给绝对路径。
 services:
   db:
     image: postgres:15-bookworm
     restart: unless-stopped
     env_file:
-      - ../../.env
+      - ${ENV_FILE:-../../.env}
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-scolvpet}
       POSTGRES_USER: ${POSTGRES_USER:-scolvpet}
@@ -22,7 +32,7 @@ services:
       dockerfile: deploy/vps/Dockerfile
     restart: unless-stopped
     env_file:
-      - ../../.env
+      - ${ENV_FILE:-../../.env}
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-scolvpet}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-scolvpet}?sslmode=disable
       API_ADDR: :8080
@@ -46,7 +56,7 @@ services:
       dockerfile: deploy/vps/Dockerfile.web
     restart: unless-stopped
     env_file:
-      - ../../.env
+      - ${ENV_FILE:-../../.env}
     environment:
       WEB_PORT: ${WEB_PORT:-3000}
       # Root host only — web URL builder appends /v1 itself (avoid /v1/v1).
