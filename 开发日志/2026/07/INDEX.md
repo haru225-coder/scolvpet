@@ -2,6 +2,7 @@
 
 | 日期 | 主题 | 状态 | 入口 |
 |---|---|---|---|
+| 2026-07-26 | ScolvPet 发布层 P2 微信身份接线 | 已验证（mock）/ 真机与真实 AppID 待确认 | [日志](2026-07-26 · ScolvPet-发布层P2-微信身份接线.md)；[任务书](../../../docs/30-ScolvPet-发布层-Production-Integration-任务书.md) |
 | 2026-07-26 | ScolvPet 发布层 P1 构建与部署门禁 | 已验证 / VPS compose 待确认 | [日志](2026-07-26 · ScolvPet-发布层P1-构建与部署门禁.md)；[任务书](../../../docs/30-ScolvPet-发布层-Production-Integration-任务书.md) |
 | 2026-07-26 | ScolvPet Wave1 任务与体重纠错闭环 | 已验证 / 待真机确认 | [日志](2026-07-26 · ScolvPet-Wave1-任务与体重纠错闭环.md)；[审计](../../../docs/28-ScolvPet-v0.0.4+6-功能闭环审计与门禁.md) |
 | 2026-07-26 | ScolvPet v0.0.5 首页与个体档案收口 | 已验证 / 待真机确认 | [日志](2026-07-26 · ScolvPet-v0.0.5-首页与个体档案收口.md)；[任务书](../../../docs/27-ScolvPet-繁育智能助手-产品重构任务书-v2.md) |
