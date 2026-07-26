@@ -171,6 +171,21 @@ test('builds the public document endpoint', () => {
   );
 });
 
+test('deployment default base ending with /v1 does not double-prefix', () => {
+  assert.equal(
+    buildPublicGrowthCatalogUrl('http://api:8080/v1', 'demo'),
+    'http://api:8080/v1/public/sites/demo/catalog',
+  );
+  assert.equal(
+    buildPublicDocumentUrl('http://api:8080/v1/', 'doc_abc'),
+    'http://api:8080/v1/public/documents/doc_abc',
+  );
+  assert.equal(
+    buildPublicShareUrl('http://api:8080/v1', 'tok'),
+    'http://api:8080/v1/public/shares/tok',
+  );
+});
+
 test('SSR public document page and invalid token boundary', async (t) => {
   let requestedUrl = '';
   const server = createServer({
@@ -297,8 +312,8 @@ test('SSR growth page fetches catalog, hides internals, and proxies consult/lead
   assert.match(html, /snow-house/);
   assert.match(html, /src="\/p\/snow-cattery\/media\/media-1"/);
   assert.match(html, /可预订/);
-  assert.match(html, /action="\/p\/snow-cattery\/reserve"/);
-  assert.match(html, /name="hamster_id" value="h1"/);
+  assert.match(html, /预订请用微信小程序/);
+  assert.doesNotMatch(html, /action="\/p\/snow-cattery\/reserve"/);
   assert.doesNotMatch(html, /internal_code|owner_id|H-SECRET|postgres|api\.example\.test|WEB-01|GROWTH/);
   assert.ok(requests.some((item) => item.url.includes('/catalog?campaign=c_demo')));
 
@@ -327,25 +342,20 @@ test('SSR growth page fetches catalog, hides internals, and proxies consult/lead
   assert.equal(leadPage.status, 200);
   assert.match(leadHtml, /已收到你的联系方式/);
 
+  // Web reserve form is disabled — trade entry is WeChat miniprogram.
   const reserve = await fetch(`http://127.0.0.1:${port}/p/snow-cattery/reserve`, {
     method: 'POST',
     redirect: 'manual',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'name=阿雪&wechat=snow123&hamster_id=h1&campaign_code=c_demo',
   });
-  assert.equal(reserve.status, 303);
-  assert.ok(requests.some((item) => item.url.includes('/reservations') && item.method === 'POST'));
-  const reserveBody = requests.find((item) => item.url.includes('/reservations'))?.body;
-  assert.match(String(reserveBody), /"hamster_id":"h1"/);
-  assert.doesNotMatch(String(reserveBody), /variety|毛色|金丝熊/);
-  const reservePage = await fetch(new URL(reserve.headers.get('location'), `http://127.0.0.1:${port}`));
-  const reserveHtml = await reservePage.text();
-  assert.equal(reservePage.status, 200);
-  assert.match(reserveHtml, /预订已提交/);
-  assert.match(reserveHtml, /预订 奶茶/);
+  assert.equal(reserve.status, 409);
+  const reserveHtml = await reserve.text();
+  assert.match(reserveHtml, /微信小程序/);
+  assert.ok(!requests.some((item) => item.url.includes('/reservations') && item.method === 'POST'));
 
   const rendered = renderPublicGrowthPage(catalog.data, { campaignCode: 'c_demo' });
-  assert.match(rendered, /name="campaign_code" value="c_demo"/);
+  assert.match(rendered, /预订请用微信小程序/);
   assert.doesNotMatch(renderGrowthBoundary(), /api\.example|token|postgres/i);
 });
 

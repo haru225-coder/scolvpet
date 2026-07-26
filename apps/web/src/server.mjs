@@ -447,7 +447,19 @@ export function createServer(options = {}) {
       if (!form) return sendHtml(response, 413, renderGrowthBoundary());
       const campaignCode = form.campaign_code || '';
       const action = growthAction[2];
-      const endpoint = action === 'consult' ? 'consult' : action === 'reserve' ? 'reservations' : 'leads';
+      // Web no longer accepts reservation POSTs — official trade is miniprogram.
+      if (action === 'reserve') {
+        let catalog = null;
+        try { catalog = await fetchPublicGrowthCatalog({ apiBaseUrl, fetchImpl, slug, campaignCode }); } catch { /* boundary */ }
+        if (!catalog) return sendHtml(response, 404, renderGrowthBoundary());
+        return sendHtml(response, 409, renderPublicGrowthPage(catalog, {
+          campaignCode,
+          form: 'reserve',
+          error: '请使用微信小程序完成验证后预订。Web 已停止直接提交预订。',
+          interestedHamsterId: form.hamster_id,
+        }));
+      }
+      const endpoint = action === 'consult' ? 'consult' : 'leads';
       let catalog = null;
       try { catalog = await fetchPublicGrowthCatalog({ apiBaseUrl, fetchImpl, slug, campaignCode }); } catch { /* friendly boundary below */ }
       if (!catalog) return sendHtml(response, 404, renderGrowthBoundary());
@@ -455,9 +467,7 @@ export function createServer(options = {}) {
       if (!result.ok && (result.status === 400 || result.status === 409 || result.status === 422)) {
         const state = endpoint === 'consult'
           ? { campaignCode, form: 'consult', error: publicFormError(result, '请检查咨询内容后再提交。'), consultValues: form, sessionToken: form.session_token, interestedHamsterId: form.interested_hamster_id }
-          : endpoint === 'reservations'
-            ? { campaignCode, form: 'reserve', error: publicFormError(result, '预订未能提交，请检查联系方式或选择其他个体。'), reserveValues: form, interestedHamsterId: form.hamster_id }
-            : { campaignCode, form: 'lead', error: publicFormError(result, '请检查联系方式后再提交。'), leadValues: form, consultationToken: form.consultation_token, interestedHamsterId: form.interested_hamster_id };
+          : { campaignCode, form: 'lead', error: publicFormError(result, '请检查联系方式后再提交。'), leadValues: form, consultationToken: form.consultation_token, interestedHamsterId: form.interested_hamster_id };
         return sendHtml(response, result.status === 409 ? 409 : result.status, renderPublicGrowthPage(catalog, state));
       }
       if (!result.ok) {
@@ -466,9 +476,7 @@ export function createServer(options = {}) {
       const data = result.data?.data || {};
       const state = endpoint === 'consult'
         ? { campaignCode, answer: data.answer, recommendations: data.recommendations, sessionToken: data.session_token, interestedHamsterId: data.recommendations?.[0]?.hamster_id }
-        : endpoint === 'reservations'
-          ? { campaignCode, reserveSuccess: true, reserveTitle: data.title || '', interestedHamsterId: form.hamster_id }
-          : { campaignCode, leadSuccess: true, consultationToken: form.consultation_token };
+        : { campaignCode, leadSuccess: true, consultationToken: form.consultation_token };
       const resultId = rememberFlash(slug, state);
       const query = new URLSearchParams();
       if (campaignCode) query.set('campaign', campaignCode);
@@ -509,19 +517,45 @@ export async function fetchPublicShare({ apiBaseUrl, fetchImpl = globalThis.fetc
   return data;
 }
 
-export function buildPublicShareUrl(apiBaseUrl, token) {
+/** Strip trailing /v1 from API root so builders never emit /v1/v1/... */
+export function normalizeApiRoot(apiBaseUrl) {
   const base = new URL(String(apiBaseUrl));
-  const basePath = base.pathname.replace(/\/+$/, '');
-  base.pathname = `${basePath}/v1/public/shares/${encodeURIComponent(token)}`;
+  let path = base.pathname.replace(/\/+$/, '');
+  if (path === '/v1' || path.endsWith('/v1')) {
+    path = path.slice(0, -3);
+  }
+  base.pathname = path || '/';
+  base.search = '';
+  base.hash = '';
+  return base;
+}
+
+function joinV1Path(apiBaseUrl, suffixPath) {
+  const base = new URL(String(apiBaseUrl));
+  let root = base.pathname.replace(/\/+$/, '');
+  if (root === '/v1' || root.endsWith('/v1')) {
+    root = root.slice(0, -3);
+  }
+  const suffix = suffixPath.startsWith('/') ? suffixPath : `/${suffixPath}`;
+  // root may be '' after stripping bare /v1.
+  base.pathname = `${root}/v1${suffix}`.replace(/\/{2,}/g, '/');
+  if (!base.pathname.startsWith('/')) {
+    base.pathname = `/${base.pathname}`;
+  }
+  base.search = '';
+  base.hash = '';
+  return base;
+}
+
+export function buildPublicShareUrl(apiBaseUrl, token) {
+  const base = joinV1Path(apiBaseUrl, `/public/shares/${encodeURIComponent(token)}`);
   base.search = '';
   base.hash = '';
   return base.toString();
 }
 
 export function buildPublicDocumentUrl(apiBaseUrl, token) {
-  const base = new URL(String(apiBaseUrl));
-  const basePath = base.pathname.replace(/\/+$/, '');
-  base.pathname = `${basePath}/v1/public/documents/${encodeURIComponent(token)}`;
+  const base = joinV1Path(apiBaseUrl, `/public/documents/${encodeURIComponent(token)}`);
   base.search = '';
   base.hash = '';
   return base.toString();
@@ -553,18 +587,14 @@ function readDocumentToken(pathname) {
 }
 
 export function buildPublicGrowthCatalogUrl(apiBaseUrl, slug, campaignCode = '') {
-  const base = new URL(String(apiBaseUrl));
-  const basePath = base.pathname.replace(/\/+$/, '');
-  base.pathname = `${basePath}/v1/public/sites/${encodeURIComponent(slug)}/catalog`;
+  const base = joinV1Path(apiBaseUrl, `/public/sites/${encodeURIComponent(slug)}/catalog`);
   base.search = campaignCode ? `?campaign=${encodeURIComponent(campaignCode)}` : '';
   base.hash = '';
   return base.toString();
 }
 
 export function buildPublicGrowthMediaUrl(apiBaseUrl, slug, mediaId) {
-  const base = new URL(String(apiBaseUrl));
-  const basePath = base.pathname.replace(/\/+$/, '');
-  base.pathname = `${basePath}/v1/public/sites/${encodeURIComponent(slug)}/media/${encodeURIComponent(mediaId)}`;
+  const base = joinV1Path(apiBaseUrl, `/public/sites/${encodeURIComponent(slug)}/media/${encodeURIComponent(mediaId)}`);
   base.search = '';
   base.hash = '';
   return base.toString();
@@ -602,9 +632,7 @@ export async function fetchPublicGrowthMedia({ apiBaseUrl, fetchImpl = globalThi
 
 async function proxyPublicGrowthAction({ apiBaseUrl, fetchImpl = globalThis.fetch, slug, endpoint, form }) {
   if (!apiBaseUrl || typeof fetchImpl !== 'function') return { ok: false, status: 503, data: null };
-  const base = new URL(String(apiBaseUrl));
-  const basePath = base.pathname.replace(/\/+$/, '');
-  base.pathname = `${basePath}/v1/public/sites/${encodeURIComponent(slug)}/${endpoint}`;
+  const base = joinV1Path(apiBaseUrl, `/public/sites/${encodeURIComponent(slug)}/${endpoint}`);
   base.search = '';
   base.hash = '';
   const body = endpoint === 'consult'
@@ -650,24 +678,13 @@ function renderGrowthHamsterCard(item, {
   const statusBadge = reservable
     ? '<span class="status-badge status-badge--ok">可预订</span>'
     : '<span class="status-badge">暂不可订</span>';
-  const formId = `reserve-${hamsterId || index}`;
+  // Official trade entry is WeChat miniprogram (verified customer session).
+  // Web must not POST unauthenticated /reservations (backend returns 401).
   const reserveForm = reservable && hamsterId
     ? `<div class="form-panel growth-card__reserve">
-         ${reserveError}
-         <form method="post" action="/p/${encodeURIComponent(slug)}/reserve">
-           <input type="hidden" name="campaign_code" value="${escapeHtml(campaignCode)}">
-           <input type="hidden" name="hamster_id" value="${escapeHtml(hamsterId)}">
-           <label for="${formId}-name">怎么称呼</label>
-           <input id="${formId}-name" name="name" maxlength="120" autocomplete="name" required value="${escapeHtml(reserveValues.name || '')}">
-           <label for="${formId}-phone">手机号</label>
-           <input id="${formId}-phone" name="phone" maxlength="32" inputmode="tel" autocomplete="tel" value="${escapeHtml(reserveValues.phone || '')}">
-           <label for="${formId}-wechat">微信</label>
-           <input id="${formId}-wechat" name="wechat" maxlength="64" autocomplete="off" value="${escapeHtml(reserveValues.wechat || '')}">
-           <p class="helper">手机号和微信至少填写一项。提交后宠舍会在经营后台看到此预订。</p>
-           <label for="${formId}-notes">备注（可选）</label>
-           <textarea id="${formId}-notes" name="notes" maxlength="2000">${escapeHtml(reserveValues.notes || '')}</textarea>
-           <button type="submit">提交预订</button>
-         </form>
+         <p class="helper"><strong>预订请用微信小程序</strong>完成手机号验证后提交，可同步「我的预订」与合同回执。</p>
+         <p class="helper">熊舍公开路径：<code>${escapeHtml(slug)}</code></p>
+         <p class="helper muted">本页仅支持浏览、咨询与留资。</p>
        </div>`
     : '';
   return `<article class="growth-card" data-hamster-id="${escapeHtml(hamsterId)}" data-reservable="${reservable ? 'true' : 'false'}">${media}<div class="growth-card__body"><div class="growth-card__title-row"><h3>${escapeHtml(title)}</h3>${statusBadge}</div>${facts ? `<p>${escapeHtml(facts)}</p>` : ''}${price}${item.summary ? `<p>${escapeHtml(item.summary)}</p>` : ''}${traits ? `<div class="traits">${escapeHtml(traits)}</div>` : ''}${reserveForm}</div></article>`;
