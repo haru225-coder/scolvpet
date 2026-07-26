@@ -528,7 +528,7 @@ func (s *Server) getGrowthPublicMedia(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) postGrowthPublicConsultation(w http.ResponseWriter, r *http.Request) {
-	if retry, err := s.enforceRateLimit(r.Context(), "public:consult:ip:"+clientIP(r), 3*time.Second, 20, time.Hour); err != nil {
+	if retry, err := s.enforceRateLimit(r.Context(), "public:consult:ip:"+s.clientIP(r), 3*time.Second, 20, time.Hour); err != nil {
 		if isRateLimitError(err) {
 			writeAPIError(w, r, rateLimitedError(retry))
 			return
@@ -611,7 +611,7 @@ func (s *Server) postGrowthPublicConsultation(w http.ResponseWriter, r *http.Req
 }
 
 func (s *Server) postGrowthPublicLead(w http.ResponseWriter, r *http.Request) {
-	if retry, err := s.enforceRateLimit(r.Context(), "public:lead:ip:"+clientIP(r), 5*time.Second, 15, time.Hour); err != nil {
+	if retry, err := s.enforceRateLimit(r.Context(), "public:lead:ip:"+s.clientIP(r), 5*time.Second, 15, time.Hour); err != nil {
 		if isRateLimitError(err) {
 			writeAPIError(w, r, rateLimitedError(retry))
 			return
@@ -725,7 +725,7 @@ func (s *Server) postGrowthPublicReservation(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	// Public abuse controls: window caps without multi-second cooldowns (smoke + UX).
-	if retry, err := s.enforceRateLimit(r.Context(), "public:reserve:ip:"+clientIP(r), 0, 30, time.Hour); err != nil {
+	if retry, err := s.enforceRateLimit(r.Context(), "public:reserve:ip:"+s.clientIP(r), 0, 30, time.Hour); err != nil {
 		if isRateLimitError(err) {
 			writeAPIError(w, r, rateLimitedError(retry))
 			return

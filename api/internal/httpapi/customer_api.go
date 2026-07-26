@@ -62,7 +62,7 @@ func (s *Server) sendCustomerVerificationCode(w http.ResponseWriter, r *http.Req
 			}
 			return 0, nil, err
 		}
-		if retry, err := s.enforceRateLimit(ctx, "cust-sms:ip:"+clientIP(r), 0, ipMax, time.Hour); err != nil {
+		if retry, err := s.enforceRateLimit(ctx, "cust-sms:ip:"+s.clientIP(r), 0, ipMax, time.Hour); err != nil {
 			if isRateLimitError(err) {
 				return 0, nil, rateLimitedError(retry)
 			}

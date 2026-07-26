@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
+	"net/netip"
 	"os"
 	"regexp"
 	"strings"
@@ -38,6 +40,9 @@ type Server struct {
 	// production smoke can assert the runtime wiring (docs/30 P1-2).
 	// Nil keeps the legacy {"status":"ready"} shape for unit tests.
 	Ready *ReadyChecks
+	// TrustedProxies gates X-Forwarded-For / X-Real-IP trust for clientIP.
+	// Empty means no proxy is trusted and only the socket peer is used.
+	TrustedProxies []netip.Prefix
 }
 
 // ReadyChecks is the /readyz "checks" payload; values come from the process
@@ -187,7 +192,7 @@ func (s *Server) sendVerificationCode(w http.ResponseWriter, r *http.Request) {
 			}
 			return 0, nil, err
 		}
-		if retry, err := s.enforceRateLimit(ctx, "sms:ip:"+clientIP(r), 0, ipMax, time.Hour); err != nil {
+		if retry, err := s.enforceRateLimit(ctx, "sms:ip:"+s.clientIP(r), 0, ipMax, time.Hour); err != nil {
 			if isRateLimitError(err) {
 				return 0, nil, rateLimitedError(retry)
 			}
@@ -686,21 +691,54 @@ func authRequired() error {
 	return &apiError{Status: http.StatusUnauthorized, Code: "AUTHENTICATION_REQUIRED", Message: "请重新登录"}
 }
 
-func clientIP(r *http.Request) string {
-	if forwarded := strings.TrimSpace(r.Header.Get("X-Forwarded-For")); forwarded != "" {
-		parts := strings.Split(forwarded, ",")
-		if len(parts) > 0 {
-			return strings.TrimSpace(parts[0])
+// clientIP resolves the caller address for rate-limit bucket keys. Forwarded
+// headers are client-forgeable, so they are honoured only when the direct
+// peer is inside TrustedProxies, and even then the chain is walked right to
+// left (rightmost hops are appended by our own proxies). Every return value
+// is a parsed IP, which also bounds the bucket-key length.
+func (s *Server) clientIP(r *http.Request) string {
+	peer, ok := parseRemoteAddr(r.RemoteAddr)
+	if !ok {
+		return "unknown"
+	}
+	if !ipInPrefixes(peer, s.TrustedProxies) {
+		return peer.String()
+	}
+	forwarded := strings.Split(r.Header.Get("X-Forwarded-For"), ",")
+	for i := len(forwarded) - 1; i >= 0; i-- {
+		hop, err := netip.ParseAddr(strings.TrimSpace(forwarded[i]))
+		if err != nil {
+			continue
+		}
+		if !ipInPrefixes(hop, s.TrustedProxies) {
+			return hop.Unmap().String()
 		}
 	}
-	if realIP := strings.TrimSpace(r.Header.Get("X-Real-IP")); realIP != "" {
-		return realIP
+	if realIP, err := netip.ParseAddr(strings.TrimSpace(r.Header.Get("X-Real-IP"))); err == nil {
+		return realIP.Unmap().String()
 	}
-	host := r.RemoteAddr
-	if i := strings.LastIndex(host, ":"); i >= 0 {
-		return host[:i]
+	return peer.String()
+}
+
+func parseRemoteAddr(remoteAddr string) (netip.Addr, bool) {
+	host, _, err := net.SplitHostPort(remoteAddr)
+	if err != nil {
+		host = remoteAddr
 	}
-	return host
+	ip, err := netip.ParseAddr(strings.TrimSpace(host))
+	if err != nil {
+		return netip.Addr{}, false
+	}
+	return ip.Unmap(), true
+}
+
+func ipInPrefixes(ip netip.Addr, prefixes []netip.Prefix) bool {
+	for _, prefix := range prefixes {
+		if prefix.Contains(ip.Unmap()) {
+			return true
+		}
+	}
+	return false
 }
 
 func permissionDenied(role string) error {

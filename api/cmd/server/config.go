@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/netip"
 	"net/url"
 	"os"
 	"strconv"
@@ -53,6 +54,33 @@ type runtimeConfig struct {
 	MediaCodecTimeoutSecs    int
 	MediaCodecMaxInputBytes  int64
 	MediaCodecMaxOutputBytes int64
+	TrustedProxyCIDRs        []netip.Prefix
+}
+
+// defaultTrustedProxyCIDRs trusts loopback and private ranges, matching the
+// compose deployment where Caddy reaches the API over the docker bridge.
+// Override with TRUSTED_PROXY_CIDRS (comma-separated CIDRs; empty string
+// disables forwarded-header trust entirely).
+const defaultTrustedProxyCIDRs = "127.0.0.0/8,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+
+func trustedProxyCIDRsFrom(lookup envLookup) ([]netip.Prefix, error) {
+	raw, ok := lookup("TRUSTED_PROXY_CIDRS")
+	if !ok {
+		raw = defaultTrustedProxyCIDRs
+	}
+	var prefixes []netip.Prefix
+	for _, part := range strings.Split(raw, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		prefix, err := netip.ParsePrefix(part)
+		if err != nil {
+			return nil, fmt.Errorf("TRUSTED_PROXY_CIDRS entry %q is not a valid CIDR: %w", part, err)
+		}
+		prefixes = append(prefixes, prefix)
+	}
+	return prefixes, nil
 }
 
 type envLookup func(string) (string, bool)
@@ -96,6 +124,10 @@ func loadRuntimeConfigFrom(lookup envLookup) (runtimeConfig, error) {
 	if err != nil {
 		return runtimeConfig{}, err
 	}
+	trustedProxies, err := trustedProxyCIDRsFrom(lookup)
+	if err != nil {
+		return runtimeConfig{}, err
+	}
 
 	config := runtimeConfig{
 		Environment:              environment,
@@ -132,6 +164,7 @@ func loadRuntimeConfigFrom(lookup envLookup) (runtimeConfig, error) {
 		MediaCodecTimeoutSecs:    getenvIntFrom(lookup, "MEDIA_CODEC_TIMEOUT_SECONDS", 120),
 		MediaCodecMaxInputBytes:  int64(getenvIntFrom(lookup, "MEDIA_CODEC_MAX_INPUT_BYTES", 512<<20)),
 		MediaCodecMaxOutputBytes: int64(getenvIntFrom(lookup, "MEDIA_CODEC_MAX_OUTPUT_BYTES", 512<<20)),
+		TrustedProxyCIDRs:        trustedProxies,
 	}
 
 	if environment == "production" {

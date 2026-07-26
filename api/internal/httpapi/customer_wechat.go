@@ -71,7 +71,7 @@ func (s *Server) createCustomerWechatSession(w http.ResponseWriter, r *http.Requ
 		writeAPIError(w, r, validationError("js_code", "请提供微信登录凭证"))
 		return
 	}
-	if retry, err := s.enforceRateLimit(r.Context(), "cust-wx:ip:"+clientIP(r), 0, wechatSessionIPMaxPerHour, time.Hour); err != nil {
+	if retry, err := s.enforceRateLimit(r.Context(), "cust-wx:ip:"+s.clientIP(r), 0, wechatSessionIPMaxPerHour, time.Hour); err != nil {
 		if isRateLimitError(err) {
 			writeAPIError(w, r, rateLimitedError(retry))
 			return

@@ -87,6 +87,7 @@ func main() {
 		SMSMockCodeSet: config.SMSMockCode != "",
 		WechatProvider: config.WechatProvider,
 	}
+	apiServer.TrustedProxies = config.TrustedProxyCIDRs
 	switch config.WechatProvider {
 	case "mock":
 		apiServer.Wechat = wechat.MockProvider{}
