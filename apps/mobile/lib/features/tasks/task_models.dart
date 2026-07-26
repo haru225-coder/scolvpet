@@ -49,6 +49,13 @@ class CareTaskItem {
   bool get isOverdue =>
       isOpen && scheduledAt.toUtc().isBefore(DateTime.now().toUtc());
 
+  /// Whether the Wave 1 correction sheet has anything to offer: an open task can
+  /// be completed or cancelled, a completed/cancelled one can be reopened.
+  /// Mirrors i5core.CanCancelTask / CanReopenTask — dismissed, closed and
+  /// superseded are final server-side, so the sheet stays shut for them.
+  bool get canCorrect =>
+      isOpen || state == 'completed' || state == 'cancelled';
+
   String get displayTitle {
     final t = title?.trim();
     if (t != null && t.isNotEmpty) return t;

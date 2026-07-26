@@ -241,4 +241,174 @@ void main() {
     expect(find.byKey(const Key('task-readonly-banner')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  // Wave 1 correction loop — a task created or completed by mistake has to be
+  // recoverable, and every correction has to carry a reason for the audit chain.
+
+  test('MemoryTaskRepository cancels an open task and drops its reminder', () async {
+    final repo = MemoryTaskRepository();
+    final seeded = repo.seedTask(title: '笼盒清洁');
+
+    final cancelled = await repo.cancelTask(seeded, reason: '笼盒已淘汰');
+    expect(cancelled.state, 'cancelled');
+    expect(cancelled.isOpen, isFalse);
+    expect(cancelled.version, seeded.version + 1);
+    expect(await repo.listReminders(), isEmpty);
+  });
+
+  test('MemoryTaskRepository reopen clears completion and restores reminder', () async {
+    final repo = MemoryTaskRepository();
+    final seeded = repo.seedTask(title: '幼崽称重', subjectIds: const ['h-1', 'h-2']);
+    final completed = await repo.completeTask(seeded);
+    expect(completed.completedSubjectIds, isNotEmpty);
+    expect(await repo.listReminders(), isEmpty);
+
+    final reopened = await repo.reopenTask(completed, reason: '记错了个体');
+    expect(reopened.state, 'pending');
+    expect(reopened.isOpen, isTrue);
+    expect(reopened.completedSubjectIds, isEmpty);
+    expect(reopened.stageDone, 0);
+    expect(reopened.version, completed.version + 1);
+    expect(await repo.listReminders(), hasLength(1));
+  });
+
+  test('MemoryTaskRepository guards correction state and version', () async {
+    final repo = MemoryTaskRepository();
+    final seeded = repo.seedTask(title: '换水');
+
+    // A pending task has nothing to reopen.
+    expect(
+      () => repo.reopenTask(seeded, reason: '手滑'),
+      throwsA(isA<TaskRepositoryException>()),
+    );
+    // A blank reason is rejected client-side too, not just by the API's 422.
+    expect(
+      () => repo.cancelTask(seeded, reason: '   '),
+      throwsA(isA<TaskRepositoryException>()),
+    );
+
+    final cancelled = await repo.cancelTask(seeded, reason: '不再需要');
+    // A finished task must be reopened first, never cancelled twice.
+    expect(
+      () => repo.cancelTask(cancelled, reason: '再取消一次'),
+      throwsA(isA<TaskRepositoryException>()),
+    );
+    // Stale version loses.
+    expect(
+      () => repo.reopenTask(seeded, reason: '版本过期'),
+      throwsA(isA<TaskRepositoryException>()),
+    );
+  });
+
+  test('CareTaskItem.canCorrect mirrors the server state machine', () {
+    final repo = MemoryTaskRepository();
+    final open = repo.seedTask(title: '开放任务');
+    expect(open.canCorrect, isTrue);
+    expect(open.copyWith(state: 'completed').canCorrect, isTrue);
+    expect(open.copyWith(state: 'cancelled').canCorrect, isTrue);
+    // Final server-side — the sheet must stay shut.
+    expect(open.copyWith(state: 'dismissed').canCorrect, isFalse);
+    expect(open.copyWith(state: 'superseded').canCorrect, isFalse);
+  });
+
+  testWidgets('TaskListPage cancels a task with a mandatory reason', (
+    tester,
+  ) async {
+    final repo = MemoryTaskRepository();
+    final task = repo.seedTask(title: '笼盒清洁');
+    final controller = TaskController(
+      repository: repo,
+      notifications: MemoryLocalNotificationScheduler(),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(home: TaskListPage(controller: controller, canWrite: true)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(Key('task-card-${task.id}')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('取消任务'));
+    await tester.pumpAndSettle();
+
+    // Confirming with an empty field keeps the sheet open.
+    await tester.tap(find.byKey(const Key('task-cancel-correction-confirm')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('task-cancel-correction-reason-sheet')),
+      findsOneWidget,
+    );
+    expect((await repo.getTask(task.id)).state, 'pending');
+
+    await tester.enterText(
+      find.byKey(const Key('task-cancel-correction-reason')),
+      '笼盒已淘汰',
+    );
+    await tester.tap(find.byKey(const Key('task-cancel-correction-confirm')));
+    await tester.pumpAndSettle();
+
+    expect((await repo.getTask(task.id)).state, 'cancelled');
+  });
+
+  testWidgets('TaskListPage reopens a completed task back to pending', (
+    tester,
+  ) async {
+    final repo = MemoryTaskRepository();
+    final seeded = repo.seedTask(title: '幼崽称重');
+    await repo.completeTask(seeded);
+    final controller = TaskController(
+      repository: repo,
+      notifications: MemoryLocalNotificationScheduler(),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(home: TaskListPage(controller: controller, canWrite: true)),
+    );
+    await tester.pumpAndSettle();
+
+    // A completed task has no one-tap complete button, only the row itself.
+    expect(find.byKey(Key('task-complete-${seeded.id}')), findsNothing);
+
+    await tester.tap(find.byKey(Key('task-card-${seeded.id}')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('退回待办'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('task-reopen-correction-reason')),
+      '记错了个体',
+    );
+    await tester.tap(find.byKey(const Key('task-reopen-correction-confirm')));
+    await tester.pumpAndSettle();
+
+    final refreshed = await repo.getTask(seeded.id);
+    expect(refreshed.state, 'pending');
+    expect(refreshed.completedSubjectIds, isEmpty);
+  });
+
+  testWidgets('TaskListPage hides corrections from read-only members', (
+    tester,
+  ) async {
+    final repo = MemoryTaskRepository();
+    final task = repo.seedTask(title: '检查饮水器');
+    final controller = TaskController(
+      repository: repo,
+      notifications: MemoryLocalNotificationScheduler(),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(home: TaskListPage(controller: controller, canWrite: false)),
+    );
+    await tester.pumpAndSettle();
+
+    // The row is inert for a read-only member, so the tap is expected to miss.
+    await tester.tap(
+      find.byKey(Key('task-card-${task.id}')),
+      warnIfMissed: false,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('取消任务'), findsNothing);
+    expect((await repo.getTask(task.id)).state, 'pending');
+  });
 }

@@ -129,6 +129,73 @@ class MemoryTaskRepository implements TaskRepository {
     return next;
   }
 
+  // Wave 1 correction loop. State gates mirror i5core.CanCancelTask /
+  // CanReopenTask so a test that passes here would also pass against the API.
+
+  @override
+  Future<CareTaskItem> cancelTask(
+    CareTaskItem task, {
+    required String reason,
+  }) async {
+    final current = _require(task.id);
+    if (current.version != task.version) {
+      throw const TaskRepositoryException('版本冲突，请刷新后重试');
+    }
+    if (!current.isOpen) {
+      throw const TaskRepositoryException('任务已结束，不能取消');
+    }
+    if (reason.trim().isEmpty) {
+      throw const TaskRepositoryException('请填写取消原因');
+    }
+    final next = current.copyWith(
+      state: 'cancelled',
+      version: current.version + 1,
+    );
+    _replace(next);
+    _reminders.removeWhere((r) => r.taskId == next.id);
+    return next;
+  }
+
+  @override
+  Future<CareTaskItem> reopenTask(
+    CareTaskItem task, {
+    required String reason,
+  }) async {
+    final current = _require(task.id);
+    if (current.version != task.version) {
+      throw const TaskRepositoryException('版本冲突，请刷新后重试');
+    }
+    if (current.state != 'completed' && current.state != 'cancelled') {
+      throw const TaskRepositoryException('只有已完成或已取消的任务才能退回待办');
+    }
+    if (reason.trim().isEmpty) {
+      throw const TaskRepositoryException('请填写撤销原因');
+    }
+    // Subject-level completion is cleared server-side too, otherwise the task
+    // reads as pending while every subject still claims to be done.
+    final next = current.copyWith(
+      state: 'pending',
+      version: current.version + 1,
+      stageDone: 0,
+      completedSubjectIds: const <String>[],
+    );
+    _replace(next);
+    // A reopened task has to nag again.
+    if (!_reminders.any((r) => r.taskId == next.id)) {
+      _reminders.add(
+        TaskReminderItem(
+          id: 'rem-${next.id}',
+          taskId: next.id,
+          channel: 'local',
+          status: 'pending',
+          scheduledAt: next.scheduledAt,
+          dedupeKey: 'task:${next.id}',
+        ),
+      );
+    }
+    return next;
+  }
+
   @override
   Future<List<TaskReminderItem>> listReminders() async =>
       List<TaskReminderItem>.from(_reminders);

@@ -14,6 +14,13 @@ abstract interface class TaskRepository {
 
   Future<CareTaskItem> completeTask(CareTaskItem task, {String? notes});
 
+  /// Cancels a task that will never be carried out. [reason] is mandatory.
+  Future<CareTaskItem> cancelTask(CareTaskItem task, {required String reason});
+
+  /// Undoes a completion or cancellation, returning the task to pending so it
+  /// can be redone. [reason] is mandatory.
+  Future<CareTaskItem> reopenTask(CareTaskItem task, {required String reason});
+
   Future<List<TaskReminderItem>> listReminders();
 }
 
@@ -139,6 +146,42 @@ class DefaultApiTaskRepository implements TaskRepository {
       throw const TaskRepositoryException('完成任务失败');
     }
     return _map(completed);
+  }
+
+  @override
+  Future<CareTaskItem> cancelTask(
+    CareTaskItem task, {
+    required String reason,
+  }) async {
+    final response = await _api.cancelTask(
+      idempotencyKey: _key(),
+      ifMatch: _etag(task.version),
+      taskId: task.id,
+      taskCorrectionRequest: api.TaskCorrectionRequest(reason: reason),
+    );
+    final cancelled = response.data?.data;
+    if (cancelled == null) {
+      throw const TaskRepositoryException('取消任务失败');
+    }
+    return _map(cancelled);
+  }
+
+  @override
+  Future<CareTaskItem> reopenTask(
+    CareTaskItem task, {
+    required String reason,
+  }) async {
+    final response = await _api.reopenTask(
+      idempotencyKey: _key(),
+      ifMatch: _etag(task.version),
+      taskId: task.id,
+      taskCorrectionRequest: api.TaskCorrectionRequest(reason: reason),
+    );
+    final reopened = response.data?.data;
+    if (reopened == null) {
+      throw const TaskRepositoryException('撤销任务状态失败');
+    }
+    return _map(reopened);
   }
 
   @override

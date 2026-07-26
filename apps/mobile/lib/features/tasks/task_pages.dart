@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../ui/theme/ios_theme.dart';
+import '../../ui/widgets/correction_reason_sheet.dart';
 import '../../ui/widgets/ios_widgets.dart';
 import '../i2/i2_models.dart';
 import '../i2/i2_widgets.dart';
@@ -53,6 +54,80 @@ class _TaskListPageState extends State<TaskListPage> {
     if (widget.controller.actionState.status == I2AsyncStatus.loading) return;
     setState(() => _completingTaskId = task.id);
     final ok = await widget.controller.complete(task);
+    if (!mounted) return;
+    setState(() => _completingTaskId = null);
+    final message = widget.controller.lastMessage;
+    if (message != null) {
+      showIosMessage(context, message);
+    }
+    if (ok) setState(() {});
+  }
+
+  /// Wave 1: a task created or completed by mistake must be recoverable.
+  /// Both paths demand a reason — the API rejects a blank one with 422.
+  Future<void> _cancel(CareTaskItem task) async {
+    final reason = await showCorrectionReasonSheet(
+      context: context,
+      title: '取消「${task.displayTitle}」',
+      keyPrefix: 'task-cancel',
+      hint: '说明为什么这个任务不再需要执行，会写入审计。',
+      placeholder: '取消原因',
+      confirmLabel: '确认取消任务',
+    );
+    if (reason == null || !mounted) return;
+    await _runCorrection(task, () => widget.controller.cancel(task, reason: reason));
+  }
+
+  Future<void> _reopen(CareTaskItem task) async {
+    final reason = await showCorrectionReasonSheet(
+      context: context,
+      title: '撤销「${task.displayTitle}」',
+      keyPrefix: 'task-reopen',
+      hint: '说明为什么要退回待办，会写入审计。任务成员的完成记录会一并清除。',
+      placeholder: '撤销原因',
+      confirmLabel: '确认退回待办',
+    );
+    if (reason == null || !mounted) return;
+    await _runCorrection(task, () => widget.controller.reopen(task, reason: reason));
+  }
+
+  /// Entry point for both correction paths. The row's trailing button keeps the
+  /// one-tap complete of T-P0-05; tapping the row itself opens this sheet.
+  Future<void> _showTaskActions(CareTaskItem task) async {
+    if (!widget.canWrite || widget.offline) return;
+    if (widget.controller.actionState.status == I2AsyncStatus.loading) return;
+    if (!task.canCorrect) return;
+    final open = task.isOpen;
+    final choice = await showIosActionSheet<String>(
+      context: context,
+      title: task.displayTitle,
+      message: open ? '完成，或取消这个不再需要执行的任务' : '这个任务已结束，可以退回待办重做',
+      items: open
+          ? const [
+              IosActionItem(value: 'complete', label: '完成任务'),
+              IosActionItem(value: 'cancel', label: '取消任务'),
+            ]
+          : const [IosActionItem(value: 'reopen', label: '退回待办')],
+    );
+    if (choice == null || !mounted) return;
+    switch (choice) {
+      case 'complete':
+        await _complete(task);
+      case 'cancel':
+        await _cancel(task);
+      case 'reopen':
+        await _reopen(task);
+    }
+  }
+
+  Future<void> _runCorrection(
+    CareTaskItem task,
+    Future<bool> Function() action,
+  ) async {
+    if (!widget.canWrite || widget.offline) return;
+    if (widget.controller.actionState.status == I2AsyncStatus.loading) return;
+    setState(() => _completingTaskId = task.id);
+    final ok = await action();
     if (!mounted) return;
     setState(() => _completingTaskId = null);
     final message = widget.controller.lastMessage;
@@ -189,6 +264,7 @@ class _TaskListPageState extends State<TaskListPage> {
                                       _completingTaskId == task.id &&
                                       actionBusy,
                                   onComplete: () => _complete(task),
+                                  onCorrect: () => _showTaskActions(task),
                                 ),
                             ],
                           ),
@@ -528,6 +604,7 @@ class _TaskRow extends StatelessWidget {
     required this.busy,
     required this.completing,
     required this.onComplete,
+    required this.onCorrect,
   });
 
   final CareTaskItem task;
@@ -535,6 +612,9 @@ class _TaskRow extends StatelessWidget {
   final bool busy;
   final bool completing;
   final VoidCallback onComplete;
+
+  /// Opens the complete / cancel / reopen sheet (Wave 1 correction loop).
+  final VoidCallback onCorrect;
 
   @override
   Widget build(BuildContext context) {
@@ -569,8 +649,9 @@ class _TaskRow extends StatelessWidget {
               taskStateLabel(task.state),
               style: Theme.of(context).textTheme.bodySmall,
             ),
-      showChevron: false,
-      onTap: open && canWrite && !busy ? onComplete : null,
+      // A finished task is still tappable — that is the only way back to pending.
+      showChevron: task.canCorrect && canWrite,
+      onTap: task.canCorrect && canWrite && !busy ? onCorrect : null,
     );
   }
 

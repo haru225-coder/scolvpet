@@ -98,6 +98,58 @@ class TaskController extends ChangeNotifier {
     }
   }
 
+  /// Wave 1 correction loop: a task filled in wrongly must be recoverable.
+  /// Both actions demand a reason — the API rejects a blank one with 422.
+  Future<bool> cancel(CareTaskItem task, {required String reason}) =>
+      _correct(
+        task,
+        action: () => repository.cancelTask(task, reason: reason),
+        successMessage: (next) => '已取消「${next.displayTitle}」',
+      );
+
+  Future<bool> reopen(CareTaskItem task, {required String reason}) => _correct(
+    task,
+    action: () => repository.reopenTask(task, reason: reason),
+    successMessage: (next) => '已撤销「${next.displayTitle}」，任务回到待办',
+  );
+
+  Future<bool> _correct(
+    CareTaskItem task, {
+    required Future<CareTaskItem> Function() action,
+    required String Function(CareTaskItem) successMessage,
+  }) async {
+    actionState = const I2AsyncState.loading();
+    lastMessage = null;
+    notifyListeners();
+    try {
+      final next = await action();
+      final current = List<CareTaskItem>.from(
+        listState.data ?? const <CareTaskItem>[],
+      );
+      final index = current.indexWhere((t) => t.id == next.id);
+      if (index >= 0) {
+        current[index] = next;
+      }
+      listState = current.isEmpty
+          ? const I2AsyncState.empty(message: '暂无任务')
+          : I2AsyncState.data(current);
+      // A cancelled task must stop nagging; a reopened one has to nag again.
+      await notifications.cancelTask(next.id);
+      await _syncNotifications(current);
+      await _syncHomeWidget(current);
+      actionState = const I2AsyncState.data(null);
+      lastMessage = successMessage(next);
+      notifyListeners();
+      return true;
+    } catch (error) {
+      final message = taskRepositoryErrorMessage(error);
+      actionState = I2AsyncState.error(message);
+      lastMessage = message;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> create(CreateCareTaskDraft draft) async {
     actionState = const I2AsyncState.loading();
     lastMessage = null;
