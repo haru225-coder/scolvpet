@@ -84,7 +84,14 @@ void main() {
     expect(find.text('今日待办组件'), findsOneWidget);
     await tester.tap(find.byKey(const Key('today-widget-sync')));
     await tester.pumpAndSettle();
-    expect(find.text('桌面待办已更新'), findsOneWidget);
+    // On iOS, UI must not claim fake desktop success (scaffold-only widget).
+    // On Android/other, publish path still shows success.
+    final iosHidden = find.text('iOS 桌面组件尚未开放，请使用应用内今日待办');
+    final androidOk = find.text('桌面待办已更新');
+    expect(
+      iosHidden.evaluate().isNotEmpty || androidOk.evaluate().isNotEmpty,
+      isTrue,
+    );
     expect(find.byKey(const Key('today-widget-body')), findsOneWidget);
   });
 }

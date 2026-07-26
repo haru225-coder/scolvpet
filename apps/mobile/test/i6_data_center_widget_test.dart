@@ -23,19 +23,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('数据与备份'), findsOneWidget);
+    // Wave 0: export/backup hidden (no worker); import + usage + media remain.
     expect(find.text('批量导入'), findsOneWidget);
-    expect(find.text('导出数据'), findsOneWidget);
-    expect(find.text('备份数据'), findsOneWidget);
-    expect(find.text('暂无任务、备份和用量数据'), findsOneWidget);
-
-    await tester.tap(find.text('导出数据').first);
-    await tester.pumpAndSettle();
-    expect(find.byType(DataCenterTaskPage), findsOneWidget);
-    expect(find.text('暂无导出记录'), findsOneWidget);
-
-    await tester.pageBack();
-    await tester.pumpAndSettle();
+    expect(find.text('导出数据'), findsNothing);
+    expect(find.text('备份数据'), findsNothing);
+    expect(
+      find.byKey(const Key('data-center-export-backup-hidden')),
+      findsOneWidget,
+    );
 
     await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();

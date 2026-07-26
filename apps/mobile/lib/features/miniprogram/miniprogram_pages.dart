@@ -24,11 +24,12 @@ class MiniprogramHubPage extends StatelessWidget {
             const IosModuleIntro(
               icon: CupertinoIcons.device_phone_portrait,
               title: '客户分享小程序',
-              description: '微信小程序尚未开放。向客户展示熊舍资料时，请先使用公开主页。',
+              description:
+                  '客户侧微信小程序工程已在仓库 apps/miniprogram 落地（浏览/预订/合同）。正式微信 AppID、登录与域名配置完成后即可提审。在此之前请继续使用公开主页获客。',
               trailing: IosStatusBadge(
-                label: '准备中',
-                color: IosColors.systemOrange,
-                icon: CupertinoIcons.clock,
+                label: '工程已就绪',
+                color: IosColors.systemGreen,
+                icon: CupertinoIcons.checkmark_seal,
               ),
             ),
             const Padding(
@@ -37,7 +38,7 @@ class MiniprogramHubPage extends StatelessWidget {
                 key: Key('mp-read-only'),
                 icon: CupertinoIcons.lock_shield,
                 color: IosColors.systemOrange,
-                text: '本页仅说明开放状态，不会变更配置或执行上线操作。',
+                text: '本页不执行微信后台审核/发布。生产上线请使用微信开发者工具打开 apps/miniprogram。',
               ),
             ),
             const SizedBox(height: 12),

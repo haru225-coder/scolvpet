@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../ui/theme/ios_theme.dart';
@@ -51,6 +52,16 @@ class _TodayWidgetPreviewPageState extends State<TodayWidgetPreviewPage> {
       _loading = true;
       _message = null;
     });
+    // iOS Widget Extension is scaffold-only (not in Xcode target). Do not claim
+    // desktop success on iOS; Android still has a real AppWidget path.
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _message = 'iOS 桌面组件尚未开放，请使用应用内今日待办';
+      });
+      return;
+    }
     await widget.taskController.refresh();
     final tasks = widget.taskController.listState.data ?? const [];
     final queue = buildTodayCareQueue(tasks: tasks);

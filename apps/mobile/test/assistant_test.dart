@@ -68,7 +68,7 @@ void main() {
     expect(controller.turns, isNotEmpty);
     expect(controller.turns.first.answer.answer, contains('9'));
     expect(find.textContaining('9'), findsWidgets);
-    expect(find.text('相关数据'), findsOneWidget);
+    expect(find.text('相关数据'), findsNothing);
     expect(find.text('建议'), findsOneWidget);
     expect(find.text('操作'), findsOneWidget);
     expect(find.textContaining('意图 '), findsNothing);

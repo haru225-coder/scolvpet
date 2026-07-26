@@ -215,33 +215,6 @@ class _AssistantPageState extends State<AssistantPage> {
                                       context,
                                     ).textTheme.bodyLarge,
                                   ),
-                                  if (turn.answer.facts.isNotEmpty) ...[
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      '相关数据',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Wrap(
-                                      spacing: 6,
-                                      runSpacing: 6,
-                                      children: [
-                                        for (final fact in turn.answer.facts)
-                                          Chip(
-                                            visualDensity:
-                                                VisualDensity.compact,
-                                            label: Text(
-                                              '${fact.label} ${fact.value}',
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ],
                                   const SizedBox(height: 10),
                                   Text(
                                     '建议',

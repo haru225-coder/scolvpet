@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
+import '../../core/product_surface.dart';
 import '../../ui/theme/ios_theme.dart';
 import '../../ui/widgets/bear_motion.dart';
 import '../../ui/widgets/ios_widgets.dart';
@@ -639,7 +640,18 @@ class _DataCenterPageState extends State<DataCenterPage> {
                   child: IosBanner(
                     icon: CupertinoIcons.lock_shield,
                     color: IosColors.systemOrange,
-                    text: '当前角色可查看备份、导出与用量记录，数据导入和任务创建已设为只读。',
+                    text: '当前角色可查看用量与分享入口，数据导入已设为只读。',
+                  ),
+                ),
+              if (!ProductSurface.exposeExportBackup)
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: IosBanner(
+                    key: Key('data-center-export-backup-hidden'),
+                    icon: CupertinoIcons.info_circle,
+                    color: IosColors.systemIndigo,
+                    text:
+                        '导出与备份已暂时收起：服务端尚未实现后台任务处理，避免「提交后永远排队」。',
                   ),
                 ),
               const SizedBox(height: 12),
@@ -664,37 +676,44 @@ class _DataCenterPageState extends State<DataCenterPage> {
                           )
                         : null,
                   ),
-                  IosListTile(
-                    leading: IosGlyph(
-                      icon: CupertinoIcons.square_arrow_down,
-                      color: IosColors.systemBlue,
+                  if (ProductSurface.exposeExportBackup) ...[
+                    IosListTile(
+                      leading: IosGlyph(
+                        icon: CupertinoIcons.square_arrow_down,
+                        color: IosColors.systemBlue,
+                      ),
+                      title: '导出数据',
+                      subtitle: _taskSubtitle(
+                        snapshot?.exportTasks,
+                        '整理并下载你的记录',
+                      ),
+                      onTap: () =>
+                          _openTaskPage(context, DataCenterTaskKind.export),
                     ),
-                    title: '导出数据',
-                    subtitle: _taskSubtitle(snapshot?.exportTasks, '整理并下载你的记录'),
-                    onTap: () =>
-                        _openTaskPage(context, DataCenterTaskKind.export),
-                  ),
-                  IosListTile(
-                    leading: IosGlyph(
-                      icon: CupertinoIcons.cloud_upload,
-                      color: IosColors.systemIndigo,
+                    IosListTile(
+                      leading: IosGlyph(
+                        icon: CupertinoIcons.cloud_upload,
+                        color: IosColors.systemIndigo,
+                      ),
+                      title: '备份数据',
+                      subtitle: _taskSubtitle(
+                        snapshot?.backupTasks,
+                        '安心保存档案与照片清单',
+                      ),
+                      onTap: () =>
+                          _openTaskPage(context, DataCenterTaskKind.backup),
                     ),
-                    title: '备份数据',
-                    subtitle: _taskSubtitle(
-                      snapshot?.backupTasks,
-                      '安心保存档案与照片清单',
-                    ),
-                    onTap: () =>
-                        _openTaskPage(context, DataCenterTaskKind.backup),
-                  ),
+                  ],
                 ],
               ),
-              const SizedBox(height: 12),
-              const IosSectionHeader('最近备份'),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _LatestBackupCard(backup: snapshot?.latestBackup),
-              ),
+              if (ProductSurface.exposeExportBackup) ...[
+                const SizedBox(height: 12),
+                const IosSectionHeader('最近备份'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _LatestBackupCard(backup: snapshot?.latestBackup),
+                ),
+              ],
               const SizedBox(height: 12),
               const IosSectionHeader('空间与分享'),
               Padding(

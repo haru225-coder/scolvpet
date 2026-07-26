@@ -7,6 +7,7 @@ import 'package:scolvpet_api/scolvpet_api.dart';
 
 import '../core/app_state.dart';
 import '../core/app_services.dart';
+import '../core/product_surface.dart';
 import '../features/i2/i2.dart';
 import '../features/i6/data_center.dart';
 import '../features/breeding/breeding.dart';
