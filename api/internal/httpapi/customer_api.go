@@ -51,9 +51,11 @@ func (s *Server) sendCustomerVerificationCode(w http.ResponseWriter, r *http.Req
 		phoneCooldown := 60 * time.Second
 		phoneMax := 5
 		ipMax := 20
+		dailyMax := smsPhoneDailyMax
 		retryHint := 60
 		if env := strings.ToLower(strings.TrimSpace(s.Environment)); env == "" || env == "development" || env == "test" {
 			phoneCooldown = 0
+			dailyMax = 0
 			retryHint = 1
 		}
 		if retry, err := s.enforceRateLimit(ctx, "cust-sms:phone:"+request.Phone, phoneCooldown, phoneMax, time.Hour); err != nil {
@@ -67,6 +69,15 @@ func (s *Server) sendCustomerVerificationCode(w http.ResponseWriter, r *http.Req
 				return 0, nil, rateLimitedError(retry)
 			}
 			return 0, nil, err
+		}
+		// Daily cap per phone (P3): the hourly bucket alone allows 120/day.
+		if dailyMax > 0 {
+			if retry, err := s.enforceRateLimit(ctx, "cust-sms:phone:day:"+request.Phone, 0, dailyMax, 24*time.Hour); err != nil {
+				if isRateLimitError(err) {
+					return 0, nil, rateLimitedError(retry)
+				}
+				return 0, nil, err
+			}
 		}
 		challenge, err := s.Auth.RequestCode(ctx, request.Phone)
 		if err != nil {
