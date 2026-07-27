@@ -56,6 +56,13 @@ Brief:README 重写为工程简报(一屏状态/硬约定/真机 Gate 清单/M1 
 
 描边 0.35→0.48/2px、纸纹 0.09、波浪线加粗、Section 手贴微歪(±0.3°)、Tag 歪到 ±2° 加粗描边、分隔虚线 2px、箭头蜡笔橙、SegmentedControl 蜡笔化(虚线托盘+wobble 选中块)。贴纸库 3→7(新增向日葵/爱心/星星/嫩芽);今日页爪印小路、登录页探头仓鼠+星星、个体页向日葵组、空态仓鼠配瓜子;预览桌面同步加涂鸦。门禁复跑绿(主包 0.380MB)。
 
+## 追加:功能收口(同日,真机 Gate 前置要求:只评手感、不做功能测试)
+
+1. **抓到并修复一个真机必炸的 bug**:Taro 只把 `taroGlobalData` 内的键桥接到原生 `getApp()`,且启动时按引用快照——原 `app.ts` 用普通实例字段,C 端 7 页混写层在真机上 `getApp().globalData/saveCustomer/_launchEntry` 全 undefined。发现手段是新增的**编译产物 VM 冒烟**(`tools/mp-dist-smoke.mjs`:真 bundle 在 Node VM 带桩执行,App 启动/15 页注册/桥接契约/原生页 onLoad 深链),单测层抓不到此类问题。已修(taroGlobalData + 原地 mutate)并入 `make miniprogram-next-build` 门禁。
+2. **消灭全部死点**:任务左滑「完成/跳过一次」真实改本地状态、任务行与个体行点击 toast 提示 M1、登录/验证码键有明确响应(docs/16 §4.3 禁无响应)。
+3. **新增 12 个功能测试**(页面交互 + app 胶水 onLaunch 全路径),vitest 共 30 绿;staging 后端确认存活(readyz 200,公开路由 404 语义正常)。
+4. 门禁全绿:tsc/vitest 30/原生 15/build/体积/产物冒烟。真机 Gate 现在只需评手感。
+
 ## 提交
 
 - `feat(contracts): typescript-fetch client generation with drift gate (M0-4)`
