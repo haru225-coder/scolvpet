@@ -63,6 +63,10 @@ Brief:README 重写为工程简报(一屏状态/硬约定/真机 Gate 清单/M1 
 3. **新增 12 个功能测试**(页面交互 + app 胶水 onLaunch 全路径),vitest 共 30 绿;staging 后端确认存活(readyz 200,公开路由 404 语义正常)。
 4. 门禁全绿:tsc/vitest 30/原生 15/build/体积/产物冒烟。真机 Gate 现在只需评手感。
 
+## 追加:谱系页迭代(同日,用户指示;C 端首个功能性偏离旧目录)
+
+评估发现四个欠账:请求 3 代只渲染 2 代、父系/母系祖代共用模糊标签(bug)、公开祖先不可点、行构建逻辑零测试。已迭代(仅 miniprogram-next,旧目录不动):逻辑抽到 `src/utils/pedigree.js`;祖代改为爷爷/奶奶/外公/外婆正确分系;曾祖代按登记情况渲染(标「X 之父/之母」);公开祖先可点 re-root 浏览(navigateTo 保返回栈),卡片带「查看 ›」示能;新增 3 个 fixture 测试(原生套件 15→18)。视觉刻意维持 C 端旧绿风(蜡笔谱系树归 M4 遗传 Hub)。**真机回归口径更新**:谱系页按新行为验收,其余 6 页仍对照旧版。门禁全绿。
+
 ## 提交
 
 - `feat(contracts): typescript-fetch client generation with drift gate (M0-4)`
