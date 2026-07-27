@@ -4,7 +4,7 @@ import { crayon, metrics } from './tokens'
 import { palette, typeStyle } from './theme'
 
 // 蜡笔手账:分隔线用虚断笔迹,不用发丝实线
-const sketchDivider = { borderTop: `1.5px dashed ${crayon.strokeSoft}` }
+const sketchDivider = { borderTop: `2px dashed ${crayon.strokeSoft}` }
 
 export interface CellProps {
   title: ReactNode
@@ -47,7 +47,7 @@ export function Cell({ title, subtitle, value, chevron = false, divider = false,
         )
       ) : null}
       {chevron ? (
-        <Text style={{ fontSize: '17px', color: palette.tertiaryLabel }}>›</Text>
+        <Text style={{ fontSize: '17px', fontWeight: 600, color: crayon.orange }}>›</Text>
       ) : null}
     </View>
   )

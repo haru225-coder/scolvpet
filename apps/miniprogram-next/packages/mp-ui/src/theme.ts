@@ -45,10 +45,10 @@ export function wobble(seed = 0, kind: 'gentle' | 'bold' = 'gentle'): string {
 
 /** 纸纹(SVG 噪点,低透明度;data URI,无外部资源) */
 export const paperGrain =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E\")"
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E\")"
 
 /** 蜡笔波浪下划线(组头/大标题装饰) */
 export function crayonUnderline(color: string): string {
   const c = encodeURIComponent(color)
-  return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='6' viewBox='0 0 72 6'%3E%3Cpath d='M1 4 Q 10 1 19 3.5 T 37 3 T 55 3.6 T 71 2.6' fill='none' stroke='${c}' stroke-width='2.4' stroke-linecap='round' opacity='0.85'/%3E%3C/svg%3E")`
+  return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='8' viewBox='0 0 72 8'%3E%3Cpath d='M1 5 Q 10 1.5 19 4.5 T 37 4 T 55 4.8 T 71 3.4' fill='none' stroke='${c}' stroke-width='3.4' stroke-linecap='round' opacity='0.95'/%3E%3C/svg%3E")`
 }

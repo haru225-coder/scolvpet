@@ -86,7 +86,7 @@ exports[`mp-ui snapshots > Button 三变体与禁用 1`] = `
 <DocumentFragment>
   <div
     data-taro="View"
-    style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 52px; padding: 14px 20px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; border: 2px solid rgba(70, 54, 42, 0.35); background-color: rgb(224, 138, 79); color: rgb(255, 253, 247); font-size: 17px; font-weight: 600; letter-spacing: -0.41px;"
+    style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 52px; padding: 14px 20px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; border: 2px solid rgba(70, 54, 42, 0.48); background-color: rgb(224, 138, 79); color: rgb(255, 253, 247); font-size: 17px; font-weight: 600; letter-spacing: -0.41px;"
   >
     <span
       data-taro="Text"
@@ -96,7 +96,7 @@ exports[`mp-ui snapshots > Button 三变体与禁用 1`] = `
   </div>
   <div
     data-taro="View"
-    style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 36px; padding: 8px 14px; border-radius: 25px 225px 25px 255px / 255px 25px 225px 25px; border: 1.5px dashed rgba(70, 54, 42, 0.35); color: rgb(178, 107, 59); font-size: 15px; font-weight: 500; letter-spacing: -0.24px;"
+    style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 36px; padding: 8px 14px; border-radius: 25px 225px 25px 255px / 255px 25px 225px 25px; border: 1.5px dashed rgba(70, 54, 42, 0.48); color: rgb(178, 107, 59); font-size: 15px; font-weight: 500; letter-spacing: -0.24px;"
   >
     <span
       data-taro="Text"
@@ -116,7 +116,7 @@ exports[`mp-ui snapshots > Button 三变体与禁用 1`] = `
   </div>
   <div
     data-taro="View"
-    style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 52px; padding: 14px 20px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; border: 2px solid rgba(70, 54, 42, 0.35); background-color: rgba(58, 47, 41, 0.06); color: rgb(160, 149, 140); font-size: 17px; font-weight: 600; letter-spacing: -0.41px;"
+    style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 52px; padding: 14px 20px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; border: 2px solid rgba(70, 54, 42, 0.48); background-color: rgba(58, 47, 41, 0.06); color: rgb(160, 149, 140); font-size: 17px; font-weight: 600; letter-spacing: -0.41px;"
   >
     <span
       data-taro="Text"
@@ -135,8 +135,21 @@ exports[`mp-ui snapshots > Empty 空态 1`] = `
   >
     <div
       data-taro="View"
-      style="width: 88px; height: 88px; background-size: contain; background-repeat: no-repeat; transform: rotate(-3deg);"
-    />
+      style="display: flex; align-items: flex-end; gap: 4px;"
+    >
+      <div
+        data-taro="View"
+        style="width: 30px; height: 30px; background-size: contain; background-repeat: no-repeat; transform: rotate(-14deg);"
+      />
+      <div
+        data-taro="View"
+        style="width: 88px; height: 88px; background-size: contain; background-repeat: no-repeat; transform: rotate(-3deg);"
+      />
+      <div
+        data-taro="View"
+        style="width: 24px; height: 24px; background-size: contain; background-repeat: no-repeat; transform: rotate(18deg);"
+      />
+    </div>
     <span
       data-taro="Text"
       style="font-size: 15px; font-weight: 600; letter-spacing: -0.16px; line-height: 1.28; color: rgb(58, 47, 41);"
@@ -155,7 +168,7 @@ exports[`mp-ui snapshots > Empty 空态 1`] = `
     >
       <div
         data-taro="View"
-        style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 36px; padding: 8px 14px; border-radius: 25px 225px 25px 255px / 255px 25px 225px 25px; border: 1.5px dashed rgba(70, 54, 42, 0.35); color: rgb(178, 107, 59); font-size: 15px; font-weight: 500; letter-spacing: -0.24px;"
+        style="display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; transition: transform 90ms ease, opacity 90ms ease; transform: scale(1); opacity: 1; min-height: 36px; padding: 8px 14px; border-radius: 25px 225px 25px 255px / 255px 25px 225px 25px; border: 1.5px dashed rgba(70, 54, 42, 0.48); color: rgb(178, 107, 59); font-size: 15px; font-weight: 500; letter-spacing: -0.24px;"
       >
         <span
           data-taro="Text"
@@ -212,7 +225,7 @@ exports[`mp-ui snapshots > NavBar 收缩态(含返回与右操作) 1`] = `
   >
     <div
       data-taro="View"
-      style="position: fixed; top: 0px; left: 0px; right: 0px; z-index: 10; padding-top: 44px; background-color: rgba(251, 242, 227, 0.96); transition: border-color 90ms linear; border-bottom: 1.5px dashed rgba(70, 54, 42, 0.18);"
+      style="position: fixed; top: 0px; left: 0px; right: 0px; z-index: 10; padding-top: 44px; background-color: rgba(251, 242, 227, 0.96); transition: border-color 90ms linear; border-bottom: 1.5px dashed rgba(70, 54, 42, 0.24);"
     >
       <div
         data-taro="View"
@@ -246,7 +259,7 @@ exports[`mp-ui snapshots > NavBar 收缩态(含返回与右操作) 1`] = `
         >
           <div
             data-taro="View"
-            style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; border: 1.5px solid rgba(178, 107, 59, 0.333); background-color: rgba(224, 138, 79, 0.16); transform: rotate(-1.2deg);"
+            style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; border: 2px solid rgba(178, 107, 59, 0.467); background-color: rgba(224, 138, 79, 0.2); transform: rotate(-2deg);"
           >
             <span
               data-taro="Text"
@@ -343,7 +356,7 @@ exports[`mp-ui snapshots > SectionList + Section + Cell 1`] = `
       </div>
       <div
         data-taro="View"
-        style="background-color: rgb(255, 253, 247); border: 1.5px solid rgba(70, 54, 42, 0.35); border-radius: 17px 21px 15px 23px / 21px 15px 23px 17px; overflow: hidden;"
+        style="background-color: rgb(255, 253, 247); border: 2px solid rgba(70, 54, 42, 0.48); border-radius: 17px 21px 15px 23px / 21px 15px 23px 17px; overflow: hidden; transform: rotate(-0.3deg);"
       >
         <div
           data-hover-class="none"
@@ -376,7 +389,7 @@ exports[`mp-ui snapshots > SectionList + Section + Cell 1`] = `
           </span>
           <span
             data-taro="Text"
-            style="font-size: 17px; color: rgb(160, 149, 140);"
+            style="font-size: 17px; font-weight: 600; color: rgb(224, 138, 79);"
           >
             ›
           </span>
@@ -385,7 +398,7 @@ exports[`mp-ui snapshots > SectionList + Section + Cell 1`] = `
           data-hover-class="none"
           data-hover-stay="90"
           data-taro="View"
-          style="display: flex; align-items: center; min-height: 48px; padding: 12px 16px; box-sizing: border-box; gap: 12px; border-top: 1.5px dashed rgba(70, 54, 42, 0.18);"
+          style="display: flex; align-items: center; min-height: 48px; padding: 12px 16px; box-sizing: border-box; gap: 12px; border-top: 2px dashed rgba(70, 54, 42, 0.24);"
         >
           <div
             data-taro="View"
@@ -421,11 +434,11 @@ exports[`mp-ui snapshots > SegmentedControl 1`] = `
 <DocumentFragment>
   <div
     data-taro="View"
-    style="display: flex; background-color: rgba(58, 47, 41, 0.09); border-radius: 9px; padding: 2px; gap: 2px;"
+    style="display: flex; background-color: rgb(245, 231, 208); border: 1.5px dashed rgba(70, 54, 42, 0.24); border-radius: 17px 21px 15px 23px / 21px 15px 23px 17px; padding: 3px; gap: 2px;"
   >
     <div
       data-taro="View"
-      style="flex: 1 1 0%; display: flex; justify-content: center; align-items: center; min-height: 28px; border-radius: 7px; background-color: transparent; transition: background-color 90ms ease;"
+      style="flex: 1 1 0%; display: flex; justify-content: center; align-items: center; min-height: 28px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; background-color: transparent; border: 2px solid transparent; transition: background-color 90ms ease;"
     >
       <span
         data-taro="Text"
@@ -436,18 +449,18 @@ exports[`mp-ui snapshots > SegmentedControl 1`] = `
     </div>
     <div
       data-taro="View"
-      style="flex: 1 1 0%; display: flex; justify-content: center; align-items: center; min-height: 28px; border-radius: 7px; background-color: rgb(255, 255, 255); transition: background-color 90ms ease; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);"
+      style="flex: 1 1 0%; display: flex; justify-content: center; align-items: center; min-height: 28px; border-radius: 25px 225px 25px 255px / 255px 25px 225px 25px; background-color: rgb(255, 253, 247); border: 2px solid rgba(70, 54, 42, 0.48); transition: background-color 90ms ease; transform: rotate(-0.8deg);"
     >
       <span
         data-taro="Text"
-        style="font-size: 13px; font-weight: 500; color: rgb(58, 47, 41); padding: 0px 8px;"
+        style="font-size: 13px; font-weight: 600; color: rgb(70, 54, 42); padding: 0px 8px;"
       >
         待办
       </span>
     </div>
     <div
       data-taro="View"
-      style="flex: 1 1 0%; display: flex; justify-content: center; align-items: center; min-height: 28px; border-radius: 7px; background-color: transparent; transition: background-color 90ms ease;"
+      style="flex: 1 1 0%; display: flex; justify-content: center; align-items: center; min-height: 28px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; background-color: transparent; border: 2px solid transparent; transition: background-color 90ms ease;"
     >
       <span
         data-taro="Text"
@@ -570,7 +583,7 @@ exports[`mp-ui snapshots > Tag 各语义 1`] = `
 <DocumentFragment>
   <div
     data-taro="View"
-    style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 25px 225px 25px 255px / 255px 25px 225px 25px; border: 1.5px solid rgba(122, 110, 102, 0.333); background-color: rgba(70, 54, 42, 0.07);"
+    style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; border: 2px solid rgba(122, 110, 102, 0.467); background-color: rgba(70, 54, 42, 0.09); transform: rotate(-0.8deg);"
   >
     <span
       data-taro="Text"
@@ -581,7 +594,7 @@ exports[`mp-ui snapshots > Tag 各语义 1`] = `
   </div>
   <div
     data-taro="View"
-    style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; border: 1.5px solid rgba(178, 107, 59, 0.333); background-color: rgba(224, 138, 79, 0.16); transform: rotate(-1.2deg);"
+    style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; border: 2px solid rgba(178, 107, 59, 0.467); background-color: rgba(224, 138, 79, 0.2); transform: rotate(-2deg);"
   >
     <span
       data-taro="Text"
@@ -592,7 +605,7 @@ exports[`mp-ui snapshots > Tag 各语义 1`] = `
   </div>
   <div
     data-taro="View"
-    style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 25px 225px 25px 255px / 255px 25px 225px 25px; border: 1.5px solid rgba(124, 154, 109, 0.333); background-color: rgba(124, 154, 109, 0.16); transform: rotate(1deg);"
+    style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 25px 225px 25px 255px / 255px 25px 225px 25px; border: 2px solid rgba(124, 154, 109, 0.467); background-color: rgba(124, 154, 109, 0.2); transform: rotate(1.8deg);"
   >
     <span
       data-taro="Text"
@@ -603,7 +616,7 @@ exports[`mp-ui snapshots > Tag 各语义 1`] = `
   </div>
   <div
     data-taro="View"
-    style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; border: 1.5px solid rgba(217, 108, 91, 0.333); background-color: rgba(217, 108, 91, 0.15); transform: rotate(-1.4deg);"
+    style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; border: 2px solid rgba(217, 108, 91, 0.467); background-color: rgba(217, 108, 91, 0.18); transform: rotate(-2.2deg);"
   >
     <span
       data-taro="Text"
@@ -614,7 +627,7 @@ exports[`mp-ui snapshots > Tag 各语义 1`] = `
   </div>
   <div
     data-taro="View"
-    style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 25px 225px 25px 255px / 255px 25px 225px 25px; border: 1.5px solid rgba(162, 116, 43, 0.333); background-color: rgba(239, 195, 95, 0.22); transform: rotate(1.2deg);"
+    style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 25px 225px 25px 255px / 255px 25px 225px 25px; border: 2px solid rgba(162, 116, 43, 0.467); background-color: rgba(239, 195, 95, 0.28); transform: rotate(2deg);"
   >
     <span
       data-taro="Text"

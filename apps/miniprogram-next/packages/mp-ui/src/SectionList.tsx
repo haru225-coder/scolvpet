@@ -36,9 +36,11 @@ export function Section({ header, footer, children, seed = 0 }: SectionProps) {
       <View
         style={{
           backgroundColor: '#FFFDF7',
-          border: `1.5px solid ${crayon.stroke}`,
+          border: `2px solid ${crayon.stroke}`,
           borderRadius: wobble(seed),
-          overflow: 'hidden'
+          overflow: 'hidden',
+          // 手贴微歪:相邻 Section(seed 不同)方向错开
+          transform: `rotate(${seed % 2 === 0 ? -0.3 : 0.35}deg)`
         }}
       >
         {items.map((child, i) =>

@@ -66,6 +66,11 @@ export default function AnimalsSamplePage() {
               />
             ))}
           </Section>
+          <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '16px' }}>
+            <Sticker name="sprout" size={34} tilt={-8} />
+            <Sticker name="sunflower" size={44} tilt={6} />
+            <Sticker name="heart" size={30} tilt={-12} />
+          </View>
         </SectionList>
         <View style={{ height: `${metrics.bottomSafePadding}px` }} />
       </ScrollView>

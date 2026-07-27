@@ -25,7 +25,13 @@ export function Empty({ title, description, actionText, onAction, illustration }
         gap: `${metrics.space12}px`
       }}
     >
-      {illustration ?? <Sticker name="hamster" size={88} tilt={-3} />}
+      {illustration ?? (
+        <View style={{ display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
+          <Sticker name="seed" size={30} tilt={-14} />
+          <Sticker name="hamster" size={88} tilt={-3} />
+          <Sticker name="seed" size={24} tilt={18} />
+        </View>
+      )}
       <Text style={{ ...typeStyle('titleSmall'), color: palette.label }}>{title}</Text>
       {description ? (
         <Text style={{ ...typeStyle('bodyMedium'), textAlign: 'center' }}>{description}</Text>

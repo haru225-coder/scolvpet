@@ -7,11 +7,11 @@ export type TagTone = 'default' | 'accent' | 'success' | 'danger' | 'warning'
 
 // 蜡笔贴纸风:淡蜡底 + 同色描边 + 手贴微歪;语义色仅表达真实状态(docs/34 §2.2)
 const tones: Record<TagTone, { bg: string; fg: string; tilt: number }> = {
-  default: { bg: 'rgba(70, 54, 42, 0.07)', fg: '#7A6E66', tilt: 0 },
-  accent: { bg: 'rgba(224, 138, 79, 0.16)', fg: '#B26B3B', tilt: -1.2 },
-  success: { bg: 'rgba(124, 154, 109, 0.16)', fg: crayon.green, tilt: 1 },
-  danger: { bg: 'rgba(217, 108, 91, 0.15)', fg: crayon.red, tilt: -1.4 },
-  warning: { bg: 'rgba(239, 195, 95, 0.22)', fg: '#A2742B', tilt: 1.2 }
+  default: { bg: 'rgba(70, 54, 42, 0.09)', fg: '#7A6E66', tilt: -0.8 },
+  accent: { bg: 'rgba(224, 138, 79, 0.2)', fg: '#B26B3B', tilt: -2 },
+  success: { bg: 'rgba(124, 154, 109, 0.2)', fg: crayon.green, tilt: 1.8 },
+  danger: { bg: 'rgba(217, 108, 91, 0.18)', fg: crayon.red, tilt: -2.2 },
+  warning: { bg: 'rgba(239, 195, 95, 0.28)', fg: '#A2742B', tilt: 2 }
 }
 
 export function Tag({ children, tone = 'default' }: { children: ReactNode; tone?: TagTone }) {
@@ -23,7 +23,7 @@ export function Tag({ children, tone = 'default' }: { children: ReactNode; tone?
         alignItems: 'center',
         padding: '2px 9px',
         borderRadius: wobble(t.tilt < 0 ? 0 : 1, 'bold'),
-        border: `1.5px solid ${t.fg}55`,
+        border: `2px solid ${t.fg}77`,
         backgroundColor: t.bg,
         transform: t.tilt ? `rotate(${t.tilt}deg)` : undefined
       }}

@@ -165,8 +165,8 @@ export const crayon = {
   yellow: '#EFC35F',
   red: '#D96C5B',
   /** 蜡笔描边(卡片/按钮/贴纸共用) */
-  stroke: 'rgba(70, 54, 42, 0.35)',
-  strokeSoft: 'rgba(70, 54, 42, 0.18)'
+  stroke: 'rgba(70, 54, 42, 0.48)',
+  strokeSoft: 'rgba(70, 54, 42, 0.24)'
 } as const
 
 /** 导航栏专用(AppBar:title 17/600/-0.41,大标题用 displayMedium 收缩到 title) */

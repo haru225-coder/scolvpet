@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
-import { metrics, motion } from './tokens'
-import { palette } from './theme'
+import { crayon, metrics, motion } from './tokens'
+import { palette, wobble } from './theme'
 
 export interface SegmentedControlProps {
   segments: string[]
@@ -14,9 +14,10 @@ export function SegmentedControl({ segments, value, onChange }: SegmentedControl
     <View
       style={{
         display: 'flex',
-        backgroundColor: palette.secondaryFill,
-        borderRadius: '9px',
-        padding: '2px',
+        backgroundColor: crayon.paperDeep,
+        border: `1.5px dashed ${crayon.strokeSoft}`,
+        borderRadius: wobble(0),
+        padding: '3px',
         gap: '2px'
       }}
     >
@@ -31,18 +32,19 @@ export function SegmentedControl({ segments, value, onChange }: SegmentedControl
               justifyContent: 'center',
               alignItems: 'center',
               minHeight: '28px',
-              borderRadius: '7px',
-              backgroundColor: selected ? palette.secondaryGroupedBackground : 'transparent',
+              borderRadius: wobble(i, 'bold'),
+              backgroundColor: selected ? '#FFFDF7' : 'transparent',
+              border: `2px solid ${selected ? crayon.stroke : 'transparent'}`,
               transition: `background-color ${motion.press}ms ease`,
-              ...(selected ? { boxShadow: '0 1px 2px rgba(0, 0, 0, 0.08)' } : {})
+              transform: selected ? 'rotate(-0.8deg)' : undefined
             }}
             onClick={() => onChange && onChange(i)}
           >
             <Text
               style={{
                 fontSize: '13px',
-                fontWeight: 500,
-                color: selected ? palette.label : palette.secondaryLabel,
+                fontWeight: selected ? 600 : 500,
+                color: selected ? crayon.ink : palette.secondaryLabel,
                 padding: `0 ${metrics.space8}px`
               }}
             >

@@ -52,6 +52,10 @@ export default function LoginPage() {
         <Sticker name="seed" size={40} tilt={10} />
       </View>
       <SectionList>
+        {/* 探头的仓鼠:压在表单卡上沿 */}
+        <View style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '22px', marginBottom: '-14px', position: 'relative', zIndex: 1 }}>
+          <Sticker name="hamster" size={58} tilt={-6} />
+        </View>
         <Section footer="M0 样例:短信登录 M1 接线,当前不发送请求">
           <FormRow label="手机号">
             <Input
@@ -83,6 +87,11 @@ export default function LoginPage() {
         <Button block disabled={phone.length !== 11 || code.length !== 6}>
           登录
         </Button>
+        <View style={{ display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'flex-end' }}>
+          <Sticker name="star" size={26} tilt={-10} />
+          <Sticker name="paw" size={30} tilt={8} />
+          <Sticker name="star" size={20} tilt={14} />
+        </View>
       </SectionList>
     </View>
   )

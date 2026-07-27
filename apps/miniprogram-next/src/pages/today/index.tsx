@@ -103,6 +103,12 @@ export default function TodayPage() {
                 </SwipeAction>
               ))}
             </Section>
+            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '18px', padding: '2px 0' }}>
+              <Sticker name="paw" size={26} tilt={-14} />
+              <Sticker name="paw" size={30} tilt={10} />
+              <Sticker name="paw" size={26} tilt={-8} />
+              <Sticker name="sunflower" size={38} tilt={12} />
+            </View>
             <Section header="快捷入口" seed={1}>
               <Cell
                 title="个体列表(分包样例)"
