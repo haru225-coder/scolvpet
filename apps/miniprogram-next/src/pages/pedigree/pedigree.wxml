@@ -11,11 +11,23 @@
   <view class="card gen" wx:for="{{rows}}" wx:key="label">
     <view class="gen-label">{{item.label}}</view>
     <view class="gen-row">
-      <view class="node {{n.public ? '' : 'dim'}}" wx:for="{{item.nodes}}" wx:for-item="n" wx:key="role">
+      <view
+        class="node {{n.public ? '' : 'dim'}} {{n.tappable && n.id !== hamsterId ? 'tappable' : ''}}"
+        wx:for="{{item.nodes}}"
+        wx:for-item="n"
+        wx:key="role"
+        data-id="{{n.id}}"
+        data-tappable="{{n.tappable}}"
+        bindtap="onNode"
+      >
         <view class="role">{{n.role}}</view>
         <view class="name">{{n.name}}</view>
-        <view class="muted" wx:if="{{n.sex}}">{{n.sex === 'male' ? '♂' : (n.sex === 'female' ? '♀' : '')}}</view>
+        <view class="node-foot">
+          <view class="muted" wx:if="{{n.sex}}">{{n.sex === 'male' ? '♂' : (n.sex === 'female' ? '♀' : '')}}</view>
+          <view class="peek" wx:if="{{n.tappable && n.id !== hamsterId}}">查看 ›</view>
+        </view>
       </view>
     </view>
   </view>
+  <view class="card muted" style="font-size:24rpx;">点击「查看 ›」可浏览该祖先的谱系;未公开/未登记的个体不可查看。</view>
 </block>
