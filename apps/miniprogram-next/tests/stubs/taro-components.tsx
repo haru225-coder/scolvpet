@@ -13,6 +13,12 @@ function domify(tag: string, displayName: string) {
     const { children, onTouchStart, onTouchMove, onTouchEnd, onInput, hoverClass, hoverStayTime, ...rest } = props
     if (hoverClass != null) (rest as Record<string, unknown>)['data-hover-class'] = hoverClass
     if (hoverStayTime != null) (rest as Record<string, unknown>)['data-hover-stay'] = hoverStayTime
+    // Taro 输入事件语义:handler 收 { detail: { value } }
+    const onInputTaro =
+      typeof onInput === 'function'
+        ? (e: { target: { value: string } }) =>
+            (onInput as (ev: unknown) => void)({ detail: { value: e.target.value } })
+        : undefined
     const Tag = tag as 'div'
     return (
       <Tag
@@ -21,7 +27,7 @@ function domify(tag: string, displayName: string) {
         onTouchStart={onTouchStart as never}
         onTouchMove={onTouchMove as never}
         onTouchEnd={onTouchEnd as never}
-        onInput={onInput as never}
+        onInput={onInputTaro as never}
         {...(rest as object)}
       >
         {children as ReactNode}

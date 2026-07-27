@@ -70,10 +70,12 @@ ts-client-drift:
 miniprogram-next-test:
 	cd apps/miniprogram-next && npm test && node --test test/*.test.mjs
 
-# 开发默认 touristappid + staging;产物体积过分包门禁(单分包<2MB,预警1.6MB)。
+# 开发默认 touristappid + staging;产物过分包体积门禁(单分包<2MB,预警1.6MB)
+# 与编译产物 VM 冒烟(App 启动/15 页注册/getApp 桥接/原生页 onLoad)。
 miniprogram-next-build:
 	cd apps/miniprogram-next && npx taro build --type weapp
 	node scripts/check-mp-bundle-size.mjs apps/miniprogram-next/dist
+	node tools/mp-dist-smoke.mjs apps/miniprogram-next/dist
 
 web-test:
 	cd apps/web && npm test

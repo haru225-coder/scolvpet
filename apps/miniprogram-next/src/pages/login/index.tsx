@@ -1,4 +1,5 @@
 import { View, Text, Input } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { useState } from 'react'
 import {
   Section,
@@ -78,13 +79,20 @@ export default function LoginPage() {
                 onInput={(e) => setCode(e.detail.value)}
                 style={{ flex: 1 }}
               />
-              <Button variant="outlined" disabled>
+              <Button
+                variant="outlined"
+                onClick={() => Taro.showToast({ title: '短信通道 M1 接入', icon: 'none' })}
+              >
                 获取验证码
               </Button>
             </View>
           </FormRow>
         </Section>
-        <Button block disabled={phone.length !== 11 || code.length !== 6}>
+        <Button
+          block
+          disabled={phone.length !== 11 || code.length !== 6}
+          onClick={() => Taro.showToast({ title: '示例版式:登录接线在 M1', icon: 'none' })}
+        >
           登录
         </Button>
         <View style={{ display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'flex-end' }}>

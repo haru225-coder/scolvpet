@@ -18,7 +18,8 @@ import {
   metrics
 } from '@scolvpet/mp-ui'
 
-// M0-6 样例页:今日照护队列(静态假数据,只读;真机手感 Gate 用)。
+// M0-6 样例页:今日照护队列(假数据,本地状态可交互;真机 Gate 只评手感)。
+// 功能收口约定:页内所有可点元素必须有响应;未开放能力统一 toast 提示 M1。
 // 业务接线 M1 起走 @api/client + generated 契约客户端。
 const MOCK_TASKS = [
   { id: 't1', title: '喂食 · 全部笼舍', time: '每日 20:00', state: 'todo' },
@@ -30,14 +31,29 @@ const MOCK_TASKS = [
 
 const FILTERS = ['全部', '待办', '已完成'] as const
 
+function stateTag(state: string) {
+  if (state === 'done') return <Tag tone="success">已完成</Tag>
+  if (state === 'skipped') return <Tag>已跳过</Tag>
+  if (state === 'overdue') return <Tag tone="danger">逾期</Tag>
+  return <Tag>待办</Tag>
+}
+
+export function toast(title: string) {
+  Taro.showToast({ title, icon: 'none' })
+}
+
 export default function TodayPage() {
+  const [tasks, setTasks] = useState(MOCK_TASKS)
   const [filter, setFilter] = useState(0)
   const [scrollTop, setScrollTop] = useState(0)
   const [panelFor, setPanelFor] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
-  const tasks = MOCK_TASKS.filter((t) =>
-    filter === 0 ? true : filter === 1 ? t.state !== 'done' : t.state === 'done'
+  const setState = (id: string, state: string) =>
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, state } : t)))
+
+  const visible = tasks.filter((t) =>
+    filter === 0 ? true : filter === 1 ? t.state === 'todo' || t.state === 'overdue' : t.state === 'done'
   )
 
   return (
@@ -63,8 +79,11 @@ export default function TodayPage() {
         onRefresherRefresh={() => {
           if (refreshing) return
           setRefreshing(true)
-          // ponytail: 假数据无可刷,600ms 只为让 Gate 摸到回弹手感;M1 换真拉取
-          setTimeout(() => setRefreshing(false), 600)
+          // ponytail: 假数据无可刷,延时只为让 Gate 摸到回弹手感;M1 换真拉取
+          setTimeout(() => {
+            setRefreshing(false)
+            toast('已是最新(示例数据)')
+          }, 600)
         }}
         style={{ flex: 1 }}
         onScroll={(e: { detail?: { scrollTop?: number } }) => setScrollTop(e.detail?.scrollTop || 0)}
@@ -73,32 +92,34 @@ export default function TodayPage() {
         <View style={{ padding: `0 ${metrics.pagePadding}px ${metrics.space16}px` }}>
           <SegmentedControl segments={[...FILTERS]} value={filter} onChange={setFilter} />
         </View>
-        {tasks.length === 0 ? (
-          <Empty title="暂无今日任务" description="今天的照护任务都完成了" />
+        {visible.length === 0 ? (
+          <Empty
+            title={filter === 2 ? '还没有完成的任务' : '暂无今日任务'}
+            description={filter === 2 ? '完成一项就会出现在这里' : '今天的照护任务都完成了'}
+          />
         ) : (
           <SectionList>
-            <Section header="照护队列" footer={`共 ${tasks.length} 项 · 静态样例数据`}>
-              {tasks.map((t) => (
+            <Section header="照护队列" footer={`共 ${visible.length} 项 · 示例数据`}>
+              {visible.map((t) => (
                 <SwipeAction
                   key={t.id}
                   actions={[
-                    { text: '完成' },
+                    {
+                      text: '完成',
+                      onClick: () => {
+                        setState(t.id, 'done')
+                        toast(`已完成:${t.title}`)
+                      }
+                    },
                     { text: '跳过', danger: true, onClick: () => setPanelFor(t.id) }
                   ]}
                 >
                   <Cell
                     title={t.title}
                     subtitle={t.time}
-                    value={
-                      t.state === 'done' ? (
-                        <Tag tone="success">已完成</Tag>
-                      ) : t.state === 'overdue' ? (
-                        <Tag tone="danger">逾期</Tag>
-                      ) : (
-                        <Tag>待办</Tag>
-                      )
-                    }
+                    value={stateTag(t.state)}
                     chevron
+                    onClick={() => toast('任务详情 M1 开放')}
                   />
                 </SwipeAction>
               ))}
@@ -128,7 +149,17 @@ export default function TodayPage() {
       <ActionPanel
         open={panelFor != null}
         title="跳过这项任务?"
-        actions={[{ text: '跳过一次', danger: true }, { text: '顺延到明天' }]}
+        actions={[
+          {
+            text: '跳过一次',
+            danger: true,
+            onClick: () => {
+              if (panelFor) setState(panelFor, 'skipped')
+              toast('已跳过一次')
+            }
+          },
+          { text: '顺延到明天', onClick: () => toast('已顺延到明天(示例)') }
+        ]}
         onClose={() => setPanelFor(null)}
       />
     </View>

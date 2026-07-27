@@ -1,4 +1,5 @@
 import { ScrollView, View } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { useState } from 'react'
 import {
   NavBar,
@@ -63,6 +64,7 @@ export default function AnimalsSamplePage() {
                   )
                 }
                 chevron
+                onClick={() => Taro.showToast({ title: `${a.name} 的档案 M1 开放`, icon: 'none' })}
               />
             ))}
           </Section>

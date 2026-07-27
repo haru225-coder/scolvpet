@@ -2,7 +2,12 @@ import { Component, type PropsWithChildren } from 'react'
 
 // 与旧 apps/miniprogram/app.js 行为对齐:原生混写页依赖
 // getApp().globalData / getApp().saveCustomer / app._launchEntry。
-// utils/* 为 CommonJS 原生模块,同时被原样拷贝进 dist 供原生页 require。
+// Taro 只把 React 实例上 `taroGlobalData` 内的键桥接到原生 getApp()
+// (见 @tarojs/plugin-framework-react createReactApp),因此对外契约
+// 必须全部收进 taroGlobalData —— 普通实例字段在真机上取不到。
+// 且桥接是启动时按引用快照:键值只能原地 mutate,禁止整体重赋值,
+// 否则原生页拿到的是旧引用(tools/mp-dist-smoke.mjs 对此有回归断言)。
+// utils/* 为 CommonJS 原生模块。
 import config from './utils/config'
 import api from './utils/api'
 import wechatLogin from './utils/wechat_login'
@@ -18,21 +23,32 @@ type CustomerPartial = {
 }
 
 class App extends Component<PropsWithChildren> {
-  globalData = {
-    apiBase: config.API_BASE as string,
-    slug: '',
-    phone: '',
-    wechat: '',
-    customerToken: '',
-    siteTitle: '',
-    // In-memory only (never persisted): one-shot bind ticket from wechat-sessions.
-    wechatTicket: '',
-    wechatTicketObtainedAt: 0
+  // —— 原生页可见面(经 Taro 桥接到 getApp())——
+  taroGlobalData = {
+    globalData: {
+      apiBase: config.API_BASE as string,
+      slug: '',
+      phone: '',
+      wechat: '',
+      customerToken: '',
+      siteTitle: '',
+      // In-memory only (never persisted): one-shot bind ticket from wechat-sessions.
+      wechatTicket: '',
+      wechatTicketObtainedAt: 0
+    },
+    _launchEntry: {} as { slug?: string; hamsterId?: string },
+    saveCustomer: (partial: CustomerPartial) => this.saveCustomer(partial)
   }
 
-  _launchEntry: { slug?: string } = {}
-
   _silentLoginPromise: Promise<unknown> | null = null
+
+  get globalData() {
+    return this.taroGlobalData.globalData
+  }
+
+  get _launchEntry() {
+    return this.taroGlobalData._launchEntry
+  }
 
   onLaunch(options?: { query?: Record<string, string> }) {
     config.assertRuntimeConfig()
@@ -56,7 +72,7 @@ class App extends Component<PropsWithChildren> {
         // ignore
       }
     }
-    this._launchEntry = entry
+    Object.assign(this.taroGlobalData._launchEntry, entry)
     // P2-3 静默微信登录:有缓存 token 维持现状;任何失败都无感降级到短信流程。
     this._silentLoginPromise = this.silentWechatLogin()
   }
