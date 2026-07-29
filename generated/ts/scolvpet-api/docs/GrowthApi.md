@@ -33,7 +33,7 @@ import type { ArchiveGrowthCampaignRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -107,7 +107,7 @@ import type { GenerateGrowthCampaignRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -182,7 +182,7 @@ import type { GetGrowthCampaignRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -253,7 +253,7 @@ import type { ListGrowthCampaignsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -315,7 +315,7 @@ import type { ListGrowthLeadsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -377,7 +377,7 @@ import type { ListGrowthOpportunitiesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -439,7 +439,7 @@ import type { ListGrowthPublicHamstersRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -501,7 +501,7 @@ import type { PublishGrowthCampaignRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -576,7 +576,7 @@ import type { UpsertGrowthPublicHamsterRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });

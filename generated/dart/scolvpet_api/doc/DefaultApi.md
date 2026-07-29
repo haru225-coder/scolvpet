@@ -20,6 +20,8 @@ Method | HTTP request | Description
 [**confirmBirth**](DefaultApi.md#confirmbirth) | **POST** /breeding-plans/{plan_id}/confirm-birth | 确认产仔并建立窝次
 [**confirmBirth_0**](DefaultApi.md#confirmbirth_0) | **POST** /breeding-plans/{plan_id}/confirm-birth | 确认产仔并建立窝次
 [**createBackupJob**](DefaultApi.md#createbackupjob) | **POST** /data-center/backup-jobs | 创建基础备份
+[**createBreederWechatBinding**](DefaultApi.md#createbreederwechatbinding) | **POST** /auth/wechat-bindings | 短信验证并绑定 B 端微信身份
+[**createBreederWechatSession**](DefaultApi.md#createbreederwechatsession) | **POST** /auth/wechat-sessions | B 端微信 wx.login 登录
 [**createBreedingPlan**](DefaultApi.md#createbreedingplan) | **POST** /breeding-plans | 创建繁育计划草稿
 [**createEnclosure**](DefaultApi.md#createenclosure) | **POST** /enclosures | 创建笼盒
 [**createEnclosureCleaning**](DefaultApi.md#createenclosurecleaning) | **POST** /enclosures/{enclosure_id}/cleanings | 记录笼盒清洁或消毒
@@ -38,6 +40,7 @@ Method | HTTP request | Description
 [**createSpeciesRuleVersion**](DefaultApi.md#createspeciesruleversion) | **POST** /species-rule-versions | 创建规则版本
 [**createTask**](DefaultApi.md#createtask) | **POST** /tasks | 创建手工任务
 [**createWeightRecord**](DefaultApi.md#createweightrecord) | **POST** /weight-records | 创建体重记录
+[**deleteBreederWechatBinding**](DefaultApi.md#deletebreederwechatbinding) | **DELETE** /auth/wechat-bindings/current | 解绑当前 B 端微信身份
 [**deleteCurrentSession**](DefaultApi.md#deletecurrentsession) | **DELETE** /auth/sessions/current | 退出当前会话
 [**endPedigreeParentage**](DefaultApi.md#endpedigreeparentage) | **POST** /pedigree-parentages/end | 解除当前有效父母关系
 [**getAsyncJob**](DefaultApi.md#getasyncjob) | **GET** /jobs/{job_id} | 获取通用异步作业
@@ -96,6 +99,7 @@ Method | HTTP request | Description
 [**listSpeciesRuleVersions**](DefaultApi.md#listspeciesruleversions) | **GET** /species-rule-versions | 列出当前熊舍规则版本
 [**listTasks**](DefaultApi.md#listtasks) | **GET** /tasks | 列出任务
 [**listUsageSnapshots**](DefaultApi.md#listusagesnapshots) | **GET** /usage/snapshots | 列出用量快照
+[**listWechatSubscriptions**](DefaultApi.md#listwechatsubscriptions) | **GET** /wechat/subscriptions | 查看当前 B 端微信订阅授权
 [**listWeightRecords**](DefaultApi.md#listweightrecords) | **GET** /weight-records | 列出体重记录
 [**preflightImportJob**](DefaultApi.md#preflightimportjob) | **POST** /data-center/import-jobs/{job_id}/preflight | 全量预检 CSV
 [**presignMediaUpload**](DefaultApi.md#presignmediaupload) | **POST** /media/uploads/presign | 创建媒体预签名上传
@@ -111,6 +115,7 @@ Method | HTTP request | Description
 [**retryMediaProcessing**](DefaultApi.md#retrymediaprocessing) | **POST** /media/{media_id}/retry-processing | 重试失败的媒体处理
 [**revokeShare**](DefaultApi.md#revokeshare) | **POST** /shares/{share_id}/revoke | 撤销公开分享
 [**sendVerificationCode**](DefaultApi.md#sendverificationcode) | **POST** /auth/verification-codes | 发送手机验证码
+[**sendWechatSubscription**](DefaultApi.md#sendwechatsubscription) | **POST** /wechat/subscriptions/send | 投递一条已授权的微信订阅消息
 [**separatePairing**](DefaultApi.md#separatepairing) | **POST** /pairing-attempts/{attempt_id}/separate | 结束配对并完成分笼
 [**setImportMapping**](DefaultApi.md#setimportmapping) | **PUT** /data-center/import-jobs/{job_id}/mapping | 设置 CSV 字段映射
 [**setMediaCover**](DefaultApi.md#setmediacover) | **PUT** /media/{media_id}/cover | 设置媒体封面
@@ -125,6 +130,7 @@ Method | HTTP request | Description
 [**updateHealthRecord**](DefaultApi.md#updatehealthrecord) | **PATCH** /health-records/{health_record_id} | 更新健康记录
 [**updateSpeciesRuleVersion**](DefaultApi.md#updatespeciesruleversion) | **PATCH** /species-rule-versions/{rule_version_id} | 更新尚未冻结的规则版本
 [**updateTask**](DefaultApi.md#updatetask) | **PATCH** /tasks/{task_id} | 更新任务非状态字段
+[**upsertWechatSubscriptions**](DefaultApi.md#upsertwechatsubscriptions) | **PUT** /wechat/subscriptions | 保存当前 B 端微信订阅授权
 [**weanLitter**](DefaultApi.md#weanlitter) | **POST** /litters/{litter_id}/wean | 完成断奶
 
 
@@ -647,6 +653,100 @@ Name | Type | Description  | Notes
 ### Authorization
 
 [bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createBreederWechatBinding**
+> SessionResponse createBreederWechatBinding(idempotencyKey, createBreederWechatBindingRequest, xTimezone)
+
+短信验证并绑定 B 端微信身份
+
+消费 B 端 wx.login 下发的一次性票据，验证手机号后创建 staff Bearer 会话。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final CreateBreederWechatBindingRequest createBreederWechatBindingRequest = ; // CreateBreederWechatBindingRequest |
+final String xTimezone = Asia/Shanghai; // String | IANA 时区；缺省时使用当前熊舍 timezone。
+
+try {
+    final response = api.createBreederWechatBinding(idempotencyKey, createBreederWechatBindingRequest, xTimezone);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->createBreederWechatBinding: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **createBreederWechatBindingRequest** | [**CreateBreederWechatBindingRequest**](CreateBreederWechatBindingRequest.md)|  |
+ **xTimezone** | **String**| IANA 时区；缺省时使用当前熊舍 timezone。 | [optional] [default to 'Asia/Shanghai']
+
+### Return type
+
+[**SessionResponse**](SessionResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createBreederWechatSession**
+> BreederWechatSessionResponse createBreederWechatSession(idempotencyKey, createBreederWechatSessionRequest, xTimezone)
+
+B 端微信 wx.login 登录
+
+用 wx.login 的 js_code 换取 B 端身份：已绑定 openid 直接返回 staff Bearer 会话； 未绑定则返回一次性 bwt_* 票据，随后通过短信验证完成绑定。session_key 永不返回客户端， 且本端点不使用 C 端 ct_* 客户会话。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final CreateBreederWechatSessionRequest createBreederWechatSessionRequest = ; // CreateBreederWechatSessionRequest |
+final String xTimezone = Asia/Shanghai; // String | IANA 时区；缺省时使用当前熊舍 timezone。
+
+try {
+    final response = api.createBreederWechatSession(idempotencyKey, createBreederWechatSessionRequest, xTimezone);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->createBreederWechatSession: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **createBreederWechatSessionRequest** | [**CreateBreederWechatSessionRequest**](CreateBreederWechatSessionRequest.md)|  |
+ **xTimezone** | **String**| IANA 时区；缺省时使用当前熊舍 timezone。 | [optional] [default to 'Asia/Shanghai']
+
+### Return type
+
+[**BreederWechatSessionResponse**](BreederWechatSessionResponse.md)
+
+### Authorization
+
+No authorization required
 
 ### HTTP request headers
 
@@ -1483,6 +1583,44 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **deleteBreederWechatBinding**
+> deleteBreederWechatBinding()
+
+解绑当前 B 端微信身份
+
+保留 revoked_at 审计记录；解绑后下次 wx.login 重新进入短信绑定流程。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+
+try {
+    api.deleteBreederWechatBinding();
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->deleteBreederWechatBinding: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -4110,6 +4248,43 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **listWechatSubscriptions**
+> WechatSubscriptionListResponse listWechatSubscriptions()
+
+查看当前 B 端微信订阅授权
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+
+try {
+    final response = api.listWechatSubscriptions();
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->listWechatSubscriptions: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**WechatSubscriptionListResponse**](WechatSubscriptionListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **listWeightRecords**
 > WeightRecordListResponse listWeightRecords(cursor, limit, hamsterId, pupIdentityId, litterId, recordedFrom, recordedTo)
 
@@ -4833,6 +5008,51 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **sendWechatSubscription**
+> WechatSubscriptionDeliveryResponse sendWechatSubscription(idempotencyKey, sendWechatSubscriptionRequest)
+
+投递一条已授权的微信订阅消息
+
+供任务提醒和预订状态变更编排复用；模板字段由微信模板定义，服务端只转发字符串值。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final SendWechatSubscriptionRequest sendWechatSubscriptionRequest = ; // SendWechatSubscriptionRequest |
+
+try {
+    final response = api.sendWechatSubscription(idempotencyKey, sendWechatSubscriptionRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->sendWechatSubscription: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **sendWechatSubscriptionRequest** | [**SendWechatSubscriptionRequest**](SendWechatSubscriptionRequest.md)|  |
+
+### Return type
+
+[**WechatSubscriptionDeliveryResponse**](WechatSubscriptionDeliveryResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **separatePairing**
 > SeparatePairingResponse separatePairing(idempotencyKey, ifMatch, attemptId, separatePairingRequest)
 
@@ -5513,6 +5733,51 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/merge-patch+json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **upsertWechatSubscriptions**
+> WechatSubscriptionListResponse upsertWechatSubscriptions(idempotencyKey, upsertWechatSubscriptionsRequest)
+
+保存当前 B 端微信订阅授权
+
+记录 wx.requestSubscribeMessage 返回的模板状态；只有 accept 状态会进入后端投递队列。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getDefaultApi();
+final String idempotencyKey = 018f47a2-281b-79e2-b861-bf785ab6fba7; // String | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+final UpsertWechatSubscriptionsRequest upsertWechatSubscriptionsRequest = ; // UpsertWechatSubscriptionsRequest |
+
+try {
+    final response = api.upsertWechatSubscriptions(idempotencyKey, upsertWechatSubscriptionsRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling DefaultApi->upsertWechatSubscriptions: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **idempotencyKey** | **String**| 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  |
+ **upsertWechatSubscriptionsRequest** | [**UpsertWechatSubscriptionsRequest**](UpsertWechatSubscriptionsRequest.md)|  |
+
+### Return type
+
+[**WechatSubscriptionListResponse**](WechatSubscriptionListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

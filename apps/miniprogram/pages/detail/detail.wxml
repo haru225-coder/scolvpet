@@ -26,7 +26,7 @@
     模拟配对对象（可选）
     <picker mode="selector" range="{{mates}}" range-key="public_name" bindchange="onMateChange">
       <view class="field" style="margin-top:8rpx;">
-        {{mates[0] && mateId ? (mates.filter(function(){return true})[0].public_name) : '选择配对'}}
+        <text wx:if="{{!mateId}}">选择配对</text>
         <block wx:for="{{mates}}" wx:key="hamster_id">
           <text wx:if="{{item.hamster_id === mateId}}">{{item.public_name}}</text>
         </block>

@@ -1,7 +1,7 @@
 
 # GeneticSimulationRequest
 
-繁殖推算请求。商家默认使用 phenotype_table 模式，数据来自《金丝熊后代推算整理表（双重核验版）》权威表。 mendel 模式保留简化位点基因型推算（教育用）。 
+繁殖推算请求。商家默认使用 phenotype_table 模式，数据来自《金丝熊后代推算整理表（双重核验版）》权威表。 mendel 模式保留简化位点基因型推算（教育用）。
 
 ## Properties
 

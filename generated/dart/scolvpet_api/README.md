@@ -92,6 +92,8 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**confirmBirth**](doc/DefaultApi.md#confirmbirth) | **POST** /breeding-plans/{plan_id}/confirm-birth | 确认产仔并建立窝次
 [*DefaultApi*](doc/DefaultApi.md) | [**confirmBirth_0**](doc/DefaultApi.md#confirmbirth_0) | **POST** /breeding-plans/{plan_id}/confirm-birth | 确认产仔并建立窝次
 [*DefaultApi*](doc/DefaultApi.md) | [**createBackupJob**](doc/DefaultApi.md#createbackupjob) | **POST** /data-center/backup-jobs | 创建基础备份
+[*DefaultApi*](doc/DefaultApi.md) | [**createBreederWechatBinding**](doc/DefaultApi.md#createbreederwechatbinding) | **POST** /auth/wechat-bindings | 短信验证并绑定 B 端微信身份
+[*DefaultApi*](doc/DefaultApi.md) | [**createBreederWechatSession**](doc/DefaultApi.md#createbreederwechatsession) | **POST** /auth/wechat-sessions | B 端微信 wx.login 登录
 [*DefaultApi*](doc/DefaultApi.md) | [**createBreedingPlan**](doc/DefaultApi.md#createbreedingplan) | **POST** /breeding-plans | 创建繁育计划草稿
 [*DefaultApi*](doc/DefaultApi.md) | [**createEnclosure**](doc/DefaultApi.md#createenclosure) | **POST** /enclosures | 创建笼盒
 [*DefaultApi*](doc/DefaultApi.md) | [**createEnclosureCleaning**](doc/DefaultApi.md#createenclosurecleaning) | **POST** /enclosures/{enclosure_id}/cleanings | 记录笼盒清洁或消毒
@@ -110,6 +112,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**createSpeciesRuleVersion**](doc/DefaultApi.md#createspeciesruleversion) | **POST** /species-rule-versions | 创建规则版本
 [*DefaultApi*](doc/DefaultApi.md) | [**createTask**](doc/DefaultApi.md#createtask) | **POST** /tasks | 创建手工任务
 [*DefaultApi*](doc/DefaultApi.md) | [**createWeightRecord**](doc/DefaultApi.md#createweightrecord) | **POST** /weight-records | 创建体重记录
+[*DefaultApi*](doc/DefaultApi.md) | [**deleteBreederWechatBinding**](doc/DefaultApi.md#deletebreederwechatbinding) | **DELETE** /auth/wechat-bindings/current | 解绑当前 B 端微信身份
 [*DefaultApi*](doc/DefaultApi.md) | [**deleteCurrentSession**](doc/DefaultApi.md#deletecurrentsession) | **DELETE** /auth/sessions/current | 退出当前会话
 [*DefaultApi*](doc/DefaultApi.md) | [**endPedigreeParentage**](doc/DefaultApi.md#endpedigreeparentage) | **POST** /pedigree-parentages/end | 解除当前有效父母关系
 [*DefaultApi*](doc/DefaultApi.md) | [**getAsyncJob**](doc/DefaultApi.md#getasyncjob) | **GET** /jobs/{job_id} | 获取通用异步作业
@@ -168,6 +171,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**listSpeciesRuleVersions**](doc/DefaultApi.md#listspeciesruleversions) | **GET** /species-rule-versions | 列出当前熊舍规则版本
 [*DefaultApi*](doc/DefaultApi.md) | [**listTasks**](doc/DefaultApi.md#listtasks) | **GET** /tasks | 列出任务
 [*DefaultApi*](doc/DefaultApi.md) | [**listUsageSnapshots**](doc/DefaultApi.md#listusagesnapshots) | **GET** /usage/snapshots | 列出用量快照
+[*DefaultApi*](doc/DefaultApi.md) | [**listWechatSubscriptions**](doc/DefaultApi.md#listwechatsubscriptions) | **GET** /wechat/subscriptions | 查看当前 B 端微信订阅授权
 [*DefaultApi*](doc/DefaultApi.md) | [**listWeightRecords**](doc/DefaultApi.md#listweightrecords) | **GET** /weight-records | 列出体重记录
 [*DefaultApi*](doc/DefaultApi.md) | [**preflightImportJob**](doc/DefaultApi.md#preflightimportjob) | **POST** /data-center/import-jobs/{job_id}/preflight | 全量预检 CSV
 [*DefaultApi*](doc/DefaultApi.md) | [**presignMediaUpload**](doc/DefaultApi.md#presignmediaupload) | **POST** /media/uploads/presign | 创建媒体预签名上传
@@ -183,6 +187,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**retryMediaProcessing**](doc/DefaultApi.md#retrymediaprocessing) | **POST** /media/{media_id}/retry-processing | 重试失败的媒体处理
 [*DefaultApi*](doc/DefaultApi.md) | [**revokeShare**](doc/DefaultApi.md#revokeshare) | **POST** /shares/{share_id}/revoke | 撤销公开分享
 [*DefaultApi*](doc/DefaultApi.md) | [**sendVerificationCode**](doc/DefaultApi.md#sendverificationcode) | **POST** /auth/verification-codes | 发送手机验证码
+[*DefaultApi*](doc/DefaultApi.md) | [**sendWechatSubscription**](doc/DefaultApi.md#sendwechatsubscription) | **POST** /wechat/subscriptions/send | 投递一条已授权的微信订阅消息
 [*DefaultApi*](doc/DefaultApi.md) | [**separatePairing**](doc/DefaultApi.md#separatepairing) | **POST** /pairing-attempts/{attempt_id}/separate | 结束配对并完成分笼
 [*DefaultApi*](doc/DefaultApi.md) | [**setImportMapping**](doc/DefaultApi.md#setimportmapping) | **PUT** /data-center/import-jobs/{job_id}/mapping | 设置 CSV 字段映射
 [*DefaultApi*](doc/DefaultApi.md) | [**setMediaCover**](doc/DefaultApi.md#setmediacover) | **PUT** /media/{media_id}/cover | 设置媒体封面
@@ -197,6 +202,7 @@ Class | Method | HTTP request | Description
 [*DefaultApi*](doc/DefaultApi.md) | [**updateHealthRecord**](doc/DefaultApi.md#updatehealthrecord) | **PATCH** /health-records/{health_record_id} | 更新健康记录
 [*DefaultApi*](doc/DefaultApi.md) | [**updateSpeciesRuleVersion**](doc/DefaultApi.md#updatespeciesruleversion) | **PATCH** /species-rule-versions/{rule_version_id} | 更新尚未冻结的规则版本
 [*DefaultApi*](doc/DefaultApi.md) | [**updateTask**](doc/DefaultApi.md#updatetask) | **PATCH** /tasks/{task_id} | 更新任务非状态字段
+[*DefaultApi*](doc/DefaultApi.md) | [**upsertWechatSubscriptions**](doc/DefaultApi.md#upsertwechatsubscriptions) | **PUT** /wechat/subscriptions | 保存当前 B 端微信订阅授权
 [*DefaultApi*](doc/DefaultApi.md) | [**weanLitter**](doc/DefaultApi.md#weanlitter) | **POST** /litters/{litter_id}/wean | 完成断奶
 [*CustomerApi*](doc/CustomerApi.md) | [**cancelCustomerReservation**](doc/CustomerApi.md#cancelcustomerreservation) | **POST** /v1/customer/reservations/{reservation_id}/cancel | 客户取消 held 预订
 [*CustomerApi*](doc/CustomerApi.md) | [**createCustomerSession**](doc/CustomerApi.md#createcustomersession) | **POST** /v1/public/customer/sessions | 客户验证码登录
@@ -230,6 +236,8 @@ Class | Method | HTTP request | Description
 [*P1Api*](doc/P1Api.md) | [**createReceipt**](doc/P1Api.md#createreceipt) | **POST** /v1/receipts | 创建回执单据
 [*P1Api*](doc/P1Api.md) | [**createReceiptTemplate**](doc/P1Api.md#createreceipttemplate) | **POST** /v1/receipts/templates | 创建回执模板
 [*P1Api*](doc/P1Api.md) | [**disablePushDevice**](doc/P1Api.md#disablepushdevice) | **DELETE** /v1/push/devices/{device_id} | 停用推送设备
+[*P1Api*](doc/P1Api.md) | [**downloadContractPdf**](doc/P1Api.md#downloadcontractpdf) | **GET** /v1/contracts/{document_id}/pdf | 下载已签发合同 PDF
+[*P1Api*](doc/P1Api.md) | [**downloadReceiptPdf**](doc/P1Api.md#downloadreceiptpdf) | **GET** /v1/receipts/{document_id}/pdf | 下载已签发回执 PDF
 [*P1Api*](doc/P1Api.md) | [**getAccountingSummary**](doc/P1Api.md#getaccountingsummary) | **GET** /v1/accounting/summary | 读取记账汇总
 [*P1Api*](doc/P1Api.md) | [**getCurrentEntitlement**](doc/P1Api.md#getcurrententitlement) | **GET** /v1/entitlements/current | 读取当前权益快照
 [*P1Api*](doc/P1Api.md) | [**getEntitlementCatalog**](doc/P1Api.md#getentitlementcatalog) | **GET** /v1/entitlements/catalog | 读取权益套餐目录
@@ -351,6 +359,8 @@ Class | Method | HTTP request | Description
  - [BackupJobResponse](doc/BackupJobResponse.md)
  - [BatchItemStatus](doc/BatchItemStatus.md)
  - [BatchTransactionStatus](doc/BatchTransactionStatus.md)
+ - [BreederWechatSessionResponse](doc/BreederWechatSessionResponse.md)
+ - [BreederWechatSessionResponseData](doc/BreederWechatSessionResponseData.md)
  - [BreedingPlan](doc/BreedingPlan.md)
  - [BreedingPlanCreateRequest](doc/BreedingPlanCreateRequest.md)
  - [BreedingPlanListResponse](doc/BreedingPlanListResponse.md)
@@ -378,6 +388,8 @@ Class | Method | HTTP request | Description
  - [ConfirmBirthResponseData](doc/ConfirmBirthResponseData.md)
  - [CreateAccountingCategoryRequest](doc/CreateAccountingCategoryRequest.md)
  - [CreateAccountingRecordRequest](doc/CreateAccountingRecordRequest.md)
+ - [CreateBreederWechatBindingRequest](doc/CreateBreederWechatBindingRequest.md)
+ - [CreateBreederWechatSessionRequest](doc/CreateBreederWechatSessionRequest.md)
  - [CreateContractRequest](doc/CreateContractRequest.md)
  - [CreateCrmContactRequest](doc/CreateCrmContactRequest.md)
  - [CreateCrmHandoverRequest](doc/CreateCrmHandoverRequest.md)
@@ -643,6 +655,7 @@ Class | Method | HTTP request | Description
  - [SandboxActivatePlanRequest](doc/SandboxActivatePlanRequest.md)
  - [SendCustomerVerificationCodeRequest](doc/SendCustomerVerificationCodeRequest.md)
  - [SendVerificationCodeRequest](doc/SendVerificationCodeRequest.md)
+ - [SendWechatSubscriptionRequest](doc/SendWechatSubscriptionRequest.md)
  - [SeparatePairingRequest](doc/SeparatePairingRequest.md)
  - [SeparatePairingResponse](doc/SeparatePairingResponse.md)
  - [SeparatePairingResponseData](doc/SeparatePairingResponseData.md)
@@ -688,6 +701,7 @@ Class | Method | HTTP request | Description
  - [UpsertMiniprogramConfigRequest](doc/UpsertMiniprogramConfigRequest.md)
  - [UpsertPublicSiteRequest](doc/UpsertPublicSiteRequest.md)
  - [UpsertPushDeviceRequest](doc/UpsertPushDeviceRequest.md)
+ - [UpsertWechatSubscriptionsRequest](doc/UpsertWechatSubscriptionsRequest.md)
  - [UsageMetric](doc/UsageMetric.md)
  - [UsageResponse](doc/UsageResponse.md)
  - [UsageResponseData](doc/UsageResponseData.md)
@@ -700,6 +714,10 @@ Class | Method | HTTP request | Description
  - [WeanLitterRequestItemsInner](doc/WeanLitterRequestItemsInner.md)
  - [WeanLitterResponse](doc/WeanLitterResponse.md)
  - [WeanLitterResponseData](doc/WeanLitterResponseData.md)
+ - [WechatSubscription](doc/WechatSubscription.md)
+ - [WechatSubscriptionDeliveryResponse](doc/WechatSubscriptionDeliveryResponse.md)
+ - [WechatSubscriptionDeliveryResponseData](doc/WechatSubscriptionDeliveryResponseData.md)
+ - [WechatSubscriptionListResponse](doc/WechatSubscriptionListResponse.md)
  - [WeightRecord](doc/WeightRecord.md)
  - [WeightRecordBatchCreateRequest](doc/WeightRecordBatchCreateRequest.md)
  - [WeightRecordBatchCreateRequestItemsInner](doc/WeightRecordBatchCreateRequestItemsInner.md)

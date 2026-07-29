@@ -2,3 +2,4 @@ node_modules/
 dist/
 .swc/
 *.log
+.project.config.json.release-backup

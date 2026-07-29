@@ -1,0 +1,40 @@
+熊舍管家 200% 双周工程验证报告
+日期：2026-07-27（Asia/Taipei）
+范围：I1 基线复核、敏感 GET 角色隔离、OpenAPI 生成客户端同步、数据库/Outbox、Flutter、Web、小程序、媒体与公开预订演示链。
+
+一、实现留痕
+- 已写入：api/internal/httpapi/rbac.go 与 rbac_test.go。viewer 对 contracts、receipts、accounting、organization-members、data-center 敏感读取按路径拒绝；unknown role 对 GET/HEAD/OPTIONS 失败闭合；普通业务读取保持可用。
+- 已写入：OpenAPI 变更后的 Dart 生成客户端，执行生成器与 build_runner，补齐 breeder WeChat identity/subscriptions 请求、响应及模型。
+- 已写入：docs/engineering/双周完成度.md，完成度由 108/200 调整为 116/200；分数仅引用本报告和可复核演示证据。
+
+二、已验证命令与结果
+1. `go test ./... -count=1`：通过。api、worker、store、outbox、wechat 及其余 Go 包全部通过。
+2. `make openapi-lint`：通过。Redocly 1.34.5，0 errors、0 warnings。
+3. `make openapi-conformance`：通过。OpenAPI operations=222，Go mux operations=227，允许差异=5，双向 gaps=0。
+4. `make migration-drift`：通过。9 source migrations 无漂移。
+5. `make db-verify`：通过。全新 PostgreSQL、迁移复跑、seed 重放、checksum 漂移检测；45 migrations、78 tables、75 enums、system_rules=1、metadata_tables=1。
+6. `I1_API_PORT=18580 I1_DB_PORT=56580 scripts/i1-smoke.sh`：通过。owner isolation、idempotency、ETag、rules、events=4、published_outbox=2。
+7. `scripts/i1-outbox-test.sh`：通过。claim、retry、dead-letter、stale recovery 全部通过。
+8. `make reservation-smoke`：通过。跨 owner 与伪造联系人负例通过。
+9. `make media-smoke`：通过。upload、media、variant、events=9、published_outbox=8。
+10. `make objectstore-smoke`：通过本地 suite；S3/MinIO live 因运行环境缺少 OBJECT_STORE_ENDPOINT、OBJECT_STORE_BUCKET、OBJECT_STORE_REGION、OBJECT_STORE_ACCESS_KEY、OBJECT_STORE_SECRET_KEY，标记待确认。
+11. `make client-drift`（DART_PUB_OFFLINE=1）：通过，generated dart client drift check passed: 1258 files。
+12. `make ts-client-drift`：通过，generated ts client drift check passed: 864 files。
+13. `flutter analyze`：通过，No issues found。
+14. `flutter test`：通过，216 tests，All tests passed。
+15. `flutter build ios --simulator --no-codesign`：在 `/private/tmp/scolvpet-ios-build.Ws6KXt` 无 Finder 扩展属性临时卷通过，生成 Runner.app；工作区本地 build/ 受 Finder 元数据影响，标记待确认。
+16. `make web-lint && make web-test && make web-build`：通过，Web tests 16/16，build 输出 apps/web/dist/server.mjs。
+17. `make miniprogram-test`：通过。
+18. `make miniprogram-next-lint && make miniprogram-next-test`：通过，6 test files passed，38 passed、1 skipped（preview）。
+19. `git diff --check`：通过。
+
+三、待确认与环境阻断
+- Android：本机未发现 Android SDK，ANDROID_HOME 与 ANDROID_SDK_ROOT 为空；`flutter build apk --debug` 在 SDK 探测阶段结束，需补 SDK 后重跑。
+- iOS 真机与正式签名：本轮只验证模拟器无签名构建，正式 Team、证书、真机安装升级仍待确认。
+- 工作区 iOS 构建：macOS Finder 元数据会重新注入生成框架；临时卷构建已验证，工作区产物清理后仍需在目标机器复核。
+- staging/生产：LA1 迁移复跑、正式域名/CDN、微信 AppID/OpenID、短信供应商、S3/MinIO、备份恢复演练未接入本轮环境。
+- 产品闭环：CSV session 全库化、繁育非 happy-path UI、健康纠错、模拟历史实体、导出/备份 worker 仍待下一窗口。
+
+四、结论
+- 本轮状态：已写入 / 已验证 / 待确认。
+- 计分：108/200 → 116/200（+8），新增分来自敏感 GET 角色隔离、契约漂移收口及可重复的跨端/迁移/Outbox/媒体演示证据。

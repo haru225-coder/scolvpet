@@ -23,6 +23,7 @@ func (s *Server) registerP1ContractRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/contracts", s.createContract)
 	mux.HandleFunc("POST /v1/contracts/{document_id}/issue", s.issueContract)
 	mux.HandleFunc("POST /v1/contracts/{document_id}/revoke", s.revokeContract)
+	mux.HandleFunc("GET /v1/contracts/{document_id}/pdf", s.downloadContractPDF)
 
 	mux.HandleFunc("GET /v1/receipts/templates", s.listReceiptTemplates)
 	mux.HandleFunc("POST /v1/receipts/templates", s.createReceiptTemplate)
@@ -30,6 +31,7 @@ func (s *Server) registerP1ContractRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/receipts", s.createReceipt)
 	mux.HandleFunc("POST /v1/receipts/{document_id}/issue", s.issueReceipt)
 	mux.HandleFunc("POST /v1/receipts/{document_id}/revoke", s.revokeReceipt)
+	mux.HandleFunc("GET /v1/receipts/{document_id}/pdf", s.downloadReceiptPDF)
 
 	// 客户侧只读：已签发合同/回执（能力令牌，无鉴权）
 	mux.HandleFunc("GET /v1/public/documents/{token}", s.getPublicDocument)

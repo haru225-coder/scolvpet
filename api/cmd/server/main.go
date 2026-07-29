@@ -83,9 +83,12 @@ func main() {
 	apiServer.ImportObjects = importObjects
 	apiServer.Environment = config.Environment
 	apiServer.Ready = &httpapi.ReadyChecks{
-		SMSProvider:    config.SMSProvider,
-		SMSMockCodeSet: config.SMSMockCode != "",
-		WechatProvider: config.WechatProvider,
+		SMSProvider:                         config.SMSProvider,
+		SMSMockCodeSet:                      config.SMSMockCode != "",
+		WechatProvider:                      config.WechatProvider,
+		WechatSubscriptionProvider:          config.WechatSubscriptionProvider,
+		WechatTaskTemplateConfigured:        config.WechatTaskTemplateID != "",
+		WechatReservationTemplateConfigured: config.WechatReservationTemplateID != "",
 	}
 	apiServer.TrustedProxies = config.TrustedProxyCIDRs
 	switch config.WechatProvider {
@@ -102,6 +105,26 @@ func main() {
 		logger.Error("wechat provider unsupported", "provider", config.WechatProvider)
 		os.Exit(1)
 	}
+	switch config.WechatSubscriptionProvider {
+	case "mock":
+		apiServer.WechatSubscription = &wechat.MockSubscriptionSender{Logger: logger}
+	case "http":
+		subscriptionSender, subscriptionErr := wechat.NewHTTPSubscriptionSender(config.WechatAppID, config.WechatSecret)
+		if subscriptionErr != nil {
+			logger.Error("wechat subscription provider config invalid", "error", subscriptionErr)
+			os.Exit(1)
+		}
+		subscriptionSender.MiniprogramState = config.WechatSubscriptionState
+		subscriptionSender.Logger = logger
+		apiServer.WechatSubscription = subscriptionSender
+	default:
+		logger.Error("wechat subscription provider unsupported", "provider", config.WechatSubscriptionProvider)
+		os.Exit(1)
+	}
+	subscriptionWorker := worker.NewSubscriptionWorker(pool, apiServer.WechatSubscription, logger)
+	subscriptionWorker.TaskTemplateID = config.WechatTaskTemplateID
+	subscriptionWorker.ReservationTemplateID = config.WechatReservationTemplateID
+	go subscriptionWorker.Run(ctx, 2*time.Second)
 	outboxWorker := worker.New(pool, logger)
 	outboxWorker.LeaseDuration = time.Duration(config.OutboxLeaseSeconds) * time.Second
 	switch config.OutboxPublisherMode {

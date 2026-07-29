@@ -20,6 +20,12 @@ func TestPrincipalCanRequestRoleMatrix(t *testing.T) {
 	}{
 		{name: "owner manages members", role: "owner", method: http.MethodPost, path: "/v1/organization-members", want: true},
 		{name: "viewer reads", role: "viewer", method: http.MethodGet, path: "/v1/hamsters", want: true},
+		{name: "viewer cannot read contracts with public tokens", role: "viewer", method: http.MethodGet, path: "/v1/contracts", want: false},
+		{name: "viewer cannot read receipts with public tokens", role: "viewer", method: http.MethodGet, path: "/v1/receipts/receipt-id/pdf", want: false},
+		{name: "viewer cannot read financial records", role: "viewer", method: http.MethodGet, path: "/v1/accounting/records", want: false},
+		{name: "viewer cannot read member PII", role: "viewer", method: http.MethodGet, path: "/v1/organization-members", want: false},
+		{name: "viewer cannot read backup metadata", role: "viewer", method: http.MethodGet, path: "/v1/data-center/backup-jobs", want: false},
+		{name: "unknown role cannot read protected data", role: "unknown", method: http.MethodGet, path: "/v1/hamsters", want: false},
 		{name: "viewer cannot write", role: "viewer", method: http.MethodPatch, path: "/v1/hamsters/hamster-id", want: false},
 		{name: "viewer may log out", role: "viewer", method: http.MethodDelete, path: "/v1/auth/sessions/current", want: true},
 		{name: "breeder writes breeding", role: "breeder", method: http.MethodPost, path: "/v1/breeding-plans", want: true},

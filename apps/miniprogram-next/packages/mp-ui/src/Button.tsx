@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import { useState, type CSSProperties, type ReactNode } from 'react'
-import { crayon, metrics, motion } from './tokens'
+import { crayon, motion } from './tokens'
 import { palette, wobble } from './theme'
 
 export interface ButtonProps {

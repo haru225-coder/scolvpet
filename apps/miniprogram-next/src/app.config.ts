@@ -16,11 +16,15 @@ export default defineAppConfig({
     'pages/contract/contract'
   ],
   subPackages: [
-    { root: 'packages/animals', pages: ['index/index'] },
-    { root: 'packages/breeding', pages: ['index/index'] },
-    { root: 'packages/crm', pages: ['index/index'] },
-    { root: 'packages/contracts', pages: ['index/index'] },
-    { root: 'packages/finance', pages: ['index/index'] },
+    { root: 'packages/animals', pages: ['index/index', 'detail/index', 'create/index', 'batch-create/index'] },
+    { root: 'packages/litters', pages: ['index/index', 'detail/index'] },
+    { root: 'packages/reminders', pages: ['index/index', 'create/index', 'calendar/index', 'subscriptions/index'] },
+    { root: 'packages/breeding', pages: ['index/index', 'detail/index', 'create/index'] },
+    { root: 'packages/crm', pages: ['index/index', 'detail/index', 'create/index'] },
+    { root: 'packages/contracts', pages: ['index/index', 'create/index', 'detail/index', 'templates/index'] },
+    { root: 'packages/finance', pages: ['index/index', 'create/index', 'categories/index'] },
+    { root: 'packages/genetic', pages: ['index/index', 'create/index'] },
+    { root: 'packages/data-center', pages: ['index/index', 'actions/index'] },
     { root: 'packages/ai', pages: ['index/index'] }
   ],
   // Skyline 按页面粒度声明(renderer: 'skyline' 写在各页 config),

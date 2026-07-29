@@ -33,7 +33,7 @@ import type { CancelCustomerReservationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: customerBearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -315,7 +315,7 @@ import type { DeleteCustomerSessionRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: customerBearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -379,7 +379,7 @@ import type { DeleteCustomerWechatBindingRequest } from '@scolvpet/scolvpet-api'
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: customerBearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -441,7 +441,7 @@ import type { GetCustomerReservationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: customerBearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -512,7 +512,7 @@ import type { ListCustomerReservationsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: customerBearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });

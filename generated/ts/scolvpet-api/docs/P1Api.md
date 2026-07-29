@@ -14,6 +14,8 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**createReceipt**](P1Api.md#createreceiptoperation) | **POST** /v1/receipts | 创建回执单据 |
 | [**createReceiptTemplate**](P1Api.md#createreceipttemplate) | **POST** /v1/receipts/templates | 创建回执模板 |
 | [**disablePushDevice**](P1Api.md#disablepushdevice) | **DELETE** /v1/push/devices/{device_id} | 停用推送设备 |
+| [**downloadContractPdf**](P1Api.md#downloadcontractpdf) | **GET** /v1/contracts/{document_id}/pdf | 下载已签发合同 PDF |
+| [**downloadReceiptPdf**](P1Api.md#downloadreceiptpdf) | **GET** /v1/receipts/{document_id}/pdf | 下载已签发回执 PDF |
 | [**getAccountingSummary**](P1Api.md#getaccountingsummary) | **GET** /v1/accounting/summary | 读取记账汇总 |
 | [**getCurrentEntitlement**](P1Api.md#getcurrententitlement) | **GET** /v1/entitlements/current | 读取当前权益快照 |
 | [**getEntitlementCatalog**](P1Api.md#getentitlementcatalog) | **GET** /v1/entitlements/catalog | 读取权益套餐目录 |
@@ -60,7 +62,7 @@ import type { CheckEntitlementRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -136,7 +138,7 @@ import type { CreateAccountingCategoryOperationRequest } from '@scolvpet/scolvpe
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -213,7 +215,7 @@ import type { CreateAccountingRecordOperationRequest } from '@scolvpet/scolvpet-
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -290,7 +292,7 @@ import type { CreateContractOperationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -367,7 +369,7 @@ import type { CreateContractTemplateRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -443,7 +445,7 @@ import type { CreateGeneticProfileOperationRequest } from '@scolvpet/scolvpet-ap
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -520,7 +522,7 @@ import type { CreatePushMessageOperationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -597,7 +599,7 @@ import type { CreateReceiptOperationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -674,7 +676,7 @@ import type { CreateReceiptTemplateRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -750,7 +752,7 @@ import type { DisablePushDeviceRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -808,6 +810,154 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## downloadContractPdf
+
+> Blob downloadContractPdf(documentId)
+
+下载已签发合同 PDF
+
+需要 Bearer 令牌；仅当前经营账号下已签发合同可下载，服务端统一渲染 PDF。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  P1Api,
+} from '@scolvpet/scolvpet-api';
+import type { DownloadContractPdfRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new P1Api(config);
+
+  const body = {
+    // string | 合同单据 ID
+    documentId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
+  } satisfies DownloadContractPdfRequest;
+
+  try {
+    const data = await api.downloadContractPdf(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentId** | `string` | 合同单据 ID | [Defaults to `undefined`] |
+
+### Return type
+
+**Blob**
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/pdf`, `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | 合同 PDF |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+| **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
+| **422** | 字段格式或领域规则校验失败 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## downloadReceiptPdf
+
+> Blob downloadReceiptPdf(documentId)
+
+下载已签发回执 PDF
+
+需要 Bearer 令牌；仅当前经营账号下已签发回执可下载，服务端统一渲染 PDF。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  P1Api,
+} from '@scolvpet/scolvpet-api';
+import type { DownloadReceiptPdfRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new P1Api(config);
+
+  const body = {
+    // string | 回执单据 ID
+    documentId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
+  } satisfies DownloadReceiptPdfRequest;
+
+  try {
+    const data = await api.downloadReceiptPdf(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentId** | `string` | 回执单据 ID | [Defaults to `undefined`] |
+
+### Return type
+
+**Blob**
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/pdf`, `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | 回执 PDF |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+| **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
+| **422** | 字段格式或领域规则校验失败 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## getAccountingSummary
 
 > AccountingSummaryResponse getAccountingSummary(entryType, from, to)
@@ -827,7 +977,7 @@ import type { GetAccountingSummaryRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -906,7 +1056,7 @@ import type { GetCurrentEntitlementRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -971,7 +1121,7 @@ import type { GetEntitlementCatalogRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1036,7 +1186,7 @@ import type { InviteOrganizationMemberOperationRequest } from '@scolvpet/scolvpe
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1114,7 +1264,7 @@ import type { IssueContractRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1125,7 +1275,7 @@ async function example() {
     documentId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
   } satisfies IssueContractRequest;
 
@@ -1195,7 +1345,7 @@ import type { IssueReceiptRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1206,7 +1356,7 @@ async function example() {
     documentId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
   } satisfies IssueReceiptRequest;
 
@@ -1276,7 +1426,7 @@ import type { ListAccountingCategoriesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1349,7 +1499,7 @@ import type { ListAccountingRecordsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1428,7 +1578,7 @@ import type { ListContractTemplatesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1493,7 +1643,7 @@ import type { ListContractsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1558,7 +1708,7 @@ import type { ListGeneticLociRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1623,7 +1773,7 @@ import type { ListGeneticProfilesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1688,7 +1838,7 @@ import type { ListOrganizationMembersRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1753,7 +1903,7 @@ import type { ListPushDevicesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1818,7 +1968,7 @@ import type { ListPushMessagesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1883,7 +2033,7 @@ import type { ListReceiptTemplatesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -1948,7 +2098,7 @@ import type { ListReceiptsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2013,7 +2163,7 @@ import type { RevokeContractRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2024,7 +2174,7 @@ async function example() {
     documentId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
   } satisfies RevokeContractRequest;
 
@@ -2094,7 +2244,7 @@ import type { RevokeOrganizationMemberRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2176,7 +2326,7 @@ import type { RevokeReceiptRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2187,7 +2337,7 @@ async function example() {
     documentId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
   } satisfies RevokeReceiptRequest;
 
@@ -2257,7 +2407,7 @@ import type { SandboxActivatePlanOperationRequest } from '@scolvpet/scolvpet-api
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2333,7 +2483,7 @@ import type { SimulateGeneticBreedingRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2409,7 +2559,7 @@ import type { UpdateOrganizationMemberOperationRequest } from '@scolvpet/scolvpe
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2494,7 +2644,7 @@ import type { UpsertPushDeviceOperationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });

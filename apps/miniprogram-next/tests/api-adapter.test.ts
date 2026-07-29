@@ -42,6 +42,12 @@ describe('createTaroFetch', () => {
     expect(res.status).toBe(404)
     expect(res.headers.get('content-type')).toBe('application/json')
   })
+
+  it('收敛生成客户端历史路径中的重复 /v1', async () => {
+    const { calls, fn } = capturingRequest()
+    await createTaroFetch(fn)('https://api.example/v1/v1/public-site')
+    expect(calls[0].url).toBe('https://api.example/v1/public-site')
+  })
 })
 
 describe('idempotencyMiddleware', () => {

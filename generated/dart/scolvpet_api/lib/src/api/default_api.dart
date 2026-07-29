@@ -18,6 +18,7 @@ import 'package:scolvpet_api/src/model/async_job_response.dart';
 import 'package:scolvpet_api/src/model/backup_job_create_request.dart';
 import 'package:scolvpet_api/src/model/backup_job_list_response.dart';
 import 'package:scolvpet_api/src/model/backup_job_response.dart';
+import 'package:scolvpet_api/src/model/breeder_wechat_session_response.dart';
 import 'package:scolvpet_api/src/model/breeding_plan_create_request.dart';
 import 'package:scolvpet_api/src/model/breeding_plan_list_response.dart';
 import 'package:scolvpet_api/src/model/breeding_plan_response.dart';
@@ -34,6 +35,8 @@ import 'package:scolvpet_api/src/model/complete_task_request.dart';
 import 'package:scolvpet_api/src/model/complete_task_response.dart';
 import 'package:scolvpet_api/src/model/confirm_birth_request.dart';
 import 'package:scolvpet_api/src/model/confirm_birth_response.dart';
+import 'package:scolvpet_api/src/model/create_breeder_wechat_binding_request.dart';
+import 'package:scolvpet_api/src/model/create_breeder_wechat_session_request.dart';
 import 'package:scolvpet_api/src/model/current_account_response.dart';
 import 'package:scolvpet_api/src/model/data_center_summary_response.dart';
 import 'package:scolvpet_api/src/model/download_link_response.dart';
@@ -123,6 +126,7 @@ import 'package:scolvpet_api/src/model/retry_import_request.dart';
 import 'package:scolvpet_api/src/model/retry_job_request.dart';
 import 'package:scolvpet_api/src/model/revoke_share_request.dart';
 import 'package:scolvpet_api/src/model/send_verification_code_request.dart';
+import 'package:scolvpet_api/src/model/send_wechat_subscription_request.dart';
 import 'package:scolvpet_api/src/model/separate_pairing_request.dart';
 import 'package:scolvpet_api/src/model/separate_pairing_response.dart';
 import 'package:scolvpet_api/src/model/session_response.dart';
@@ -145,11 +149,14 @@ import 'package:scolvpet_api/src/model/start_pairing_response.dart';
 import 'package:scolvpet_api/src/model/task_correction_request.dart';
 import 'package:scolvpet_api/src/model/task_priority.dart';
 import 'package:scolvpet_api/src/model/task_state.dart';
+import 'package:scolvpet_api/src/model/upsert_wechat_subscriptions_request.dart';
 import 'package:scolvpet_api/src/model/usage_response.dart';
 import 'package:scolvpet_api/src/model/usage_snapshot_list_response.dart';
 import 'package:scolvpet_api/src/model/verification_code_challenge_response.dart';
 import 'package:scolvpet_api/src/model/wean_litter_request.dart';
 import 'package:scolvpet_api/src/model/wean_litter_response.dart';
+import 'package:scolvpet_api/src/model/wechat_subscription_delivery_response.dart';
+import 'package:scolvpet_api/src/model/wechat_subscription_list_response.dart';
 import 'package:scolvpet_api/src/model/weight_record_batch_create_request.dart';
 import 'package:scolvpet_api/src/model/weight_record_batch_create_response.dart';
 import 'package:scolvpet_api/src/model/weight_record_create_request.dart';
@@ -1291,6 +1298,200 @@ _responseData = rawData == null ? null : deserialize<BackupJobResponse, BackupJo
     }
 
     return Response<BackupJobResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 短信验证并绑定 B 端微信身份
+  /// 消费 B 端 wx.login 下发的一次性票据，验证手机号后创建 staff Bearer 会话。
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [createBreederWechatBindingRequest]
+  /// * [xTimezone] - IANA 时区；缺省时使用当前熊舍 timezone。
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [SessionResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<SessionResponse>> createBreederWechatBinding({
+    required String idempotencyKey,
+    required CreateBreederWechatBindingRequest createBreederWechatBindingRequest,
+    String? xTimezone = 'Asia/Shanghai',
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/auth/wechat-bindings';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        if (xTimezone != null) r'X-Timezone': xTimezone,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = jsonEncode(createBreederWechatBindingRequest);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    SessionResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<SessionResponse, SessionResponse>(rawData, 'SessionResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<SessionResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// B 端微信 wx.login 登录
+  /// 用 wx.login 的 js_code 换取 B 端身份：已绑定 openid 直接返回 staff Bearer 会话； 未绑定则返回一次性 bwt_* 票据，随后通过短信验证完成绑定。session_key 永不返回客户端， 且本端点不使用 C 端 ct_* 客户会话。
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [createBreederWechatSessionRequest]
+  /// * [xTimezone] - IANA 时区；缺省时使用当前熊舍 timezone。
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [BreederWechatSessionResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<BreederWechatSessionResponse>> createBreederWechatSession({
+    required String idempotencyKey,
+    required CreateBreederWechatSessionRequest createBreederWechatSessionRequest,
+    String? xTimezone = 'Asia/Shanghai',
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/auth/wechat-sessions';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        if (xTimezone != null) r'X-Timezone': xTimezone,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = jsonEncode(createBreederWechatSessionRequest);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    BreederWechatSessionResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<BreederWechatSessionResponse, BreederWechatSessionResponse>(rawData, 'BreederWechatSessionResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<BreederWechatSessionResponse>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -3122,6 +3323,57 @@ _responseData = rawData == null ? null : deserialize<WeightRecordResponse, Weigh
       statusMessage: _response.statusMessage,
       extra: _response.extra,
     );
+  }
+
+  /// 解绑当前 B 端微信身份
+  /// 保留 revoked_at 审计记录；解绑后下次 wx.login 重新进入短信绑定流程。
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future]
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<void>> deleteBreederWechatBinding({
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/auth/wechat-bindings/current';
+    final _options = Options(
+      method: r'DELETE',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    return _response;
   }
 
   /// 退出当前会话
@@ -8006,6 +8258,82 @@ _responseData = rawData == null ? null : deserialize<UsageSnapshotListResponse, 
     );
   }
 
+  /// 查看当前 B 端微信订阅授权
+  ///
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [WechatSubscriptionListResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<WechatSubscriptionListResponse>> listWechatSubscriptions({
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/wechat/subscriptions';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    WechatSubscriptionListResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<WechatSubscriptionListResponse, WechatSubscriptionListResponse>(rawData, 'WechatSubscriptionListResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<WechatSubscriptionListResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// 列出体重记录
   /// 按仓鼠、临时幼崽、窝次和时间范围筛选，使用 cursor 分页。
   ///
@@ -9524,6 +9852,106 @@ _responseData = rawData == null ? null : deserialize<VerificationCodeChallengeRe
     );
   }
 
+  /// 投递一条已授权的微信订阅消息
+  /// 供任务提醒和预订状态变更编排复用；模板字段由微信模板定义，服务端只转发字符串值。
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [sendWechatSubscriptionRequest]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [WechatSubscriptionDeliveryResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<WechatSubscriptionDeliveryResponse>> sendWechatSubscription({
+    required String idempotencyKey,
+    required SendWechatSubscriptionRequest sendWechatSubscriptionRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/wechat/subscriptions/send';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = jsonEncode(sendWechatSubscriptionRequest);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    WechatSubscriptionDeliveryResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<WechatSubscriptionDeliveryResponse, WechatSubscriptionDeliveryResponse>(rawData, 'WechatSubscriptionDeliveryResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<WechatSubscriptionDeliveryResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// 结束配对并完成分笼
   /// 仅允许 active 或 safety_hold 的配对尝试。 原子关闭临时配对占用、登记双方去向并创建新入住事实。 若笼盒冲突或只登记一方，整体失败且不释放配对笼。
   ///
@@ -10981,6 +11409,106 @@ _responseData = rawData == null ? null : deserialize<CareTaskResponse, CareTaskR
     }
 
     return Response<CareTaskResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 保存当前 B 端微信订阅授权
+  /// 记录 wx.requestSubscribeMessage 返回的模板状态；只有 accept 状态会进入后端投递队列。
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+  /// * [upsertWechatSubscriptionsRequest]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [WechatSubscriptionListResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<WechatSubscriptionListResponse>> upsertWechatSubscriptions({
+    required String idempotencyKey,
+    required UpsertWechatSubscriptionsRequest upsertWechatSubscriptionsRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/wechat/subscriptions';
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = jsonEncode(upsertWechatSubscriptionsRequest);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    WechatSubscriptionListResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<WechatSubscriptionListResponse, WechatSubscriptionListResponse>(rawData, 'WechatSubscriptionListResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<WechatSubscriptionListResponse>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

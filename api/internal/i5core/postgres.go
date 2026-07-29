@@ -410,6 +410,27 @@ func insertCareTaskTx(ctx context.Context, tx pgx.Tx, ownerID uuid.UUID, key str
 	if err != nil {
 		return CareTask{}, mapPostgresError(err)
 	}
+	description := ""
+	if input.Notes != nil {
+		description = *input.Notes
+	}
+	subscriptionPayload, err := json.Marshal(map[string]any{
+		"title":        *title,
+		"description":  description,
+		"scheduled_at": input.ScheduledAt.UTC().Format(time.RFC3339),
+	})
+	if err != nil {
+		return CareTask{}, err
+	}
+	_, err = tx.Exec(ctx, `
+		INSERT INTO breeder_wechat_subscription_event (
+			account_id, event_type, resource_id, dedupe_key, payload, scheduled_at
+		) VALUES ($1,'task_reminder',$2,$3,$4::jsonb,$5)
+		ON CONFLICT (account_id, dedupe_key) DO NOTHING
+	`, ownerID, taskID, "task:"+taskID.String(), subscriptionPayload, input.ScheduledAt)
+	if err != nil {
+		return CareTask{}, mapPostgresError(err)
+	}
 	task, err := scanCareTask(tx.QueryRow(ctx, careTaskSelect+` WHERE t.owner_id=$1 AND t.id=$2`, ownerID, taskID))
 	if err != nil {
 		return CareTask{}, err

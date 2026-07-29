@@ -323,6 +323,11 @@ func (s *Server) transitionCrmReservation(w http.ResponseWriter, r *http.Request
 						    END
 						WHERE owner_id=$1 AND id=$2 AND status='held'
 					`, ownerID, reservationID)
+					if queueErr := queueWechatSubscriptionEventTx(ctx, tx, ownerID, "reservation_status", reservationID,
+						"reservation:"+reservationID.String()+":cancelled",
+						map[string]any{"title": current.Title, "status": "cancelled", "updated_at": time.Now().UTC().Format(time.RFC3339)}, time.Now().UTC()); queueErr != nil {
+						return 0, nil, nil, queueErr
+					}
 					return 0, nil, nil, conflictError("status", "预订已过期，无法确认")
 				}
 			}
@@ -343,6 +348,11 @@ func (s *Server) transitionCrmReservation(w http.ResponseWriter, r *http.Request
 			item, err := getCrmReservationTx(ctx, tx, ownerID, reservationID, false)
 			if err != nil {
 				return 0, nil, nil, err
+			}
+			if queueErr := queueWechatSubscriptionEventTx(ctx, tx, ownerID, "reservation_status", reservationID,
+				"reservation:"+reservationID.String()+":"+next,
+				map[string]any{"title": item.Title, "status": next, "updated_at": time.Now().UTC().Format(time.RFC3339)}, time.Now().UTC()); queueErr != nil {
+				return 0, nil, nil, queueErr
 			}
 			return http.StatusOK, crmEnvelope(r, item), map[string]string{"ETag": store.FormatETag(item.Version)}, nil
 		},
@@ -547,6 +557,11 @@ func (s *Server) completeCrmHandover(w http.ResponseWriter, r *http.Request) {
 				}
 				if tag.RowsAffected() != 1 {
 					return 0, nil, nil, store.ErrVersionConflict
+				}
+				if queueErr := queueWechatSubscriptionEventTx(ctx, tx, ownerID, "reservation_status", reservation.ID,
+					"reservation:"+reservation.ID.String()+":handed_over",
+					map[string]any{"title": reservation.Title, "status": "handed_over", "updated_at": time.Now().UTC().Format(time.RFC3339)}, time.Now().UTC()); queueErr != nil {
+					return 0, nil, nil, queueErr
 				}
 			}
 			tag, err := tx.Exec(ctx, `
@@ -933,20 +948,7 @@ func (s *Server) hasOpenReservationForHamsterTx(
 
 func (s *Server) openReservedHamsterIDs(ctx context.Context, ownerID uuid.UUID) (map[uuid.UUID]struct{}, error) {
 	// Best-effort global expiry sweep for this owner.
-	_, _ = s.Store.Pool.Exec(ctx, `
-		UPDATE crm_reservation
-		SET status='cancelled',
-		    version=version+1,
-		    updated_at=now(),
-		    notes = CASE
-		      WHEN notes IS NULL OR btrim(notes) = '' THEN '系统：预订 hold 已过期自动释放'
-		      ELSE notes || E'\n系统：预订 hold 已过期自动释放'
-		    END
-		WHERE owner_id=$1
-		  AND status='held'
-		  AND hold_expires_at IS NOT NULL
-		  AND hold_expires_at <= now()
-	`, ownerID)
+	_, _ = s.releaseExpiredReservationHoldsForOwner(ctx, ownerID)
 	rows, err := s.Store.Pool.Query(ctx, `
 		SELECT DISTINCT hamster_id
 		FROM crm_reservation
@@ -978,23 +980,63 @@ func (s *Server) openReservedHamsterIDs(ctx context.Context, ownerID uuid.UUID) 
 // ReleaseExpiredReservationHolds cancels held rows past hold_expires_at.
 // Safe to call from a background worker.
 func (s *Server) ReleaseExpiredReservationHolds(ctx context.Context) (int64, error) {
-	tag, err := s.Store.Pool.Exec(ctx, `
+	return s.releaseExpiredReservationHolds(ctx, nil)
+}
+
+func (s *Server) releaseExpiredReservationHoldsForOwner(ctx context.Context, ownerID uuid.UUID) (int64, error) {
+	return s.releaseExpiredReservationHolds(ctx, &ownerID)
+}
+
+func (s *Server) releaseExpiredReservationHolds(ctx context.Context, ownerID *uuid.UUID) (int64, error) {
+	tx, err := s.Store.Pool.Begin(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	query := `
 		UPDATE crm_reservation
-		SET status='cancelled',
-		    version=version+1,
-		    updated_at=now(),
+		SET status='cancelled', version=version+1, updated_at=now(),
 		    notes = CASE
 		      WHEN notes IS NULL OR btrim(notes) = '' THEN '系统：预订 hold 已过期自动释放'
 		      ELSE notes || E'\n系统：预订 hold 已过期自动释放'
 		    END
-		WHERE status='held'
-		  AND hold_expires_at IS NOT NULL
-		  AND hold_expires_at <= now()
-	`)
+		WHERE status='held' AND hold_expires_at IS NOT NULL AND hold_expires_at <= now()`
+	args := []any{}
+	if ownerID != nil {
+		query += ` AND owner_id=$1`
+		args = append(args, *ownerID)
+	}
+	query += ` RETURNING owner_id, id, title, updated_at`
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
-	return tag.RowsAffected(), nil
+	var count int64
+	for rows.Next() {
+		var accountID, reservationID uuid.UUID
+		var title string
+		var updatedAt time.Time
+		if err := rows.Scan(&accountID, &reservationID, &title, &updatedAt); err != nil {
+			rows.Close()
+			return 0, err
+		}
+		if err := queueWechatSubscriptionEventTx(ctx, tx, accountID, "reservation_status", reservationID,
+			"reservation:"+reservationID.String()+":cancelled",
+			map[string]any{"title": title, "status": "cancelled", "updated_at": updatedAt.UTC().Format(time.RFC3339)}, updatedAt); err != nil {
+			rows.Close()
+			return 0, err
+		}
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return 0, err
+	}
+	rows.Close()
+	if err := tx.Commit(ctx); err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 // resolveCrmContactInput 客户身份解析输入。
@@ -1002,10 +1044,10 @@ func (s *Server) ReleaseExpiredReservationHolds(ctx context.Context) (int64, err
 // RequireVerifiedPhone：公开预订等路径必须仅按已验证 phone 匹配，禁止 wechat 回落错绑。
 type resolveCrmContactInput struct {
 	RequireVerifiedPhone bool
-	Name   string
-	Phone  string
-	Wechat string
-	Notes  *string
+	Name                 string
+	Phone                string
+	Wechat               string
+	Notes                *string
 	// Status 仅在新建时使用；复用已有客户时不降级 active→lead。
 	Status string
 }

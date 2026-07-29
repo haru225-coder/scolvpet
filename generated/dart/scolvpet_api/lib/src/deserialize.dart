@@ -42,6 +42,8 @@ import 'package:scolvpet_api/src/model/backup_job.dart';
 import 'package:scolvpet_api/src/model/backup_job_create_request.dart';
 import 'package:scolvpet_api/src/model/backup_job_list_response.dart';
 import 'package:scolvpet_api/src/model/backup_job_response.dart';
+import 'package:scolvpet_api/src/model/breeder_wechat_session_response.dart';
+import 'package:scolvpet_api/src/model/breeder_wechat_session_response_data.dart';
 import 'package:scolvpet_api/src/model/breeding_plan.dart';
 import 'package:scolvpet_api/src/model/breeding_plan_create_request.dart';
 import 'package:scolvpet_api/src/model/breeding_plan_list_response.dart';
@@ -67,6 +69,8 @@ import 'package:scolvpet_api/src/model/confirm_birth_response.dart';
 import 'package:scolvpet_api/src/model/confirm_birth_response_data.dart';
 import 'package:scolvpet_api/src/model/create_accounting_category_request.dart';
 import 'package:scolvpet_api/src/model/create_accounting_record_request.dart';
+import 'package:scolvpet_api/src/model/create_breeder_wechat_binding_request.dart';
+import 'package:scolvpet_api/src/model/create_breeder_wechat_session_request.dart';
 import 'package:scolvpet_api/src/model/create_contract_request.dart';
 import 'package:scolvpet_api/src/model/create_crm_contact_request.dart';
 import 'package:scolvpet_api/src/model/create_crm_handover_request.dart';
@@ -316,6 +320,7 @@ import 'package:scolvpet_api/src/model/revoke_share_request.dart';
 import 'package:scolvpet_api/src/model/sandbox_activate_plan_request.dart';
 import 'package:scolvpet_api/src/model/send_customer_verification_code_request.dart';
 import 'package:scolvpet_api/src/model/send_verification_code_request.dart';
+import 'package:scolvpet_api/src/model/send_wechat_subscription_request.dart';
 import 'package:scolvpet_api/src/model/separate_pairing_request.dart';
 import 'package:scolvpet_api/src/model/separate_pairing_response.dart';
 import 'package:scolvpet_api/src/model/separate_pairing_response_data.dart';
@@ -355,6 +360,7 @@ import 'package:scolvpet_api/src/model/upload_session.dart';
 import 'package:scolvpet_api/src/model/upsert_miniprogram_config_request.dart';
 import 'package:scolvpet_api/src/model/upsert_public_site_request.dart';
 import 'package:scolvpet_api/src/model/upsert_push_device_request.dart';
+import 'package:scolvpet_api/src/model/upsert_wechat_subscriptions_request.dart';
 import 'package:scolvpet_api/src/model/usage_metric.dart';
 import 'package:scolvpet_api/src/model/usage_response.dart';
 import 'package:scolvpet_api/src/model/usage_response_data.dart';
@@ -367,6 +373,10 @@ import 'package:scolvpet_api/src/model/wean_litter_request.dart';
 import 'package:scolvpet_api/src/model/wean_litter_request_items_inner.dart';
 import 'package:scolvpet_api/src/model/wean_litter_response.dart';
 import 'package:scolvpet_api/src/model/wean_litter_response_data.dart';
+import 'package:scolvpet_api/src/model/wechat_subscription.dart';
+import 'package:scolvpet_api/src/model/wechat_subscription_delivery_response.dart';
+import 'package:scolvpet_api/src/model/wechat_subscription_delivery_response_data.dart';
+import 'package:scolvpet_api/src/model/wechat_subscription_list_response.dart';
 import 'package:scolvpet_api/src/model/weight_record.dart';
 import 'package:scolvpet_api/src/model/weight_record_batch_create_request.dart';
 import 'package:scolvpet_api/src/model/weight_record_batch_create_request_items_inner.dart';
@@ -492,6 +502,10 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'BatchTransactionStatus':
 
 
+        case 'BreederWechatSessionResponse':
+          return BreederWechatSessionResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'BreederWechatSessionResponseData':
+          return BreederWechatSessionResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'BreedingPlan':
           return BreedingPlan.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'BreedingPlanCreateRequest':
@@ -548,6 +562,10 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return CreateAccountingCategoryRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateAccountingRecordRequest':
           return CreateAccountingRecordRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateBreederWechatBindingRequest':
+          return CreateBreederWechatBindingRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateBreederWechatSessionRequest':
+          return CreateBreederWechatSessionRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateContractRequest':
           return CreateContractRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateCrmContactRequest':
@@ -1094,6 +1112,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return SendCustomerVerificationCodeRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'SendVerificationCodeRequest':
           return SendVerificationCodeRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'SendWechatSubscriptionRequest':
+          return SendWechatSubscriptionRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'SeparatePairingRequest':
           return SeparatePairingRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'SeparatePairingResponse':
@@ -1190,6 +1210,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return UpsertPublicSiteRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'UpsertPushDeviceRequest':
           return UpsertPushDeviceRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'UpsertWechatSubscriptionsRequest':
+          return UpsertWechatSubscriptionsRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'UsageMetric':
           return UsageMetric.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'UsageResponse':
@@ -1214,6 +1236,14 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return WeanLitterResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'WeanLitterResponseData':
           return WeanLitterResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'WechatSubscription':
+          return WechatSubscription.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'WechatSubscriptionDeliveryResponse':
+          return WechatSubscriptionDeliveryResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'WechatSubscriptionDeliveryResponseData':
+          return WechatSubscriptionDeliveryResponseData.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'WechatSubscriptionListResponse':
+          return WechatSubscriptionListResponse.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'WeightRecord':
           return WeightRecord.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'WeightRecordBatchCreateRequest':

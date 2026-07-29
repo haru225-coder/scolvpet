@@ -22,14 +22,14 @@ import type { AdjustBreedingBaselineRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -71,6 +71,8 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *DefaultApi* | [**confirmBirth**](docs/DefaultApi.md#confirmbirthoperation) | **POST** /breeding-plans/{plan_id}/confirm-birth | 确认产仔并建立窝次
 *DefaultApi* | [**confirmBirth_0**](docs/DefaultApi.md#confirmbirth_0) | **POST** /breeding-plans/{plan_id}/confirm-birth | 确认产仔并建立窝次
 *DefaultApi* | [**createBackupJob**](docs/DefaultApi.md#createbackupjob) | **POST** /data-center/backup-jobs | 创建基础备份
+*DefaultApi* | [**createBreederWechatBinding**](docs/DefaultApi.md#createbreederwechatbindingoperation) | **POST** /auth/wechat-bindings | 短信验证并绑定 B 端微信身份
+*DefaultApi* | [**createBreederWechatSession**](docs/DefaultApi.md#createbreederwechatsessionoperation) | **POST** /auth/wechat-sessions | B 端微信 wx.login 登录
 *DefaultApi* | [**createBreedingPlan**](docs/DefaultApi.md#createbreedingplan) | **POST** /breeding-plans | 创建繁育计划草稿
 *DefaultApi* | [**createEnclosure**](docs/DefaultApi.md#createenclosure) | **POST** /enclosures | 创建笼盒
 *DefaultApi* | [**createEnclosureCleaning**](docs/DefaultApi.md#createenclosurecleaning) | **POST** /enclosures/{enclosure_id}/cleanings | 记录笼盒清洁或消毒
@@ -89,6 +91,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *DefaultApi* | [**createSpeciesRuleVersion**](docs/DefaultApi.md#createspeciesruleversion) | **POST** /species-rule-versions | 创建规则版本
 *DefaultApi* | [**createTask**](docs/DefaultApi.md#createtask) | **POST** /tasks | 创建手工任务
 *DefaultApi* | [**createWeightRecord**](docs/DefaultApi.md#createweightrecord) | **POST** /weight-records | 创建体重记录
+*DefaultApi* | [**deleteBreederWechatBinding**](docs/DefaultApi.md#deletebreederwechatbinding) | **DELETE** /auth/wechat-bindings/current | 解绑当前 B 端微信身份
 *DefaultApi* | [**deleteCurrentSession**](docs/DefaultApi.md#deletecurrentsession) | **DELETE** /auth/sessions/current | 退出当前会话
 *DefaultApi* | [**endPedigreeParentage**](docs/DefaultApi.md#endpedigreeparentage) | **POST** /pedigree-parentages/end | 解除当前有效父母关系
 *DefaultApi* | [**getAsyncJob**](docs/DefaultApi.md#getasyncjob) | **GET** /jobs/{job_id} | 获取通用异步作业
@@ -147,6 +150,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *DefaultApi* | [**listSpeciesRuleVersions**](docs/DefaultApi.md#listspeciesruleversions) | **GET** /species-rule-versions | 列出当前熊舍规则版本
 *DefaultApi* | [**listTasks**](docs/DefaultApi.md#listtasks) | **GET** /tasks | 列出任务
 *DefaultApi* | [**listUsageSnapshots**](docs/DefaultApi.md#listusagesnapshots) | **GET** /usage/snapshots | 列出用量快照
+*DefaultApi* | [**listWechatSubscriptions**](docs/DefaultApi.md#listwechatsubscriptions) | **GET** /wechat/subscriptions | 查看当前 B 端微信订阅授权
 *DefaultApi* | [**listWeightRecords**](docs/DefaultApi.md#listweightrecords) | **GET** /weight-records | 列出体重记录
 *DefaultApi* | [**preflightImportJob**](docs/DefaultApi.md#preflightimportjob) | **POST** /data-center/import-jobs/{job_id}/preflight | 全量预检 CSV
 *DefaultApi* | [**presignMediaUpload**](docs/DefaultApi.md#presignmediaupload) | **POST** /media/uploads/presign | 创建媒体预签名上传
@@ -162,6 +166,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *DefaultApi* | [**retryMediaProcessing**](docs/DefaultApi.md#retrymediaprocessing) | **POST** /media/{media_id}/retry-processing | 重试失败的媒体处理
 *DefaultApi* | [**revokeShare**](docs/DefaultApi.md#revokeshareoperation) | **POST** /shares/{share_id}/revoke | 撤销公开分享
 *DefaultApi* | [**sendVerificationCode**](docs/DefaultApi.md#sendverificationcodeoperation) | **POST** /auth/verification-codes | 发送手机验证码
+*DefaultApi* | [**sendWechatSubscription**](docs/DefaultApi.md#sendwechatsubscriptionoperation) | **POST** /wechat/subscriptions/send | 投递一条已授权的微信订阅消息
 *DefaultApi* | [**separatePairing**](docs/DefaultApi.md#separatepairingoperation) | **POST** /pairing-attempts/{attempt_id}/separate | 结束配对并完成分笼
 *DefaultApi* | [**setImportMapping**](docs/DefaultApi.md#setimportmapping) | **PUT** /data-center/import-jobs/{job_id}/mapping | 设置 CSV 字段映射
 *DefaultApi* | [**setMediaCover**](docs/DefaultApi.md#setmediacover) | **PUT** /media/{media_id}/cover | 设置媒体封面
@@ -176,6 +181,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *DefaultApi* | [**updateHealthRecord**](docs/DefaultApi.md#updatehealthrecord) | **PATCH** /health-records/{health_record_id} | 更新健康记录
 *DefaultApi* | [**updateSpeciesRuleVersion**](docs/DefaultApi.md#updatespeciesruleversion) | **PATCH** /species-rule-versions/{rule_version_id} | 更新尚未冻结的规则版本
 *DefaultApi* | [**updateTask**](docs/DefaultApi.md#updatetask) | **PATCH** /tasks/{task_id} | 更新任务非状态字段
+*DefaultApi* | [**upsertWechatSubscriptions**](docs/DefaultApi.md#upsertwechatsubscriptionsoperation) | **PUT** /wechat/subscriptions | 保存当前 B 端微信订阅授权
 *DefaultApi* | [**weanLitter**](docs/DefaultApi.md#weanlitteroperation) | **POST** /litters/{litter_id}/wean | 完成断奶
 *CustomerApi* | [**cancelCustomerReservation**](docs/CustomerApi.md#cancelcustomerreservation) | **POST** /v1/customer/reservations/{reservation_id}/cancel | 客户取消 held 预订
 *CustomerApi* | [**createCustomerSession**](docs/CustomerApi.md#createcustomersessionoperation) | **POST** /v1/public/customer/sessions | 客户验证码登录
@@ -209,6 +215,8 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *P1Api* | [**createReceipt**](docs/P1Api.md#createreceiptoperation) | **POST** /v1/receipts | 创建回执单据
 *P1Api* | [**createReceiptTemplate**](docs/P1Api.md#createreceipttemplate) | **POST** /v1/receipts/templates | 创建回执模板
 *P1Api* | [**disablePushDevice**](docs/P1Api.md#disablepushdevice) | **DELETE** /v1/push/devices/{device_id} | 停用推送设备
+*P1Api* | [**downloadContractPdf**](docs/P1Api.md#downloadcontractpdf) | **GET** /v1/contracts/{document_id}/pdf | 下载已签发合同 PDF
+*P1Api* | [**downloadReceiptPdf**](docs/P1Api.md#downloadreceiptpdf) | **GET** /v1/receipts/{document_id}/pdf | 下载已签发回执 PDF
 *P1Api* | [**getAccountingSummary**](docs/P1Api.md#getaccountingsummary) | **GET** /v1/accounting/summary | 读取记账汇总
 *P1Api* | [**getCurrentEntitlement**](docs/P1Api.md#getcurrententitlement) | **GET** /v1/entitlements/current | 读取当前权益快照
 *P1Api* | [**getEntitlementCatalog**](docs/P1Api.md#getentitlementcatalog) | **GET** /v1/entitlements/catalog | 读取权益套餐目录
@@ -330,6 +338,8 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [BackupJobResponse](docs/BackupJobResponse.md)
 - [BatchItemStatus](docs/BatchItemStatus.md)
 - [BatchTransactionStatus](docs/BatchTransactionStatus.md)
+- [BreederWechatSessionResponse](docs/BreederWechatSessionResponse.md)
+- [BreederWechatSessionResponseData](docs/BreederWechatSessionResponseData.md)
 - [BreedingPlan](docs/BreedingPlan.md)
 - [BreedingPlanCreateRequest](docs/BreedingPlanCreateRequest.md)
 - [BreedingPlanListResponse](docs/BreedingPlanListResponse.md)
@@ -357,6 +367,8 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [ConfirmBirthResponseData](docs/ConfirmBirthResponseData.md)
 - [CreateAccountingCategoryRequest](docs/CreateAccountingCategoryRequest.md)
 - [CreateAccountingRecordRequest](docs/CreateAccountingRecordRequest.md)
+- [CreateBreederWechatBindingRequest](docs/CreateBreederWechatBindingRequest.md)
+- [CreateBreederWechatSessionRequest](docs/CreateBreederWechatSessionRequest.md)
 - [CreateContractRequest](docs/CreateContractRequest.md)
 - [CreateCrmContactRequest](docs/CreateCrmContactRequest.md)
 - [CreateCrmHandoverRequest](docs/CreateCrmHandoverRequest.md)
@@ -622,6 +634,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [SandboxActivatePlanRequest](docs/SandboxActivatePlanRequest.md)
 - [SendCustomerVerificationCodeRequest](docs/SendCustomerVerificationCodeRequest.md)
 - [SendVerificationCodeRequest](docs/SendVerificationCodeRequest.md)
+- [SendWechatSubscriptionRequest](docs/SendWechatSubscriptionRequest.md)
 - [SeparatePairingRequest](docs/SeparatePairingRequest.md)
 - [SeparatePairingResponse](docs/SeparatePairingResponse.md)
 - [SeparatePairingResponseData](docs/SeparatePairingResponseData.md)
@@ -667,6 +680,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [UpsertMiniprogramConfigRequest](docs/UpsertMiniprogramConfigRequest.md)
 - [UpsertPublicSiteRequest](docs/UpsertPublicSiteRequest.md)
 - [UpsertPushDeviceRequest](docs/UpsertPushDeviceRequest.md)
+- [UpsertWechatSubscriptionsRequest](docs/UpsertWechatSubscriptionsRequest.md)
 - [UsageMetric](docs/UsageMetric.md)
 - [UsageResponse](docs/UsageResponse.md)
 - [UsageResponseData](docs/UsageResponseData.md)
@@ -679,6 +693,10 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [WeanLitterRequestItemsInner](docs/WeanLitterRequestItemsInner.md)
 - [WeanLitterResponse](docs/WeanLitterResponse.md)
 - [WeanLitterResponseData](docs/WeanLitterResponseData.md)
+- [WechatSubscription](docs/WechatSubscription.md)
+- [WechatSubscriptionDeliveryResponse](docs/WechatSubscriptionDeliveryResponse.md)
+- [WechatSubscriptionDeliveryResponseData](docs/WechatSubscriptionDeliveryResponseData.md)
+- [WechatSubscriptionListResponse](docs/WechatSubscriptionListResponse.md)
 - [WeightRecord](docs/WeightRecord.md)
 - [WeightRecordBatchCreateRequest](docs/WeightRecordBatchCreateRequest.md)
 - [WeightRecordBatchCreateRequestItemsInner](docs/WeightRecordBatchCreateRequestItemsInner.md)

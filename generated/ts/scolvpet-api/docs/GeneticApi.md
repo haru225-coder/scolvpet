@@ -28,7 +28,7 @@ import type { CompareGeneticActualRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -98,7 +98,7 @@ import type { ListGeneticFeedbackSummaryRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -160,7 +160,7 @@ import type { ListGeneticPhenotypeCatalogRequest } from '@scolvpet/scolvpet-api'
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -222,7 +222,7 @@ import type { ListGeneticTargetCrossesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });

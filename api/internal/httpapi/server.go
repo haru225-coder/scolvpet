@@ -31,8 +31,10 @@ type Server struct {
 	Logger        *slog.Logger
 	ImportObjects objectstore.ObjectStore
 	RateLimiter   *ratelimit.Postgres
-	// Wechat exchanges wx.login js_codes for customer identities (P2).
+	// Wechat exchanges wx.login js_codes for WeChat identities (P2).
 	Wechat wechat.Provider
+	// WechatSubscription delivers accepted B-side subscription templates.
+	WechatSubscription wechat.SubscriptionSender
 	// Environment is APP_ENV (development|test|staging|production).
 	// Sandbox entitlement routes are only registered outside production.
 	Environment string
@@ -52,9 +54,12 @@ const smsPhoneDailyMax = 10
 // ReadyChecks is the /readyz "checks" payload; values come from the process
 // runtime config, not from re-reading the environment.
 type ReadyChecks struct {
-	SMSProvider    string `json:"sms_provider"`
-	SMSMockCodeSet bool   `json:"sms_mock_code_set"`
-	WechatProvider string `json:"wechat_provider"`
+	SMSProvider                         string `json:"sms_provider"`
+	SMSMockCodeSet                      bool   `json:"sms_mock_code_set"`
+	WechatProvider                      string `json:"wechat_provider"`
+	WechatSubscriptionProvider          string `json:"wechat_subscription_provider"`
+	WechatTaskTemplateConfigured        bool   `json:"wechat_task_template_configured"`
+	WechatReservationTemplateConfigured bool   `json:"wechat_reservation_template_configured"`
 }
 
 type deviceInfo struct {
@@ -114,6 +119,10 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /readyz", s.ready)
 	mux.HandleFunc("POST /v1/auth/verification-codes", s.sendVerificationCode)
 	mux.HandleFunc("POST /v1/auth/sessions", s.createSession)
+	mux.HandleFunc("POST /v1/auth/wechat-sessions", s.createBreederWechatSession)
+	mux.HandleFunc("POST /v1/auth/wechat-bindings", s.createBreederWechatBinding)
+	mux.HandleFunc("DELETE /v1/auth/wechat-bindings/current", s.deleteBreederWechatBinding)
+	s.registerWechatSubscriptionRoutes(mux)
 	mux.HandleFunc("POST /v1/auth/sessions/refresh", s.refreshSession)
 	mux.HandleFunc("DELETE /v1/auth/sessions/current", s.deleteSession)
 	mux.HandleFunc("GET /v1/me", s.getMe)

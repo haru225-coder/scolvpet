@@ -48,6 +48,8 @@ doc/BackupJobListResponse.md
 doc/BackupJobResponse.md
 doc/BatchItemStatus.md
 doc/BatchTransactionStatus.md
+doc/BreederWechatSessionResponse.md
+doc/BreederWechatSessionResponseData.md
 doc/BreedingPlan.md
 doc/BreedingPlanCreateRequest.md
 doc/BreedingPlanListResponse.md
@@ -75,6 +77,8 @@ doc/ConfirmBirthResponse.md
 doc/ConfirmBirthResponseData.md
 doc/CreateAccountingCategoryRequest.md
 doc/CreateAccountingRecordRequest.md
+doc/CreateBreederWechatBindingRequest.md
+doc/CreateBreederWechatSessionRequest.md
 doc/CreateContractRequest.md
 doc/CreateCrmContactRequest.md
 doc/CreateCrmHandoverRequest.md
@@ -349,6 +353,7 @@ doc/RevokeShareRequest.md
 doc/SandboxActivatePlanRequest.md
 doc/SendCustomerVerificationCodeRequest.md
 doc/SendVerificationCodeRequest.md
+doc/SendWechatSubscriptionRequest.md
 doc/SeparatePairingRequest.md
 doc/SeparatePairingResponse.md
 doc/SeparatePairingResponseData.md
@@ -394,6 +399,7 @@ doc/UploadSession.md
 doc/UpsertMiniprogramConfigRequest.md
 doc/UpsertPublicSiteRequest.md
 doc/UpsertPushDeviceRequest.md
+doc/UpsertWechatSubscriptionsRequest.md
 doc/UsageMetric.md
 doc/UsageResponse.md
 doc/UsageResponseData.md
@@ -406,6 +412,10 @@ doc/WeanLitterRequest.md
 doc/WeanLitterRequestItemsInner.md
 doc/WeanLitterResponse.md
 doc/WeanLitterResponseData.md
+doc/WechatSubscription.md
+doc/WechatSubscriptionDeliveryResponse.md
+doc/WechatSubscriptionDeliveryResponseData.md
+doc/WechatSubscriptionListResponse.md
 doc/WeightRecord.md
 doc/WeightRecordBatchCreateRequest.md
 doc/WeightRecordBatchCreateRequestItemsInner.md
@@ -481,6 +491,8 @@ lib/src/model/backup_job_list_response.dart
 lib/src/model/backup_job_response.dart
 lib/src/model/batch_item_status.dart
 lib/src/model/batch_transaction_status.dart
+lib/src/model/breeder_wechat_session_response.dart
+lib/src/model/breeder_wechat_session_response_data.dart
 lib/src/model/breeding_plan.dart
 lib/src/model/breeding_plan_create_request.dart
 lib/src/model/breeding_plan_list_response.dart
@@ -508,6 +520,8 @@ lib/src/model/confirm_birth_response.dart
 lib/src/model/confirm_birth_response_data.dart
 lib/src/model/create_accounting_category_request.dart
 lib/src/model/create_accounting_record_request.dart
+lib/src/model/create_breeder_wechat_binding_request.dart
+lib/src/model/create_breeder_wechat_session_request.dart
 lib/src/model/create_contract_request.dart
 lib/src/model/create_crm_contact_request.dart
 lib/src/model/create_crm_handover_request.dart
@@ -773,6 +787,7 @@ lib/src/model/revoke_share_request.dart
 lib/src/model/sandbox_activate_plan_request.dart
 lib/src/model/send_customer_verification_code_request.dart
 lib/src/model/send_verification_code_request.dart
+lib/src/model/send_wechat_subscription_request.dart
 lib/src/model/separate_pairing_request.dart
 lib/src/model/separate_pairing_response.dart
 lib/src/model/separate_pairing_response_data.dart
@@ -818,6 +833,7 @@ lib/src/model/upload_session.dart
 lib/src/model/upsert_miniprogram_config_request.dart
 lib/src/model/upsert_public_site_request.dart
 lib/src/model/upsert_push_device_request.dart
+lib/src/model/upsert_wechat_subscriptions_request.dart
 lib/src/model/usage_metric.dart
 lib/src/model/usage_response.dart
 lib/src/model/usage_response_data.dart
@@ -830,6 +846,10 @@ lib/src/model/wean_litter_request.dart
 lib/src/model/wean_litter_request_items_inner.dart
 lib/src/model/wean_litter_response.dart
 lib/src/model/wean_litter_response_data.dart
+lib/src/model/wechat_subscription.dart
+lib/src/model/wechat_subscription_delivery_response.dart
+lib/src/model/wechat_subscription_delivery_response_data.dart
+lib/src/model/wechat_subscription_list_response.dart
 lib/src/model/weight_record.dart
 lib/src/model/weight_record_batch_create_request.dart
 lib/src/model/weight_record_batch_create_request_items_inner.dart
@@ -889,6 +909,8 @@ test/backup_job_response_test.dart
 test/backup_job_test.dart
 test/batch_item_status_test.dart
 test/batch_transaction_status_test.dart
+test/breeder_wechat_session_response_data_test.dart
+test/breeder_wechat_session_response_test.dart
 test/breeding_plan_create_request_test.dart
 test/breeding_plan_list_response_test.dart
 test/breeding_plan_response_test.dart
@@ -916,6 +938,8 @@ test/confirm_birth_response_data_test.dart
 test/confirm_birth_response_test.dart
 test/create_accounting_category_request_test.dart
 test/create_accounting_record_request_test.dart
+test/create_breeder_wechat_binding_request_test.dart
+test/create_breeder_wechat_session_request_test.dart
 test/create_contract_request_test.dart
 test/create_crm_contact_request_test.dart
 test/create_crm_handover_request_test.dart
@@ -1190,6 +1214,7 @@ test/revoke_share_request_test.dart
 test/sandbox_activate_plan_request_test.dart
 test/send_customer_verification_code_request_test.dart
 test/send_verification_code_request_test.dart
+test/send_wechat_subscription_request_test.dart
 test/separate_pairing_request_test.dart
 test/separate_pairing_response_data_test.dart
 test/separate_pairing_response_test.dart
@@ -1235,6 +1260,7 @@ test/upload_session_test.dart
 test/upsert_miniprogram_config_request_test.dart
 test/upsert_public_site_request_test.dart
 test/upsert_push_device_request_test.dart
+test/upsert_wechat_subscriptions_request_test.dart
 test/usage_metric_test.dart
 test/usage_response_data_entitlement_test.dart
 test/usage_response_data_test.dart
@@ -1247,6 +1273,10 @@ test/wean_litter_request_items_inner_test.dart
 test/wean_litter_request_test.dart
 test/wean_litter_response_data_test.dart
 test/wean_litter_response_test.dart
+test/wechat_subscription_delivery_response_data_test.dart
+test/wechat_subscription_delivery_response_test.dart
+test/wechat_subscription_list_response_test.dart
+test/wechat_subscription_test.dart
 test/weight_record_batch_create_request_items_inner_test.dart
 test/weight_record_batch_create_request_test.dart
 test/weight_record_batch_create_response_data_items_inner_test.dart

@@ -164,7 +164,7 @@ No authorization required
 
 客户提交公开仓鼠预订
 
-客户从前台对真实 hamster 创建统一 crm_reservation（status&#x3D;held）。 必须传 hamster_id；Backend 校验公开可订与排他；禁止手填品种/毛色。 需要客户短信验证后的 Bearer ct_* customer session。 
+客户从前台对真实 hamster 创建统一 crm_reservation（status&#x3D;held）。 必须传 hamster_id；Backend 校验公开可订与排他；禁止手填品种/毛色。 需要客户短信验证后的 Bearer ct_* customer session。
 
 ### Example
 
@@ -177,7 +177,7 @@ import type { CreatePublicGrowthReservationRequest } from '@scolvpet/scolvpet-ap
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: customerBearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });

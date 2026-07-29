@@ -1,4 +1,21 @@
 {
-  "desc": "ScolvPet customer miniprogram",
-  "rules": [{ "action": "allow", "page": "*" }]
+  "desc": "ScolvPet customer miniprogram: only C-side pages are indexable",
+  "rules": [
+    {
+      "action": "disallow",
+      "page": "packages/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/today/index"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/login/index"
+    },
+    {
+      "action": "allow",
+      "page": "*"
+    }
+  ]
 }

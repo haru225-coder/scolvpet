@@ -71,7 +71,10 @@ export function createTaroFetch(requestFn?: RequestFn) {
       }))
 
   return async function taroFetch(input: string | { toString(): string }, init?: RequestInit): Promise<Response> {
-    const url = typeof input === 'string' ? input : input.toString()
+    const rawUrl = typeof input === 'string' ? input : input.toString()
+    // OpenAPI 中历史 P1/P2 路径有一部分自带 /v1，而 Configuration
+    // 统一 basePath 也带 /v1；与 Flutter ApiClient 同口径收敛为单个 /v1。
+    const url = rawUrl.replace(/\/v1\/v1\//g, '/v1/')
     const headers = (init?.headers || {}) as Record<string, string>
     const body = init?.body
     const res = await doRequest({

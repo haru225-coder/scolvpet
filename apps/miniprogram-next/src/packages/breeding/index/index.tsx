@@ -1,10 +1,18 @@
-import { View, Text } from '@tarojs/components'
+import { useCallback } from 'react'
+import Taro from '@tarojs/taro'
+import BListPage, { type BListItem } from '../../../components/BListPage'
+import { defaultApi } from '../../../api/client'
 
-// 分包占位页(docs/33 M0-1 分包地图):繁育 域业务页 M1+ 填充。
-export default function Placeholder() {
-  return (
-    <View>
-      <Text>繁育(分包占位,M1+ 填充)</Text>
-    </View>
-  )
+export default function BreedingPage() {
+  const load = useCallback(async (): Promise<BListItem[]> => {
+    const response = await defaultApi.listBreedingPlans({ limit: 100 })
+    return (response.data || []).map((item: any) => ({
+      id: item.id,
+      title: item.title || `${item.sireId || '待定'} × ${item.damId || '待定'}`,
+      subtitle: `${item.state || 'draft'} · ${item.createdAt || ''}`,
+      value: item.state || 'draft',
+      tone: item.state === 'completed' ? 'success' : item.state === 'blocked' ? 'danger' : 'warning'
+    }))
+  }, [])
+  return <BListPage title="繁育计划" eyebrow="M2" load={load} onSelect={(item) => Taro.navigateTo({ url: `/packages/breeding/detail/index?id=${encodeURIComponent(item.id)}` })} footer="计划、配对、孕期和出生动作均来自生成客户端" actionLabel="新建繁育计划" actionCapability="write_breeding" onAction={() => Taro.navigateTo({ url: '/packages/breeding/create/index' })} />
 }

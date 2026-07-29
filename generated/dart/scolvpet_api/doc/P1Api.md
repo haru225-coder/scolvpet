@@ -19,6 +19,8 @@ Method | HTTP request | Description
 [**createReceipt**](P1Api.md#createreceipt) | **POST** /v1/receipts | 创建回执单据
 [**createReceiptTemplate**](P1Api.md#createreceipttemplate) | **POST** /v1/receipts/templates | 创建回执模板
 [**disablePushDevice**](P1Api.md#disablepushdevice) | **DELETE** /v1/push/devices/{device_id} | 停用推送设备
+[**downloadContractPdf**](P1Api.md#downloadcontractpdf) | **GET** /v1/contracts/{document_id}/pdf | 下载已签发合同 PDF
+[**downloadReceiptPdf**](P1Api.md#downloadreceiptpdf) | **GET** /v1/receipts/{document_id}/pdf | 下载已签发回执 PDF
 [**getAccountingSummary**](P1Api.md#getaccountingsummary) | **GET** /v1/accounting/summary | 读取记账汇总
 [**getCurrentEntitlement**](P1Api.md#getcurrententitlement) | **GET** /v1/entitlements/current | 读取当前权益快照
 [**getEntitlementCatalog**](P1Api.md#getentitlementcatalog) | **GET** /v1/entitlements/catalog | 读取权益套餐目录
@@ -492,6 +494,92 @@ Name | Type | Description  | Notes
 
  - **Content-Type**: Not defined
  - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **downloadContractPdf**
+> Uint8List downloadContractPdf(documentId)
+
+下载已签发合同 PDF
+
+需要 Bearer 令牌；仅当前经营账号下已签发合同可下载，服务端统一渲染 PDF。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP1Api();
+final String documentId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 合同单据 ID
+
+try {
+    final response = api.downloadContractPdf(documentId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P1Api->downloadContractPdf: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **documentId** | **String**| 合同单据 ID |
+
+### Return type
+
+[**Uint8List**](Uint8List.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/pdf, application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **downloadReceiptPdf**
+> Uint8List downloadReceiptPdf(documentId)
+
+下载已签发回执 PDF
+
+需要 Bearer 令牌；仅当前经营账号下已签发回执可下载，服务端统一渲染 PDF。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP1Api();
+final String documentId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 回执单据 ID
+
+try {
+    final response = api.downloadReceiptPdf(documentId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P1Api->downloadReceiptPdf: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **documentId** | **String**| 回执单据 ID |
+
+### Return type
+
+[**Uint8List**](Uint8List.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/pdf, application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

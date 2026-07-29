@@ -82,7 +82,17 @@ func rbacExemptPath(path string) bool {
 
 func principalCanRequest(role, method, path string) bool {
 	if method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions {
-		return true
+		// Read access is not equivalent to access to every projection. Viewer
+		// accounts may inspect operational records, but must not enumerate
+		// customer PII, financial records, document capability tokens, member
+		// rosters, or export/backup metadata.
+		if role == "viewer" {
+			return !pathContainsAny(path,
+				"/v1/contracts", "/v1/receipts", "/v1/accounting",
+				"/v1/crm", "/v1/organization-members", "/v1/data-center",
+			)
+		}
+		return knownPrincipalRole(role)
 	}
 	if path == "/v1/auth/sessions/current" && method == http.MethodDelete {
 		return true
@@ -102,6 +112,9 @@ func principalCanRequest(role, method, path string) bool {
 	}
 	if strings.HasPrefix(path, "/v1/push/devices") {
 		return true
+	}
+	if strings.HasPrefix(path, "/v1/wechat/subscriptions") {
+		return role != "viewer"
 	}
 
 	switch role {
@@ -126,6 +139,15 @@ func principalCanRequest(role, method, path string) bool {
 	}
 }
 
+func knownPrincipalRole(role string) bool {
+	switch role {
+	case "owner", "breeder", "caretaker", "staff", "viewer":
+		return true
+	default:
+		return false
+	}
+}
+
 func pathContainsAny(path string, values ...string) bool {
 	for _, value := range values {
 		if strings.Contains(path, value) {
@@ -144,7 +166,7 @@ func principalCapabilities(role string) []string {
 	switch role {
 	case "owner":
 		return append(base,
-			"manage_members", "write_breeding", "write_litter", "write_hamster",
+			"manage_members", "manage_subscriptions", "write_breeding", "write_litter", "write_hamster",
 			"write_enclosure", "write_weight", "write_task", "write_health",
 			"write_import", "write_media", "write_crm", "write_documents",
 			"write_accounting", "write_growth",
@@ -152,16 +174,16 @@ func principalCapabilities(role string) []string {
 	case "breeder":
 		return append(base,
 			"write_breeding", "write_litter", "write_hamster", "write_weight",
-			"write_task", "write_health", "write_media",
+			"write_task", "write_health", "write_media", "manage_subscriptions",
 		)
 	case "caretaker":
 		return append(base,
 			"write_litter", "write_hamster", "write_enclosure", "write_weight",
-			"write_task", "write_health", "write_media",
+			"write_task", "write_health", "write_media", "manage_subscriptions",
 		)
 	case "staff":
 		return append(base,
-			"write_hamster", "write_crm", "write_documents", "write_growth",
+			"write_hamster", "write_crm", "write_documents", "write_growth", "manage_subscriptions",
 		)
 	default:
 		return base

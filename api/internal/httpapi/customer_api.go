@@ -227,14 +227,16 @@ func (s *Server) cancelCustomerReservation(w http.ResponseWriter, r *http.Reques
 		writeAPIError(w, r, store.ErrNotFound)
 		return
 	}
+	var ownerID uuid.UUID
 	var status string
+	var title string
 	var phone *string
 	err = s.Store.Pool.QueryRow(r.Context(), `
-		SELECT r.status::text, c.phone
+		SELECT r.owner_id, r.status::text, r.title, c.phone
 		FROM crm_reservation r
 		JOIN crm_contact c ON c.owner_id=r.owner_id AND c.id=r.contact_id
 		WHERE r.id=$1
-	`, reservationID).Scan(&status, &phone)
+	`, reservationID).Scan(&ownerID, &status, &title, &phone)
 	if errors.Is(err, pgx.ErrNoRows) {
 		writeAPIError(w, r, store.ErrNotFound)
 		return
@@ -274,6 +276,9 @@ func (s *Server) cancelCustomerReservation(w http.ResponseWriter, r *http.Reques
 		writeAPIError(w, r, conflictError("status", "预订状态已变化，无法取消"))
 		return
 	}
+	_ = queueWechatSubscriptionEvent(r.Context(), s.Store.Pool, ownerID, "reservation_status", reservationID,
+		"reservation:"+reservationID.String()+":cancelled",
+		map[string]any{"title": title, "status": "cancelled", "updated_at": time.Now().UTC().Format(time.RFC3339)}, time.Now().UTC())
 	items, err := s.loadCustomerReservations(r.Context(), principal.Phone, reservationID)
 	if err != nil || len(items) == 0 {
 		writeJSON(w, r, http.StatusOK, envelope(r, map[string]any{"id": reservationID, "status": "cancelled"}))

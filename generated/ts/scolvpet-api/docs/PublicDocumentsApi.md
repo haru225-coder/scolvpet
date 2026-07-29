@@ -14,7 +14,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 
 客户只读查看已签发合同/回执
 
-能力令牌访问；仅 status&#x3D;issued 的单据可见。 不暴露 owner_id、内部 ID 与未签发草稿。 
+能力令牌访问；仅 status&#x3D;issued 的单据可见。 不暴露 owner_id、内部 ID 与未签发草稿。
 
 ### Example
 

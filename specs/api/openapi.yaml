@@ -249,6 +249,178 @@ paths:
         '422':
           $ref: '#/components/responses/ValidationError'
 
+  /auth/wechat-sessions:
+    post:
+      tags: [认证]
+      operationId: createBreederWechatSession
+      summary: B 端微信 wx.login 登录
+      description: >-
+        用 wx.login 的 js_code 换取 B 端身份：已绑定 openid 直接返回 staff Bearer 会话；
+        未绑定则返回一次性 bwt_* 票据，随后通过短信验证完成绑定。session_key 永不返回客户端，
+        且本端点不使用 C 端 ct_* 客户会话。
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestTimezone'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [js_code]
+              properties:
+                js_code:
+                  type: string
+                  minLength: 1
+                  description: wx.login 返回的临时凭证
+              additionalProperties: false
+      responses:
+        '201':
+          description: openid 已绑定，返回 B 端 Bearer 会话
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreederWechatSessionResponse'
+        '200':
+          description: openid 未绑定，需短信验证绑定
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreederWechatSessionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          description: 微信登录暂不可用，降级短信登录
+
+  /auth/wechat-bindings:
+    post:
+      tags: [认证]
+      operationId: createBreederWechatBinding
+      summary: 短信验证并绑定 B 端微信身份
+      description: 消费 B 端 wx.login 下发的一次性票据，验证手机号后创建 staff Bearer 会话。
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequestTimezone'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [wechat_ticket, phone, verification_id, code]
+              properties:
+                wechat_ticket:
+                  type: string
+                  description: bwt_ 开头的一次性绑定票据
+                phone:
+                  type: string
+                verification_id:
+                  type: string
+                  format: uuid
+                code:
+                  type: string
+              additionalProperties: false
+      responses:
+        '201':
+          description: 绑定成功并创建 B 端会话
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/wechat-bindings/current:
+    delete:
+      tags: [认证]
+      operationId: deleteBreederWechatBinding
+      summary: 解绑当前 B 端微信身份
+      description: 保留 revoked_at 审计记录；解绑后下次 wx.login 重新进入短信绑定流程。
+      responses:
+        '204':
+          description: 已解绑
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /wechat/subscriptions:
+    get:
+      tags: [任务提醒]
+      operationId: listWechatSubscriptions
+      summary: 查看当前 B 端微信订阅授权
+      responses:
+        '200':
+          description: 订阅模板授权列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WechatSubscriptionListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      tags: [任务提醒]
+      operationId: upsertWechatSubscriptions
+      summary: 保存当前 B 端微信订阅授权
+      description: 记录 wx.requestSubscribeMessage 返回的模板状态；只有 accept 状态会进入后端投递队列。
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertWechatSubscriptionsRequest'
+      responses:
+        '200':
+          description: 授权状态已保存
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WechatSubscriptionListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /wechat/subscriptions/send:
+    post:
+      tags: [任务提醒]
+      operationId: sendWechatSubscription
+      summary: 投递一条已授权的微信订阅消息
+      description: 供任务提醒和预订状态变更编排复用；模板字段由微信模板定义，服务端只转发字符串值。
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendWechatSubscriptionRequest'
+      responses:
+        '200':
+          description: 投递成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WechatSubscriptionDeliveryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          description: 微信订阅消息通道暂未配置
+
   /auth/sessions/current:
     delete:
       tags: [认证]
@@ -4597,6 +4769,35 @@ paths:
           "$ref": "#/components/responses/ConflictError"
         '422':
           "$ref": "#/components/responses/ValidationError"
+  "/v1/contracts/{document_id}/pdf":
+    get:
+      tags:
+      - P1 合同与回执
+      operationId: downloadContractPdf
+      summary: 下载已签发合同 PDF
+      description: 需要 Bearer 令牌；仅当前经营账号下已签发合同可下载，服务端统一渲染 PDF。
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        description: 合同单据 ID
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: 合同 PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
   "/v1/receipts/templates":
     get:
       tags:
@@ -4687,6 +4888,35 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/CreateReceiptRequest"
+  "/v1/receipts/{document_id}/pdf":
+    get:
+      tags:
+      - P1 合同与回执
+      operationId: downloadReceiptPdf
+      summary: 下载已签发回执 PDF
+      description: 需要 Bearer 令牌；仅当前经营账号下已签发回执可下载，服务端统一渲染 PDF。
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        description: 回执单据 ID
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: 回执 PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
   "/v1/receipts/{document_id}/issue":
     post:
       tags:
@@ -7652,6 +7882,141 @@ components:
               type: array
               items:
                 type: string
+          additionalProperties: false
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      additionalProperties: false
+
+    BreederWechatSessionResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          properties:
+            bind_required:
+              type: boolean
+              const: true
+            wechat_ticket:
+              type: string
+              description: bwt_ 开头的一次性 B 端绑定票据，10 分钟有效，明文仅此一次
+            token_type:
+              type: string
+              const: Bearer
+            access_token:
+              type: string
+            expires_in_seconds:
+              type: integer
+              minimum: 60
+            refresh_token:
+              type: string
+            account:
+              $ref: '#/components/schemas/Account'
+            current_organization:
+              $ref: '#/components/schemas/Organization'
+            member_role:
+              type: string
+              enum: [owner, breeder, caretaker, staff, viewer]
+            capabilities:
+              type: array
+              items:
+                type: string
+          additionalProperties: false
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      additionalProperties: false
+
+    WechatSubscription:
+      type: object
+      required: [id, template_id, status, granted_at, version]
+      properties:
+        id:
+          type: string
+          format: uuid
+        template_id:
+          type: string
+          minLength: 1
+          maxLength: 128
+        status:
+          type: string
+          enum: [accept, reject, ban, unknown]
+        page:
+          type: [string, 'null']
+          maxLength: 512
+        granted_at:
+          type: string
+          format: date-time
+        last_sent_at:
+          type: [string, 'null']
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+
+    UpsertWechatSubscriptionsRequest:
+      type: object
+      required: [templates]
+      properties:
+        templates:
+          type: object
+          minProperties: 1
+          maxProperties: 20
+          additionalProperties:
+            type: string
+            enum: [accept, reject, ban, unknown]
+        page:
+          type: [string, 'null']
+          maxLength: 512
+      additionalProperties: false
+
+    WechatSubscriptionListResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WechatSubscription'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      additionalProperties: false
+
+    SendWechatSubscriptionRequest:
+      type: object
+      required: [template_id, data]
+      properties:
+        template_id:
+          type: string
+          minLength: 1
+          maxLength: 128
+        page:
+          type: [string, 'null']
+          maxLength: 512
+        data:
+          type: object
+          minProperties: 1
+          maxProperties: 20
+          additionalProperties:
+            type: string
+            maxLength: 256
+      additionalProperties: false
+
+    WechatSubscriptionDeliveryResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [template_id, provider_message_id, sent_at]
+          properties:
+            template_id:
+              type: string
+            provider_message_id:
+              type: string
+            sent_at:
+              type: string
+              format: date-time
           additionalProperties: false
         meta:
           $ref: '#/components/schemas/ResponseMeta'

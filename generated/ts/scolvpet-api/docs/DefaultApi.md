@@ -15,6 +15,8 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**confirmBirth**](DefaultApi.md#confirmbirthoperation) | **POST** /breeding-plans/{plan_id}/confirm-birth | 确认产仔并建立窝次 |
 | [**confirmBirth_0**](DefaultApi.md#confirmbirth_0) | **POST** /breeding-plans/{plan_id}/confirm-birth | 确认产仔并建立窝次 |
 | [**createBackupJob**](DefaultApi.md#createbackupjob) | **POST** /data-center/backup-jobs | 创建基础备份 |
+| [**createBreederWechatBinding**](DefaultApi.md#createbreederwechatbindingoperation) | **POST** /auth/wechat-bindings | 短信验证并绑定 B 端微信身份 |
+| [**createBreederWechatSession**](DefaultApi.md#createbreederwechatsessionoperation) | **POST** /auth/wechat-sessions | B 端微信 wx.login 登录 |
 | [**createBreedingPlan**](DefaultApi.md#createbreedingplan) | **POST** /breeding-plans | 创建繁育计划草稿 |
 | [**createEnclosure**](DefaultApi.md#createenclosure) | **POST** /enclosures | 创建笼盒 |
 | [**createEnclosureCleaning**](DefaultApi.md#createenclosurecleaning) | **POST** /enclosures/{enclosure_id}/cleanings | 记录笼盒清洁或消毒 |
@@ -33,6 +35,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**createSpeciesRuleVersion**](DefaultApi.md#createspeciesruleversion) | **POST** /species-rule-versions | 创建规则版本 |
 | [**createTask**](DefaultApi.md#createtask) | **POST** /tasks | 创建手工任务 |
 | [**createWeightRecord**](DefaultApi.md#createweightrecord) | **POST** /weight-records | 创建体重记录 |
+| [**deleteBreederWechatBinding**](DefaultApi.md#deletebreederwechatbinding) | **DELETE** /auth/wechat-bindings/current | 解绑当前 B 端微信身份 |
 | [**deleteCurrentSession**](DefaultApi.md#deletecurrentsession) | **DELETE** /auth/sessions/current | 退出当前会话 |
 | [**endPedigreeParentage**](DefaultApi.md#endpedigreeparentage) | **POST** /pedigree-parentages/end | 解除当前有效父母关系 |
 | [**getAsyncJob**](DefaultApi.md#getasyncjob) | **GET** /jobs/{job_id} | 获取通用异步作业 |
@@ -91,6 +94,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**listSpeciesRuleVersions**](DefaultApi.md#listspeciesruleversions) | **GET** /species-rule-versions | 列出当前熊舍规则版本 |
 | [**listTasks**](DefaultApi.md#listtasks) | **GET** /tasks | 列出任务 |
 | [**listUsageSnapshots**](DefaultApi.md#listusagesnapshots) | **GET** /usage/snapshots | 列出用量快照 |
+| [**listWechatSubscriptions**](DefaultApi.md#listwechatsubscriptions) | **GET** /wechat/subscriptions | 查看当前 B 端微信订阅授权 |
 | [**listWeightRecords**](DefaultApi.md#listweightrecords) | **GET** /weight-records | 列出体重记录 |
 | [**preflightImportJob**](DefaultApi.md#preflightimportjob) | **POST** /data-center/import-jobs/{job_id}/preflight | 全量预检 CSV |
 | [**presignMediaUpload**](DefaultApi.md#presignmediaupload) | **POST** /media/uploads/presign | 创建媒体预签名上传 |
@@ -106,6 +110,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**retryMediaProcessing**](DefaultApi.md#retrymediaprocessing) | **POST** /media/{media_id}/retry-processing | 重试失败的媒体处理 |
 | [**revokeShare**](DefaultApi.md#revokeshareoperation) | **POST** /shares/{share_id}/revoke | 撤销公开分享 |
 | [**sendVerificationCode**](DefaultApi.md#sendverificationcodeoperation) | **POST** /auth/verification-codes | 发送手机验证码 |
+| [**sendWechatSubscription**](DefaultApi.md#sendwechatsubscriptionoperation) | **POST** /wechat/subscriptions/send | 投递一条已授权的微信订阅消息 |
 | [**separatePairing**](DefaultApi.md#separatepairingoperation) | **POST** /pairing-attempts/{attempt_id}/separate | 结束配对并完成分笼 |
 | [**setImportMapping**](DefaultApi.md#setimportmapping) | **PUT** /data-center/import-jobs/{job_id}/mapping | 设置 CSV 字段映射 |
 | [**setMediaCover**](DefaultApi.md#setmediacover) | **PUT** /media/{media_id}/cover | 设置媒体封面 |
@@ -120,6 +125,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**updateHealthRecord**](DefaultApi.md#updatehealthrecord) | **PATCH** /health-records/{health_record_id} | 更新健康记录 |
 | [**updateSpeciesRuleVersion**](DefaultApi.md#updatespeciesruleversion) | **PATCH** /species-rule-versions/{rule_version_id} | 更新尚未冻结的规则版本 |
 | [**updateTask**](DefaultApi.md#updatetask) | **PATCH** /tasks/{task_id} | 更新任务非状态字段 |
+| [**upsertWechatSubscriptions**](DefaultApi.md#upsertwechatsubscriptionsoperation) | **PUT** /wechat/subscriptions | 保存当前 B 端微信订阅授权 |
 | [**weanLitter**](DefaultApi.md#weanlitteroperation) | **POST** /litters/{litter_id}/wean | 完成断奶 |
 
 
@@ -130,7 +136,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 
 修正配对基准时间
 
-仅允许 gestation 或可恢复的 hold 状态。追加日期纠正事件，重算预产区间， 并将旧提醒标记为 superseded；客户端不得提交重算后的日期或提醒集合。 
+仅允许 gestation 或可恢复的 hold 状态。追加日期纠正事件，重算预产区间， 并将旧提醒标记为 superseded；客户端不得提交重算后的日期或提醒集合。
 
 ### Example
 
@@ -143,14 +149,14 @@ import type { AdjustBreedingBaselineRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -226,14 +232,14 @@ import type { BatchCreateHamstersRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // HamsterBatchCreateRequest
     hamsterBatchCreateRequest: ...,
@@ -302,14 +308,14 @@ import type { BatchCreateWeightRecordsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // WeightRecordBatchCreateRequest
     weightRecordBatchCreateRequest: ...,
@@ -365,7 +371,7 @@ example().catch(console.error);
 
 取消任务
 
-取消一个不会再执行的任务，必须填写原因。已完成或已取消的任务不能直接取消， 需先调用 reopen 撤销。原因写入 care_task.cancellation_reason 并记入 CARE_TASK_CANCELLED 领域事件，任务本身不物理删除。 
+取消一个不会再执行的任务，必须填写原因。已完成或已取消的任务不能直接取消， 需先调用 reopen 撤销。原因写入 care_task.cancellation_reason 并记入 CARE_TASK_CANCELLED 领域事件，任务本身不物理删除。
 
 ### Example
 
@@ -378,14 +384,14 @@ import type { CancelTaskRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -448,7 +454,7 @@ example().catch(console.error);
 
 提交正式导入
 
-使用幂等批次号正式写入；提交前重新校验 preflight_version、全部阻塞问题和逐项 更新确认。历史窝次先按预检计划原子创建，再建立成员与父母关系；部分失败时保留 逐行结果，但不允许产生缺父母、错窝次或悬空谱系引用。 
+使用幂等批次号正式写入；提交前重新校验 preflight_version、全部阻塞问题和逐项 更新确认。历史窝次先按预检计划原子创建，再建立成员与父母关系；部分失败时保留 逐行结果，但不允许产生缺父母、错窝次或悬空谱系引用。
 
 ### Example
 
@@ -461,14 +467,14 @@ import type { CommitImportJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -531,7 +537,7 @@ example().catch(console.error);
 
 完成繁育计划
 
-仅允许 individualizing。 服务端确认数量、性别、笼位、家谱和阻塞任务全部闭合后推进到 completed， 客户端不得提交目标状态或自行计算的对账数。 
+仅允许 individualizing。 服务端确认数量、性别、笼位、家谱和阻塞任务全部闭合后推进到 completed， 客户端不得提交目标状态或自行计算的对账数。
 
 ### Example
 
@@ -544,14 +550,14 @@ import type { CompleteBreedingPlanOperationRequest } from '@scolvpet/scolvpet-ap
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -627,14 +633,14 @@ import type { CompleteMediaUploadRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -710,14 +716,14 @@ import type { CompleteTaskOperationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -780,7 +786,7 @@ example().catch(console.error);
 
 确认产仔并建立窝次
 
-仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N&gt;0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N&#x3D;0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。 
+仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N&gt;0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N&#x3D;0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。
 
 ### Example
 
@@ -793,14 +799,14 @@ import type { ConfirmBirthOperationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -863,7 +869,7 @@ example().catch(console.error);
 
 确认产仔并建立窝次
 
-仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N&gt;0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N&#x3D;0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。 
+仅允许 gestation 状态；同一计划只允许一个未撤销的生产事实。 N&gt;0 时幂等创建唯一有效 litter、初始数量流水及 N 条 pup_identity，并直接进入 litter_nursing。N&#x3D;0 时只记录无活仔生产结果并进入 no_litter_outcome，不创建 litter、litter_count_event、pup_identity 或窝仔阶段任务。 报喜卡或媒体任务失败不回滚产仔事实。
 
 ### Example
 
@@ -876,14 +882,14 @@ import type { ConfirmBirth0Request } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -959,14 +965,14 @@ import type { CreateBackupJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // BackupJobCreateRequest
     backupJobCreateRequest: ...,
@@ -1015,6 +1021,160 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## createBreederWechatBinding
+
+> SessionResponse createBreederWechatBinding(idempotencyKey, createBreederWechatBindingRequest, xTimezone)
+
+短信验证并绑定 B 端微信身份
+
+消费 B 端 wx.login 下发的一次性票据，验证手机号后创建 staff Bearer 会话。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DefaultApi,
+} from '@scolvpet/scolvpet-api';
+import type { CreateBreederWechatBindingOperationRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const api = new DefaultApi();
+
+  const body = {
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+    idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
+    // CreateBreederWechatBindingRequest
+    createBreederWechatBindingRequest: ...,
+    // string | IANA 时区；缺省时使用当前熊舍 timezone。 (optional)
+    xTimezone: Asia/Shanghai,
+  } satisfies CreateBreederWechatBindingOperationRequest;
+
+  try {
+    const data = await api.createBreederWechatBinding(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **idempotencyKey** | `string` | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | [Defaults to `undefined`] |
+| **createBreederWechatBindingRequest** | [CreateBreederWechatBindingRequest](CreateBreederWechatBindingRequest.md) |  | |
+| **xTimezone** | `string` | IANA 时区；缺省时使用当前熊舍 timezone。 | [Optional] [Defaults to `&#39;Asia/Shanghai&#39;`] |
+
+### Return type
+
+[**SessionResponse**](SessionResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** | 绑定成功并创建 B 端会话 |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+| **409** | 版本、状态、幂等键或资源占用冲突 |  * ETag -  <br>  |
+| **422** | 字段格式或领域规则校验失败 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## createBreederWechatSession
+
+> BreederWechatSessionResponse createBreederWechatSession(idempotencyKey, createBreederWechatSessionRequest, xTimezone)
+
+B 端微信 wx.login 登录
+
+用 wx.login 的 js_code 换取 B 端身份：已绑定 openid 直接返回 staff Bearer 会话； 未绑定则返回一次性 bwt_* 票据，随后通过短信验证完成绑定。session_key 永不返回客户端， 且本端点不使用 C 端 ct_* 客户会话。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DefaultApi,
+} from '@scolvpet/scolvpet-api';
+import type { CreateBreederWechatSessionOperationRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const api = new DefaultApi();
+
+  const body = {
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+    idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
+    // CreateBreederWechatSessionRequest
+    createBreederWechatSessionRequest: ...,
+    // string | IANA 时区；缺省时使用当前熊舍 timezone。 (optional)
+    xTimezone: Asia/Shanghai,
+  } satisfies CreateBreederWechatSessionOperationRequest;
+
+  try {
+    const data = await api.createBreederWechatSession(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **idempotencyKey** | `string` | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | [Defaults to `undefined`] |
+| **createBreederWechatSessionRequest** | [CreateBreederWechatSessionRequest](CreateBreederWechatSessionRequest.md) |  | |
+| **xTimezone** | `string` | IANA 时区；缺省时使用当前熊舍 timezone。 | [Optional] [Defaults to `&#39;Asia/Shanghai&#39;`] |
+
+### Return type
+
+[**BreederWechatSessionResponse**](BreederWechatSessionResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** | openid 已绑定，返回 B 端 Bearer 会话 |  -  |
+| **200** | openid 未绑定，需短信验证绑定 |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+| **422** | 字段格式或领域规则校验失败 |  -  |
+| **429** | 请求频率过高 |  * Retry-After - 建议重试等待秒数 <br>  |
+| **503** | 微信登录暂不可用，降级短信登录 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## createBreedingPlan
 
 > BreedingPlanResponse createBreedingPlan(idempotencyKey, breedingPlanCreateRequest)
@@ -1034,14 +1194,14 @@ import type { CreateBreedingPlanRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // BreedingPlanCreateRequest
     breedingPlanCreateRequest: ...,
@@ -1110,14 +1270,14 @@ import type { CreateEnclosureRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // EnclosureCreateRequest
     enclosureCreateRequest: ...,
@@ -1186,14 +1346,14 @@ import type { CreateEnclosureCleaningRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -1269,14 +1429,14 @@ import type { CreateEnclosureStayRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -1352,14 +1512,14 @@ import type { CreateExportJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // ExportJobCreateRequest
     exportJobCreateRequest: ...,
@@ -1427,14 +1587,14 @@ import type { CreateHamsterRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // HamsterCreateRequest
     hamsterCreateRequest: {"internal_code":"SY-2026-001","name":"小云","species_rule_version_id":"018f47a2-3e3b-7e40-9665-12cd57082cf0","variety_code":"syrian","sex":"female","birth_date":"2026-05-20","source_type":"introduced","notes":"引入种母"},
@@ -1503,14 +1663,14 @@ import type { CreateHealthRecordRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // HealthRecordCreateRequest
     healthRecordCreateRequest: ...,
@@ -1578,14 +1738,14 @@ import type { CreateImportJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // ImportJobCreateRequest
     importJobCreateRequest: ...,
@@ -1654,14 +1814,14 @@ import type { CreateImportUploadRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // ImportUploadCreateRequest
     importUploadCreateRequest: ...,
@@ -1729,14 +1889,14 @@ import type { CreateLitterCountEventRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -1812,14 +1972,14 @@ import type { CreateLitterParentRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -1895,14 +2055,14 @@ import type { CreateMediaEditRecipeRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -1978,14 +2138,14 @@ import type { CreatePedigreeParentageRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // PedigreeParentageCreateRequest
     pedigreeParentageCreateRequest: ...,
@@ -2057,7 +2217,7 @@ async function example() {
   const api = new DefaultApi();
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // PhoneCodeLoginRequest
     phoneCodeLoginRequest: {"phone":"+8613800138000","verification_id":"018f47a2-2f7e-7f5d-a413-5bfe09a61f62","code":"482931","device":{"platform":"ios","device_name":"iPhone","app_version":"0.1.0"}},
@@ -2130,14 +2290,14 @@ import type { CreateShareRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // ShareCreateRequest
     shareCreateRequest: ...,
@@ -2205,14 +2365,14 @@ import type { CreateSpeciesRuleVersionRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // SpeciesRuleVersionCreateRequest
     speciesRuleVersionCreateRequest: ...,
@@ -2282,14 +2442,14 @@ import type { CreateTaskRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // CareTaskCreateRequest
     careTaskCreateRequest: ...,
@@ -2357,14 +2517,14 @@ import type { CreateWeightRecordRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // WeightRecordCreateRequest
     weightRecordCreateRequest: ...,
@@ -2414,13 +2574,77 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## deleteBreederWechatBinding
+
+> deleteBreederWechatBinding()
+
+解绑当前 B 端微信身份
+
+保留 revoked_at 审计记录；解绑后下次 wx.login 重新进入短信绑定流程。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DefaultApi,
+} from '@scolvpet/scolvpet-api';
+import type { DeleteBreederWechatBindingRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new DefaultApi(config);
+
+  try {
+    const data = await api.deleteBreederWechatBinding();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **204** | 已解绑 |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## deleteCurrentSession
 
 > deleteCurrentSession(idempotencyKey)
 
 退出当前会话
 
-使当前访问令牌与对应刷新令牌失效。登出是状态收敛操作，天然幂等： 服务端每次都真实执行撤销、不做重放（不发送 Idempotency-Replayed）。 Idempotency-Key 为兼容旧客户端的可选头，提供时原样回显。 
+使当前访问令牌与对应刷新令牌失效。登出是状态收敛操作，天然幂等： 服务端每次都真实执行撤销、不做重放（不发送 Idempotency-Replayed）。 Idempotency-Key 为兼容旧客户端的可选头，提供时原样回显。
 
 ### Example
 
@@ -2433,7 +2657,7 @@ import type { DeleteCurrentSessionRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2492,7 +2716,7 @@ example().catch(console.error);
 
 解除当前有效父母关系
 
-将 child+role 上当前 accepted 的 pedigree_parentage 标记为 superseded（valid_to&#x3D;now）， 保留审计链。必须提供 correction_reason。不物理删除。 
+将 child+role 上当前 accepted 的 pedigree_parentage 标记为 superseded（valid_to&#x3D;now）， 保留审计链。必须提供 correction_reason。不物理删除。
 
 ### Example
 
@@ -2505,14 +2729,14 @@ import type { EndPedigreeParentageRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // PedigreeParentageEndRequest
     pedigreeParentageEndRequest: ...,
@@ -2581,7 +2805,7 @@ import type { GetAsyncJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2653,7 +2877,7 @@ import type { GetBackupDownloadRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2726,7 +2950,7 @@ import type { GetBackupJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2798,7 +3022,7 @@ import type { GetBreedingPlanRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2870,7 +3094,7 @@ import type { GetCurrentAccountRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2934,7 +3158,7 @@ import type { GetCurrentOrganizationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2998,7 +3222,7 @@ import type { GetCurrentUsageRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3062,7 +3286,7 @@ import type { GetDataCenterSummaryRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3126,7 +3350,7 @@ import type { GetEnclosureRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3196,7 +3420,7 @@ import type { GetEnclosureCleaningRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3268,7 +3492,7 @@ import type { GetExportDownloadRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3341,7 +3565,7 @@ import type { GetExportJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3413,7 +3637,7 @@ import type { GetHamsterRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3485,7 +3709,7 @@ import type { GetHamsterPedigreeRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3560,7 +3784,7 @@ import type { GetHealthRecordRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3619,7 +3843,7 @@ example().catch(console.error);
 
 下载 CSV 逐行错误报告
 
-为完成预检或正式导入的任务生成短期签名下载地址。报告包含行号、列名、 错误码、严重级别、原值和修复建议；下载前再次校验认证 owner_id。 
+为完成预检或正式导入的任务生成短期签名下载地址。报告包含行号、列名、 错误码、严重级别、原值和修复建议；下载前再次校验认证 owner_id。
 
 ### Example
 
@@ -3632,7 +3856,7 @@ import type { GetImportErrorReportRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3705,7 +3929,7 @@ import type { GetImportJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3777,7 +4001,7 @@ import type { GetImportTemplateRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3849,7 +4073,7 @@ import type { GetLitterRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3908,7 +4132,7 @@ example().catch(console.error);
 
 获取服务端个体化 eligible set
 
-服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。 
+服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。
 
 ### Example
 
@@ -3921,7 +4145,7 @@ import type { GetLitterIndividualizationEligibilityRequest } from '@scolvpet/sco
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -3980,7 +4204,7 @@ example().catch(console.error);
 
 获取服务端个体化 eligible set
 
-服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。 
+服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。
 
 ### Example
 
@@ -3993,7 +4217,7 @@ import type { GetLitterIndividualizationEligibility0Request } from '@scolvpet/sc
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -4052,7 +4276,7 @@ example().catch(console.error);
 
 获取服务端个体化 eligible set
 
-服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。 
+服务端根据窝次状态、数量账、幼崽存活状态、断奶、性别复核和有效笼位， 计算本次必须完整转换的 pup_identity 集合。返回的 eligible_set_token 绑定 当前 litter version 与有序身份集合；任何相关事实变化都会使旧 token 失效。
 
 ### Example
 
@@ -4065,7 +4289,7 @@ import type { GetLitterIndividualizationEligibility1Request } from '@scolvpet/sc
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -4137,7 +4361,7 @@ import type { GetMediaAssetRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -4209,7 +4433,7 @@ import type { GetMediaTranscodeStatusRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -4281,7 +4505,7 @@ import type { GetPairingAttemptRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -4340,7 +4564,7 @@ example().catch(console.error);
 
 无需认证读取公开分享
 
-只返回舍主显式选择的字段和 share-scoped 媒体 URL；撤销或过期后返回 404。 MVP API 响应使用 no-store，确保撤销完成后不会由浏览器或 CDN 回放历史 JSON。 
+只返回舍主显式选择的字段和 share-scoped 媒体 URL；撤销或过期后返回 404。 MVP API 响应使用 no-store，确保撤销完成后不会由浏览器或 CDN 回放历史 JSON。
 
 ### Example
 
@@ -4492,7 +4716,7 @@ import type { GetReminderRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -4564,7 +4788,7 @@ import type { GetSpeciesRuleVersionRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -4636,7 +4860,7 @@ import type { GetTaskRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -4695,7 +4919,7 @@ example().catch(console.error);
 
 将临时幼崽个体化
 
-仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。 
+仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。
 
 ### Example
 
@@ -4708,14 +4932,14 @@ import type { IndividualizeLitterOperationRequest } from '@scolvpet/scolvpet-api
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -4778,7 +5002,7 @@ example().catch(console.error);
 
 将临时幼崽个体化
 
-仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。 
+仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。
 
 ### Example
 
@@ -4791,14 +5015,14 @@ import type { IndividualizeLitter0Request } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -4861,7 +5085,7 @@ example().catch(console.error);
 
 将临时幼崽个体化
 
-仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。 
+仅允许 individualizing。服务端重新计算完整 eligible set，并要求请求 token、 items 的身份集合与该集合完全一致；缺项、多项、重复项、失效 token 或任一阻塞项 均拒绝整批请求。通过后原子一对一转换为 hamster，建立 litter_member 与 pedigree_parentage，并返回服务端数量对账。客户端不提交目标状态或目标数量。
 
 ### Example
 
@@ -4874,14 +5098,14 @@ import type { IndividualizeLitter1Request } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -4957,7 +5181,7 @@ import type { ListBackupJobsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5032,7 +5256,7 @@ import type { ListBreedingPlansRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5116,7 +5340,7 @@ import type { ListEnclosureCleaningsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5194,7 +5418,7 @@ import type { ListEnclosureStaysRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5275,7 +5499,7 @@ import type { ListEnclosuresRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5359,7 +5583,7 @@ import type { ListExportJobsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5434,7 +5658,7 @@ import type { ListHamstersRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5521,7 +5745,7 @@ import type { ListHealthRecordsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5605,7 +5829,7 @@ import type { ListImportJobsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5683,7 +5907,7 @@ import type { ListImportRowResultsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5764,7 +5988,7 @@ import type { ListLitterMembersRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5842,7 +6066,7 @@ import type { ListLitterMembers0Request } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5920,7 +6144,7 @@ import type { ListLitterParentsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -5992,7 +6216,7 @@ import type { ListLittersRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -6076,7 +6300,7 @@ import type { ListPairingAttemptsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -6154,7 +6378,7 @@ import type { ListPedigreeParentagesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -6235,7 +6459,7 @@ import type { ListPupIdentitiesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -6319,7 +6543,7 @@ import type { ListRemindersRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -6400,7 +6624,7 @@ import type { ListSharesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -6478,7 +6702,7 @@ import type { ListSpeciesRuleTemplatesRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -6553,7 +6777,7 @@ import type { ListSpeciesRuleVersionsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -6631,7 +6855,7 @@ import type { ListTasksRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -6718,7 +6942,7 @@ import type { ListUsageSnapshotsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -6780,6 +7004,68 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## listWechatSubscriptions
+
+> WechatSubscriptionListResponse listWechatSubscriptions()
+
+查看当前 B 端微信订阅授权
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DefaultApi,
+} from '@scolvpet/scolvpet-api';
+import type { ListWechatSubscriptionsRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new DefaultApi(config);
+
+  try {
+    const data = await api.listWechatSubscriptions();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**WechatSubscriptionListResponse**](WechatSubscriptionListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | 订阅模板授权列表 |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## listWeightRecords
 
 > WeightRecordListResponse listWeightRecords(cursor, limit, hamsterId, pupIdentityId, litterId, recordedFrom, recordedTo)
@@ -6799,7 +7085,7 @@ import type { ListWeightRecordsRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -6876,7 +7162,7 @@ example().catch(console.error);
 
 全量预检 CSV
 
-全量检查缺列、重复编号、父母缺失、父母与既有窝次不一致、谱系环、笼位冲突 和非法体重。仓鼠模板可按窝次编号自动规划历史窝次，但只有同一窝次的出生时间、 双亲和物种规则全部一致时才允许创建；任何冲突均作为阻塞问题返回，不静默合并。 
+全量检查缺列、重复编号、父母缺失、父母与既有窝次不一致、谱系环、笼位冲突 和非法体重。仓鼠模板可按窝次编号自动规划历史窝次，但只有同一窝次的出生时间、 双亲和物种规则全部一致时才允许创建；任何冲突均作为阻塞问题返回，不静默合并。
 
 ### Example
 
@@ -6889,14 +7175,14 @@ import type { PreflightImportJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -6972,14 +7258,14 @@ import type { PresignMediaUploadRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // MediaUploadPresignRequest
     mediaUploadPresignRequest: ...,
@@ -7048,7 +7334,7 @@ import type { PreviewShareRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -7107,7 +7393,7 @@ example().catch(console.error);
 
 创建前预览公开分享
 
-不持久化分享，不生成公开令牌；按当前 owner 校验主体、字段和媒体后返回 匿名访客将看到的精确投影。禁止输出健康备注、联系方式、任务和审计字段。 
+不持久化分享，不生成公开令牌；按当前 owner 校验主体、字段和媒体后返回 匿名访客将看到的精确投影。禁止输出健康备注、联系方式、任务和审计字段。
 
 ### Example
 
@@ -7120,14 +7406,14 @@ import type { PreviewShareDraftRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // ShareCreateRequest
     shareCreateRequest: ...,
@@ -7183,7 +7469,7 @@ example().catch(console.error);
 
 发布繁育计划
 
-校验父母资格、并行计划、规则版本与亲缘风险后，将 draft 推进到 pair_ready。 仅允许当前状态为 draft；客户端不提交目标 state。 
+校验父母资格、并行计划、规则版本与亲缘风险后，将 draft 推进到 pair_ready。 仅允许当前状态为 draft；客户端不提交目标 state。
 
 ### Example
 
@@ -7196,14 +7482,14 @@ import type { PublishBreedingPlanOperationRequest } from '@scolvpet/scolvpet-api
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -7279,14 +7565,14 @@ import type { RecordPairingObservationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -7365,7 +7651,7 @@ async function example() {
   const api = new DefaultApi();
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // RefreshSessionRequest
     refreshSessionRequest: ...,
@@ -7424,7 +7710,7 @@ No authorization required
 
 撤销任务的完成或取消
 
-把已完成或已取消的任务退回 pending，用于纠正误点完成/误取消，必须填写原因。 subject 级完成痕迹一并清除，否则任务显示待办而每个成员仍标记已完成。 原因记入 CARE_TASK_REOPENED 领域事件。 
+把已完成或已取消的任务退回 pending，用于纠正误点完成/误取消，必须填写原因。 subject 级完成痕迹一并清除，否则任务显示待办而每个成员仍标记已完成。 原因记入 CARE_TASK_REOPENED 领域事件。
 
 ### Example
 
@@ -7437,14 +7723,14 @@ import type { ReopenTaskRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -7520,14 +7806,14 @@ import type { RetryBackupJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -7603,14 +7889,14 @@ import type { RetryExportJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -7686,14 +7972,14 @@ import type { RetryImportJobRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -7756,7 +8042,7 @@ example().catch(console.error);
 
 重试失败的媒体处理
 
-仅允许原始媒体已完成校验且目标派生处于 failed。保留原失败作业， 幂等创建新的图片派生或短视频转码作业；业务记录和原始媒体事实不回滚。 
+仅允许原始媒体已完成校验且目标派生处于 failed。保留原失败作业， 幂等创建新的图片派生或短视频转码作业；业务记录和原始媒体事实不回滚。
 
 ### Example
 
@@ -7769,14 +8055,14 @@ import type { RetryMediaProcessingRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -7839,7 +8125,7 @@ example().catch(console.error);
 
 撤销公开分享
 
-同一事务内标记令牌已撤销并写入 CDN purge Outbox，事务提交后立即返回 200； 公开 API 的下一次请求立即失效，HTML/JSON 使用 no-store。share-scoped 公开媒体 的边缘 TTL 不超过 60 秒，最迟 60 秒不再返回；内部资源和原始私有媒体不受影响。 
+同一事务内标记令牌已撤销并写入 CDN purge Outbox，事务提交后立即返回 200； 公开 API 的下一次请求立即失效，HTML/JSON 使用 no-store。share-scoped 公开媒体 的边缘 TTL 不超过 60 秒，最迟 60 秒不再返回；内部资源和原始私有媒体不受影响。
 
 ### Example
 
@@ -7852,14 +8138,14 @@ import type { RevokeShareOperationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -7938,7 +8224,7 @@ async function example() {
   const api = new DefaultApi();
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // SendVerificationCodeRequest
     sendVerificationCodeRequest: {"phone":"+8613800138000","purpose":"login"},
@@ -7991,13 +8277,90 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## sendWechatSubscription
+
+> WechatSubscriptionDeliveryResponse sendWechatSubscription(idempotencyKey, sendWechatSubscriptionRequest)
+
+投递一条已授权的微信订阅消息
+
+供任务提醒和预订状态变更编排复用；模板字段由微信模板定义，服务端只转发字符串值。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DefaultApi,
+} from '@scolvpet/scolvpet-api';
+import type { SendWechatSubscriptionOperationRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new DefaultApi(config);
+
+  const body = {
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+    idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
+    // SendWechatSubscriptionRequest
+    sendWechatSubscriptionRequest: ...,
+  } satisfies SendWechatSubscriptionOperationRequest;
+
+  try {
+    const data = await api.sendWechatSubscription(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **idempotencyKey** | `string` | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | [Defaults to `undefined`] |
+| **sendWechatSubscriptionRequest** | [SendWechatSubscriptionRequest](SendWechatSubscriptionRequest.md) |  | |
+
+### Return type
+
+[**WechatSubscriptionDeliveryResponse**](WechatSubscriptionDeliveryResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | 投递成功 |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+| **422** | 字段格式或领域规则校验失败 |  -  |
+| **503** | 微信订阅消息通道暂未配置 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## separatePairing
 
 > SeparatePairingResponse separatePairing(idempotencyKey, ifMatch, attemptId, separatePairingRequest)
 
 结束配对并完成分笼
 
-仅允许 active 或 safety_hold 的配对尝试。 原子关闭临时配对占用、登记双方去向并创建新入住事实。 若笼盒冲突或只登记一方，整体失败且不释放配对笼。 
+仅允许 active 或 safety_hold 的配对尝试。 原子关闭临时配对占用、登记双方去向并创建新入住事实。 若笼盒冲突或只登记一方，整体失败且不释放配对笼。
 
 ### Example
 
@@ -8010,14 +8373,14 @@ import type { SeparatePairingOperationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -8093,14 +8456,14 @@ import type { SetImportMappingRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -8176,14 +8539,14 @@ import type { SetMediaCoverRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -8246,7 +8609,7 @@ example().catch(console.error);
 
 分性并分笼
 
-仅允许 sexing_due；逐项提交性别、置信度和目标笼盒。服务端验证完整在管集合、 异性混笼、容量和待复核安排，客户端不得提交目标状态。 
+仅允许 sexing_due；逐项提交性别、置信度和目标笼盒。服务端验证完整在管集合、 异性混笼、容量和待复核安排，客户端不得提交目标状态。
 
 ### Example
 
@@ -8259,14 +8622,14 @@ import type { SexAndSeparateLitterRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -8329,7 +8692,7 @@ example().catch(console.error);
 
 从分笼后进入孕期观察
 
-仅允许 post_pair。服务端校验至少一次 pairing_attempt 已闭环、结果为有效或待定、 配对笼已释放，再计算预产区间、创建提醒并推进到 gestation。 
+仅允许 post_pair。服务端校验至少一次 pairing_attempt 已闭环、结果为有效或待定、 配对笼已释放，再计算预产区间、创建提醒并推进到 gestation。
 
 ### Example
 
@@ -8342,14 +8705,14 @@ import type { StartGestationMonitoringRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -8412,7 +8775,7 @@ example().catch(console.error);
 
 开始配对
 
-仅允许当前状态为 pair_ready。原子创建 pairing_attempt、占用临时配对笼 并推进到 pairing；任一父母资格或笼位守卫失败时不产生部分事实。 
+仅允许当前状态为 pair_ready。原子创建 pairing_attempt、占用临时配对笼 并推进到 pairing；任一父母资格或笼位守卫失败时不产生部分事实。
 
 ### Example
 
@@ -8425,14 +8788,14 @@ import type { StartPairingOperationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -8508,14 +8871,14 @@ import type { UpdateBreedingPlanRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -8591,14 +8954,14 @@ import type { UpdateCurrentOrganizationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -8671,14 +9034,14 @@ import type { UpdateEnclosureRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -8754,14 +9117,14 @@ import type { UpdateEnclosureStayRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -8837,14 +9200,14 @@ import type { UpdateHamsterRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -8920,14 +9283,14 @@ import type { UpdateHealthRecordRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -9003,14 +9366,14 @@ import type { UpdateSpeciesRuleVersionRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -9086,14 +9449,14 @@ import type { UpdateTaskRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",
@@ -9150,13 +9513,90 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## upsertWechatSubscriptions
+
+> WechatSubscriptionListResponse upsertWechatSubscriptions(idempotencyKey, upsertWechatSubscriptionsRequest)
+
+保存当前 B 端微信订阅授权
+
+记录 wx.requestSubscribeMessage 返回的模板状态；只有 accept 状态会进入后端投递队列。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DefaultApi,
+} from '@scolvpet/scolvpet-api';
+import type { UpsertWechatSubscriptionsOperationRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new DefaultApi(config);
+
+  const body = {
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+    idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
+    // UpsertWechatSubscriptionsRequest
+    upsertWechatSubscriptionsRequest: ...,
+  } satisfies UpsertWechatSubscriptionsOperationRequest;
+
+  try {
+    const data = await api.upsertWechatSubscriptions(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **idempotencyKey** | `string` | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | [Defaults to `undefined`] |
+| **upsertWechatSubscriptionsRequest** | [UpsertWechatSubscriptionsRequest](UpsertWechatSubscriptionsRequest.md) |  | |
+
+### Return type
+
+[**WechatSubscriptionListResponse**](WechatSubscriptionListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | 授权状态已保存 |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+| **409** | 版本、状态、幂等键或资源占用冲突 |  * ETag -  <br>  |
+| **422** | 字段格式或领域规则校验失败 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## weanLitter
 
 > WeanLitterResponse weanLitter(idempotencyKey, ifMatch, litterId, weanLitterRequest)
 
 完成断奶
 
-仅允许 weaning_due；对服务端计算的当前在管幼崽逐项提交生存/离舍结果并校验去向。 断奶动作不接受或修改 profile_status，个体化进度仅由 individualize 动作推进。 缺少当前在管身份、包含已关闭身份或笼位冲突时整体不推进状态。 
+仅允许 weaning_due；对服务端计算的当前在管幼崽逐项提交生存/离舍结果并校验去向。 断奶动作不接受或修改 profile_status，个体化进度仅由 individualize 动作推进。 缺少当前在管身份、包含已关闭身份或笼位冲突时整体不推进状态。
 
 ### Example
 
@@ -9169,14 +9609,14 @@ import type { WeanLitterOperationRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
   const api = new DefaultApi(config);
 
   const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。 
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
     idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
     // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
     ifMatch: "7",

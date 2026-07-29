@@ -40,6 +40,8 @@ jobs:
         run: make migration-drift
       - name: Generated dart-dio client drift
         run: make client-drift
+      - name: Generated TypeScript client drift
+        run: make ts-client-drift
       - name: Mini-program contract tests
         run: make miniprogram-test
       - name: Web lint
@@ -55,6 +57,27 @@ jobs:
           CONST_VERSION="$(sed -n "s/.*defaultValue: '\\([^']*\\)'.*/\\1/p" apps/mobile/lib/core/app_version.dart | head -1)"
           test "$PUBSPEC_VERSION" = "$CONST_VERSION"
           echo "app version ok: $PUBSPEC_VERSION"
+
+  miniprogram-next:
+    name: mini-program next / lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/miniprogram-next/package-lock.json
+      - name: Mini-program next dependencies
+        working-directory: apps/miniprogram-next
+        run: npm ci
+      - name: ESLint
+        run: make miniprogram-next-lint
+      - name: Mini-program next tests
+        run: make miniprogram-next-test
+      - name: Mini-program next build and dist smoke
+        run: make miniprogram-next-build
 
   test:
     name: test

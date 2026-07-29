@@ -52,6 +52,140 @@ if (referencesNull) {
   console.log('prepare-generated-ts: no Null stub needed');
 }
 
+// openapi-generator 将 WeightRecord 的公共字段错误地留在 oneOf 外层，
+// 生成的 TS union 因而无法序列化 weight_g / recorded_at / source。
+// Dart 客户端已经按契约正确生成；这里把同一个 OpenAPI schema 的公共字段
+// 以稳定的 post-process 形式补回 TS，避免小程序体重快录丢字段。
+const weightRecordModel = String.raw`// @ts-nocheck — generated code; see tools/prepare-generated-ts.mjs
+export interface WeightRecord {
+  id: string;
+  hamsterId?: string | null;
+  pupIdentityId?: string | null;
+  litterId?: string | null;
+  measurementKind: string;
+  subjectCount?: number | null;
+  weightG: number;
+  recordedAt: Date;
+  source: string;
+  birthWeightG?: number | null;
+  previousWeightG?: number | null;
+  changeFromPreviousG?: number | null;
+  changeFromBirthG?: number | null;
+  alertFlags: string[];
+  notes?: string | null;
+  correctsWeightRecordId?: string | null;
+  correctionReason?: string | null;
+  createdAt: Date;
+}
+
+export function WeightRecordFromJSON(json: any): WeightRecord {
+  return {
+    id: json.id,
+    hamsterId: json.hamster_id ?? null,
+    pupIdentityId: json.pup_identity_id ?? null,
+    litterId: json.litter_id ?? null,
+    measurementKind: json.measurement_kind,
+    subjectCount: json.subject_count ?? null,
+    weightG: json.weight_g,
+    recordedAt: new Date(json.recorded_at),
+    source: json.source,
+    birthWeightG: json.birth_weight_g ?? null,
+    previousWeightG: json.previous_weight_g ?? null,
+    changeFromPreviousG: json.change_from_previous_g ?? null,
+    changeFromBirthG: json.change_from_birth_g ?? null,
+    alertFlags: json.alert_flags || [],
+    notes: json.notes ?? null,
+    correctsWeightRecordId: json.corrects_weight_record_id ?? null,
+    correctionReason: json.correction_reason ?? null,
+    createdAt: new Date(json.created_at)
+  };
+}
+
+export function WeightRecordToJSON(value?: WeightRecord | null): any {
+  if (value == null) return value;
+  return {
+    id: value.id,
+    hamster_id: value.hamsterId,
+    pup_identity_id: value.pupIdentityId,
+    litter_id: value.litterId,
+    measurement_kind: value.measurementKind,
+    subject_count: value.subjectCount,
+    weight_g: value.weightG,
+    recorded_at: value.recordedAt instanceof Date ? value.recordedAt.toISOString() : value.recordedAt,
+    source: value.source,
+    birth_weight_g: value.birthWeightG,
+    previous_weight_g: value.previousWeightG,
+    change_from_previous_g: value.changeFromPreviousG,
+    change_from_birth_g: value.changeFromBirthG,
+    alert_flags: value.alertFlags,
+    notes: value.notes,
+    corrects_weight_record_id: value.correctsWeightRecordId,
+    correction_reason: value.correctionReason,
+    created_at: value.createdAt instanceof Date ? value.createdAt.toISOString() : value.createdAt
+  };
+}
+export const WeightRecordFromJSONTyped = WeightRecordFromJSON;
+export const WeightRecordToJSONTyped = WeightRecordToJSON;
+`;
+
+const weightRecordCreateRequestModel = String.raw`// @ts-nocheck — generated code; see tools/prepare-generated-ts.mjs
+export interface WeightRecordCreateRequest {
+  hamsterId?: string | null;
+  pupIdentityId?: string | null;
+  litterId?: string | null;
+  measurementKind?: string;
+  subjectCount?: number | null;
+  weightG: number;
+  recordedAt: Date;
+  source: string;
+  deviceReadingId?: string | null;
+  notes?: string | null;
+  correctsWeightRecordId?: string | null;
+  correctionReason?: string | null;
+}
+
+export function WeightRecordCreateRequestFromJSON(json: any): WeightRecordCreateRequest {
+  return {
+    hamsterId: json.hamster_id ?? null,
+    pupIdentityId: json.pup_identity_id ?? null,
+    litterId: json.litter_id ?? null,
+    measurementKind: json.measurement_kind,
+    subjectCount: json.subject_count ?? null,
+    weightG: json.weight_g,
+    recordedAt: new Date(json.recorded_at),
+    source: json.source,
+    deviceReadingId: json.device_reading_id ?? null,
+    notes: json.notes ?? null,
+    correctsWeightRecordId: json.corrects_weight_record_id ?? null,
+    correctionReason: json.correction_reason ?? null
+  };
+}
+
+export function WeightRecordCreateRequestToJSON(value?: WeightRecordCreateRequest | null): any {
+  if (value == null) return value;
+  return {
+    hamster_id: value.hamsterId,
+    pup_identity_id: value.pupIdentityId,
+    litter_id: value.litterId,
+    measurement_kind: value.measurementKind,
+    subject_count: value.subjectCount,
+    weight_g: value.weightG,
+    recorded_at: value.recordedAt instanceof Date ? value.recordedAt.toISOString() : value.recordedAt,
+    source: value.source,
+    device_reading_id: value.deviceReadingId,
+    notes: value.notes,
+    corrects_weight_record_id: value.correctsWeightRecordId,
+    correction_reason: value.correctionReason
+  };
+}
+export const WeightRecordCreateRequestFromJSONTyped = WeightRecordCreateRequestFromJSON;
+export const WeightRecordCreateRequestToJSONTyped = WeightRecordCreateRequestToJSON;
+`;
+
+fs.writeFileSync(path.join(modelsDir, 'WeightRecord.ts'), weightRecordModel);
+fs.writeFileSync(path.join(modelsDir, 'WeightRecordCreateRequest.ts'), weightRecordCreateRequestModel);
+console.log('prepare-generated-ts: normalized WeightRecord oneOf models');
+
 // 生成物不按消费方 strict tsconfig 设计(TS7053/TS2590 等):统一加 @ts-nocheck,
 // 文件内不受检,导出类型对消费方依旧生效。幂等:已有标记则跳过。
 const NOCHECK = '// @ts-nocheck — generated code; see tools/prepare-generated-ts.mjs\n';
@@ -71,3 +205,25 @@ const walk = (dir) => {
 };
 walk(srcDir);
 console.log(`prepare-generated-ts: stamped @ts-nocheck on ${stamped} files`);
+
+// OpenAPI Generator 的 Markdown supporting files 偶尔会带行尾空格；
+// 在生成后统一收敛，避免 generated 文档污染仓库格式检查。只处理明确的
+// 文本后缀，不触碰其他产物的二进制内容。
+const textExtensions = new Set(['.md', '.ts', '.json', '.txt']);
+let normalized = 0;
+const normalizeTextFiles = (dir) => {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) normalizeTextFiles(full);
+    else if (textExtensions.has(path.extname(entry.name))) {
+      const source = fs.readFileSync(full, 'utf8');
+      const next = source.replace(/[ \t]+$/gm, '');
+      if (next !== source) {
+        fs.writeFileSync(full, next);
+        normalized += 1;
+      }
+    }
+  }
+};
+normalizeTextFiles(root);
+console.log(`prepare-generated-ts: normalized trailing whitespace in ${normalized} files`);

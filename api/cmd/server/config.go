@@ -20,41 +20,45 @@ const (
 )
 
 type runtimeConfig struct {
-	Environment              string
-	DatabaseURL              string
-	APIAddr                  string
-	JWTSecret                string
-	SMSProvider              string
-	SMSMockCode              string
-	SMSHTTPEndpoint          string
-	SMSHTTPToken             string
-	WechatProvider           string
-	WechatAppID              string
-	WechatSecret             string
-	ObjectStoreProvider      string
-	ObjectStoreLocalRoot     string
-	ObjectStoreEndpoint      string
-	ObjectStoreBucket        string
-	ObjectStoreRegion        string
-	ObjectStoreAccessKey     string
-	ObjectStoreSecretKey     string
-	ObjectStorePathStyle     bool
-	DBMaxConns               int
-	DBMinConns               int
-	OutboxLeaseSeconds       int
-	OutboxPublisherMode      string
-	OutboxPublisherEndpoint  string
-	OutboxPublisherToken     string
-	OutboxWorkerDisabled     bool
-	MediaWorkerIntervalSecs  int
-	MediaWorkerDisabled      bool
-	MediaCWebPPath           string
-	MediaFFmpegPath          string
-	MediaFFprobePath         string
-	MediaCodecTimeoutSecs    int
-	MediaCodecMaxInputBytes  int64
-	MediaCodecMaxOutputBytes int64
-	TrustedProxyCIDRs        []netip.Prefix
+	Environment                 string
+	DatabaseURL                 string
+	APIAddr                     string
+	JWTSecret                   string
+	SMSProvider                 string
+	SMSMockCode                 string
+	SMSHTTPEndpoint             string
+	SMSHTTPToken                string
+	WechatProvider              string
+	WechatSubscriptionProvider  string
+	WechatSubscriptionState     string
+	WechatAppID                 string
+	WechatSecret                string
+	WechatTaskTemplateID        string
+	WechatReservationTemplateID string
+	ObjectStoreProvider         string
+	ObjectStoreLocalRoot        string
+	ObjectStoreEndpoint         string
+	ObjectStoreBucket           string
+	ObjectStoreRegion           string
+	ObjectStoreAccessKey        string
+	ObjectStoreSecretKey        string
+	ObjectStorePathStyle        bool
+	DBMaxConns                  int
+	DBMinConns                  int
+	OutboxLeaseSeconds          int
+	OutboxPublisherMode         string
+	OutboxPublisherEndpoint     string
+	OutboxPublisherToken        string
+	OutboxWorkerDisabled        bool
+	MediaWorkerIntervalSecs     int
+	MediaWorkerDisabled         bool
+	MediaCWebPPath              string
+	MediaFFmpegPath             string
+	MediaFFprobePath            string
+	MediaCodecTimeoutSecs       int
+	MediaCodecMaxInputBytes     int64
+	MediaCodecMaxOutputBytes    int64
+	TrustedProxyCIDRs           []netip.Prefix
 }
 
 // defaultTrustedProxyCIDRs trusts loopback and private ranges, matching the
@@ -116,6 +120,14 @@ func loadRuntimeConfigFrom(lookup envLookup) (runtimeConfig, error) {
 	if wechatProvider != "mock" && wechatProvider != "http" {
 		return runtimeConfig{}, fmt.Errorf("WECHAT_PROVIDER must be one of mock, http; got %q", wechatProvider)
 	}
+	wechatSubscriptionProvider := strings.ToLower(strings.TrimSpace(envOrDefault(lookup, "WECHAT_SUBSCRIPTION_PROVIDER", wechatProvider)))
+	if wechatSubscriptionProvider != "mock" && wechatSubscriptionProvider != "http" {
+		return runtimeConfig{}, fmt.Errorf("WECHAT_SUBSCRIPTION_PROVIDER must be one of mock, http; got %q", wechatSubscriptionProvider)
+	}
+	wechatSubscriptionState := strings.ToLower(strings.TrimSpace(envOrDefault(lookup, "WECHAT_SUBSCRIPTION_STATE", "formal")))
+	if wechatSubscriptionState != "developer" && wechatSubscriptionState != "trial" && wechatSubscriptionState != "formal" {
+		return runtimeConfig{}, fmt.Errorf("WECHAT_SUBSCRIPTION_STATE must be one of developer, trial, formal; got %q", wechatSubscriptionState)
+	}
 	outboxPublisherMode := strings.ToLower(strings.TrimSpace(envOrDefault(lookup, "OUTBOX_PUBLISHER_MODE", "success")))
 	if outboxPublisherMode != "success" && outboxPublisherMode != "fail" && outboxPublisherMode != "http" {
 		return runtimeConfig{}, fmt.Errorf("OUTBOX_PUBLISHER_MODE must be one of success, fail, http; got %q", outboxPublisherMode)
@@ -130,41 +142,45 @@ func loadRuntimeConfigFrom(lookup envLookup) (runtimeConfig, error) {
 	}
 
 	config := runtimeConfig{
-		Environment:              environment,
-		DatabaseURL:              envOrDefault(lookup, "DATABASE_URL", defaultDatabaseURL),
-		APIAddr:                  envOrDefault(lookup, "API_ADDR", ":8080"),
-		JWTSecret:                envOrDefault(lookup, "JWT_SECRET", defaultJWTSecret),
-		SMSProvider:              strings.ToLower(strings.TrimSpace(smsProvider)),
-		SMSMockCode:              smsMockCode,
-		SMSHTTPEndpoint:          strings.TrimSpace(envOrDefault(lookup, "SMS_HTTP_ENDPOINT", "")),
-		SMSHTTPToken:             envOrDefault(lookup, "SMS_HTTP_TOKEN", ""),
-		WechatProvider:           wechatProvider,
-		WechatAppID:              strings.TrimSpace(envOrDefault(lookup, "WECHAT_APPID", "")),
-		WechatSecret:             strings.TrimSpace(envOrDefault(lookup, "WECHAT_SECRET", "")),
-		ObjectStoreProvider:      strings.ToLower(strings.TrimSpace(objectStoreProvider)),
-		ObjectStoreLocalRoot:     envOrDefault(lookup, "IMPORT_OBJECT_STORE_DIR", ""),
-		ObjectStoreEndpoint:      strings.TrimRight(strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_ENDPOINT", "")), "/"),
-		ObjectStoreBucket:        strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_BUCKET", "")),
-		ObjectStoreRegion:        strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_REGION", "")),
-		ObjectStoreAccessKey:     envOrDefault(lookup, "OBJECT_STORE_ACCESS_KEY", ""),
-		ObjectStoreSecretKey:     envOrDefault(lookup, "OBJECT_STORE_SECRET_KEY", ""),
-		ObjectStorePathStyle:     pathStyle,
-		DBMaxConns:               getenvIntFrom(lookup, "DB_MAX_CONNS", 8),
-		DBMinConns:               getenvIntFrom(lookup, "DB_MIN_CONNS", 1),
-		OutboxLeaseSeconds:       getenvIntFrom(lookup, "OUTBOX_WORKER_LEASE_SECONDS", 60),
-		OutboxPublisherMode:      outboxPublisherMode,
-		OutboxPublisherEndpoint:  strings.TrimRight(strings.TrimSpace(envOrDefault(lookup, "OUTBOX_PUBLISHER_ENDPOINT", "")), "/"),
-		OutboxPublisherToken:     envOrDefault(lookup, "OUTBOX_PUBLISHER_TOKEN", ""),
-		OutboxWorkerDisabled:     envOrDefault(lookup, "OUTBOX_WORKER_DISABLED", "0") == "1",
-		MediaWorkerIntervalSecs:  getenvIntFrom(lookup, "MEDIA_WORKER_INTERVAL_SECONDS", 2),
-		MediaWorkerDisabled:      envOrDefault(lookup, "MEDIA_WORKER_DISABLED", "0") == "1",
-		MediaCWebPPath:           envOrDefault(lookup, "MEDIA_CWEBP_PATH", "cwebp"),
-		MediaFFmpegPath:          envOrDefault(lookup, "MEDIA_FFMPEG_PATH", "ffmpeg"),
-		MediaFFprobePath:         envOrDefault(lookup, "MEDIA_FFPROBE_PATH", "ffprobe"),
-		MediaCodecTimeoutSecs:    getenvIntFrom(lookup, "MEDIA_CODEC_TIMEOUT_SECONDS", 120),
-		MediaCodecMaxInputBytes:  int64(getenvIntFrom(lookup, "MEDIA_CODEC_MAX_INPUT_BYTES", 512<<20)),
-		MediaCodecMaxOutputBytes: int64(getenvIntFrom(lookup, "MEDIA_CODEC_MAX_OUTPUT_BYTES", 512<<20)),
-		TrustedProxyCIDRs:        trustedProxies,
+		Environment:                 environment,
+		DatabaseURL:                 envOrDefault(lookup, "DATABASE_URL", defaultDatabaseURL),
+		APIAddr:                     envOrDefault(lookup, "API_ADDR", ":8080"),
+		JWTSecret:                   envOrDefault(lookup, "JWT_SECRET", defaultJWTSecret),
+		SMSProvider:                 strings.ToLower(strings.TrimSpace(smsProvider)),
+		SMSMockCode:                 smsMockCode,
+		SMSHTTPEndpoint:             strings.TrimSpace(envOrDefault(lookup, "SMS_HTTP_ENDPOINT", "")),
+		SMSHTTPToken:                envOrDefault(lookup, "SMS_HTTP_TOKEN", ""),
+		WechatProvider:              wechatProvider,
+		WechatSubscriptionProvider:  wechatSubscriptionProvider,
+		WechatSubscriptionState:     strings.TrimSpace(wechatSubscriptionState),
+		WechatAppID:                 strings.TrimSpace(envOrDefault(lookup, "WECHAT_APPID", "")),
+		WechatSecret:                strings.TrimSpace(envOrDefault(lookup, "WECHAT_SECRET", "")),
+		WechatTaskTemplateID:        strings.TrimSpace(envOrDefault(lookup, "WECHAT_TASK_TEMPLATE_ID", "")),
+		WechatReservationTemplateID: strings.TrimSpace(envOrDefault(lookup, "WECHAT_RESERVATION_TEMPLATE_ID", "")),
+		ObjectStoreProvider:         strings.ToLower(strings.TrimSpace(objectStoreProvider)),
+		ObjectStoreLocalRoot:        envOrDefault(lookup, "IMPORT_OBJECT_STORE_DIR", ""),
+		ObjectStoreEndpoint:         strings.TrimRight(strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_ENDPOINT", "")), "/"),
+		ObjectStoreBucket:           strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_BUCKET", "")),
+		ObjectStoreRegion:           strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_REGION", "")),
+		ObjectStoreAccessKey:        envOrDefault(lookup, "OBJECT_STORE_ACCESS_KEY", ""),
+		ObjectStoreSecretKey:        envOrDefault(lookup, "OBJECT_STORE_SECRET_KEY", ""),
+		ObjectStorePathStyle:        pathStyle,
+		DBMaxConns:                  getenvIntFrom(lookup, "DB_MAX_CONNS", 8),
+		DBMinConns:                  getenvIntFrom(lookup, "DB_MIN_CONNS", 1),
+		OutboxLeaseSeconds:          getenvIntFrom(lookup, "OUTBOX_WORKER_LEASE_SECONDS", 60),
+		OutboxPublisherMode:         outboxPublisherMode,
+		OutboxPublisherEndpoint:     strings.TrimRight(strings.TrimSpace(envOrDefault(lookup, "OUTBOX_PUBLISHER_ENDPOINT", "")), "/"),
+		OutboxPublisherToken:        envOrDefault(lookup, "OUTBOX_PUBLISHER_TOKEN", ""),
+		OutboxWorkerDisabled:        envOrDefault(lookup, "OUTBOX_WORKER_DISABLED", "0") == "1",
+		MediaWorkerIntervalSecs:     getenvIntFrom(lookup, "MEDIA_WORKER_INTERVAL_SECONDS", 2),
+		MediaWorkerDisabled:         envOrDefault(lookup, "MEDIA_WORKER_DISABLED", "0") == "1",
+		MediaCWebPPath:              envOrDefault(lookup, "MEDIA_CWEBP_PATH", "cwebp"),
+		MediaFFmpegPath:             envOrDefault(lookup, "MEDIA_FFMPEG_PATH", "ffmpeg"),
+		MediaFFprobePath:            envOrDefault(lookup, "MEDIA_FFPROBE_PATH", "ffprobe"),
+		MediaCodecTimeoutSecs:       getenvIntFrom(lookup, "MEDIA_CODEC_TIMEOUT_SECONDS", 120),
+		MediaCodecMaxInputBytes:     int64(getenvIntFrom(lookup, "MEDIA_CODEC_MAX_INPUT_BYTES", 512<<20)),
+		MediaCodecMaxOutputBytes:    int64(getenvIntFrom(lookup, "MEDIA_CODEC_MAX_OUTPUT_BYTES", 512<<20)),
+		TrustedProxyCIDRs:           trustedProxies,
 	}
 
 	if environment == "production" {
@@ -207,6 +223,15 @@ func validateProductionConfig(lookup envLookup, config runtimeConfig) error {
 		if config.WechatSecret == "" {
 			issues = append(issues, "WECHAT_SECRET must be explicitly set")
 		}
+	}
+	if config.WechatSubscriptionProvider != "http" {
+		issues = append(issues, "WECHAT_SUBSCRIPTION_PROVIDER must be http for production subscription delivery")
+	}
+	if config.WechatTaskTemplateID == "" {
+		issues = append(issues, "WECHAT_TASK_TEMPLATE_ID must be explicitly set")
+	}
+	if config.WechatReservationTemplateID == "" {
+		issues = append(issues, "WECHAT_RESERVATION_TEMPLATE_ID must be explicitly set")
 	}
 	if config.ObjectStoreProvider != "s3" && config.ObjectStoreProvider != "minio" {
 		issues = append(issues, "OBJECT_STORE_PROVIDER must be s3 or minio in production")

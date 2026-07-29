@@ -1,6 +1,5 @@
 .gitignore
 .npmignore
-.openapi-generator-ignore
 README.md
 docs/Account.md
 docs/AccountingCategory.md
@@ -48,6 +47,8 @@ docs/BackupJobListResponse.md
 docs/BackupJobResponse.md
 docs/BatchItemStatus.md
 docs/BatchTransactionStatus.md
+docs/BreederWechatSessionResponse.md
+docs/BreederWechatSessionResponseData.md
 docs/BreedingPlan.md
 docs/BreedingPlanCreateRequest.md
 docs/BreedingPlanListResponse.md
@@ -75,6 +76,8 @@ docs/ConfirmBirthResponse.md
 docs/ConfirmBirthResponseData.md
 docs/CreateAccountingCategoryRequest.md
 docs/CreateAccountingRecordRequest.md
+docs/CreateBreederWechatBindingRequest.md
+docs/CreateBreederWechatSessionRequest.md
 docs/CreateContractRequest.md
 docs/CreateCrmContactRequest.md
 docs/CreateCrmHandoverRequest.md
@@ -349,6 +352,7 @@ docs/RevokeShareRequest.md
 docs/SandboxActivatePlanRequest.md
 docs/SendCustomerVerificationCodeRequest.md
 docs/SendVerificationCodeRequest.md
+docs/SendWechatSubscriptionRequest.md
 docs/SeparatePairingRequest.md
 docs/SeparatePairingResponse.md
 docs/SeparatePairingResponseData.md
@@ -394,6 +398,7 @@ docs/UploadSession.md
 docs/UpsertMiniprogramConfigRequest.md
 docs/UpsertPublicSiteRequest.md
 docs/UpsertPushDeviceRequest.md
+docs/UpsertWechatSubscriptionsRequest.md
 docs/UsageMetric.md
 docs/UsageResponse.md
 docs/UsageResponseData.md
@@ -406,6 +411,10 @@ docs/WeanLitterRequest.md
 docs/WeanLitterRequestItemsInner.md
 docs/WeanLitterResponse.md
 docs/WeanLitterResponseData.md
+docs/WechatSubscription.md
+docs/WechatSubscriptionDeliveryResponse.md
+docs/WechatSubscriptionDeliveryResponseData.md
+docs/WechatSubscriptionListResponse.md
 docs/WeightRecord.md
 docs/WeightRecordBatchCreateRequest.md
 docs/WeightRecordBatchCreateRequestItemsInner.md
@@ -476,6 +485,8 @@ src/models/BackupJobListResponse.ts
 src/models/BackupJobResponse.ts
 src/models/BatchItemStatus.ts
 src/models/BatchTransactionStatus.ts
+src/models/BreederWechatSessionResponse.ts
+src/models/BreederWechatSessionResponseData.ts
 src/models/BreedingPlan.ts
 src/models/BreedingPlanCreateRequest.ts
 src/models/BreedingPlanListResponse.ts
@@ -503,6 +514,8 @@ src/models/ConfirmBirthResponse.ts
 src/models/ConfirmBirthResponseData.ts
 src/models/CreateAccountingCategoryRequest.ts
 src/models/CreateAccountingRecordRequest.ts
+src/models/CreateBreederWechatBindingRequest.ts
+src/models/CreateBreederWechatSessionRequest.ts
 src/models/CreateContractRequest.ts
 src/models/CreateCrmContactRequest.ts
 src/models/CreateCrmHandoverRequest.ts
@@ -768,6 +781,7 @@ src/models/RevokeShareRequest.ts
 src/models/SandboxActivatePlanRequest.ts
 src/models/SendCustomerVerificationCodeRequest.ts
 src/models/SendVerificationCodeRequest.ts
+src/models/SendWechatSubscriptionRequest.ts
 src/models/SeparatePairingRequest.ts
 src/models/SeparatePairingResponse.ts
 src/models/SeparatePairingResponseData.ts
@@ -813,6 +827,7 @@ src/models/UploadSession.ts
 src/models/UpsertMiniprogramConfigRequest.ts
 src/models/UpsertPublicSiteRequest.ts
 src/models/UpsertPushDeviceRequest.ts
+src/models/UpsertWechatSubscriptionsRequest.ts
 src/models/UsageMetric.ts
 src/models/UsageResponse.ts
 src/models/UsageResponseData.ts
@@ -825,6 +840,10 @@ src/models/WeanLitterRequest.ts
 src/models/WeanLitterRequestItemsInner.ts
 src/models/WeanLitterResponse.ts
 src/models/WeanLitterResponseData.ts
+src/models/WechatSubscription.ts
+src/models/WechatSubscriptionDeliveryResponse.ts
+src/models/WechatSubscriptionDeliveryResponseData.ts
+src/models/WechatSubscriptionListResponse.ts
 src/models/WeightRecord.ts
 src/models/WeightRecordBatchCreateRequest.ts
 src/models/WeightRecordBatchCreateRequestItemsInner.ts

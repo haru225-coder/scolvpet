@@ -1,11 +1,49 @@
 import { defineConfig, type UserConfigExport } from '@tarojs/cli'
+import fs from 'node:fs'
 import path from 'node:path'
 
 import devConfig from './dev'
 import prodConfig from './prod'
 
+// 构建前门禁：宁可构建失败，也不能默默把开发配置/演示账号打进生产包。
+// 发布流水线请设 MP_REQUIRE_PRODUCTION_CONFIG=1，注入缺失时直接崩。
+function assertBuildConfig() {
+  const root = path.resolve(__dirname, '..')
+  const source = fs.readFileSync(path.join(root, 'src/utils/config.js'), 'utf8')
+  const appEnv = source.match(/const APP_ENV = '([^']*)'/)?.[1]
+  const apiBase = source.match(/const API_BASE = '([^']*)'/)?.[1] ?? ''
+  const devPhone = source.match(/const DEV_LOGIN_PHONE = '([^']*)'/)?.[1] ?? ''
+  const devCode = source.match(/const DEV_LOGIN_CODE = '([^']*)'/)?.[1] ?? ''
+  const fail = (reason: string) => {
+    throw new Error(`build gate: ${reason}`)
+  }
+
+  if (appEnv !== 'development' && appEnv !== 'production') {
+    fail(`src/utils/config.js APP_ENV must be development or production, got "${appEnv}"`)
+  }
+  if (process.env.MP_REQUIRE_PRODUCTION_CONFIG === '1' && appEnv !== 'production') {
+    fail('MP_REQUIRE_PRODUCTION_CONFIG=1 but src/utils/config.js is still the development default; run scripts/build-miniprogram-next.sh first')
+  }
+  if (appEnv === 'production') {
+    if (!/^https:\/\//.test(apiBase)) fail(`production API_BASE must use https, got "${apiBase}"`)
+    if (/^https:\/\/[^/]+:\d+/.test(apiBase)) fail(`production API_BASE must not carry an explicit port, got "${apiBase}"`)
+    if (/(^|\.)p\.scolv\.com(?::|\/|$)/.test(apiBase)) fail('production API_BASE must not be the staging host')
+    if (devPhone || devCode) fail('production build must not ship DEV_LOGIN_* credentials')
+    const project = JSON.parse(fs.readFileSync(path.join(root, 'project.config.json'), 'utf8'))
+    if (project.setting?.urlCheck !== true) fail('project.config.json setting.urlCheck must be true for production')
+    if (project.setting?.uploadWithSourceMap === true) fail('project.config.json setting.uploadWithSourceMap must be false for production')
+    if (!/^wx[0-9a-f]{16}$/.test(String(project.appid))) fail(`project.config.json appid looks invalid: "${project.appid}"`)
+  }
+
+  const generatedClient = path.resolve(root, '..', '..', 'generated/ts/scolvpet-api/src')
+  if (!fs.existsSync(generatedClient)) {
+    fail(`@scolvpet/api-client is missing at ${generatedClient}; run "make generate-ts-client" from the repository root (this app cannot be built outside the monorepo)`)
+  }
+}
+
 // https://taro-docs.jd.com/docs/next/config
 export default defineConfig<'webpack5'>(async (merge) => {
+  assertBuildConfig()
   const baseConfig: UserConfigExport<'webpack5'> = {
     projectName: 'scolvpet-miniprogram-next',
     date: '2026-7-27',

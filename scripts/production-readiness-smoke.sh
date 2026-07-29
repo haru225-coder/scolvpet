@@ -2,10 +2,12 @@
 # P1-2 production readiness smoke：
 #   HTTP 断言（给定 BASE_URL 时）：/healthz 200 且 status=ok；/readyz 200 且 status=ready
 #     （DB 不通时 readyz 为 503 not_ready）。readyz 报告 environment=production 时，
-#     进一步断言 checks：sms_provider=http、sms_mock_code_set=false、wechat_provider=http
+#     进一步断言 checks：sms_provider=http、sms_mock_code_set=false、wechat_provider=http、
+#     wechat_subscription_provider=http、任务/预订模板均已配置
 #     （旧二进制无 environment 字段则跳过，保持向后兼容）。
 #   静态断言（给定 ENV_FILE 时，不起服务）：production env 文件必须
-#     APP_ENV=production、SMS_MOCK_CODE 为空、SMS_PROVIDER=http、WECHAT_PROVIDER=http
+#     APP_ENV=production、SMS_MOCK_CODE 为空、SMS_PROVIDER=http、WECHAT_PROVIDER=http、
+#     WECHAT_SUBSCRIPTION_PROVIDER=http、任务/预订模板 ID 非空
 #     （对应 api/cmd/server/config.go validateProductionConfig 的 fail-closed 校验）。
 # 用法（位置参数或环境变量，至少给一个）：
 #   scripts/production-readiness-smoke.sh https://p.scolv.com:8443 /opt/scolvpet/.env.production
@@ -51,6 +53,12 @@ if [[ -n "$BASE_URL" ]]; then
       || fail "/readyz checks.sms_mock_code_set want false body=$(cat "$READY_BODY")"
     [[ "$(jq -r '.checks.wechat_provider // empty' "$READY_BODY")" == "http" ]] \
       || fail "/readyz checks.wechat_provider want http body=$(cat "$READY_BODY")"
+    [[ "$(jq -r '.checks.wechat_subscription_provider // empty' "$READY_BODY")" == "http" ]] \
+      || fail "/readyz checks.wechat_subscription_provider want http body=$(cat "$READY_BODY")"
+    [[ "$(jq -r '.checks.wechat_task_template_configured' "$READY_BODY")" == "true" ]] \
+      || fail "/readyz checks.wechat_task_template_configured want true body=$(cat "$READY_BODY")"
+    [[ "$(jq -r '.checks.wechat_reservation_template_configured' "$READY_BODY")" == "true" ]] \
+      || fail "/readyz checks.wechat_reservation_template_configured want true body=$(cat "$READY_BODY")"
   fi
 fi
 
@@ -65,6 +73,12 @@ if [[ -n "$ENV_FILE" ]]; then
   [[ "$PROVIDER_VALUE" == "http" ]] || fail "SMS_PROVIDER want http got '$PROVIDER_VALUE' ($ENV_FILE)"
   WECHAT_PROVIDER_VALUE="$(env_get WECHAT_PROVIDER)"
   [[ "$WECHAT_PROVIDER_VALUE" == "http" ]] || fail "WECHAT_PROVIDER want http got '$WECHAT_PROVIDER_VALUE' ($ENV_FILE)"
+  WECHAT_SUBSCRIPTION_PROVIDER_VALUE="$(env_get WECHAT_SUBSCRIPTION_PROVIDER)"
+  [[ "$WECHAT_SUBSCRIPTION_PROVIDER_VALUE" == "http" ]] || fail "WECHAT_SUBSCRIPTION_PROVIDER want http got '$WECHAT_SUBSCRIPTION_PROVIDER_VALUE' ($ENV_FILE)"
+  WECHAT_TASK_TEMPLATE_VALUE="$(env_get WECHAT_TASK_TEMPLATE_ID)"
+  [[ -n "$WECHAT_TASK_TEMPLATE_VALUE" ]] || fail "WECHAT_TASK_TEMPLATE_ID must be non-empty ($ENV_FILE)"
+  WECHAT_RESERVATION_TEMPLATE_VALUE="$(env_get WECHAT_RESERVATION_TEMPLATE_ID)"
+  [[ -n "$WECHAT_RESERVATION_TEMPLATE_VALUE" ]] || fail "WECHAT_RESERVATION_TEMPLATE_ID must be non-empty ($ENV_FILE)"
 fi
 
 printf 'production-readiness smoke PASS: base_url=%s env_file=%s\n' \
