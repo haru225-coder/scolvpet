@@ -120,6 +120,9 @@ class App extends Component<PropsWithChildren> {
 
   private async restartCustomerWechatAuthorization() {
     this.clearCustomerWechatAuthorization()
+    // 清掉旧会话后再静默登录，否则 silentWechatLogin 会直接命中缓存身份，
+    // 无法为本次手机号授权重新获取微信会话或 ticket。
+    this.saveCustomer({ customerToken: '' })
     await this.silentWechatLogin()
     return Boolean(this.globalData.customerToken)
   }

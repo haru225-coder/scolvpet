@@ -13,10 +13,6 @@ import { fileURLToPath } from 'node:url';
 
 const sourceDir = fileURLToPath(new URL('..', import.meta.url));
 const script = path.join(sourceDir, '..', '..', 'scripts', 'build-miniprogram-next.sh');
-// 该脚本住在仓库根 scripts/；单独导出本应用时跳过而非报错退出 127。
-const skipReason = fs.existsSync(script)
-  ? false
-  : 'scripts/build-miniprogram-next.sh not reachable; run these tests from the monorepo root';
 
 const GOOD_ENV = {
   MP_APP_ENV: 'production',
@@ -46,7 +42,15 @@ function runBuild(targetDir, env, args = []) {
   });
 }
 
-test('production build fails closed on bad values', { skip: skipReason }, (t) => {
+test('release build script is present', () => {
+  assert.equal(
+    fs.existsSync(script),
+    true,
+    'scripts/build-miniprogram-next.sh must be reachable from the monorepo root',
+  );
+});
+
+test('production build fails closed on bad values', (t) => {
   const dir = makeScratchCopy(t);
   const badCases = [
     ['empty appid', { ...GOOD_ENV, MP_APPID: '' }],
@@ -70,7 +74,7 @@ test('production build fails closed on bad values', { skip: skipReason }, (t) =>
   );
 });
 
-test('development build passes without strict validation', { skip: skipReason }, (t) => {
+test('development build passes without strict validation', (t) => {
   const dir = makeScratchCopy(t);
   const res = runBuild(dir, {
     MP_APP_ENV: 'development',
@@ -80,7 +84,7 @@ test('development build passes without strict validation', { skip: skipReason },
   assert.equal(res.status, 0, res.stderr);
 });
 
-test('production build with good values injects config and appid', { skip: skipReason }, (t) => {
+test('production build with good values injects config and appid', (t) => {
   const dir = makeScratchCopy(t);
   const res = runBuild(dir, GOOD_ENV);
   assert.equal(res.status, 0, res.stderr);
@@ -100,7 +104,7 @@ test('production build with good values injects config and appid', { skip: skipR
   assert.equal(projectJson.appid, 'wx1234567890abcdef');
 });
 
-test('--restore returns the scratch copy to development defaults byte-for-byte', { skip: skipReason }, (t) => {
+test('--restore returns the scratch copy to development defaults byte-for-byte', (t) => {
   const dir = makeScratchCopy(t);
   const targetProject = JSON.parse(fs.readFileSync(path.join(dir, 'project.config.json'), 'utf8'));
   // The target may contain a user-specific DevTools AppID that differs from the

@@ -214,6 +214,36 @@ describe('app.ts 胶水层', () => {
     expect(customerPhoneClient.bind).toHaveBeenCalledTimes(1)
   })
 
+  it('重授权前清掉旧 customer token，避免静默登录命中缓存身份', async () => {
+    const wx = installWx()
+    wx.storage['scolvpet_customer'] = { customerToken: 'ct_stale_token' }
+    const app = await launchApp({})
+    const instance = app as unknown as {
+      customerWechatTicket: string
+      customerWechatTicketObtainedAt: number
+      silentWechatLogin: () => Promise<unknown>
+      globalData: Record<string, string>
+    }
+    const bridge = app.taroGlobalData as unknown as {
+      authorizeCustomerPhone: (code: string) => Promise<unknown>
+    }
+    instance.customerWechatTicket = ''
+    instance.customerWechatTicketObtainedAt = 0
+    const refresh = vi.spyOn(instance, 'silentWechatLogin').mockImplementation(async () => {
+      expect(instance.globalData.customerToken).toBe('')
+      return { state: 'fallback' }
+    })
+
+    await expect(bridge.authorizeCustomerPhone('phone-code-1')).resolves.toEqual({
+      ok: false,
+      code: 'WECHAT_PHONE_REAUTHORIZE',
+      message: '授权已超时，请重新授权手机号'
+    })
+    expect(refresh).toHaveBeenCalledTimes(1)
+    expect(instance.globalData.customerToken).toBe('')
+    expect(wx.storage.scolvpet_customer).toMatchObject({ customerToken: '' })
+  })
+
   it('微信手机号配额熔断后预取新 ticket，但仍要求用户重新点击授权', async () => {
     installWx()
     const app = await launchApp({})
