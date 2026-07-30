@@ -21,6 +21,9 @@ Page({
     verificationId: '',
     customerToken: '',
     busy: false,
+    authorizingPhone: false,
+    showSmsFallback: false,
+    phoneAuthorizationMessage: '',
     codeCountdown: 0,
     reservable: true,
   },
@@ -95,6 +98,41 @@ Page({
   onCode(e) {
     this.setData({ code: e.detail.value });
   },
+  async authorizeAndSubmit(e) {
+    if (this.data.busy || this.data.authorizingPhone) return;
+    const phoneCode = e && e.detail && e.detail.code;
+    if (!phoneCode) {
+      this.setData({
+        showSmsFallback: true,
+        phoneAuthorizationMessage: '未获得手机号，无法确认预约，请使用短信验证',
+      });
+      return;
+    }
+    this.setData({ authorizingPhone: true, phoneAuthorizationMessage: '' });
+    try {
+      const result = await getApp().authorizeCustomerPhone(phoneCode);
+      if (!result || !result.ok) {
+        const state = wechatLogin.resolvePhoneAuthorizationState(result || {});
+        this.setData({
+          showSmsFallback: state.showSmsFallback,
+          phoneAuthorizationMessage: state.message,
+        });
+        return;
+      }
+      const app = getApp();
+      this.setData({
+        customerToken: app.globalData.customerToken || '',
+        phone: app.globalData.phone || '',
+        showSmsFallback: false,
+        phoneAuthorizationMessage: '',
+      });
+      await this.submit();
+    } catch (err) {
+      this.setData({ phoneAuthorizationMessage: err.message || '微信手机号授权失败，请重新授权' });
+    } finally {
+      this.setData({ authorizingPhone: false });
+    }
+  },
   onMateChange(e) {
     const idx = Number(e.detail.value || 0);
     const mate = this.data.mates[idx];
@@ -166,20 +204,12 @@ Page({
     if (!phone || !code || !verificationId) {
       throw new Error('请先获取并填写短信验证码');
     }
-    // 有未过期 wechat_ticket → 短信验证通过后顺带绑定微信；否则维持现有 session 流程。
-    // 绑定失败（ticket 过期/已用）由 loginWithSms 自动降级重试 createCustomerSession。
-    const { res } = await wechatLogin.loginWithSms({
+    // 短信是微信手机号授权不可用时的独立后备路径：只创建 Customer
+    // Session，绝不读取或消费 wx.login 的一次性 ticket。
+    const res = await api.createCustomerSession({
       phone,
-      verificationId,
+      verification_id: verificationId,
       code,
-      ticket: app.globalData.wechatTicket,
-      ticketObtainedAt: app.globalData.wechatTicketObtainedAt,
-      bindFn: api.bindWechatIdentity,
-      sessionFn: api.createCustomerSession,
-      onTicketConsumed: () => {
-        app.globalData.wechatTicket = '';
-        app.globalData.wechatTicketObtainedAt = 0;
-      },
     });
     const token = res?.data?.access_token || res?.access_token || '';
     if (!token) throw new Error('登录失败，请重试');
@@ -203,6 +233,10 @@ Page({
     }
     if (!name) {
       wx.showToast({ title: '请填写称呼', icon: 'none' });
+      return;
+    }
+    if (!this.data.customerToken && !this.data.showSmsFallback) {
+      wx.showToast({ title: '请先授权微信手机号', icon: 'none' });
       return;
     }
     if (!phone) {

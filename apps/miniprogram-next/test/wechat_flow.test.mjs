@@ -10,9 +10,8 @@ const {
   WECHAT_TICKET_TTL_MS,
   resolveWechatSession,
   isTicketFresh,
-  resolveLoginPath,
   performSilentLogin,
-  loginWithSms,
+  resolvePhoneAuthorizationState,
 } = wechatLogin;
 
 // Contract fixtures: wechat-sessions / wechat-bindings response shapes.
@@ -105,108 +104,35 @@ test('isTicketFresh enforces the 10-minute one-shot window', () => {
   assert.equal(isTicketFresh('wt_x', 0, obtainedAt), false);
 });
 
-test('resolveLoginPath: token skips SMS, fresh ticket binds, otherwise session', () => {
-  const now = 1700000000000;
-  assert.equal(
-    resolveLoginPath({ token: 'ct_x', ticket: 'wt_x', ticketObtainedAt: now, now }),
-    'token',
-  );
-  assert.equal(
-    resolveLoginPath({ token: '', ticket: 'wt_x', ticketObtainedAt: now - 1000, now }),
-    'binding',
-  );
-  assert.equal(
-    resolveLoginPath({
-      token: '',
-      ticket: 'wt_x',
-      ticketObtainedAt: now - WECHAT_TICKET_TTL_MS,
-      now,
-    }),
-    'session',
-  );
-  assert.equal(resolveLoginPath({ token: '', ticket: '', ticketObtainedAt: 0, now }), 'session');
+test('手机号凭证失效时清空整段授权并要求重新授权，不自动展示短信', () => {
+  assert.equal(typeof resolvePhoneAuthorizationState, 'function');
+  assert.deepEqual(resolvePhoneAuthorizationState({ code: 'WECHAT_PHONE_REAUTHORIZE' }), {
+    showSmsFallback: false,
+    reauthorize: true,
+    message: '授权已超时，请重新授权手机号',
+  });
 });
 
-test('loginWithSms: fresh ticket goes through wechat-bindings and consumes it', async () => {
-  const now = 1700000000000;
-  const bindCalls = [];
-  let consumed = 0;
-  const { res, mode } = await loginWithSms({
-    phone: '+8613800138000',
-    verificationId: 'vid_1',
-    code: '123456',
-    ticket: 'wt_fixture_ticket',
-    ticketObtainedAt: now - 1000,
-    now,
-    bindFn: async (body) => {
-      bindCalls.push(body);
-      return BOUND_RESPONSE;
-    },
-    sessionFn: async () => assert.fail('session must not be used when binding succeeds'),
-    onTicketConsumed: () => {
-      consumed += 1;
-    },
+test('手机号冲突和境外号码按既定口径展示引导', () => {
+  assert.equal(typeof resolvePhoneAuthorizationState, 'function');
+  assert.deepEqual(resolvePhoneAuthorizationState({ code: 'PHONE_ALREADY_BOUND' }), {
+    showSmsFallback: false,
+    reauthorize: false,
+    message: '该手机号已绑定其他微信号，请先在原微信号解绑',
   });
-  assert.equal(mode, 'binding');
-  assert.equal(res.data.access_token, 'ct_fixture_token');
-  assert.equal(consumed, 1);
-  assert.deepEqual(bindCalls, [
-    {
-      wechat_ticket: 'wt_fixture_ticket',
-      phone: '+8613800138000',
-      verification_id: 'vid_1',
-      code: '123456',
-    },
-  ]);
-});
-
-test('loginWithSms: binding failure falls back to createCustomerSession', async () => {
-  const now = 1700000000000;
-  const sessionCalls = [];
-  let consumed = 0;
-  const { res, mode } = await loginWithSms({
-    phone: '+8613800138000',
-    verificationId: 'vid_2',
-    code: '654321',
-    ticket: 'wt_expired_on_server',
-    ticketObtainedAt: now - 1000,
-    now,
-    bindFn: async () => {
-      throw new Error('ticket expired');
-    },
-    sessionFn: async (body) => {
-      sessionCalls.push(body);
-      return { data: { access_token: 'ct_session_token' } };
-    },
-    onTicketConsumed: () => {
-      consumed += 1;
-    },
+  assert.deepEqual(resolvePhoneAuthorizationState({ code: 'UNSUPPORTED_PHONE_COUNTRY' }), {
+    showSmsFallback: true,
+    reauthorize: false,
+    message: '暂不支持非中国大陆手机号，请使用短信验证',
   });
-  assert.equal(mode, 'session');
-  assert.equal(res.data.access_token, 'ct_session_token');
-  assert.equal(consumed, 1, 'failed ticket must be dropped so retries do not loop');
-  assert.deepEqual(sessionCalls, [
-    { phone: '+8613800138000', verification_id: 'vid_2', code: '654321' },
-  ]);
-});
-
-test('loginWithSms: missing or expired ticket keeps the legacy session flow', async () => {
-  const now = 1700000000000;
-  const sessionCalls = [];
-  const { mode } = await loginWithSms({
-    phone: '+8613800138000',
-    verificationId: 'vid_3',
-    code: '111222',
-    ticket: 'wt_stale',
-    ticketObtainedAt: now - WECHAT_TICKET_TTL_MS - 1,
-    now,
-    bindFn: async () => assert.fail('expired ticket must not hit wechat-bindings'),
-    sessionFn: async (body) => {
-      sessionCalls.push(body);
-      return { data: { access_token: 'ct_session_token' } };
-    },
-    onTicketConsumed: () => assert.fail('nothing to consume on the session path'),
+  assert.deepEqual(resolvePhoneAuthorizationState({ code: 'WECHAT_PHONE_UNAVAILABLE' }), {
+    showSmsFallback: true,
+    reauthorize: false,
+    message: '微信手机号授权暂不可用，请使用短信验证码登录',
   });
-  assert.equal(mode, 'session');
-  assert.equal(sessionCalls.length, 1);
+  assert.deepEqual(resolvePhoneAuthorizationState({ code: 'RATE_LIMITED' }), {
+    showSmsFallback: false,
+    reauthorize: false,
+    message: '请求过于频繁，请稍后再试',
+  });
 });

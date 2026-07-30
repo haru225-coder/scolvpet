@@ -18,6 +18,9 @@ Page({
     loading: false,
     error: '',
     codeCountdown: 0,
+    authorizingPhone: false,
+    showSmsFallback: false,
+    phoneAuthorizationMessage: '',
   },
   _timer: null,
   onUnload() {
@@ -33,6 +36,41 @@ Page({
   },
   onPhone(e) { this.setData({ phone: e.detail.value }); },
   onCode(e) { this.setData({ code: e.detail.value }); },
+  async authorizeAndLoad(e) {
+    if (this.data.loading || this.data.authorizingPhone) return;
+    const phoneCode = e && e.detail && e.detail.code;
+    if (!phoneCode) {
+      this.setData({
+        showSmsFallback: true,
+        phoneAuthorizationMessage: '未获得手机号，请使用短信验证',
+      });
+      return;
+    }
+    this.setData({ authorizingPhone: true, phoneAuthorizationMessage: '' });
+    try {
+      const result = await getApp().authorizeCustomerPhone(phoneCode);
+      if (!result || !result.ok) {
+        const state = wechatLogin.resolvePhoneAuthorizationState(result || {});
+        this.setData({
+          showSmsFallback: state.showSmsFallback,
+          phoneAuthorizationMessage: state.message,
+        });
+        return;
+      }
+      const app = getApp();
+      this.setData({
+        token: app.globalData.customerToken || '',
+        phone: app.globalData.phone || '',
+        showSmsFallback: false,
+        phoneAuthorizationMessage: '',
+      });
+      await this.loadList();
+    } catch (err) {
+      this.setData({ phoneAuthorizationMessage: err.message || '微信手机号授权失败，请重新授权' });
+    } finally {
+      this.setData({ authorizingPhone: false });
+    }
+  },
   async sendCode() {
     // Same 60s resend guard as the detail page — every tap past the guard
     // costs a real SMS once the provider is live.
@@ -83,6 +121,10 @@ Page({
         app.saveCustomer({ customerToken: '' });
       }
       if (!token) {
+        if (!this.data.showSmsFallback) {
+          wx.showToast({ title: '请先授权微信手机号', icon: 'none' });
+          return;
+        }
         if (!phone) {
           wx.showToast({ title: '请输入有效手机号', icon: 'none' });
           return;
@@ -92,19 +134,11 @@ Page({
           wx.showToast({ title: '请先完成验证码', icon: 'none' });
           return;
         }
-        // 有未过期 wechat_ticket 时短信验证顺带绑定微信；绑定失败自动降级 session。
-        const { res } = await wechatLogin.loginWithSms({
+        // 短信备用路径不读取或消费一次性微信 ticket。
+        const res = await api.createCustomerSession({
           phone,
-          verificationId: this.data.verificationId,
+          verification_id: this.data.verificationId,
           code,
-          ticket: app.globalData.wechatTicket,
-          ticketObtainedAt: app.globalData.wechatTicketObtainedAt,
-          bindFn: api.bindWechatIdentity,
-          sessionFn: api.createCustomerSession,
-          onTicketConsumed: () => {
-            app.globalData.wechatTicket = '';
-            app.globalData.wechatTicketObtainedAt = 0;
-          },
         });
         token = res?.data?.access_token || '';
         if (!token) throw new Error('登录失败');

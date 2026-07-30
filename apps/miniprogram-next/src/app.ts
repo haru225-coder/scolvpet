@@ -11,6 +11,12 @@ import { Component, type PropsWithChildren } from 'react'
 import config from './utils/config'
 import api from './utils/api'
 import wechatLogin from './utils/wechat_login'
+import {
+  createCustomerWechatPhoneBinding,
+  CustomerPhoneAuthorizationError,
+  setCustomerAccessToken,
+  type CustomerPhoneAuthorizationCode
+} from './api/customer-client'
 
 import './app.css'
 
@@ -31,16 +37,19 @@ class App extends Component<PropsWithChildren> {
       phone: '',
       wechat: '',
       customerToken: '',
-      siteTitle: '',
-      // In-memory only (never persisted): one-shot bind ticket from wechat-sessions.
-      wechatTicket: '',
-      wechatTicketObtainedAt: 0
+      siteTitle: ''
     },
     _launchEntry: {} as { slug?: string; hamsterId?: string },
-    saveCustomer: (partial: CustomerPartial) => this.saveCustomer(partial)
+    saveCustomer: (partial: CustomerPartial) => this.saveCustomer(partial),
+    // 原生混写页只能访问 taroGlobalData：这里只暴露一条不含 ticket、
+    // token 或手机号返回值的授权桥接，短期凭证仍保持 App 私有。
+    authorizeCustomerPhone: (phoneCode: string) => this.authorizeCustomerPhone(phoneCode)
   }
 
   _silentLoginPromise: Promise<unknown> | null = null
+  private customerWechatTicket = ''
+  private customerWechatTicketObtainedAt = 0
+  private customerPhoneAuthorizationPromise: Promise<CustomerPhoneAuthorizationResult> | null = null
 
   get globalData() {
     return this.taroGlobalData.globalData
@@ -62,6 +71,7 @@ class App extends Component<PropsWithChildren> {
     } catch (_) {
       // ignore
     }
+    setCustomerAccessToken(this.globalData.customerToken)
     // Deep link from 小程序码 / share query
     const entry = api.parseEntryQuery((options && options.query) || {})
     if (entry.slug) {
@@ -97,10 +107,62 @@ class App extends Component<PropsWithChildren> {
         this.saveCustomer(partial)
       },
       onTicket: ({ ticket, obtainedAt }: { ticket: string; obtainedAt: number }) => {
-        this.globalData.wechatTicket = ticket
-        this.globalData.wechatTicketObtainedAt = obtainedAt
+        this.customerWechatTicket = ticket
+        this.customerWechatTicketObtainedAt = obtainedAt
       }
     })
+  }
+
+  private clearCustomerWechatAuthorization() {
+    this.customerWechatTicket = ''
+    this.customerWechatTicketObtainedAt = 0
+  }
+
+  private async restartCustomerWechatAuthorization() {
+    this.clearCustomerWechatAuthorization()
+    await this.silentWechatLogin()
+    return Boolean(this.globalData.customerToken)
+  }
+
+  authorizeCustomerPhone(phoneCode: string): Promise<CustomerPhoneAuthorizationResult> {
+    if (this.customerPhoneAuthorizationPromise) return this.customerPhoneAuthorizationPromise
+    const attempt = this.authorizeCustomerPhoneOnce(phoneCode)
+    this.customerPhoneAuthorizationPromise = attempt
+    void attempt.finally(() => {
+      if (this.customerPhoneAuthorizationPromise === attempt) {
+        this.customerPhoneAuthorizationPromise = null
+      }
+    })
+    return attempt
+  }
+
+  private async authorizeCustomerPhoneOnce(phoneCode: string): Promise<CustomerPhoneAuthorizationResult> {
+    const ticket = this.customerWechatTicket
+    const ticketFresh = wechatLogin.isTicketFresh(ticket, this.customerWechatTicketObtainedAt, Date.now())
+    if (!ticketFresh || !String(phoneCode || '').trim()) {
+      if (await this.restartCustomerWechatAuthorization()) return { ok: true }
+      return customerPhoneAuthorizationFailure('WECHAT_PHONE_REAUTHORIZE', '授权已超时，请重新授权手机号')
+    }
+
+    // A ticket is consumed before the server calls WeChat. Clear it before the
+    // network request so neither a second tap nor an uncertain response can
+    // pair a new ticket with this one-shot phone_code.
+    this.clearCustomerWechatAuthorization()
+    try {
+      const session = await createCustomerWechatPhoneBinding(ticket, String(phoneCode).trim())
+      this.saveCustomer({ customerToken: session.token, phone: session.phone })
+      return { ok: true }
+    } catch (error) {
+      const authError = asCustomerPhoneAuthorizationError(error)
+      if (
+        authError.code === 'WECHAT_PHONE_REAUTHORIZE' ||
+        authError.code === 'WECHAT_PHONE_QUOTA_EXHAUSTED' ||
+        authError.code === 'RATE_LIMITED'
+      ) {
+        if (await this.restartCustomerWechatAuthorization()) return { ok: true }
+      }
+      return customerPhoneAuthorizationFailure(authError.code, authError.message)
+    }
   }
 
   saveCustomer(partial: CustomerPartial) {
@@ -117,12 +179,26 @@ class App extends Component<PropsWithChildren> {
     this.globalData.slug = next.slug || ''
     this.globalData.customerToken = next.customerToken || ''
     this.globalData.siteTitle = next.siteTitle || ''
+    setCustomerAccessToken(this.globalData.customerToken)
     wx.setStorageSync('scolvpet_customer', next)
   }
 
   render() {
     return this.props.children
   }
+}
+
+type CustomerPhoneAuthorizationResult =
+  | { ok: true }
+  | { ok: false; code: CustomerPhoneAuthorizationCode; message: string }
+
+function customerPhoneAuthorizationFailure(code: CustomerPhoneAuthorizationCode, message: string): CustomerPhoneAuthorizationResult {
+  return { ok: false, code, message }
+}
+
+function asCustomerPhoneAuthorizationError(error: unknown) {
+  if (error instanceof CustomerPhoneAuthorizationError) return error
+  return new CustomerPhoneAuthorizationError('WECHAT_PHONE_REAUTHORIZE', '授权已超时，请重新授权手机号')
 }
 
 export default App

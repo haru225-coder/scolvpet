@@ -1,6 +1,6 @@
 // Silent WeChat login decision logic (pure functions; wx APIs are injected).
-// 三态：session（已绑定直接发 token）/ bind_required（存 ticket 待短信绑定）/
-// fallback（任何失败都静默降级到现有短信流程）。
+// 三态：session（已绑定直接发 token）/ bind_required（私有保存 ticket，待
+// getPhoneNumber）/ fallback（静默登录失败，页面仍提供微信授权入口）。
 
 const WECHAT_TICKET_TTL_MS = 10 * 60 * 1000; // 服务端 ticket 10 分钟有效、一次性
 
@@ -23,16 +23,52 @@ function isTicketFresh(ticket, obtainedAt, now) {
   return t - obtainedAt < WECHAT_TICKET_TTL_MS;
 }
 
-/**
- * Page-side branch decision:
- * 'token'   → 已有有效 session，跳过验证码；
- * 'binding' → 无 token 但持有未过期 ticket，短信验证后走 wechat-bindings；
- * 'session' → 维持现有 createCustomerSession 短信流程。
- */
-function resolveLoginPath({ token, ticket, ticketObtainedAt, now }) {
-  if (token) return 'token';
-  if (isTicketFresh(ticket, ticketObtainedAt, now)) return 'binding';
-  return 'session';
+/** Map public WeChat phone-binding errors to customer-facing page state. */
+function resolvePhoneAuthorizationState({ code } = {}) {
+  switch (code) {
+    case 'WECHAT_PHONE_REAUTHORIZE':
+      return {
+        showSmsFallback: false,
+        reauthorize: true,
+        message: '授权已超时，请重新授权手机号',
+      };
+    case 'UNSUPPORTED_PHONE_COUNTRY':
+      return {
+        showSmsFallback: true,
+        reauthorize: false,
+        message: '暂不支持非中国大陆手机号，请使用短信验证',
+      };
+    case 'PHONE_ALREADY_BOUND':
+      return {
+        showSmsFallback: false,
+        reauthorize: false,
+        message: '该手机号已绑定其他微信号，请先在原微信号解绑',
+      };
+    case 'WECHAT_PHONE_QUOTA_EXHAUSTED':
+      return {
+        showSmsFallback: false,
+        reauthorize: false,
+        message: '微信手机号授权服务繁忙，请稍后再试',
+      };
+    case 'WECHAT_PHONE_UNAVAILABLE':
+      return {
+        showSmsFallback: true,
+        reauthorize: false,
+        message: '微信手机号授权暂不可用，请使用短信验证码登录',
+      };
+    case 'RATE_LIMITED':
+      return {
+        showSmsFallback: false,
+        reauthorize: false,
+        message: '请求过于频繁，请稍后再试',
+      };
+    default:
+      return {
+        showSmsFallback: false,
+        reauthorize: false,
+        message: '微信手机号授权暂不可用，请稍后再试',
+      };
+  }
 }
 
 /**
@@ -59,48 +95,10 @@ async function performSilentLogin({ wxLogin, createSession, onToken, onTicket, n
   }
 }
 
-/**
- * SMS-verified login step for pages: bind with a fresh ticket when present,
- * otherwise fall back to the legacy customer session. Binding failure (e.g.
- * expired/consumed ticket) also drops through to the session retry so the
- * user is never stuck.
- */
-async function loginWithSms({
-  phone,
-  verificationId,
-  code,
-  ticket,
-  ticketObtainedAt,
-  bindFn,
-  sessionFn,
-  onTicketConsumed,
-  now,
-}) {
-  const path = resolveLoginPath({ token: '', ticket, ticketObtainedAt, now });
-  if (path === 'binding') {
-    try {
-      const res = await bindFn({
-        wechat_ticket: ticket,
-        phone,
-        verification_id: verificationId,
-        code,
-      });
-      if (onTicketConsumed) onTicketConsumed();
-      return { res, mode: 'binding' };
-    } catch (_) {
-      // ticket 一次性/已过期等绑定失败：丢弃 ticket，降级重试现有 session
-      if (onTicketConsumed) onTicketConsumed();
-    }
-  }
-  const res = await sessionFn({ phone, verification_id: verificationId, code });
-  return { res, mode: 'session' };
-}
-
 module.exports = {
   WECHAT_TICKET_TTL_MS,
   resolveWechatSession,
   isTicketFresh,
-  resolveLoginPath,
+  resolvePhoneAuthorizationState,
   performSilentLogin,
-  loginWithSms,
 };

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createTaroFetch, type RequestFn } from '../src/api/taro-fetch'
-import { buildConfiguration, idempotencyMiddleware, setApiToken } from '../src/api/client'
+import { buildConfiguration, getApiToken, idempotencyMiddleware, setApiToken } from '../src/api/client'
+import { getCustomerAccessToken, setCustomerAccessToken } from '../src/api/customer-client'
 
 function capturingRequest(response?: Partial<{ statusCode: number; data: unknown; header: Record<string, string> }>) {
   const calls: Array<Parameters<RequestFn>[0]> = []
@@ -84,5 +85,18 @@ describe('buildConfiguration', () => {
     setApiToken('tok-123')
     await expect(cfg.accessToken!('bearerAuth', [])).resolves.toBe('tok-123')
     setApiToken('')
+  })
+})
+
+describe('customer API token isolation', () => {
+  it('客户 token 不会写入繁育者 API client', () => {
+    setApiToken('breeder-token')
+    setCustomerAccessToken('ct_customer_token')
+
+    expect(getApiToken()).toBe('breeder-token')
+    expect(getCustomerAccessToken()).toBe('ct_customer_token')
+
+    setApiToken('')
+    setCustomerAccessToken('')
   })
 })
