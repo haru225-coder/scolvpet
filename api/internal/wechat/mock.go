@@ -21,3 +21,10 @@ func (MockProvider) Code2Session(_ context.Context, jsCode string) (Session, err
 		SessionKey: "mock-session-key-" + jsCode,
 	}, nil
 }
+
+func (MockProvider) PhoneNumber(_ context.Context, phoneCode string) (Phone, error) {
+	if strings.TrimSpace(phoneCode) == "" {
+		return Phone{}, fmt.Errorf("wechat mock: phone code must be non-empty")
+	}
+	return Phone{CountryCode: "86", Number: "+8613800138000"}, nil
+}

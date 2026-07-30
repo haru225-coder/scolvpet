@@ -13,9 +13,18 @@ type Session struct {
 	SessionKey string
 }
 
+// Phone is the customer phone number returned by WeChat. It remains server
+// data and is only persisted after the customer binding handler validates the
+// country code and ticket state.
+type Phone struct {
+	CountryCode string
+	Number      string
+}
+
 // Provider exchanges a wx.login js_code for the customer's WeChat identity.
 // The AppID/Secret stay server-side inside the implementation; SessionKey must
 // never be returned to any client.
 type Provider interface {
 	Code2Session(ctx context.Context, jsCode string) (Session, error)
+	PhoneNumber(ctx context.Context, phoneCode string) (Phone, error)
 }

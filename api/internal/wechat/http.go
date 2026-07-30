@@ -8,19 +8,32 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
+
+	"golang.org/x/sync/singleflight"
 )
 
-const defaultCode2SessionEndpoint = "https://api.weixin.qq.com/sns/jscode2session"
+const (
+	defaultCode2SessionEndpoint = "https://api.weixin.qq.com/sns/jscode2session"
+	defaultStableTokenEndpoint  = "https://api.weixin.qq.com/cgi-bin/stable_token"
+	defaultPhoneEndpoint        = "https://api.weixin.qq.com/wxa/business/getuserphonenumber"
+)
 
 // HTTPProvider calls the real WeChat code2Session API. AppID/Secret never
 // leave this process; SessionKey is kept in the returned Session only and must
 // never be serialized to any client.
 type HTTPProvider struct {
-	AppID    string
-	Secret   string
-	Endpoint string
-	Client   *http.Client
+	AppID               string
+	Secret              string
+	Endpoint            string
+	StableTokenEndpoint string
+	PhoneEndpoint       string
+	Client              *http.Client
+
+	stableTokenMu     sync.Mutex
+	stableToken       cachedStableToken
+	stableTokenFlight singleflight.Group
 }
 
 func NewHTTPProvider(appID, secret string) (*HTTPProvider, error) {
@@ -30,11 +43,20 @@ func NewHTTPProvider(appID, secret string) (*HTTPProvider, error) {
 		return nil, fmt.Errorf("wechat appid and secret must be non-empty")
 	}
 	return &HTTPProvider{
-		AppID:    appID,
-		Secret:   secret,
-		Endpoint: defaultCode2SessionEndpoint,
-		Client:   &http.Client{Timeout: 10 * time.Second},
+		AppID:               appID,
+		Secret:              secret,
+		Endpoint:            defaultCode2SessionEndpoint,
+		StableTokenEndpoint: defaultStableTokenEndpoint,
+		PhoneEndpoint:       defaultPhoneEndpoint,
+		Client:              &http.Client{Timeout: 10 * time.Second},
 	}, nil
+}
+
+func (p *HTTPProvider) httpClient() *http.Client {
+	if p.Client != nil {
+		return p.Client
+	}
+	return &http.Client{Timeout: 10 * time.Second}
 }
 
 // code2SessionResponse is the WeChat response body. WeChat returns HTTP 200
