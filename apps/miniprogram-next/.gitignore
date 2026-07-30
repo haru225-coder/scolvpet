@@ -1,5 +1,6 @@
 node_modules/
 dist/
+project.private.config.json
 .swc/
 *.log
 .project.config.json.release-backup

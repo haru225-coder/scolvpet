@@ -161,8 +161,13 @@ Page({
       }));
       this.setData({ items, loading: false });
     } catch (err) {
-      this.setData({ loading: false, error: err.message || '加载失败', token: '' });
-      getApp().saveCustomer({ customerToken: '' });
+      const unauthorized = Number(err && err.statusCode) === 401;
+      this.setData({
+        loading: false,
+        error: err.message || '加载失败',
+        ...(unauthorized ? { token: '' } : {}),
+      });
+      if (unauthorized) getApp().saveCustomer({ customerToken: '' });
     }
   },
   async logout() {

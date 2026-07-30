@@ -56,4 +56,8 @@ export function removeStorageSync(key: string) {
   recorded.storage.delete(key)
 }
 
-export default { getWindowInfo, getSystemInfoSync, navigateBack, navigateTo, redirectTo, reLaunch, showToast, getStorageSync, setStorageSync, removeStorageSync, recorded }
+export function getStorageInfoSync() {
+  return { keys: [...recorded.storage.keys()] }
+}
+
+export default { getWindowInfo, getSystemInfoSync, navigateBack, navigateTo, redirectTo, reLaunch, showToast, getStorageSync, setStorageSync, removeStorageSync, getStorageInfoSync, recorded }

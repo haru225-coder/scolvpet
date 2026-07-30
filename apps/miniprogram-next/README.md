@@ -39,9 +39,22 @@ packages/mp-ui/             @scolvpet/mp-ui:tokens.ts(真源 ios_theme.dart)+ 11
 | `make miniprogram-next-test` | 上两者合并(已入 `make ci`) |
 | `make miniprogram-next-build` | taro build + 分包体积门禁(单分包硬限 2MB/预警 1.6MB) |
 | `make release-miniprogram-next` | fail-closed 注入(AppID/https/禁 staging/禁端口)+ 生产构建 + 门禁 |
+| `scripts/package-miniprogram-next.sh OUTPUT.zip` | 源码交付包；显式排除 `dist/`、`project.private.config.json`、`node_modules/` |
 | `make generate-ts-client` / `ts-client-drift` | 契约客户端再生成 / drift 检查(已入 `make ci`) |
 
 微信开发者工具导入本目录,产物在 `dist/`。
+
+### 微信合法域名清单
+
+发布前必须在微信开发者工具之外登记三类通道的域名；`urlCheck` 不只校验普通 API 请求：
+
+| 通道 | 代码入口 | 登记口径 |
+|---|---|---|
+| `request` | `src/api/taro-fetch.ts`、原生页 `src/utils/api.js` | 正式 API：`https://api.scolvpet.cn`（由 `API_BASE` 注入） |
+| `downloadFile` | `src/api/client.ts`、`packages/data-center/actions` | 登记 API 域名；若 `downloadUrl` 返回绝对对象存储 URL，还要登记该 URL 的 origin |
+| `uploadFile` | `packages/animals/detail`、`packages/data-center/actions` | 每个预签名 `uploadUrl` 的 origin 都必须登记；对象存储 endpoint 随部署配置注入，不能假设与 API 同域 |
+
+`downloadFile` / `uploadFile` 的域名应从正式接口响应中的 `downloadUrl` / `uploadUrl` 逐一核对。数据中心下载完成后使用微信 `FileSystemManager.saveFile`，不再调用已废弃的 `Taro.saveFile`。
 
 ## 开发环境一键登录
 

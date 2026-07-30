@@ -145,7 +145,7 @@ export default function DataCenterActionsPage() {
         url,
         success: (response) => {
           if (response.statusCode < 200 || response.statusCode >= 300) { reject(new Error(`文件下载失败（${response.statusCode}）`)); return }
-          Taro.saveFile({
+          Taro.getFileSystemManager().saveFile({
             tempFilePath: response.tempFilePath,
             success: () => { setStatus(`${fileName} 已保存到微信文件管理`); resolve() },
             fail: reject

@@ -24,7 +24,12 @@ function request({ path, method = 'GET', data, header = {}, token }) {
         const message =
           (res.data && res.data.error && res.data.error.message) ||
           `请求失败 (${res.statusCode})`;
-        reject(new Error(message));
+        const error = new Error(message);
+        error.statusCode = res.statusCode;
+        if (res.data && res.data.error && res.data.error.code) {
+          error.code = res.data.error.code;
+        }
+        reject(error);
       },
       fail(err) {
         reject(err);
