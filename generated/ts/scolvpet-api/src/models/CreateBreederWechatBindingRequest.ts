@@ -91,3 +91,4 @@ export function CreateBreederWechatBindingRequestToJSONTyped(value?: CreateBreed
         'code': value['code'],
     };
 }
+

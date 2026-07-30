@@ -85,3 +85,4 @@ export function UpsertWechatSubscriptionsRequestToJSONTyped(value?: UpsertWechat
         'page': value['page'],
     };
 }
+

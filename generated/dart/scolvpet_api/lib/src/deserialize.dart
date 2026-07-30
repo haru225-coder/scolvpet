@@ -77,6 +77,7 @@ import 'package:scolvpet_api/src/model/create_crm_handover_request.dart';
 import 'package:scolvpet_api/src/model/create_crm_reservation_request.dart';
 import 'package:scolvpet_api/src/model/create_customer_session_request.dart';
 import 'package:scolvpet_api/src/model/create_customer_wechat_binding_request.dart';
+import 'package:scolvpet_api/src/model/create_customer_wechat_phone_binding_request.dart';
 import 'package:scolvpet_api/src/model/create_customer_wechat_session_request.dart';
 import 'package:scolvpet_api/src/model/create_document_template_request.dart';
 import 'package:scolvpet_api/src/model/create_genetic_profile_request.dart';
@@ -578,6 +579,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return CreateCustomerSessionRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateCustomerWechatBindingRequest':
           return CreateCustomerWechatBindingRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'CreateCustomerWechatPhoneBindingRequest':
+          return CreateCustomerWechatPhoneBindingRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateCustomerWechatSessionRequest':
           return CreateCustomerWechatSessionRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'CreateDocumentTemplateRequest':

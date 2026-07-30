@@ -129,3 +129,4 @@ export function WechatSubscriptionToJSONTyped(value?: WechatSubscription | null,
         'version': value['version'],
     };
 }
+

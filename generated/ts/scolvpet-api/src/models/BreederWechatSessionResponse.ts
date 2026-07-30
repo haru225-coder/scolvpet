@@ -88,3 +88,4 @@ export function BreederWechatSessionResponseToJSONTyped(value?: BreederWechatSes
         'meta': ResponseMetaToJSON(value['meta']),
     };
 }
+

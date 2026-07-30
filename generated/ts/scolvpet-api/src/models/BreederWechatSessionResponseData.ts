@@ -180,3 +180,4 @@ export function BreederWechatSessionResponseDataToJSONTyped(value?: BreederWecha
         'capabilities': value['capabilities'],
     };
 }
+

@@ -207,6 +207,7 @@ Class | Method | HTTP request | Description
 [*CustomerApi*](doc/CustomerApi.md) | [**cancelCustomerReservation**](doc/CustomerApi.md#cancelcustomerreservation) | **POST** /v1/customer/reservations/{reservation_id}/cancel | 客户取消 held 预订
 [*CustomerApi*](doc/CustomerApi.md) | [**createCustomerSession**](doc/CustomerApi.md#createcustomersession) | **POST** /v1/public/customer/sessions | 客户验证码登录
 [*CustomerApi*](doc/CustomerApi.md) | [**createCustomerWechatBinding**](doc/CustomerApi.md#createcustomerwechatbinding) | **POST** /v1/public/customer/wechat-bindings | 短信验证并绑定微信身份
+[*CustomerApi*](doc/CustomerApi.md) | [**createCustomerWechatPhoneBinding**](doc/CustomerApi.md#createcustomerwechatphonebinding) | **POST** /v1/public/customer/wechat-phone-bindings | 微信授权手机号并创建客户会话
 [*CustomerApi*](doc/CustomerApi.md) | [**createCustomerWechatSession**](doc/CustomerApi.md#createcustomerwechatsession) | **POST** /v1/public/customer/wechat-sessions | 微信 wx.login 静默登录
 [*CustomerApi*](doc/CustomerApi.md) | [**deleteCustomerSession**](doc/CustomerApi.md#deletecustomersession) | **DELETE** /v1/customer/sessions/current | 客户退出当前会话
 [*CustomerApi*](doc/CustomerApi.md) | [**deleteCustomerWechatBinding**](doc/CustomerApi.md#deletecustomerwechatbinding) | **DELETE** /v1/customer/wechat-bindings/current | 解绑当前客户的微信身份
@@ -396,6 +397,7 @@ Class | Method | HTTP request | Description
  - [CreateCrmReservationRequest](doc/CreateCrmReservationRequest.md)
  - [CreateCustomerSessionRequest](doc/CreateCustomerSessionRequest.md)
  - [CreateCustomerWechatBindingRequest](doc/CreateCustomerWechatBindingRequest.md)
+ - [CreateCustomerWechatPhoneBindingRequest](doc/CreateCustomerWechatPhoneBindingRequest.md)
  - [CreateCustomerWechatSessionRequest](doc/CreateCustomerWechatSessionRequest.md)
  - [CreateDocumentTemplateRequest](doc/CreateDocumentTemplateRequest.md)
  - [CreateGeneticProfileRequest](doc/CreateGeneticProfileRequest.md)

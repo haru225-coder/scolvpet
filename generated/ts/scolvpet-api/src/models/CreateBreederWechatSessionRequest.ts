@@ -64,3 +64,4 @@ export function CreateBreederWechatSessionRequestToJSONTyped(value?: CreateBreed
         'js_code': value['jsCode'],
     };
 }
+

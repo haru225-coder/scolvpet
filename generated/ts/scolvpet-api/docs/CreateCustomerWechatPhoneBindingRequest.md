@@ -1,24 +1,24 @@
 
-# UpsertWechatSubscriptionsRequest
+# CreateCustomerWechatPhoneBindingRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`templates` | { [key: string]: string; }
-`page` | string
+`wechatTicket` | string
+`phoneCode` | string
 
 ## Example
 
 ```typescript
-import type { UpsertWechatSubscriptionsRequest } from '@scolvpet/scolvpet-api'
+import type { CreateCustomerWechatPhoneBindingRequest } from '@scolvpet/scolvpet-api'
 
 // TODO: Update the object below with actual values
 const example = {
-  "templates": null,
-  "page": null,
-} satisfies UpsertWechatSubscriptionsRequest
+  "wechatTicket": null,
+  "phoneCode": null,
+} satisfies CreateCustomerWechatPhoneBindingRequest
 
 console.log(example)
 
@@ -27,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as UpsertWechatSubscriptionsRequest
+const exampleParsed = JSON.parse(exampleJSON) as CreateCustomerWechatPhoneBindingRequest
 console.log(exampleParsed)
 ```
 

@@ -85,6 +85,7 @@ doc/CreateCrmHandoverRequest.md
 doc/CreateCrmReservationRequest.md
 doc/CreateCustomerSessionRequest.md
 doc/CreateCustomerWechatBindingRequest.md
+doc/CreateCustomerWechatPhoneBindingRequest.md
 doc/CreateCustomerWechatSessionRequest.md
 doc/CreateDocumentTemplateRequest.md
 doc/CreateGeneticProfileRequest.md
@@ -528,6 +529,7 @@ lib/src/model/create_crm_handover_request.dart
 lib/src/model/create_crm_reservation_request.dart
 lib/src/model/create_customer_session_request.dart
 lib/src/model/create_customer_wechat_binding_request.dart
+lib/src/model/create_customer_wechat_phone_binding_request.dart
 lib/src/model/create_customer_wechat_session_request.dart
 lib/src/model/create_document_template_request.dart
 lib/src/model/create_genetic_profile_request.dart
@@ -946,6 +948,7 @@ test/create_crm_handover_request_test.dart
 test/create_crm_reservation_request_test.dart
 test/create_customer_session_request_test.dart
 test/create_customer_wechat_binding_request_test.dart
+test/create_customer_wechat_phone_binding_request_test.dart
 test/create_customer_wechat_session_request_test.dart
 test/create_document_template_request_test.dart
 test/create_genetic_profile_request_test.dart

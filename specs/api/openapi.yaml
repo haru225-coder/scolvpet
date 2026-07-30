@@ -6907,6 +6907,124 @@ paths:
         '503':
           description: 微信登录暂不可用，降级短信登录
 
+  "/v1/public/customer/wechat-phone-bindings":
+    post:
+      tags: [customer]
+      operationId: createCustomerWechatPhoneBinding
+      summary: 微信授权手机号并创建客户会话
+      description: >-
+        原子消费 wx.login 下发的 wt_ 一次性票据后，使用 getPhoneNumber 的 phone_code
+        从微信服务端换取手机号，写入 OpenID↔手机号有效绑定并发放 ct_* 会话。ticket
+        有效期为 10 分钟；任一凭证失效、ticket 已消费或远程结果不确定时，客户端必须
+        重新执行 wx.login 并由用户再次授权，不得重放旧 phone_code。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [wechat_ticket, phone_code]
+              properties:
+                wechat_ticket:
+                  type: string
+                  description: wt_ 开头的一次性票据，10 分钟有效
+                phone_code:
+                  type: string
+                  description: 微信 getPhoneNumber 返回的一次性凭证
+      responses:
+        '201':
+          description: 微信手机号已绑定并创建客户会话
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CustomerSessionResponse"
+        '409':
+          description: 手机号已绑定到另一有效微信身份
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                phone_already_bound:
+                  summary: 手机号已绑定其他微信号
+                  value:
+                    error:
+                      code: PHONE_ALREADY_BOUND
+                      message: 该手机号已绑定其他微信号，请先在原微信号解绑
+                      field_errors: []
+                      recovery_actions: []
+                    meta:
+                      request_id: req_01J0CUSTPHONE409
+                      generated_at: '2026-07-30T01:00:00Z'
+                      timezone: Asia/Shanghai
+        '422':
+          description: 微信手机号凭证失效或手机号国家/地区不受支持
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                wechat_phone_reauthorize:
+                  summary: ticket 或 phone_code 已失效，必须整段重新授权
+                  value:
+                    error:
+                      code: WECHAT_PHONE_REAUTHORIZE
+                      message: 授权已失效，请重新授权手机号
+                      field_errors: []
+                      recovery_actions: []
+                    meta:
+                      request_id: req_01J0CUSTPHONE422A
+                      generated_at: '2026-07-30T01:00:00Z'
+                      timezone: Asia/Shanghai
+                unsupported_phone_country:
+                  summary: 非中国大陆手机号，请切换短信验证
+                  value:
+                    error:
+                      code: UNSUPPORTED_PHONE_COUNTRY
+                      message: 暂仅支持中国大陆手机号，请使用短信验证码登录
+                      field_errors: []
+                      recovery_actions: []
+                    meta:
+                      request_id: req_01J0CUSTPHONE422B
+                      generated_at: '2026-07-30T01:00:00Z'
+                      timezone: Asia/Shanghai
+        '429':
+          "$ref": "#/components/responses/RateLimited"
+        '503':
+          description: 微信手机号服务或其全局调用配额暂不可用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                wechat_phone_quota_exhausted:
+                  summary: 微信手机号全局调用配额已耗尽
+                  value:
+                    error:
+                      code: WECHAT_PHONE_QUOTA_EXHAUSTED
+                      message: 微信手机号授权服务繁忙，请稍后再试
+                      field_errors: []
+                      recovery_actions: []
+                      details:
+                        retry_after_seconds: 60
+                    meta:
+                      request_id: req_01J0CUSTPHONE503A
+                      generated_at: '2026-07-30T01:00:00Z'
+                      timezone: Asia/Shanghai
+                wechat_phone_unavailable:
+                  summary: 微信手机号服务不可用，请降级短信验证
+                  value:
+                    error:
+                      code: WECHAT_PHONE_UNAVAILABLE
+                      message: 微信手机号授权暂不可用，请使用短信验证码登录
+                      field_errors: []
+                      recovery_actions: []
+                    meta:
+                      request_id: req_01J0CUSTPHONE503B
+                      generated_at: '2026-07-30T01:00:00Z'
+                      timezone: Asia/Shanghai
+
   "/v1/public/customer/wechat-bindings":
     post:
       tags: [customer]

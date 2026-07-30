@@ -25,6 +25,11 @@ import {
     CreateCustomerWechatBindingRequestToJSON,
 } from '../models/CreateCustomerWechatBindingRequest';
 import {
+    type CreateCustomerWechatPhoneBindingRequest,
+    CreateCustomerWechatPhoneBindingRequestFromJSON,
+    CreateCustomerWechatPhoneBindingRequestToJSON,
+} from '../models/CreateCustomerWechatPhoneBindingRequest';
+import {
     type CreateCustomerWechatSessionRequest,
     CreateCustomerWechatSessionRequestFromJSON,
     CreateCustomerWechatSessionRequestToJSON,
@@ -75,6 +80,10 @@ export interface CreateCustomerSessionOperationRequest {
 
 export interface CreateCustomerWechatBindingOperationRequest {
     createCustomerWechatBindingRequest: CreateCustomerWechatBindingRequest;
+}
+
+export interface CreateCustomerWechatPhoneBindingOperationRequest {
+    createCustomerWechatPhoneBindingRequest: CreateCustomerWechatPhoneBindingRequest;
 }
 
 export interface CreateCustomerWechatSessionOperationRequest {
@@ -243,6 +252,55 @@ export class CustomerApi extends runtime.BaseAPI {
      */
     async createCustomerWechatBinding(requestParameters: CreateCustomerWechatBindingOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CustomerSessionResponse> {
         const response = await this.createCustomerWechatBindingRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for createCustomerWechatPhoneBinding without sending the request
+     */
+    async createCustomerWechatPhoneBindingRequestOpts(requestParameters: CreateCustomerWechatPhoneBindingOperationRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['createCustomerWechatPhoneBindingRequest'] == null) {
+            throw new runtime.RequiredError(
+                'createCustomerWechatPhoneBindingRequest',
+                'Required parameter "createCustomerWechatPhoneBindingRequest" was null or undefined when calling createCustomerWechatPhoneBinding().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/v1/public/customer/wechat-phone-bindings`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CreateCustomerWechatPhoneBindingRequestToJSON(requestParameters['createCustomerWechatPhoneBindingRequest']),
+        };
+    }
+
+    /**
+     * 原子消费 wx.login 下发的 wt_ 一次性票据后，使用 getPhoneNumber 的 phone_code 从微信服务端换取手机号，写入 OpenID↔手机号有效绑定并发放 ct_* 会话。ticket 有效期为 10 分钟；任一凭证失效、ticket 已消费或远程结果不确定时，客户端必须 重新执行 wx.login 并由用户再次授权，不得重放旧 phone_code。
+     * 微信授权手机号并创建客户会话
+     */
+    async createCustomerWechatPhoneBindingRaw(requestParameters: CreateCustomerWechatPhoneBindingOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CustomerSessionResponse>> {
+        const requestOptions = await this.createCustomerWechatPhoneBindingRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CustomerSessionResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 原子消费 wx.login 下发的 wt_ 一次性票据后，使用 getPhoneNumber 的 phone_code 从微信服务端换取手机号，写入 OpenID↔手机号有效绑定并发放 ct_* 会话。ticket 有效期为 10 分钟；任一凭证失效、ticket 已消费或远程结果不确定时，客户端必须 重新执行 wx.login 并由用户再次授权，不得重放旧 phone_code。
+     * 微信授权手机号并创建客户会话
+     */
+    async createCustomerWechatPhoneBinding(requestParameters: CreateCustomerWechatPhoneBindingOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CustomerSessionResponse> {
+        const response = await this.createCustomerWechatPhoneBindingRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

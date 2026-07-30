@@ -11,6 +11,7 @@ import 'package:dio/dio.dart';
 
 import 'package:scolvpet_api/src/model/create_customer_session_request.dart';
 import 'package:scolvpet_api/src/model/create_customer_wechat_binding_request.dart';
+import 'package:scolvpet_api/src/model/create_customer_wechat_phone_binding_request.dart';
 import 'package:scolvpet_api/src/model/create_customer_wechat_session_request.dart';
 import 'package:scolvpet_api/src/model/customer_reservation_list_response.dart';
 import 'package:scolvpet_api/src/model/customer_reservation_response.dart';
@@ -236,6 +237,97 @@ _responseData = rawData == null ? null : deserialize<CustomerSessionResponse, Cu
 
     try {
       _bodyData = jsonEncode(createCustomerWechatBindingRequest);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CustomerSessionResponse? _responseData;
+
+    try {
+final rawData = _response.data;
+_responseData = rawData == null ? null : deserialize<CustomerSessionResponse, CustomerSessionResponse>(rawData, 'CustomerSessionResponse', growable: true);
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CustomerSessionResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 微信授权手机号并创建客户会话
+  /// 原子消费 wx.login 下发的 wt_ 一次性票据后，使用 getPhoneNumber 的 phone_code 从微信服务端换取手机号，写入 OpenID↔手机号有效绑定并发放 ct_* 会话。ticket 有效期为 10 分钟；任一凭证失效、ticket 已消费或远程结果不确定时，客户端必须 重新执行 wx.login 并由用户再次授权，不得重放旧 phone_code。
+  ///
+  /// Parameters:
+  /// * [createCustomerWechatPhoneBindingRequest]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CustomerSessionResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CustomerSessionResponse>> createCustomerWechatPhoneBinding({
+    required CreateCustomerWechatPhoneBindingRequest createCustomerWechatPhoneBindingRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/public/customer/wechat-phone-bindings';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = jsonEncode(createCustomerWechatPhoneBindingRequest);
 
     } catch(error, stackTrace) {
       throw DioException(

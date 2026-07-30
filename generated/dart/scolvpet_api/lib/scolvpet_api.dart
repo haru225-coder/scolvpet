@@ -102,6 +102,7 @@ export 'package:scolvpet_api/src/model/create_crm_handover_request.dart';
 export 'package:scolvpet_api/src/model/create_crm_reservation_request.dart';
 export 'package:scolvpet_api/src/model/create_customer_session_request.dart';
 export 'package:scolvpet_api/src/model/create_customer_wechat_binding_request.dart';
+export 'package:scolvpet_api/src/model/create_customer_wechat_phone_binding_request.dart';
 export 'package:scolvpet_api/src/model/create_customer_wechat_session_request.dart';
 export 'package:scolvpet_api/src/model/create_document_template_request.dart';
 export 'package:scolvpet_api/src/model/create_genetic_profile_request.dart';

@@ -84,6 +84,7 @@ export * from './CreateCrmHandoverRequest';
 export * from './CreateCrmReservationRequest';
 export * from './CreateCustomerSessionRequest';
 export * from './CreateCustomerWechatBindingRequest';
+export * from './CreateCustomerWechatPhoneBindingRequest';
 export * from './CreateCustomerWechatSessionRequest';
 export * from './CreateDocumentTemplateRequest';
 export * from './CreateGeneticProfileRequest';

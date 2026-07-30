@@ -84,6 +84,7 @@ docs/CreateCrmHandoverRequest.md
 docs/CreateCrmReservationRequest.md
 docs/CreateCustomerSessionRequest.md
 docs/CreateCustomerWechatBindingRequest.md
+docs/CreateCustomerWechatPhoneBindingRequest.md
 docs/CreateCustomerWechatSessionRequest.md
 docs/CreateDocumentTemplateRequest.md
 docs/CreateGeneticProfileRequest.md
@@ -522,6 +523,7 @@ src/models/CreateCrmHandoverRequest.ts
 src/models/CreateCrmReservationRequest.ts
 src/models/CreateCustomerSessionRequest.ts
 src/models/CreateCustomerWechatBindingRequest.ts
+src/models/CreateCustomerWechatPhoneBindingRequest.ts
 src/models/CreateCustomerWechatSessionRequest.ts
 src/models/CreateDocumentTemplateRequest.ts
 src/models/CreateGeneticProfileRequest.ts

@@ -88,3 +88,4 @@ export function WechatSubscriptionDeliveryResponseToJSONTyped(value?: WechatSubs
         'meta': ResponseMetaToJSON(value['meta']),
     };
 }
+

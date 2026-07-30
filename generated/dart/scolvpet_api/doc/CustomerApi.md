@@ -12,6 +12,7 @@ Method | HTTP request | Description
 [**cancelCustomerReservation**](CustomerApi.md#cancelcustomerreservation) | **POST** /v1/customer/reservations/{reservation_id}/cancel | 客户取消 held 预订
 [**createCustomerSession**](CustomerApi.md#createcustomersession) | **POST** /v1/public/customer/sessions | 客户验证码登录
 [**createCustomerWechatBinding**](CustomerApi.md#createcustomerwechatbinding) | **POST** /v1/public/customer/wechat-bindings | 短信验证并绑定微信身份
+[**createCustomerWechatPhoneBinding**](CustomerApi.md#createcustomerwechatphonebinding) | **POST** /v1/public/customer/wechat-phone-bindings | 微信授权手机号并创建客户会话
 [**createCustomerWechatSession**](CustomerApi.md#createcustomerwechatsession) | **POST** /v1/public/customer/wechat-sessions | 微信 wx.login 静默登录
 [**deleteCustomerSession**](CustomerApi.md#deletecustomersession) | **DELETE** /v1/customer/sessions/current | 客户退出当前会话
 [**deleteCustomerWechatBinding**](CustomerApi.md#deletecustomerwechatbinding) | **DELETE** /v1/customer/wechat-bindings/current | 解绑当前客户的微信身份
@@ -131,6 +132,49 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **createCustomerWechatBindingRequest** | [**CreateCustomerWechatBindingRequest**](CreateCustomerWechatBindingRequest.md)|  |
+
+### Return type
+
+[**CustomerSessionResponse**](CustomerSessionResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createCustomerWechatPhoneBinding**
+> CustomerSessionResponse createCustomerWechatPhoneBinding(createCustomerWechatPhoneBindingRequest)
+
+微信授权手机号并创建客户会话
+
+原子消费 wx.login 下发的 wt_ 一次性票据后，使用 getPhoneNumber 的 phone_code 从微信服务端换取手机号，写入 OpenID↔手机号有效绑定并发放 ct_* 会话。ticket 有效期为 10 分钟；任一凭证失效、ticket 已消费或远程结果不确定时，客户端必须 重新执行 wx.login 并由用户再次授权，不得重放旧 phone_code。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getCustomerApi();
+final CreateCustomerWechatPhoneBindingRequest createCustomerWechatPhoneBindingRequest = ; // CreateCustomerWechatPhoneBindingRequest |
+
+try {
+    final response = api.createCustomerWechatPhoneBinding(createCustomerWechatPhoneBindingRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling CustomerApi->createCustomerWechatPhoneBinding: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createCustomerWechatPhoneBindingRequest** | [**CreateCustomerWechatPhoneBindingRequest**](CreateCustomerWechatPhoneBindingRequest.md)|  |
 
 ### Return type
 

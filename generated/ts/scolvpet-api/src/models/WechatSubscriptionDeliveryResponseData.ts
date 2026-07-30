@@ -82,3 +82,4 @@ export function WechatSubscriptionDeliveryResponseDataToJSONTyped(value?: Wechat
         'sent_at': value['sentAt'].toISOString(),
     };
 }
+

@@ -186,6 +186,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *CustomerApi* | [**cancelCustomerReservation**](docs/CustomerApi.md#cancelcustomerreservation) | **POST** /v1/customer/reservations/{reservation_id}/cancel | 客户取消 held 预订
 *CustomerApi* | [**createCustomerSession**](docs/CustomerApi.md#createcustomersessionoperation) | **POST** /v1/public/customer/sessions | 客户验证码登录
 *CustomerApi* | [**createCustomerWechatBinding**](docs/CustomerApi.md#createcustomerwechatbindingoperation) | **POST** /v1/public/customer/wechat-bindings | 短信验证并绑定微信身份
+*CustomerApi* | [**createCustomerWechatPhoneBinding**](docs/CustomerApi.md#createcustomerwechatphonebindingoperation) | **POST** /v1/public/customer/wechat-phone-bindings | 微信授权手机号并创建客户会话
 *CustomerApi* | [**createCustomerWechatSession**](docs/CustomerApi.md#createcustomerwechatsessionoperation) | **POST** /v1/public/customer/wechat-sessions | 微信 wx.login 静默登录
 *CustomerApi* | [**deleteCustomerSession**](docs/CustomerApi.md#deletecustomersession) | **DELETE** /v1/customer/sessions/current | 客户退出当前会话
 *CustomerApi* | [**deleteCustomerWechatBinding**](docs/CustomerApi.md#deletecustomerwechatbinding) | **DELETE** /v1/customer/wechat-bindings/current | 解绑当前客户的微信身份
@@ -375,6 +376,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [CreateCrmReservationRequest](docs/CreateCrmReservationRequest.md)
 - [CreateCustomerSessionRequest](docs/CreateCustomerSessionRequest.md)
 - [CreateCustomerWechatBindingRequest](docs/CreateCustomerWechatBindingRequest.md)
+- [CreateCustomerWechatPhoneBindingRequest](docs/CreateCustomerWechatPhoneBindingRequest.md)
 - [CreateCustomerWechatSessionRequest](docs/CreateCustomerWechatSessionRequest.md)
 - [CreateDocumentTemplateRequest](docs/CreateDocumentTemplateRequest.md)
 - [CreateGeneticProfileRequest](docs/CreateGeneticProfileRequest.md)
