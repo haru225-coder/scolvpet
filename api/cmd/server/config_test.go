@@ -101,6 +101,8 @@ func TestLoadRuntimeConfigProductionAcceptsConfiguredHTTPSMSProvider(t *testing.
 		"WECHAT_SECRET":                  "wechat-secret-from-secret-manager",
 		"WECHAT_TASK_TEMPLATE_ID":        "tmpl-task-from-config",
 		"WECHAT_RESERVATION_TEMPLATE_ID": "tmpl-reservation-from-config",
+		"WECHAT_PHONE_GLOBAL_PER_MINUTE": "120",
+		"WECHAT_PHONE_GLOBAL_PER_DAY":    "5000",
 		"OBJECT_STORE_PROVIDER":          "s3",
 		"OBJECT_STORE_ENDPOINT":          "https://s3.us-east-1.amazonaws.com",
 		"OBJECT_STORE_BUCKET":            "scolvpet-production",
@@ -163,6 +165,60 @@ func TestLoadRuntimeConfigProductionRequiresWechatCredentials(t *testing.T) {
 	}
 }
 
+func TestLoadRuntimeConfigProductionRequiresPositiveWechatPhoneQuotas(t *testing.T) {
+	base := map[string]string{
+		"APP_ENV":                        "production",
+		"DATABASE_URL":                   "postgres://db.example/scolvpet?sslmode=require",
+		"JWT_SECRET":                     "production-secret-from-secret-manager",
+		"SMS_PROVIDER":                   "http",
+		"SMS_HTTP_ENDPOINT":              "https://sms.example.test/send",
+		"SMS_HTTP_TOKEN":                 "token-from-secret-manager",
+		"WECHAT_PROVIDER":                "http",
+		"WECHAT_APPID":                   "wx1234567890abcdef",
+		"WECHAT_SECRET":                  "wechat-secret-from-secret-manager",
+		"WECHAT_TASK_TEMPLATE_ID":        "tmpl-task-from-config",
+		"WECHAT_RESERVATION_TEMPLATE_ID": "tmpl-reservation-from-config",
+		"OBJECT_STORE_PROVIDER":          "s3",
+		"OBJECT_STORE_ENDPOINT":          "https://s3.us-east-1.amazonaws.com",
+		"OBJECT_STORE_BUCKET":            "scolvpet-production",
+		"OBJECT_STORE_REGION":            "us-east-1",
+		"OBJECT_STORE_ACCESS_KEY":        "access-key-from-secret-manager",
+		"OBJECT_STORE_SECRET_KEY":        "secret-key-from-secret-manager",
+		"OUTBOX_PUBLISHER_MODE":          "http",
+		"OUTBOX_PUBLISHER_ENDPOINT":      "https://events.example.test/publish",
+		"OUTBOX_PUBLISHER_TOKEN":         "publisher-token-from-secret-manager",
+		"WECHAT_PHONE_GLOBAL_PER_MINUTE": "120",
+		"WECHAT_PHONE_GLOBAL_PER_DAY":    "5000",
+	}
+	for _, tc := range []struct {
+		name     string
+		key      string
+		value    string
+		expected string
+	}{
+		{name: "missing minute quota", key: "WECHAT_PHONE_GLOBAL_PER_MINUTE", expected: "WECHAT_PHONE_GLOBAL_PER_MINUTE"},
+		{name: "missing daily quota", key: "WECHAT_PHONE_GLOBAL_PER_DAY", expected: "WECHAT_PHONE_GLOBAL_PER_DAY"},
+		{name: "zero minute quota", key: "WECHAT_PHONE_GLOBAL_PER_MINUTE", value: "0", expected: "WECHAT_PHONE_GLOBAL_PER_MINUTE"},
+		{name: "invalid daily quota", key: "WECHAT_PHONE_GLOBAL_PER_DAY", value: "many", expected: "WECHAT_PHONE_GLOBAL_PER_DAY"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			values := make(map[string]string, len(base))
+			for key, value := range base {
+				values[key] = value
+			}
+			if tc.value == "" {
+				delete(values, tc.key)
+			} else {
+				values[tc.key] = tc.value
+			}
+			_, err := loadRuntimeConfigFrom(mapLookup(values))
+			if err == nil || !strings.Contains(err.Error(), tc.expected) {
+				t.Fatalf("production configuration should reject %s: %v", tc.name, err)
+			}
+		})
+	}
+}
+
 func TestLoadRuntimeConfigMinIODefaultsToPathStyle(t *testing.T) {
 	values := map[string]string{
 		"APP_ENV":                        "production",
@@ -176,6 +232,8 @@ func TestLoadRuntimeConfigMinIODefaultsToPathStyle(t *testing.T) {
 		"WECHAT_SECRET":                  "wechat-secret-from-secret-manager",
 		"WECHAT_TASK_TEMPLATE_ID":        "tmpl-task-from-config",
 		"WECHAT_RESERVATION_TEMPLATE_ID": "tmpl-reservation-from-config",
+		"WECHAT_PHONE_GLOBAL_PER_MINUTE": "120",
+		"WECHAT_PHONE_GLOBAL_PER_DAY":    "5000",
 		"OBJECT_STORE_PROVIDER":          "minio",
 		"OBJECT_STORE_ENDPOINT":          "http://minio.internal:9000",
 		"OBJECT_STORE_BUCKET":            "scolvpet-production",

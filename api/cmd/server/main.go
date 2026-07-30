@@ -82,6 +82,8 @@ func main() {
 	// replaces it with the configured local or S3-compatible implementation.
 	apiServer.ImportObjects = importObjects
 	apiServer.Environment = config.Environment
+	apiServer.WechatPhoneGlobalPerMinute = config.WechatPhoneGlobalPerMinute
+	apiServer.WechatPhoneGlobalPerDay = config.WechatPhoneGlobalPerDay
 	apiServer.Ready = &httpapi.ReadyChecks{
 		SMSProvider:                         config.SMSProvider,
 		SMSMockCodeSet:                      config.SMSMockCode != "",

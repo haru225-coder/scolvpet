@@ -14,9 +14,11 @@ import (
 )
 
 const (
-	defaultDatabaseURL = "postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable"
-	defaultJWTSecret   = "local-development-secret"
-	defaultSMSMockCode = "123456"
+	defaultDatabaseURL                = "postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable"
+	defaultJWTSecret                  = "local-development-secret"
+	defaultSMSMockCode                = "123456"
+	defaultWechatPhoneGlobalPerMinute = 600
+	defaultWechatPhoneGlobalPerDay    = 100000
 )
 
 type runtimeConfig struct {
@@ -35,6 +37,8 @@ type runtimeConfig struct {
 	WechatSecret                string
 	WechatTaskTemplateID        string
 	WechatReservationTemplateID string
+	WechatPhoneGlobalPerMinute  int
+	WechatPhoneGlobalPerDay     int
 	ObjectStoreProvider         string
 	ObjectStoreLocalRoot        string
 	ObjectStoreEndpoint         string
@@ -140,6 +144,8 @@ func loadRuntimeConfigFrom(lookup envLookup) (runtimeConfig, error) {
 	if err != nil {
 		return runtimeConfig{}, err
 	}
+	wechatPhoneGlobalPerMinute := getenvIntFrom(lookup, "WECHAT_PHONE_GLOBAL_PER_MINUTE", defaultWechatPhoneGlobalPerMinute)
+	wechatPhoneGlobalPerDay := getenvIntFrom(lookup, "WECHAT_PHONE_GLOBAL_PER_DAY", defaultWechatPhoneGlobalPerDay)
 
 	config := runtimeConfig{
 		Environment:                 environment,
@@ -157,6 +163,8 @@ func loadRuntimeConfigFrom(lookup envLookup) (runtimeConfig, error) {
 		WechatSecret:                strings.TrimSpace(envOrDefault(lookup, "WECHAT_SECRET", "")),
 		WechatTaskTemplateID:        strings.TrimSpace(envOrDefault(lookup, "WECHAT_TASK_TEMPLATE_ID", "")),
 		WechatReservationTemplateID: strings.TrimSpace(envOrDefault(lookup, "WECHAT_RESERVATION_TEMPLATE_ID", "")),
+		WechatPhoneGlobalPerMinute:  wechatPhoneGlobalPerMinute,
+		WechatPhoneGlobalPerDay:     wechatPhoneGlobalPerDay,
 		ObjectStoreProvider:         strings.ToLower(strings.TrimSpace(objectStoreProvider)),
 		ObjectStoreLocalRoot:        envOrDefault(lookup, "IMPORT_OBJECT_STORE_DIR", ""),
 		ObjectStoreEndpoint:         strings.TrimRight(strings.TrimSpace(envOrDefault(lookup, "OBJECT_STORE_ENDPOINT", "")), "/"),
@@ -223,6 +231,12 @@ func validateProductionConfig(lookup envLookup, config runtimeConfig) error {
 		if config.WechatSecret == "" {
 			issues = append(issues, "WECHAT_SECRET must be explicitly set")
 		}
+	}
+	if _, err := requiredPositiveIntFrom(lookup, "WECHAT_PHONE_GLOBAL_PER_MINUTE"); err != nil {
+		issues = append(issues, err.Error())
+	}
+	if _, err := requiredPositiveIntFrom(lookup, "WECHAT_PHONE_GLOBAL_PER_DAY"); err != nil {
+		issues = append(issues, err.Error())
 	}
 	if config.WechatSubscriptionProvider != "http" {
 		issues = append(issues, "WECHAT_SUBSCRIPTION_PROVIDER must be http for production subscription delivery")
@@ -353,4 +367,16 @@ func getenvIntFrom(lookup envLookup, key string, fallback int) int {
 		return fallback
 	}
 	return parsed
+}
+
+func requiredPositiveIntFrom(lookup envLookup, key string) (int, error) {
+	value, ok := lookup(key)
+	if !ok || strings.TrimSpace(value) == "" {
+		return 0, fmt.Errorf("%s must be explicitly set to a positive integer", key)
+	}
+	parsed, err := strconv.Atoi(strings.TrimSpace(value))
+	if err != nil || parsed < 1 {
+		return 0, fmt.Errorf("%s must be a positive integer", key)
+	}
+	return parsed, nil
 }

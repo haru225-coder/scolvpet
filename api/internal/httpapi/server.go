@@ -45,11 +45,21 @@ type Server struct {
 	// TrustedProxies gates X-Forwarded-For / X-Real-IP trust for clientIP.
 	// Empty means no proxy is trusted and only the socket peer is used.
 	TrustedProxies []netip.Prefix
+	// WechatPhoneGlobalPerMinute and WechatPhoneGlobalPerDay cap all public
+	// WeChat phone-code exchanges across clients. Process startup injects the
+	// configured values; zero keeps DB-free unit tests free of rate limits.
+	WechatPhoneGlobalPerMinute int
+	WechatPhoneGlobalPerDay    int
 }
 
 // smsPhoneDailyMax caps verification-code sends per phone per 24h in
 // staging/production (P3 policy); dev/test skip it for repeated smoke runs.
 const smsPhoneDailyMax = 10
+
+// customerWechatPhoneIPMaxPerMinute is deliberately independent of ticket
+// state. Tickets are single-use; a separate ticket retry budget would create
+// misleading retry semantics for a one-shot WeChat phone_code.
+const customerWechatPhoneIPMaxPerMinute = 10
 
 // ReadyChecks is the /readyz "checks" payload; values come from the process
 // runtime config, not from re-reading the environment.
