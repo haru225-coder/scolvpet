@@ -1,4 +1,4 @@
-import { clearApiToken, getApiToken, setApiToken } from '../api/client'
+import { clearApiToken, defaultApi, getApiToken, newIdempotencyKey, setApiToken } from '../api/client'
 import { clearAllSnapshots } from '../offline/snapshots'
 import { storageGet, storageRemove, storageSet } from '../utils/storage'
 
@@ -17,6 +17,37 @@ export type BreederSession = {
   organizationName?: string
   memberRole?: string
   capabilities: string[]
+}
+
+type SessionResponseDataLike = {
+  accessToken?: string
+  refreshToken?: string
+  expiresInSeconds?: number
+  account?: { displayName?: string | null; phoneMasked?: string }
+  currentOrganization?: { name?: string }
+  memberRole?: string
+  capabilities?: string[]
+}
+
+function sessionFromResponse(data: SessionResponseDataLike | undefined): BreederSession | null {
+  if (
+    !data?.accessToken ||
+    !data.refreshToken ||
+    !data.expiresInSeconds ||
+    !data.account ||
+    !data.currentOrganization ||
+    !Array.isArray(data.capabilities)
+  ) return null
+  return {
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
+    expiresAt: Date.now() + data.expiresInSeconds * 1000,
+    displayName: data.account.displayName || undefined,
+    phoneMasked: data.account.phoneMasked,
+    organizationName: data.currentOrganization.name,
+    memberRole: data.memberRole,
+    capabilities: data.capabilities
+  }
 }
 
 export function readSessionStorage<T = unknown>(key: string): T | undefined {
@@ -56,6 +87,40 @@ export function readBreederSession(): BreederSession | null {
 export function saveBreederSession(session: BreederSession) {
   setApiToken(session.accessToken)
   storageSet(BREEDER_SESSION_KEY, session)
+}
+
+/**
+ * 启动 B 端时恢复会话：有效 access token 直接复用，过期后用轮换 refresh
+ * token 换取新的一对令牌；刷新失败才清理本地会话和离线快照。
+ */
+export async function restoreBreederSession(): Promise<BreederSession | null> {
+  const stored = storageGet(BREEDER_SESSION_KEY) as Partial<BreederSession> | undefined
+  const expiresAt = Number(stored?.expiresAt) || 0
+  if (stored?.accessToken && expiresAt > Date.now() && expiresAt <= Date.now() + MAX_SESSION_WINDOW_MS) {
+    return readBreederSession()
+  }
+
+  const refreshToken = String(stored?.refreshToken || '')
+  if (!refreshToken) {
+    clearApiToken()
+    storageRemove(BREEDER_SESSION_KEY)
+    return null
+  }
+
+  try {
+    const response = await defaultApi.refreshSession({
+      idempotencyKey: newIdempotencyKey(),
+      refreshSessionRequest: { refreshToken },
+      xTimezone: 'Asia/Taipei'
+    })
+    const session = sessionFromResponse(response.data)
+    if (!session) throw new Error('刷新会话响应不完整')
+    saveBreederSession(session)
+    return session
+  } catch (_) {
+    clearBreederSession()
+    return null
+  }
 }
 
 /**

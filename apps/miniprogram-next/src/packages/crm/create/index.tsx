@@ -1,9 +1,10 @@
 import { Input, ScrollView, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { FormRow, NavBar, Section, SectionList, Tag, crayon, paperGrain, metrics } from '@scolvpet/mp-ui'
 
-import { newIdempotencyKey, p1CrmApi } from '../../../api/client'
+import { p1CrmApi } from '../../../api/client'
+import { createIdempotencyIntent } from '../../../api/idempotency'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 
 export default function CreateContactPage() {
@@ -12,11 +13,13 @@ export default function CreateContactPage() {
   const [wechat, setWechat] = useState('')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
+  const createIntent = useRef(createIdempotencyIntent()).current
   async function submit() {
     if (!name.trim()) { setMessage('请填写客户姓名'); return }
     setBusy(true)
     try {
-      await p1CrmApi.createCrmContact({ idempotencyKey: newIdempotencyKey(), createCrmContactRequest: { name: name.trim(), phone: phone.trim() || null, wechat: wechat.trim() || null, status: 'lead' } })
+      await p1CrmApi.createCrmContact({ idempotencyKey: createIntent.getKey(), createCrmContactRequest: { name: name.trim(), phone: phone.trim() || null, wechat: wechat.trim() || null, status: 'lead' } })
+      createIntent.complete()
       Taro.showToast({ title: '客户已创建', icon: 'success' }); setTimeout(() => Taro.navigateBack(), 350)
     } catch (cause) { setMessage(cause instanceof Error ? cause.message : '创建客户失败') } finally { setBusy(false) }
   }

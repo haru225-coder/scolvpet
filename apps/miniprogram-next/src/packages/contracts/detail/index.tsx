@@ -1,10 +1,11 @@
 import { ScrollView, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Cell, NavBar, Section, SectionList, Tag, crayon, paperGrain, metrics } from '@scolvpet/mp-ui'
 
-import { downloadDocumentPdf, newIdempotencyKey, p1Api } from '../../../api/client'
+import { downloadDocumentPdf, p1Api } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
+import { createIdempotencyIntent } from '../../../api/idempotency'
 
 type DocumentItem = {
   id: string
@@ -24,6 +25,7 @@ export default function ContractDetailPage() {
   const [item, setItem] = useState<DocumentItem | null>(null)
   const [message, setMessage] = useState('正在读取单据')
   const [busy, setBusy] = useState(false)
+  const transitionIntents = useRef<Record<string, ReturnType<typeof createIdempotencyIntent>>>({}).current
 
   async function load() {
     try {
@@ -43,11 +45,14 @@ export default function ContractDetailPage() {
     if (!item) return
     setBusy(true)
     try {
-      const request = { idempotencyKey: newIdempotencyKey(), documentId: item.id, ifMatch: String(item.version ?? 0) }
+      const intentKey = `${kind}:${item.id}:${action}`
+      const intent = transitionIntents[intentKey] || (transitionIntents[intentKey] = createIdempotencyIntent())
+      const request = { idempotencyKey: intent.getKey(), documentId: item.id, ifMatch: String(item.version ?? 0) }
       const response = kind === 'receipt'
         ? (action === 'issue' ? await p1Api.issueReceipt(request) : await p1Api.revokeReceipt(request))
         : (action === 'issue' ? await p1Api.issueContract(request) : await p1Api.revokeContract(request))
       setItem(response.data as DocumentItem)
+      intent.complete()
       Taro.showToast({ title: action === 'issue' ? '已签发' : '已撤销', icon: 'success' })
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : '状态更新失败')

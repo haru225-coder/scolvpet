@@ -17,9 +17,9 @@ import {
 import { defaultApi, newIdempotencyKey } from '../../api/client'
 import config from '../../utils/config'
 import {
-  readBreederSession,
   readSessionStorage,
   removeSessionStorage,
+  restoreBreederSession,
   saveBreederSession,
   writeSessionStorage
 } from '../../auth/session'
@@ -89,9 +89,11 @@ export default function LoginPage() {
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    if (readBreederSession()) {
-      void enterApp()
-    }
+    let active = true
+    void restoreBreederSession().then((session) => {
+      if (active && session) void enterApp()
+    })
+    return () => { active = false }
   }, [])
 
   useEffect(() => {

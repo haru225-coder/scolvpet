@@ -1,9 +1,10 @@
 import { Input, Picker, ScrollView, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Cell, FormRow, NavBar, Section, SectionList, Tag, crayon, paperGrain, metrics } from '@scolvpet/mp-ui'
 
-import { newIdempotencyKey, p1Api } from '../../../api/client'
+import { p1Api } from '../../../api/client'
+import { createIdempotencyIntent } from '../../../api/idempotency'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import type { ApiEnvelope } from '../../../api/types'
 
@@ -15,13 +16,15 @@ export default function CreateAccountingPage() {
   const [entryType, setEntryType] = useState('expense')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
+  const createIntent = useRef(createIdempotencyIntent()).current
   useEffect(() => { void p1Api.listAccountingCategories({}).then((response: ApiEnvelope) => setCategories(response.data || [])).catch(() => undefined) }, [])
   async function submit() {
     const amountCents = Math.round(Number(amount) * 100)
     if (!title.trim() || !Number.isFinite(amountCents) || amountCents <= 0) { setMessage('请填写标题和正数金额（元）'); return }
     setBusy(true)
     try {
-      await p1Api.createAccountingRecord({ idempotencyKey: newIdempotencyKey(), createAccountingRecordRequest: { title: title.trim(), amountCents, entryType, categoryId: categoryId || null, currency: 'CNY', occurredAt: new Date() } as any })
+      await p1Api.createAccountingRecord({ idempotencyKey: createIntent.getKey(), createAccountingRecordRequest: { title: title.trim(), amountCents, entryType, categoryId: categoryId || null, currency: 'CNY', occurredAt: new Date() } as any })
+      createIntent.complete()
       Taro.showToast({ title: '收支已记录', icon: 'success' }); setTimeout(() => Taro.navigateBack(), 350)
     } catch (cause) { setMessage(cause instanceof Error ? cause.message : '保存收支失败') } finally { setBusy(false) }
   }
