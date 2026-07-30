@@ -74,11 +74,13 @@ handler 校验 `wt_` 前缀后，在调用微信前以 `UPDATE ... used_at IS NU
 
 OpenAPI 重新生成 `generated/ts/scolvpet-api`。在 `apps/miniprogram-next/src/api/` 新增客户专用生成客户端入口，使用 `CustomerApi` 和 Taro fetch adapter；它维护独立的 customer access token，绝不读取或写入 `src/api/client.ts` 的繁育者 token。
 
-原生混写页不能直接使用 ES module 客户端，因此由 `src/app.ts` 在 `taroGlobalData` 上暴露单一桥接函数。该函数读取内存中的 `wechatTicket`，调用生成式 CustomerApi，成功后只通过既有 `saveCustomer` 持久化 Customer Session 与服务端返回的手机号。桥接入参仅接受 `phone_code`，返回值仅包含成功状态和可展示错误标识；Customer access token、ticket 明文与手机号不得作为返回值或可读取的全局字段暴露给原生页面。`detail.js` 不自行拼接新 endpoint 或解析敏感数据。
+原生混写页不能直接使用 ES module 客户端，因此由 `src/app.ts` 在 `taroGlobalData` 上暴露单一桥接函数。App 实例私有保存短时 ticket；原生页面不能读取它。该函数调用生成式 CustomerApi，成功后只通过既有 `saveCustomer` 持久化 Customer Session 与服务端返回的手机号。桥接入参仅接受 `phone_code`，返回值仅包含成功状态和可展示错误标识；ticket 明文与手机号不得作为返回值或新增可读取全局字段暴露给原生页面。现有 `globalData.customerToken` 保留为原生客户页面的既有会话读取面，桥接不返回 token，也不新增第二份 token 状态。
+
+短信备用不再消费或绑定短时 ticket：`detail.js` 与 `my-reservations.js` 仅以既有验证码 endpoint 创建 Customer Session。这样授权拒绝后的备用路径不会把 ticket 暴露给原生页；客户下一次无 Customer Session 时仍可重新进行微信手机号授权。
 
 ### 预约页交互
 
-未拥有 Customer Session 时，详情页显示主按钮“微信授权手机号并预约”，使用 `open-type="getPhoneNumber"`；处理函数先完成授权与建会话，再沿用现有预约提交逻辑。已有 Customer Session 的用户仍见“提交预约”。
+未拥有 Customer Session 时，详情页显示主按钮“微信授权手机号并预约”，使用 `open-type="getPhoneNumber"`；处理函数先完成授权与建会话，再沿用现有预约提交逻辑。已有 Customer Session 的用户仍见“提交预约”。“我的预约”在无会话或会话过期时使用同一授权按钮恢复 Customer Session，成功后自动加载列表。
 
 授权拒绝后，页面说明“未获得手机号，无法确认预约”，并显示次级的短信验证入口与验证码表单；非中国大陆手机号同样显示该入口。凭证超时、并发消费或网络结果不确定时，页面要求重新授权而不展示短信入口；不在初始页面展示短信表单，也不自动触发短信。所有提交路径继续使用现有 `busy` 状态，防止重复预约。
 
