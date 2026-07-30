@@ -1,25 +1,68 @@
 import { Input, ScrollView, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Cell, FormRow, NavBar, Section, SectionList, Tag, crayon, paperGrain, metrics } from '@scolvpet/mp-ui'
 
 import { defaultApi, newIdempotencyKey } from '../../../api/client'
-import { readSessionStorage, writeSessionStorage } from '../../../auth/session'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 
-const TEMPLATE_KEY = 'scolvpet_wechat_subscribe_template_ids'
+type TemplateStatus = 'accept' | 'reject' | 'ban' | 'unknown'
+
+type SubscriptionRecord = {
+  templateId?: string | null
+  status?: TemplateStatus
+}
+
+function parseTemplateIds(value: string) {
+  return [...new Set(value.split(/[,，\s]+/).map((item) => item.trim()).filter(Boolean))]
+}
+
+function statusMap(records: SubscriptionRecord[]) {
+  return records.reduce<Record<string, TemplateStatus>>((result, record) => {
+    const templateId = String(record.templateId || '').trim()
+    if (templateId) result[templateId] = record.status || 'unknown'
+    return result
+  }, {})
+}
 
 export default function SubscriptionSettingsPage() {
-  const [templateText, setTemplateText] = useState(readSessionStorage<string>(TEMPLATE_KEY) || '')
+  const [templateText, setTemplateText] = useState('')
+  const [templateStatuses, setTemplateStatuses] = useState<Record<string, TemplateStatus>>({})
   const [message, setMessage] = useState('订阅模板由微信公众平台申请后填入；后端下发通道需同时配置。')
 
-  function save() {
-    writeSessionStorage(TEMPLATE_KEY, templateText)
-    setMessage('模板 ID 已保存在本机，下一次授权会使用当前列表。')
+  useEffect(() => {
+    let active = true
+    void defaultApi.listWechatSubscriptions().then((response) => {
+      if (!active) return
+      const records = (Array.isArray(response.data) ? response.data : []) as SubscriptionRecord[]
+      setTemplateText(records.map((record) => String(record.templateId || '').trim()).filter(Boolean).join(','))
+      setTemplateStatuses(statusMap(records))
+      setMessage(records.length ? '已从服务端读取当前微信订阅模板。' : '服务端尚未配置微信订阅模板。')
+    }).catch((cause) => {
+      if (active) setMessage(cause instanceof Error ? cause.message : '读取服务端订阅模板失败')
+    })
+    return () => { active = false }
+  }, [])
+
+  async function save() {
+    const templateIds = parseTemplateIds(templateText)
+    if (!templateIds.length) { setMessage('请先填写至少一个微信订阅消息模板 ID'); return }
+    try {
+      const templates = Object.fromEntries(templateIds.map((templateId) => [templateId, templateStatuses[templateId] || 'unknown'])) as Record<string, TemplateStatus>
+      const response = await defaultApi.upsertWechatSubscriptions({
+        idempotencyKey: newIdempotencyKey(),
+        upsertWechatSubscriptionsRequest: { templates }
+      })
+      setTemplateStatuses(statusMap((response.data || []) as SubscriptionRecord[]))
+      setTemplateText(templateIds.join(','))
+      setMessage('模板列表已保存到服务端；请求微信授权后会更新具体状态。')
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : '保存服务端订阅模板失败')
+    }
   }
 
   async function requestSubscription() {
-    const templateIds = templateText.split(/[,，\s]+/).map((value: string) => value.trim()).filter(Boolean)
+    const templateIds = parseTemplateIds(templateText)
     if (!templateIds.length) { setMessage('请先填写至少一个微信订阅消息模板 ID'); return }
     const wxApi = (globalThis as any).wx
     const requestSubscribeMessage = wxApi?.requestSubscribeMessage || (Taro as any).requestSubscribeMessage
@@ -35,7 +78,7 @@ export default function SubscriptionSettingsPage() {
         idempotencyKey: newIdempotencyKey(),
         upsertWechatSubscriptionsRequest: { templates }
       })
-      save()
+      setTemplateStatuses(templates)
       setMessage('微信授权结果已同步服务端；只有 accept 模板会接收任务与业务提醒。')
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : '订阅消息授权或同步失败')
