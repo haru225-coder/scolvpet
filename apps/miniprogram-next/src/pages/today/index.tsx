@@ -20,7 +20,7 @@ import {
 
 import { defaultApi, newIdempotencyKey } from '../../api/client'
 import { canUseCapability } from '../../auth/permissions'
-import { clearBreederSession, readBreederSession } from '../../auth/session'
+import { clearBreederSession, peekBreederSession, readBreederSession } from '../../auth/session'
 import { readTodaySnapshot, saveTodaySnapshot } from '../../offline/snapshots'
 
 // 服务端任务形状：只声明本页真正读到的字段，其余字段透传。
@@ -61,7 +61,7 @@ function EntrySection() {
 
 // 账号入口：退出时一并清掉本机离线快照，避免共用设备串号。
 function AccountSection() {
-  const session = readBreederSession()
+  const session = peekBreederSession()
   if (!session) return null
   return (
     <Section header="账号" footer={session.organizationName || undefined}>

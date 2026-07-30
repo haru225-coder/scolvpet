@@ -18,6 +18,11 @@ type DocumentItem = {
   contactName?: string
 }
 
+export function isDocumentVersionConflict(error: unknown) {
+  const response = error && typeof error === 'object' ? (error as { response?: { status?: unknown } }).response : undefined
+  return Number(response?.status) === 409
+}
+
 export default function ContractDetailPage() {
   const route = Taro.getCurrentInstance().router?.params || {}
   const kind = route.kind === 'receipt' ? 'receipt' : 'contract'
@@ -56,6 +61,10 @@ export default function ContractDetailPage() {
       Taro.showToast({ title: action === 'issue' ? '已签发' : '已撤销', icon: 'success' })
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : '状态更新失败')
+      if (isDocumentVersionConflict(cause)) {
+        await load()
+        setMessage('单据已被其他成员更新，请确认最新状态后重试')
+      }
     } finally {
       setBusy(false)
     }

@@ -32,11 +32,41 @@ class HeaderShim {
   has(name: string): boolean {
     return this.get(name) != null
   }
+
+  forEach(callback: (value: string, key: string, parent: HeaderShim) => void) {
+    for (const [key, value] of Object.entries(this.map)) callback(value, key, this)
+  }
+
+  entries(): Array<[string, string]> {
+    return Object.entries(this.map)
+  }
+
+  keys(): string[] {
+    return Object.keys(this.map)
+  }
+
+  values(): string[] {
+    return Object.values(this.map)
+  }
+
+  [Symbol.iterator](): IterableIterator<[string, string]> {
+    return this.entries()[Symbol.iterator]()
+  }
 }
 
 function toResponse(res: TaroResponse, url: string): Response {
-  const bodyText = () =>
-    typeof res.data === 'string' ? res.data : JSON.stringify(res.data ?? null)
+  const bodyText = async () => {
+    if (typeof res.data === 'string') return res.data
+    if (res.data instanceof ArrayBuffer) return new TextDecoder().decode(new Uint8Array(res.data))
+    if (ArrayBuffer.isView(res.data)) return new TextDecoder().decode(new Uint8Array(res.data.buffer, res.data.byteOffset, res.data.byteLength))
+    return JSON.stringify(res.data ?? null)
+  }
+  const blob = async () => {
+    const type = new HeaderShim(res.header).get('content-type') || ''
+    if (res.data instanceof Blob) return res.data
+    if (res.data instanceof ArrayBuffer || ArrayBuffer.isView(res.data)) return new Blob([res.data], { type })
+    return new Blob([typeof res.data === 'string' ? res.data : JSON.stringify(res.data ?? null)], { type })
+  }
   const shim = {
     url,
     status: res.statusCode,
@@ -45,12 +75,10 @@ function toResponse(res: TaroResponse, url: string): Response {
     headers: new HeaderShim(res.header),
     json: async () =>
       typeof res.data === 'string' && res.data !== '' ? JSON.parse(res.data) : res.data,
-    text: async () => bodyText(),
-    blob: async () => {
-      throw new Error('blob is not supported by the Taro fetch bridge')
-    },
+    text: bodyText,
+    blob,
     clone() {
-      return this
+      return toResponse(res, url)
     }
   }
   return shim as unknown as Response
@@ -82,7 +110,7 @@ export function createTaroFetch(requestFn?: RequestFn) {
       method: (init?.method || 'GET').toUpperCase(),
       header: headers,
       // typescript-fetch 传 JSON.stringify 后的 string;Taro 会按 content-type 处理
-      data: typeof body === 'string' ? body : body == null ? undefined : String(body)
+      data: body == null ? undefined : body
     })
     return toResponse(res, url)
   }

@@ -10,7 +10,26 @@ type AnyProps = PropsWithChildren<{
 
 function domify(tag: string, displayName: string) {
   const C = forwardRef<HTMLElement, AnyProps>((props, ref) => {
-    const { children, onTouchStart, onTouchMove, onTouchEnd, onInput, hoverClass, hoverStayTime, ...rest } = props
+    const {
+      children,
+      onTouchStart,
+      onTouchMove,
+      onTouchEnd,
+      onInput,
+      hoverClass,
+      hoverStayTime,
+      ...rest
+    } = props
+    const taroOnlyProps = [
+      'onRefresherRefresh', 'onConfirm', 'scrollY', 'bounces', 'enhanced', 'showScrollbar',
+      'refresherEnabled', 'refresherTriggered', 'refresherBackground', 'placeholderStyle', 'confirmType'
+    ]
+    for (const key of taroOnlyProps) delete (rest as Record<string, unknown>)[key]
+    if ('maxlength' in rest) {
+      const maxlength = (rest as Record<string, unknown>).maxlength
+      delete (rest as Record<string, unknown>).maxlength
+      if (maxlength != null) (rest as Record<string, unknown>).maxLength = maxlength
+    }
     if (hoverClass != null) (rest as Record<string, unknown>)['data-hover-class'] = hoverClass
     if (hoverStayTime != null) (rest as Record<string, unknown>)['data-hover-stay'] = hoverStayTime
     // Taro 输入事件语义:handler 收 { detail: { value } }

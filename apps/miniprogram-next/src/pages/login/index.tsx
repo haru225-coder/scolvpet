@@ -62,7 +62,6 @@ function saveSessionData(data: SessionData) {
     !data.accessToken ||
     !data.expiresInSeconds ||
     !data.account ||
-    !data.currentOrganization ||
     !Array.isArray(data.capabilities)
   ) {
     throw new Error('服务端返回的登录会话不完整')
@@ -73,7 +72,7 @@ function saveSessionData(data: SessionData) {
     expiresAt: Date.now() + data.expiresInSeconds * 1000,
     displayName: data.account.displayName || undefined,
     phoneMasked: data.account.phoneMasked,
-    organizationName: data.currentOrganization.name,
+    organizationName: data.currentOrganization?.name,
     memberRole: data.memberRole,
     capabilities: data.capabilities
   })

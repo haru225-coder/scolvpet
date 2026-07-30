@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { ExportJobCreateRequestToJSON } from '@scolvpet/api-client'
 import { createTaroFetch, type RequestFn } from '../src/api/taro-fetch'
 import { buildConfiguration, getApiToken, idempotencyMiddleware, setApiToken } from '../src/api/client'
 import { getCustomerAccessToken, setCustomerAccessToken } from '../src/api/customer-client'
@@ -48,6 +49,41 @@ describe('createTaroFetch', () => {
     const { calls, fn } = capturingRequest()
     await createTaroFetch(fn)('https://api.example/v1/v1/public-site')
     expect(calls[0].url).toBe('https://api.example/v1/public-site')
+  })
+
+  it('保留非字符串 request body，并提供完整的 headers/clone/blob 语义', async () => {
+    const body = new Uint8Array([123, 125]).buffer
+    const { calls, fn } = capturingRequest({
+      data: body,
+      header: { 'Content-Type': 'application/octet-stream', 'X-Trace': 'trace-1' }
+    })
+    const fetchApi = createTaroFetch(fn)
+    const response = await fetchApi('https://api.example/v1/binary', { method: 'POST', body: body as never })
+
+    expect(calls[0].data).toBe(body)
+    expect(response.headers.entries()).toEqual([
+      ['content-type', 'application/octet-stream'],
+      ['x-trace', 'trace-1']
+    ])
+    expect([...response.headers]).toEqual([
+      ['content-type', 'application/octet-stream'],
+      ['x-trace', 'trace-1']
+    ])
+    expect(response.headers.keys()).toEqual(['content-type', 'x-trace'])
+    expect(response.headers.values()).toEqual(['application/octet-stream', 'trace-1'])
+    const clone = response.clone()
+    expect(clone).not.toBe(response)
+    await expect(response.blob()).resolves.toBeInstanceOf(Blob)
+  })
+})
+
+describe('generated export contract', () => {
+  it('serializes Set datasets as a JSON array', () => {
+    expect(ExportJobCreateRequestToJSON({
+      datasets: new Set(['hamsters', 'weights']),
+      format: 'csv_zip',
+      timezone: 'Asia/Taipei'
+    } as never).datasets).toEqual(['hamsters', 'weights'])
   })
 })
 

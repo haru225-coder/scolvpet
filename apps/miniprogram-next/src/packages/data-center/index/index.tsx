@@ -14,5 +14,5 @@ export default function DataCenterPage() {
       ...(data.usage || []).map((item: any, index: number) => ({ id: `usage-${index}`, title: item.metric || item.name || '用量', subtitle: String(item.value ?? item.current ?? '-'), value: '用量', tone: 'warning' as const }))
     ]
   }, [])
-  return <BListPage title="数据中心" eyebrow="M4" load={load} footer="汇总、导入、导出、备份任务统一使用 DefaultApi" actionLabel="导入 / 导出 / 备份" actionCapability="write_import" onAction={() => Taro.navigateTo({ url: '/packages/data-center/actions/index' })} />
+  return <BListPage title="数据中心" eyebrow="M4" load={load} footer="汇总、导入、导出、备份任务统一使用 DefaultApi" actionLabel="导入 / 导出 / 备份" actionCapability="read_data_center" onAction={() => Taro.navigateTo({ url: '/packages/data-center/actions/index' })} />
 }

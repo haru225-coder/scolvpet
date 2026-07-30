@@ -8,6 +8,12 @@ import { createIdempotencyIntent } from '../../../api/idempotency'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import type { ApiEnvelope } from '../../../api/types'
 
+type AccountingCategoryLike = { id?: string; name?: string; entryType?: string }
+
+export function filterCategoriesForEntryType(categories: AccountingCategoryLike[], entryType: string) {
+  return categories.filter((category) => category.entryType === entryType)
+}
+
 export default function CreateAccountingPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [categoryId, setCategoryId] = useState('')
@@ -28,9 +34,10 @@ export default function CreateAccountingPage() {
       Taro.showToast({ title: '收支已记录', icon: 'success' }); setTimeout(() => Taro.navigateBack(), 350)
     } catch (cause) { setMessage(cause instanceof Error ? cause.message : '保存收支失败') } finally { setBusy(false) }
   }
-  const categoryLabels = categories.map((item) => `${item.name} · ${item.entryType === 'income' ? '收入' : '支出'}`)
-  const categoryIndex = Math.max(0, categories.findIndex((item) => item.id === categoryId))
+  const visibleCategories = filterCategoriesForEntryType(categories, entryType)
+  const categoryLabels = visibleCategories.map((item) => `${item.name} · ${item.entryType === 'income' ? '收入' : '支出'}`)
+  const categoryIndex = Math.max(0, visibleCategories.findIndex((item) => item.id === categoryId))
   const entryTypeLabels = ['支出', '收入']
   const entryTypeIndex = entryType === 'income' ? 1 : 0
-  return <View style={{ height: '100vh', backgroundColor: crayon.paper, backgroundImage: paperGrain }}><NavBar title="新增收支" back right={<Tag tone="accent">财务</Tag>} /><ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}><SectionList><Section header="收支记录" footer={message || '金额按元输入，服务端按分保存'}><FormRow label="标题"><Input placeholder="例如 垫料采购" value={title} onInput={(event) => setTitle(event.detail.value)} /></FormRow><FormRow label="金额（元）" divider><Input type="digit" placeholder="0.00" value={amount} onInput={(event) => setAmount(event.detail.value)} /></FormRow><FormRow label="类型" divider><Picker mode="selector" range={entryTypeLabels} value={entryTypeIndex} onChange={(event) => setEntryType(Number(event.detail.value) === 1 ? 'income' : 'expense')}><Cell title={entryType === 'income' ? '收入' : '支出'} value={<Tag>选择</Tag>} /></Picker></FormRow>{categories.length ? <FormRow label="分类" divider><Picker mode="selector" range={categoryLabels} value={categoryIndex} onChange={(event) => setCategoryId(categories[Number(event.detail.value)]?.id || '')}><Cell title={categoryLabels[categoryIndex] || '选择分类'} value={<Tag>选择</Tag>} /></Picker></FormRow> : null}</Section><CapabilityButton capability="write_accounting" block disabled={busy} onClick={() => void submit()}>{busy ? '保存中…' : '保存收支'}</CapabilityButton><View style={{ height: `${metrics.bottomSafePadding}px` }} /></SectionList></ScrollView></View>
+  return <View style={{ height: '100vh', backgroundColor: crayon.paper, backgroundImage: paperGrain }}><NavBar title="新增收支" back right={<Tag tone="accent">财务</Tag>} /><ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}><SectionList><Section header="收支记录" footer={message || '金额按元输入，服务端按分保存'}><FormRow label="标题"><Input placeholder="例如 垫料采购" value={title} onInput={(event) => setTitle(event.detail.value)} /></FormRow><FormRow label="金额（元）" divider><Input type="digit" placeholder="0.00" value={amount} onInput={(event) => setAmount(event.detail.value)} /></FormRow><FormRow label="类型" divider><Picker mode="selector" range={entryTypeLabels} value={entryTypeIndex} onChange={(event) => { setEntryType(Number(event.detail.value) === 1 ? 'income' : 'expense'); setCategoryId('') }}><Cell title={entryType === 'income' ? '收入' : '支出'} value={<Tag>选择</Tag>} /></Picker></FormRow>{visibleCategories.length ? <FormRow label="分类" divider><Picker mode="selector" range={categoryLabels} value={categoryIndex} onChange={(event) => setCategoryId(visibleCategories[Number(event.detail.value)]?.id || '')}><Cell title={categoryLabels[categoryIndex] || '选择分类'} value={<Tag>选择</Tag>} /></Picker></FormRow> : null}</Section><CapabilityButton capability="write_accounting" block disabled={busy} onClick={() => void submit()}>{busy ? '保存中…' : '保存收支'}</CapabilityButton><View style={{ height: `${metrics.bottomSafePadding}px` }} /></SectionList></ScrollView></View>
 }

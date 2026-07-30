@@ -2,9 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import { recorded } from './stubs/taro'
 import { canUseCapability } from '../src/auth/permissions'
+import { clearApiToken, getApiToken } from '../src/api/client'
 
 beforeEach(() => {
   recorded.reset()
+  clearApiToken()
 })
 
 describe('B 端前端能力门禁', () => {
@@ -28,8 +30,20 @@ describe('B 端前端能力门禁', () => {
     expect(canUseCapability('manage_subscriptions')).toBe(true)
   })
 
+  it('普通成员可以读取数据中心，但不能执行导入写操作', () => {
+    recorded.storage.set('scolvpet_breeder_session', { accessToken: 'token', expiresAt: Date.now() + 60_000, memberRole: 'breeder', capabilities: [] })
+    expect(canUseCapability('read_data_center')).toBe(true)
+    expect(canUseCapability('write_import')).toBe(false)
+  })
+
   it('viewer 不开放订阅授权管理', () => {
     recorded.storage.set('scolvpet_breeder_session', { accessToken: 'token', expiresAt: Date.now() + 60_000, memberRole: 'viewer', capabilities: ['manage_subscriptions'] })
     expect(canUseCapability('manage_subscriptions')).toBe(false)
+  })
+
+  it('能力判断不在渲染期写入 API token', () => {
+    recorded.storage.set('scolvpet_breeder_session', { accessToken: 'token', expiresAt: Date.now() + 60_000, memberRole: 'staff', capabilities: ['write_crm'] })
+    expect(canUseCapability('write_crm')).toBe(true)
+    expect(getApiToken()).toBe('')
   })
 })

@@ -35,7 +35,6 @@ function sessionFromResponse(data: SessionResponseDataLike | undefined): Breeder
     !data.refreshToken ||
     !data.expiresInSeconds ||
     !data.account ||
-    !data.currentOrganization ||
     !Array.isArray(data.capabilities)
   ) return null
   return {
@@ -44,7 +43,7 @@ function sessionFromResponse(data: SessionResponseDataLike | undefined): Breeder
     expiresAt: Date.now() + data.expiresInSeconds * 1000,
     displayName: data.account.displayName || undefined,
     phoneMasked: data.account.phoneMasked,
-    organizationName: data.currentOrganization.name,
+    organizationName: data.currentOrganization?.name,
     memberRole: data.memberRole,
     capabilities: data.capabilities
   }
@@ -62,16 +61,13 @@ export function removeSessionStorage(key: string) {
   storageRemove(key)
 }
 
-export function readBreederSession(): BreederSession | null {
+function sessionFromStorage(): BreederSession | null {
   const stored = storageGet(BREEDER_SESSION_KEY) as Partial<BreederSession> | undefined
   const now = Date.now()
   const expiresAt = Number(stored?.expiresAt) || 0
   if (!stored?.accessToken || !expiresAt || expiresAt <= now || expiresAt > now + MAX_SESSION_WINDOW_MS) {
-    clearApiToken()
-    storageRemove(BREEDER_SESSION_KEY)
     return null
   }
-  setApiToken(stored.accessToken)
   return {
     accessToken: stored.accessToken,
     refreshToken: stored.refreshToken || '',
@@ -82,6 +78,23 @@ export function readBreederSession(): BreederSession | null {
     memberRole: stored.memberRole,
     capabilities: Array.isArray(stored.capabilities) ? stored.capabilities : []
   }
+}
+
+/** 渲染期只读会话，不写入 API token，也不清理存储。 */
+export function peekBreederSession(): BreederSession | null {
+  return sessionFromStorage()
+}
+
+/** 恢复会话并同步 API token；副作用只应放在加载/事件流程。 */
+export function readBreederSession(): BreederSession | null {
+  const session = sessionFromStorage()
+  if (!session) {
+    clearApiToken()
+    storageRemove(BREEDER_SESSION_KEY)
+    return null
+  }
+  setApiToken(session.accessToken)
+  return session
 }
 
 export function saveBreederSession(session: BreederSession) {
@@ -134,5 +147,5 @@ export function clearBreederSession() {
 }
 
 export function hasBreederSession() {
-  return Boolean(getApiToken() || readBreederSession())
+  return Boolean(getApiToken() || peekBreederSession())
 }

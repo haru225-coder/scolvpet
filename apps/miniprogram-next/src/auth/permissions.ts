@@ -1,4 +1,4 @@
-import { readBreederSession } from './session'
+import { peekBreederSession } from './session'
 
 /**
  * 前端只负责收敛入口，后端 RBAC 仍是最终权限裁决。
@@ -10,16 +10,16 @@ import { readBreederSession } from './session'
 const OWNER_ONLY_CAPABILITIES = ['write_accounting', 'write_import']
 
 export function canUseCapability(capability: string): boolean {
-  const session = readBreederSession()
+  const session = peekBreederSession()
   if (!session) return false
   if (session.memberRole === 'owner') return true
   if (session.memberRole === 'viewer') return false
   if (OWNER_ONLY_CAPABILITIES.includes(capability)) return false
   if (session.capabilities.includes(capability)) return true
   const roleFallback: Record<string, string[]> = {
-    breeder: ['write_breeding', 'write_litter', 'write_hamster', 'write_weight', 'write_health', 'write_task', 'write_genetic', 'manage_subscriptions'],
-    caretaker: ['write_litter', 'write_hamster', 'write_weight', 'write_health', 'write_task', 'manage_subscriptions'],
-    staff: ['write_crm', 'write_documents', 'manage_subscriptions']
+    breeder: ['read_data_center', 'write_breeding', 'write_litter', 'write_hamster', 'write_weight', 'write_health', 'write_task', 'write_genetic', 'manage_subscriptions'],
+    caretaker: ['read_data_center', 'write_litter', 'write_hamster', 'write_weight', 'write_health', 'write_task', 'manage_subscriptions'],
+    staff: ['read_data_center', 'write_crm', 'write_documents', 'manage_subscriptions']
   }
   return roleFallback[session.memberRole || '']?.includes(capability) ?? false
 }

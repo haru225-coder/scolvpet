@@ -48,4 +48,29 @@ describe('B 端会话刷新', () => {
       refreshToken: 'rt_rotated'
     })
   })
+
+  it('尚未分配熊舍时仍接受登录会话，组织名称保持为空', async () => {
+    recorded.storage.set(BREEDER_SESSION_KEY, {
+      accessToken: 'at_expired',
+      refreshToken: 'rt_fixture',
+      expiresAt: Date.now() - 1,
+      memberRole: 'owner',
+      capabilities: []
+    })
+    vi.spyOn(defaultApi, 'refreshSession').mockResolvedValue({
+      data: {
+        accessToken: 'at_new',
+        refreshToken: 'rt_new',
+        expiresInSeconds: 3600,
+        account: { displayName: '待分配账号' },
+        memberRole: 'owner',
+        capabilities: []
+      }
+    } as never)
+
+    await expect(restoreBreederSession()).resolves.toMatchObject({
+      accessToken: 'at_new',
+      organizationName: undefined
+    })
+  })
 })
