@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -61,6 +62,74 @@ func TestWechatBindingRejectsIncompleteRequests(t *testing.T) {
 			t.Fatalf("%s: expected 422, got %d", tc.name, recorder.Code)
 		}
 	}
+}
+
+func TestCustomerWechatPhoneBindingRejectsIncompleteRequests(t *testing.T) {
+	_, mux := newWechatTestServer(wechat.MockProvider{})
+	for _, body := range []string{
+		`{}`,
+		`{"wechat_ticket":"wt_ticket"}`,
+		`{"phone_code":"phone-code"}`,
+		`{"wechat_ticket":"ticket","phone_code":"phone-code"}`,
+		`{"wechat_ticket":"wt_ticket","phone_code":"   "}`,
+	} {
+		recorder := postJSON(mux, "/v1/public/customer/wechat-phone-bindings", body)
+		if recorder.Code != http.StatusUnprocessableEntity {
+			t.Fatalf("body %q expected 422, got %d", body, recorder.Code)
+		}
+	}
+}
+
+func TestCustomerWechatPhoneBindingWithoutProviderDegrades(t *testing.T) {
+	_, mux := newWechatTestServer(nil)
+	recorder := postJSON(mux, "/v1/public/customer/wechat-phone-bindings", `{"wechat_ticket":"wt_ticket","phone_code":"phone-code"}`)
+	if recorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected 503 when no provider is wired, got %d", recorder.Code)
+	}
+	if code := customerWechatErrorCode(t, recorder); code != "WECHAT_PHONE_UNAVAILABLE" {
+		t.Fatalf("error code=%q", code)
+	}
+}
+
+func TestCustomerWechatPhoneBindingRateLimitsIPAndGlobalWechatQuota(t *testing.T) {
+	server, mux := newWechatTestServer(nil)
+	server.WechatPhoneGlobalPerMinute = 1000
+	server.WechatPhoneGlobalPerDay = 1000
+	for attempt := 0; attempt < customerWechatPhoneIPMaxPerMinute; attempt++ {
+		recorder := postJSON(mux, "/v1/public/customer/wechat-phone-bindings", `{"wechat_ticket":"wt_ticket","phone_code":"phone-code"}`)
+		if recorder.Code != http.StatusServiceUnavailable {
+			t.Fatalf("attempt %d expected provider 503 before IP limit, got %d", attempt, recorder.Code)
+		}
+	}
+	limited := postJSON(mux, "/v1/public/customer/wechat-phone-bindings", `{"wechat_ticket":"wt_ticket","phone_code":"phone-code"}`)
+	if limited.Code != http.StatusTooManyRequests {
+		t.Fatalf("IP limit expected 429, got %d", limited.Code)
+	}
+
+	globalServer, globalMux := newWechatTestServer(nil)
+	globalServer.WechatPhoneGlobalPerMinute = 1
+	globalServer.WechatPhoneGlobalPerDay = 1000
+	first := postJSON(globalMux, "/v1/public/customer/wechat-phone-bindings", `{"wechat_ticket":"wt_ticket","phone_code":"phone-code"}`)
+	if first.Code != http.StatusServiceUnavailable || customerWechatErrorCode(t, first) != "WECHAT_PHONE_UNAVAILABLE" {
+		t.Fatalf("first global request=%d code=%q", first.Code, customerWechatErrorCode(t, first))
+	}
+	second := postJSON(globalMux, "/v1/public/customer/wechat-phone-bindings", `{"wechat_ticket":"wt_ticket","phone_code":"phone-code"}`)
+	if second.Code != http.StatusServiceUnavailable || customerWechatErrorCode(t, second) != "WECHAT_PHONE_QUOTA_EXHAUSTED" {
+		t.Fatalf("global quota request=%d code=%q", second.Code, customerWechatErrorCode(t, second))
+	}
+}
+
+func customerWechatErrorCode(t *testing.T, recorder *httptest.ResponseRecorder) string {
+	t.Helper()
+	var payload struct {
+		Error struct {
+			Code string `json:"code"`
+		} `json:"error"`
+	}
+	if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode error response: %v body=%s", err, recorder.Body.String())
+	}
+	return payload.Error.Code
 }
 
 func TestWechatUnbindRequiresCustomerAuth(t *testing.T) {

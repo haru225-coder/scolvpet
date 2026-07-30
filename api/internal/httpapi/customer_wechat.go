@@ -14,6 +14,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 const (
@@ -31,6 +32,11 @@ type wechatBindingRequest struct {
 	Phone          string    `json:"phone"`
 	VerificationID uuid.UUID `json:"verification_id"`
 	Code           string    `json:"code"`
+}
+
+type wechatPhoneBindingRequest struct {
+	WechatTicket string `json:"wechat_ticket"`
+	PhoneCode    string `json:"phone_code"`
 }
 
 // issueCustomerSessionData mirrors createCustomerSession: opaque ct_* bearer,
@@ -60,6 +66,34 @@ func wechatUnavailableError() error {
 
 func wechatCodeInvalidError() error {
 	return &apiError{Status: http.StatusUnauthorized, Code: "WECHAT_CODE_INVALID", Message: "微信登录凭证无效，请重试"}
+}
+
+func wechatPhoneUnavailableError() error {
+	return &apiError{Status: http.StatusServiceUnavailable, Code: "WECHAT_PHONE_UNAVAILABLE", Message: "微信手机号授权暂不可用，请使用短信验证码登录"}
+}
+
+func wechatPhoneQuotaExhaustedError(retryAfterSeconds int) error {
+	if retryAfterSeconds < 1 {
+		retryAfterSeconds = 1
+	}
+	return &apiError{
+		Status:  http.StatusServiceUnavailable,
+		Code:    "WECHAT_PHONE_QUOTA_EXHAUSTED",
+		Message: "微信手机号授权服务繁忙，请稍后再试",
+		Details: map[string]any{"retry_after_seconds": retryAfterSeconds},
+	}
+}
+
+func wechatPhoneReauthorizeError() error {
+	return &apiError{Status: http.StatusUnprocessableEntity, Code: "WECHAT_PHONE_REAUTHORIZE", Message: "授权已失效，请重新授权手机号"}
+}
+
+func unsupportedPhoneCountryError() error {
+	return &apiError{Status: http.StatusUnprocessableEntity, Code: "UNSUPPORTED_PHONE_COUNTRY", Message: "暂仅支持中国大陆手机号，请使用短信验证码登录"}
+}
+
+func phoneAlreadyBoundError() error {
+	return &apiError{Status: http.StatusConflict, Code: "PHONE_ALREADY_BOUND", Message: "该手机号已绑定其他微信号，请先在原微信号解绑"}
 }
 
 // createCustomerWechatSession exchanges a wx.login js_code: bound openid gets
@@ -130,6 +164,117 @@ func (s *Server) createCustomerWechatSession(w http.ResponseWriter, r *http.Requ
 	default:
 		writeAPIError(w, r, err)
 	}
+}
+
+// createCustomerWechatPhoneBinding consumes the wx.login ticket before it
+// sends the one-shot getPhoneNumber code to WeChat. This is deliberately not a
+// database transaction: the remote call must not keep a transaction open, and
+// its result is never safe to replay after any uncertain failure.
+func (s *Server) createCustomerWechatPhoneBinding(w http.ResponseWriter, r *http.Request) {
+	var request wechatPhoneBindingRequest
+	if _, err := decodeBody(r, &request); err != nil ||
+		!strings.HasPrefix(strings.TrimSpace(request.WechatTicket), "wt_") ||
+		strings.TrimSpace(request.PhoneCode) == "" {
+		writeAPIError(w, r, validationError("wechat_phone_binding", "请提供微信授权票据和手机号凭证"))
+		return
+	}
+	request.WechatTicket = strings.TrimSpace(request.WechatTicket)
+	request.PhoneCode = strings.TrimSpace(request.PhoneCode)
+
+	if retry, err := s.enforceRateLimit(r.Context(), "cust-wx-phone:ip:"+s.clientIP(r), 0, customerWechatPhoneIPMaxPerMinute, time.Minute); err != nil {
+		if isRateLimitError(err) {
+			writeAPIError(w, r, rateLimitedError(retry))
+			return
+		}
+		writeAPIError(w, r, err)
+		return
+	}
+	if s.WechatPhoneGlobalPerMinute > 0 {
+		if retry, err := s.enforceRateLimit(r.Context(), "cust-wx-phone:global:minute", 0, s.WechatPhoneGlobalPerMinute, time.Minute); err != nil {
+			if isRateLimitError(err) {
+				writeAPIError(w, r, wechatPhoneQuotaExhaustedError(retry))
+				return
+			}
+			writeAPIError(w, r, err)
+			return
+		}
+	}
+	if s.WechatPhoneGlobalPerDay > 0 {
+		if retry, err := s.enforceRateLimit(r.Context(), "cust-wx-phone:global:day", 0, s.WechatPhoneGlobalPerDay, 24*time.Hour); err != nil {
+			if isRateLimitError(err) {
+				writeAPIError(w, r, wechatPhoneQuotaExhaustedError(retry))
+				return
+			}
+			writeAPIError(w, r, err)
+			return
+		}
+	}
+	if s.Wechat == nil || s.Store == nil || s.Store.Pool == nil {
+		writeAPIError(w, r, wechatPhoneUnavailableError())
+		return
+	}
+
+	var openID string
+	var unionID *string
+	err := s.Store.Pool.QueryRow(r.Context(), `
+		UPDATE wechat_bind_ticket
+		SET used_at=now()
+		WHERE ticket_sha256=$1
+		  AND used_at IS NULL
+		  AND expires_at > now()
+		RETURNING openid, unionid
+	`, sha256Hex(request.WechatTicket)).Scan(&openID, &unionID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeAPIError(w, r, wechatPhoneReauthorizeError())
+		return
+	}
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+
+	phone, err := s.Wechat.PhoneNumber(r.Context(), request.PhoneCode)
+	if err != nil {
+		if s.Logger != nil {
+			s.Logger.Warn("wechat phone exchange failed", "error", err)
+		}
+		writeAPIError(w, r, wechatPhoneReauthorizeError())
+		return
+	}
+	if phone.CountryCode != "86" {
+		writeAPIError(w, r, unsupportedPhoneCountryError())
+		return
+	}
+	if !phonePattern.MatchString(phone.Number) {
+		writeAPIError(w, r, wechatPhoneReauthorizeError())
+		return
+	}
+
+	_, err = s.Store.Pool.Exec(r.Context(), `
+		INSERT INTO customer_wechat_identity (openid, unionid, phone)
+		VALUES ($1, $2, $3)
+	`, openID, unionID, phone.Number)
+	if err != nil {
+		var databaseError *pgconn.PgError
+		if errors.As(err, &databaseError) && databaseError.Code == "23505" {
+			switch databaseError.ConstraintName {
+			case "ux_customer_wechat_identity_phone_active":
+				writeAPIError(w, r, phoneAlreadyBoundError())
+				return
+			case "ux_customer_wechat_identity_openid_active":
+				writeAPIError(w, r, wechatPhoneReauthorizeError())
+				return
+			}
+		}
+		writeAPIError(w, r, err)
+		return
+	}
+	data, err := s.issueCustomerSessionData(r.Context(), phone.Number)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	writeJSON(w, r, http.StatusCreated, envelope(r, data))
 }
 
 // createCustomerWechatBinding consumes a bind ticket after SMS verification:

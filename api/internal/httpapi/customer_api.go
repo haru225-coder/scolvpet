@@ -20,6 +20,7 @@ func (s *Server) registerCustomerRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/public/customer/verification-codes", s.sendCustomerVerificationCode)
 	mux.HandleFunc("POST /v1/public/customer/sessions", s.createCustomerSession)
 	mux.HandleFunc("POST /v1/public/customer/wechat-sessions", s.createCustomerWechatSession)
+	mux.HandleFunc("POST /v1/public/customer/wechat-phone-bindings", s.createCustomerWechatPhoneBinding)
 	mux.HandleFunc("POST /v1/public/customer/wechat-bindings", s.createCustomerWechatBinding)
 	mux.HandleFunc("DELETE /v1/customer/wechat-bindings/current", s.deleteCustomerWechatBinding)
 	mux.HandleFunc("DELETE /v1/customer/sessions/current", s.deleteCustomerSession)
