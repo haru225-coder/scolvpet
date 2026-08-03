@@ -79,19 +79,30 @@ test('development build passes without strict validation', (t) => {
   const res = runBuild(dir, {
     MP_APP_ENV: 'development',
     MP_APPID: 'touristappid',
-    MP_API_BASE: 'https://p.scolv.com:8443',
+    MP_API_BASE: 'https://p.scolv.com',
   });
   assert.equal(res.status, 0, res.stderr);
+  const projectJson = JSON.parse(
+    fs.readFileSync(path.join(dir, 'project.config.json'), 'utf8'),
+  );
+  assert.equal(projectJson.setting.urlCheck, false, 'dev builds must leave urlCheck off for staging :8443');
 });
 
 test('production build with good values injects config and appid', (t) => {
   const dir = makeScratchCopy(t);
-  const res = runBuild(dir, GOOD_ENV);
+  const res = runBuild(dir, {
+    ...GOOD_ENV,
+    MP_WECHAT_SUBSCRIBE_TEMPLATE_IDS: 'tmpl_a,tmpl_b',
+  });
   assert.equal(res.status, 0, res.stderr);
 
   const configJs = fs.readFileSync(path.join(dir, 'src', 'utils', 'config.js'), 'utf8');
   assert.match(configJs, /const APP_ENV = 'production';/);
   assert.match(configJs, /const API_BASE = 'https:\/\/api\.scolv\.example';/);
+  assert.match(configJs, /const RELEASE_INJECTED_AT = '20\d{2}-\d{2}-\d{2}T/);
+  assert.match(configJs, /const DEV_LOGIN_PHONE = '';/);
+  assert.match(configJs, /const DEV_LOGIN_CODE = '';/);
+  assert.match(configJs, /const WECHAT_SUBSCRIBE_TEMPLATE_IDS = 'tmpl_a,tmpl_b';/);
   // No staging traces outside the runtime guard's own regex literal.
   assert.ok(
     !configJs.replace(/\/\(\^\|\\\.\)p\\\.scolv\\\.com[^\n]*/, '').includes('p.scolv.com'),
@@ -102,6 +113,7 @@ test('production build with good values injects config and appid', (t) => {
     fs.readFileSync(path.join(dir, 'project.config.json'), 'utf8'),
   );
   assert.equal(projectJson.appid, 'wx1234567890abcdef');
+  assert.equal(projectJson.setting.urlCheck, true, 'production inject must force urlCheck on');
 });
 
 test('--restore returns the scratch copy to development defaults byte-for-byte', (t) => {

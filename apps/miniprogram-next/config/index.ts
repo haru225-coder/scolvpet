@@ -63,7 +63,9 @@ export default defineConfig<'webpack5'>(async (merge) => {
     // 页面路径保持 pages/... 不变以兼容既有小程序码 scene 深链。
     copy: {
       patterns: [
-        { from: 'src/sitemap.json', to: 'dist/sitemap.json' }
+        { from: 'src/sitemap.json', to: 'dist/sitemap.json' },
+        // 原生 tabBar 降级图标（custom:true 不生效时用）
+        { from: 'src/assets/tab/', to: 'dist/assets/tab/' }
       ],
       options: {}
     },

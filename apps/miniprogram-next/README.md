@@ -50,20 +50,25 @@ packages/mp-ui/             @scolvpet/mp-ui:tokens.ts(真源 ios_theme.dart)+ 11
 
 | 通道 | 代码入口 | 登记口径 |
 |---|---|---|
-| `request` | `src/api/taro-fetch.ts`、原生页 `src/utils/api.js` | 正式 API：`https://api.scolvpet.cn`（由 `API_BASE` 注入） |
-| `downloadFile` | `src/api/client.ts`、`packages/data-center/actions` | 登记 API 域名；若 `downloadUrl` 返回绝对对象存储 URL，还要登记该 URL 的 origin |
-| `uploadFile` | `packages/animals/detail`、`packages/data-center/actions` | 每个预签名 `uploadUrl` 的 origin 都必须登记；对象存储 endpoint 随部署配置注入，不能假设与 API 同域 |
+| `request` | `src/api/taro-fetch.ts`、原生页 `src/utils/api.js` | 正式 API：`https://pet.scolv.com`（由 `API_BASE` 注入）。微信后台**以 `https://` 开头**，无端口、无路径：`https://pet.scolv.com` |
+| `downloadFile` | `src/api/client.ts`、`packages/data-center/actions` | 同上填 `https://pet.scolv.com`；若 `downloadUrl` 返回绝对对象存储 URL，还要登记该 URL 的 origin（含 `https://`） |
+| `uploadFile` | `packages/animals/detail`、`packages/data-center/actions` | 注意：头像/CSV 实际上用 **`Taro.request` PUT** 打预签名 `uploadUrl`，走的是 **request 合法域名**，不是 `uploadFile` 通道。`uploadUrl` 的 origin 必须出现在 request 列表；对象存储 endpoint 随部署配置，不能假设与 API 同域 |
 
 `downloadFile` / `uploadFile` 的域名应从正式接口响应中的 `downloadUrl` / `uploadUrl` 逐一核对。数据中心下载完成后使用微信 `FileSystemManager.saveFile`，不再调用已废弃的 `Taro.saveFile`。
 
-## 开发环境一键登录
+## 开发环境：打开即进（永久默认）
 
-开发配置下，登录页会显示“开发环境一键登录（免扫码）”。点击后会使用演示账号
-`13800138000` 和 staging Mock 验证码自动换取真实 B 端会话，再进入今日页；后续页面
-仍然请求真实 staging API。若在登录页先填写其他测试手机号，则一键入口会使用该手机号。
+开发配置（`APP_ENV=development` + 已注入 `DEV_LOGIN_*`）下：
 
-该入口只由 `APP_ENV=development` 控制显示；`make release-miniprogram-next` 生成生产配置后
-不会显示开发入口。
+1. **今日页无会话时自动换取** staging 演示账号会话（`13800138000` / Mock 码 `123456`），不再卡登录墙。
+2. **登录页**同样自动创建开发会话；仍保留“开发环境一键登录（免扫码）”按钮作手动重试。
+3. **开发 API 默认 `https://p.scolv.com`（443，无端口）**。LA1 用 HAProxy 按 SNI 把 `p.scolv.com:443` 转到 Caddy staging；`:8443` 仍可直连但不要写进小程序默认（真机微信会拦自定义端口）。
+4. **真机预览前**必须在微信公众平台 → 开发 → 开发管理 → 服务器域名，把 **request 合法域名** 配成 `https://p.scolv.com`（**要 `https://`**，不要端口、不要路径）。未配置时真机仍会卡在登录/验证码。
+5. **`project.config.json` 默认 `urlCheck: false`** 方便开发者工具；生产构建由 `scripts/build-miniprogram-next.sh` **强制 `urlCheck: true`**。
+
+后续业务页仍请求真实 staging API，不是静态假数据。若登录页先填写其他 11 位测试手机号再点一键，会沿用该号。
+
+`make release-miniprogram-next` 后：开发入口消失、演示凭据清空、`urlCheck` 打开。
 
 ## 硬约定
 
@@ -85,7 +90,7 @@ packages/mp-ui/             @scolvpet/mp-ui:tokens.ts(真源 ios_theme.dart)+ 11
 
 三道阁，缺一道都不允许开发配置漏到生产：
 
-1. **构建时**（`config/index.ts` 的 `assertBuildConfig()`）：每次 `taro build/dev` 先跑。校 `APP_ENV` 合法、生产下 `API_BASE` 必须 https + 无显式端口 + 非 staging、`DEV_LOGIN_*` 必须为空、`urlCheck` 必须为 true、`uploadWithSourceMap` 必须为 false、appid 形状合法；并校 `generated/ts/scolvpet-api/src` 存在（本应用无法在 monorepo 外构建，缺失时直接报错并提示 `make generate-ts-client`）。
+1. **构建时**（`config/index.ts` 的 `assertBuildConfig()`）：每次 `taro build/dev` 先跑。校 `APP_ENV` 合法、生产下 `API_BASE` 必须 https + 无显式端口 + 非 staging、`DEV_LOGIN_*` 必须为空、**生产** `urlCheck` 必须为 true、`uploadWithSourceMap` 必须为 false、appid 形状合法；并校 `generated/ts/scolvpet-api/src` 存在（本应用无法在 monorepo 外构建，缺失时直接报错并提示 `make generate-ts-client`）。开发默认 `urlCheck: false`（staging 带端口）。
 2. **发布流水线**：设 `MP_REQUIRE_PRODUCTION_CONFIG=1`，若 `src/utils/config.js` 仍是开发默认值（注入脚本未跑或跑失败），构建直接崩。
 3. **运行时**（`config.assertRuntimeConfig()`，`app.ts onLaunch`）：`APP_ENV` 非法值或生产指向非正式主机时抛错。另外 `config.js` 在 `APP_ENV !== 'development'` 时导出的 `DEV_LOGIN_PHONE/CODE` 被强制清空，即使注入脚本漏改，登录页的开发一键入口也不会出现、且无内置回退凭据。
 
@@ -99,6 +104,6 @@ packages/mp-ui/             @scolvpet/mp-ui:tokens.ts(真源 ios_theme.dart)+ 11
 - LA1 staging 当前仍使用 mock SMS/微信通道；正式环境需另行配置真实凭据、迁移 0042–0044 和任务/预订模板 ID。
 - 乐观并发：`animals/detail`、`breeding/detail`、`litters/detail`、`data-center/actions`、`contracts/*` 已带 `ifMatch`；`finance/*`、`crm/create`、`reminders/*` 的写操作目前不传版本号，需先根据 `specs/api/openapi.yaml` 确认这些端点是否要求 If-Match，再补。
 - 本应用的 `npm test`（vitest）与 `npm run test:native` 需在 monorepo 内执行；`test/release_gate.test.mjs` 在拿不到 `scripts/build-miniprogram-next.sh` 时会自动 skip（不再以退出码 127 失败）。
-- 开发者工具已可导入本目录并编译；当前已复核 `pages/today/index` 模拟页、运行时错误 0、Problems 面板 0。正式构建门禁已用 `https://api.scolvpet.cn` 通过；上传/提交审核前仍需完成微信后台正式配置和真实设备验收。
+- 开发者工具已可导入本目录并编译；当前已复核 `pages/today/index` 模拟页、运行时错误 0、Problems 面板 0。正式构建门禁示例用 `https://pet.scolv.com`（非 staging `p.scolv.com`）；上传/提交审核前仍需完成微信后台正式配置和真实设备验收。
 
 本项目的微信开发者工具���入路径是 `/Users/snowchan27/Documents/scolvpet/apps/miniprogram-next`；仓库根目录的 `project.config.json` 是旧 C 端混写入口，不用于本轮 B 端全量验收。

@@ -11,6 +11,7 @@
 #   MP_APP_ENV   development (default) | production
 #   MP_API_BASE  API root URL (default: dev staging base)
 #   MP_APPID     WeChat AppID (development defaults to the checked-in project config)
+#   MP_WECHAT_SUBSCRIBE_TEMPLATE_IDS  optional comma-separated tmpl_ ids (inject into config)
 #   MP_TARGET_DIR  override target dir (tests only)
 #
 # Fail-closed (MP_APP_ENV=production only — dev builds pass through):
@@ -27,7 +28,7 @@ PROJECT_BACKUP="$TARGET_DIR/.project.config.json.release-backup"
 
 # Development defaults — must stay byte-identical to the committed files.
 DEV_APP_ENV='development'
-DEV_API_BASE='https://p.scolv.com:8443'
+DEV_API_BASE='https://p.scolv.com'
 DEV_APPID="$(node -e '
   const fs = require("fs");
   const project = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
@@ -66,9 +67,10 @@ set_url_check() {
 }
 
 set_config_values() {
+  # $1 APP_ENV $2 API_BASE $3 DEV_PHONE $4 DEV_CODE $5 RELEASE_INJECTED_AT $6 WECHAT_SUBSCRIBE_TEMPLATE_IDS (optional)
   node -e '
     const fs = require("fs");
-    const [file, appEnv, apiBase, devPhone, devCode] = process.argv.slice(1);
+    const [file, appEnv, apiBase, devPhone, devCode, injectedAt, subscribeTmpls] = process.argv.slice(1);
     let src = fs.readFileSync(file, "utf8");
     const replaceConst = (name, value) => {
       const quote = String.fromCharCode(39);
@@ -83,8 +85,14 @@ set_config_values() {
     replaceConst("API_BASE", apiBase);
     replaceConst("DEV_LOGIN_PHONE", devPhone);
     replaceConst("DEV_LOGIN_CODE", devCode);
+    if (injectedAt !== undefined) {
+      replaceConst("RELEASE_INJECTED_AT", injectedAt);
+    }
+    if (subscribeTmpls !== undefined) {
+      replaceConst("WECHAT_SUBSCRIBE_TEMPLATE_IDS", subscribeTmpls);
+    }
     fs.writeFileSync(file, src);
-  ' "$CONFIG_JS" "$1" "$2" "$3" "$4"
+  ' "$CONFIG_JS" "$1" "$2" "$3" "$4" "${5-}" "${6-}"
 }
 
 save_backups() {
@@ -102,7 +110,7 @@ restore_backups() {
     cp "$CONFIG_BACKUP" "$CONFIG_JS"
     rm -f "$CONFIG_BACKUP"
   else
-    set_config_values "$DEV_APP_ENV" "$DEV_API_BASE" '13800138000' '123456'
+    set_config_values "$DEV_APP_ENV" "$DEV_API_BASE" '13800138000' '123456' '' ''
   fi
   if [ -f "$PROJECT_BACKUP" ]; then
     cp "$PROJECT_BACKUP" "$PROJECT_JSON"
@@ -153,10 +161,16 @@ case "$API_BASE$APPID" in
 esac
 
 save_backups
+INJECTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+# Optional: comma-separated WeChat subscribe template IDs (user UI never hand-pastes these).
+SUBSCRIBE_TMPLS="${MP_WECHAT_SUBSCRIBE_TEMPLATE_IDS-}"
+case "$SUBSCRIBE_TMPLS" in
+  *"'"*|*'\'*) fail 'MP_WECHAT_SUBSCRIBE_TEMPLATE_IDS must not contain quotes or backslashes' ;;
+esac
 if [ "$APP_ENV" = "production" ]; then
-  set_config_values "$APP_ENV" "$API_BASE" '' ''
+  set_config_values "$APP_ENV" "$API_BASE" '' '' "$INJECTED_AT" "$SUBSCRIBE_TMPLS"
 else
-  set_config_values "$APP_ENV" "$API_BASE" '13800138000' '123456'
+  set_config_values "$APP_ENV" "$API_BASE" '13800138000' '123456' '' "$SUBSCRIBE_TMPLS"
 fi
 set_appid "$APPID"
 if [ "$APP_ENV" = "production" ]; then
@@ -164,4 +178,5 @@ if [ "$APP_ENV" = "production" ]; then
 else
   set_url_check false
 fi
-printf 'built miniprogram-next config: APP_ENV=%s API_BASE=%s appid=%s\n' "$APP_ENV" "$API_BASE" "$APPID"
+printf 'built miniprogram-next config: APP_ENV=%s API_BASE=%s appid=%s injected_at=%s subscribe_tmpls=%s\n' \
+  "$APP_ENV" "$API_BASE" "$APPID" "$INJECTED_AT" "${SUBSCRIBE_TMPLS:-(none)}"

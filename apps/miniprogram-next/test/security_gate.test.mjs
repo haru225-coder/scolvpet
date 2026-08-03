@@ -34,9 +34,16 @@ test('源码交付包排除 dist、私有配置和 node_modules', (t) => {
   assert.doesNotMatch(entries.stdout, /(^|\/)node_modules\//);
 });
 
-test('开发者工具私有配置不会关闭 urlCheck', () => {
-  const config = JSON.parse(fs.readFileSync(path.join(appRoot, 'project.private.config.json'), 'utf8'));
-  assert.equal(config.setting.urlCheck, true);
+test('开发默认关闭 urlCheck，避免 staging 端口域名被微信本地门禁掐死', () => {
+  // staging 是 https://p.scolv.com:8443；微信合法域名不支持自定义端口。
+  // 本地开发必须 urlCheck=false；正式发布由 build-miniprogram-next.sh 注入 true。
+  const project = JSON.parse(fs.readFileSync(path.join(appRoot, 'project.config.json'), 'utf8'));
+  assert.equal(project.setting.urlCheck, false);
+  const privatePath = path.join(appRoot, 'project.private.config.json');
+  if (fs.existsSync(privatePath)) {
+    const privateConfig = JSON.parse(fs.readFileSync(privatePath, 'utf8'));
+    assert.equal(privateConfig.setting.urlCheck, false);
+  }
   const gitignore = fs.readFileSync(path.join(appRoot, '.gitignore'), 'utf8');
   assert.match(gitignore, /^project\.private\.config\.json\s*$/m);
 });
