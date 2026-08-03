@@ -7,6 +7,22 @@ import 'support/memory_repositories.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('ContractsController loadDocument upserts into list', () async {
+    final repo = MemoryContractsRepository();
+    final tpl = await repo.createTemplate(
+      'contract',
+      const DocTemplateDraft(name: '交接协议'),
+    );
+    final doc = await repo.createContract(
+      ContractDraft(templateId: tpl.id, title: '雪球交付', contactName: '阿花'),
+    );
+    final controller = ContractsController(repository: repo);
+    await controller.refreshContracts();
+    final loaded = await controller.loadDocument('contract', doc.id);
+    expect(loaded?.title, '雪球交付');
+    expect(controller.contracts.data?.single.id, doc.id);
+  });
+
   test('MemoryContractsRepository template → contract → issue', () async {
     final repo = MemoryContractsRepository();
     final tpl = await repo.createTemplate(

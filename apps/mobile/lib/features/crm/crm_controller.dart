@@ -106,6 +106,60 @@ class CrmController extends ChangeNotifier {
     ]);
   });
 
+  /// 单条详情 GET：深链/预览刷新；失败写 lastMessage，返回 null。
+  Future<CrmContact?> loadContact(String id) => _loadOne(
+    () => repository.getContact(id),
+    (item) => contactsState = I2AsyncState.data(
+      _upsertById(contactsState.data ?? const [], item, (e) => e.id),
+    ),
+  );
+
+  Future<CrmReservation?> loadReservation(String id) => _loadOne(
+    () => repository.getReservation(id),
+    (item) => reservationsState = I2AsyncState.data(
+      _upsertById(reservationsState.data ?? const [], item, (e) => e.id),
+    ),
+  );
+
+  Future<CrmHandover?> loadHandover(String id) => _loadOne(
+    () => repository.getHandover(id),
+    (item) => handoversState = I2AsyncState.data(
+      _upsertById(handoversState.data ?? const [], item, (e) => e.id),
+    ),
+  );
+
+  Future<T?> _loadOne<T>(
+    Future<T> Function() fetch,
+    void Function(T item) apply,
+  ) async {
+    try {
+      final item = await fetch();
+      apply(item);
+      notifyListeners();
+      return item;
+    } catch (error) {
+      lastMessage = crmErrorMessage(error);
+      notifyListeners();
+      return null;
+    }
+  }
+
+  List<T> _upsertById<T>(
+    List<T> current,
+    T item,
+    String Function(T) idOf,
+  ) {
+    final id = idOf(item);
+    final next = List<T>.from(current);
+    final index = next.indexWhere((e) => idOf(e) == id);
+    if (index >= 0) {
+      next[index] = item;
+    } else {
+      next.insert(0, item);
+    }
+    return next;
+  }
+
   Future<bool> _run(Future<void> Function() body) async {
     actionState = const I2AsyncState.loading();
     lastMessage = null;

@@ -152,6 +152,39 @@ class ContractsController extends ChangeNotifier {
     }
   });
 
+  /// 单条详情 GET：打开预览前刷新；失败写 lastMessage，返回 null。
+  Future<DocDocument?> loadDocument(String kind, String id) async {
+    try {
+      final item = await repository.getDocument(kind, id);
+      if (kind == 'receipt') {
+        receipts = I2AsyncState.data(
+          _upsertDoc(receipts.data ?? const [], item),
+        );
+      } else {
+        contracts = I2AsyncState.data(
+          _upsertDoc(contracts.data ?? const [], item),
+        );
+      }
+      notifyListeners();
+      return item;
+    } catch (error) {
+      lastMessage = contractsErrorMessage(error);
+      notifyListeners();
+      return null;
+    }
+  }
+
+  List<DocDocument> _upsertDoc(List<DocDocument> current, DocDocument item) {
+    final next = List<DocDocument>.from(current);
+    final index = next.indexWhere((e) => e.id == item.id);
+    if (index >= 0) {
+      next[index] = item;
+    } else {
+      next.insert(0, item);
+    }
+    return next;
+  }
+
   Future<bool> _run(Future<void> Function() body) async {
     actionState = const I2AsyncState.loading();
     lastMessage = null;

@@ -6,6 +6,18 @@ import 'package:scolvpet_mobile/features/i2/i2_models.dart';
 import 'support/memory_repositories.dart';
 
 void main() {
+  test('CrmController loadContact upserts into list', () async {
+    final repo = MemoryCrmRepository();
+    final created = await repo.createContact(
+      const CrmContactDraft(name: '阿花', phone: '13900000001'),
+    );
+    final controller = CrmController(repository: repo);
+    await controller.refreshContacts();
+    final loaded = await controller.loadContact(created.id);
+    expect(loaded?.name, '阿花');
+    expect(controller.contactsState.data?.single.id, created.id);
+  });
+
   test(
     'MemoryCrmRepository contact → reservation → handover complete',
     () async {

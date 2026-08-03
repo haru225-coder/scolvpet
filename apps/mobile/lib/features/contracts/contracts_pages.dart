@@ -349,16 +349,20 @@ class _ContractsHubPageState extends State<ContractsHubPage>
     await _snack(() => widget.controller.createReceipt(draft));
   }
 
-  void _openPreview(DocDocument item) {
-    Navigator.of(context).push<void>(
+  Future<void> _openPreview(DocDocument item) async {
+    // 打开前用详情 GET 刷新，避免列表缓存滞后（签发/撤销状态）。
+    final fresh =
+        await widget.controller.loadDocument(item.kind, item.id) ?? item;
+    if (!mounted) return;
+    await Navigator.of(context).push<void>(
       iosPageRoute(
         builder: (_) => DocumentPreviewPage(
-          document: item,
-          onIssue: item.isDraft && widget.canWrite
-              ? () => widget.controller.issueDocument(item)
+          document: fresh,
+          onIssue: fresh.isDraft && widget.canWrite
+              ? () => widget.controller.issueDocument(fresh)
               : null,
-          onRevoke: item.isIssued && widget.canWrite
-              ? () => widget.controller.revokeDocument(item)
+          onRevoke: fresh.isIssued && widget.canWrite
+              ? () => widget.controller.revokeDocument(fresh)
               : null,
         ),
       ),
