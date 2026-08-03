@@ -44,6 +44,10 @@ if [[ -z "$DB_URL" ]]; then
   DB_URL="postgres://$(whoami)@127.0.0.1:$DB_PORT/scolvpet_i6_media?sslmode=disable"
 else
   OBJECT_ROOT="${IMPORT_OBJECT_STORE_DIR:-${TMPDIR:-/tmp}/scolvpet-i6-media-objects}"
+  # Shared external DB（如 CI postgres service）会残留前序 smoke 的未发布
+  # outbox 消息；worker 按全局 FIFO 处理，本 run 的 8 条会排在旧消息之后，
+  # 20 秒等待窗口内发不完。前序 API 已退出，无活 worker 持锁，安全清理。
+  psql "$DB_URL" -v ON_ERROR_STOP=1 -c "DELETE FROM outbox_message WHERE status IN ('pending','processing','failed');" >/dev/null
 fi
 
 DATABASE_URL="$DB_URL" "$ROOT/db/scripts/migrate.sh" --seed >/dev/null
