@@ -64,10 +64,16 @@ func (s *Server) runAssistantTool(
 		return s.toolGetHamster(ctx, ownerID, args)
 	case "list_crm_contacts":
 		return s.toolListCrmContacts(ctx, ownerID, args)
+	case "get_crm_contact":
+		return s.toolGetCrmContact(ctx, ownerID, args)
 	case "list_crm_reservations":
 		return s.toolListCrmReservations(ctx, ownerID, args)
+	case "get_crm_reservation":
+		return s.toolGetCrmReservation(ctx, ownerID, args)
 	case "list_crm_handovers":
 		return s.toolListCrmHandovers(ctx, ownerID, args)
+	case "get_crm_handover":
+		return s.toolGetCrmHandover(ctx, ownerID, args)
 	case "list_accounting_summary":
 		return s.toolListAccountingSummary(ctx, ownerID, args)
 	case "list_accounting_records":
@@ -1916,6 +1922,100 @@ func (s *Server) toolListCrmContacts(ctx context.Context, ownerID uuid.UUID, arg
 	return map[string]any{"count": len(out), "contacts": out}, rows.Err()
 }
 
+func (s *Server) toolGetCrmContact(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	contactID, err := uuid.Parse(stringArgMap(args, "contact_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid contact_id")
+	}
+	var name, phone, wechat, notes, status string
+	var version int
+	var updated any
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT name, COALESCE(phone,''), COALESCE(wechat,''), COALESCE(notes,''),
+		       status::text, version, updated_at
+		FROM crm_contact WHERE owner_id=$1 AND id=$2
+	`, ownerID, contactID).Scan(&name, &phone, &wechat, &notes, &status, &version, &updated)
+	if err != nil {
+		return nil, fmt.Errorf("contact not found")
+	}
+	item := map[string]any{
+		"id": contactID.String(), "name": name, "phone": phone, "wechat": wechat,
+		"status": status, "version": version, "updated_at": updated,
+	}
+	if notes != "" {
+		item["notes"] = notes
+	}
+	// Recent open reservations.
+	resRows, err := s.Store.Pool.Query(ctx, `
+		SELECT r.id::text, r.title, r.status::text, r.reserved_at, r.hamster_id::text
+		FROM crm_reservation r
+		WHERE r.owner_id=$1 AND r.contact_id=$2
+		  AND r.status IN ('held','confirmed')
+		ORDER BY r.reserved_at DESC
+		LIMIT 5
+	`, ownerID, contactID)
+	if err != nil {
+		return nil, err
+	}
+	reservations := make([]map[string]any, 0)
+	for resRows.Next() {
+		var id, title, st string
+		var reserved any
+		var hamsterID *string
+		if err := resRows.Scan(&id, &title, &st, &reserved, &hamsterID); err != nil {
+			resRows.Close()
+			return nil, err
+		}
+		r := map[string]any{"id": id, "title": title, "status": st, "reserved_at": reserved}
+		if hamsterID != nil {
+			r["hamster_id"] = *hamsterID
+		}
+		reservations = append(reservations, r)
+	}
+	resRows.Close()
+	if err := resRows.Err(); err != nil {
+		return nil, err
+	}
+	// Recent non-cancelled handovers.
+	hoRows, err := s.Store.Pool.Query(ctx, `
+		SELECT h.id::text, h.status::text, h.scheduled_at, h.hamster_id::text, h.reservation_id::text
+		FROM crm_handover h
+		WHERE h.owner_id=$1 AND h.contact_id=$2 AND h.status <> 'cancelled'
+		ORDER BY h.scheduled_at DESC
+		LIMIT 5
+	`, ownerID, contactID)
+	if err != nil {
+		return nil, err
+	}
+	handovers := make([]map[string]any, 0)
+	for hoRows.Next() {
+		var id, st string
+		var scheduled any
+		var hamsterID, reservationID *string
+		if err := hoRows.Scan(&id, &st, &scheduled, &hamsterID, &reservationID); err != nil {
+			hoRows.Close()
+			return nil, err
+		}
+		h := map[string]any{"id": id, "status": st, "scheduled_at": scheduled}
+		if hamsterID != nil {
+			h["hamster_id"] = *hamsterID
+		}
+		if reservationID != nil {
+			h["reservation_id"] = *reservationID
+		}
+		handovers = append(handovers, h)
+	}
+	hoRows.Close()
+	if err := hoRows.Err(); err != nil {
+		return nil, err
+	}
+	item["open_reservations"] = reservations
+	item["recent_handovers"] = handovers
+	item["open_reservation_count"] = len(reservations)
+	item["recent_handover_count"] = len(handovers)
+	return item, nil
+}
+
 func (s *Server) toolListCrmReservations(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
 	limit := toolLimit(args, 15, 1, 30)
 	status := stringArgMap(args, "status")
@@ -1958,6 +2058,115 @@ func (s *Server) toolListCrmReservations(ctx context.Context, ownerID uuid.UUID,
 		out = append(out, item)
 	}
 	return map[string]any{"count": len(out), "reservations": out}, rows.Err()
+}
+
+func (s *Server) toolGetCrmReservation(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	reservationID, err := uuid.Parse(stringArgMap(args, "reservation_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid reservation_id")
+	}
+	var title, status, contactID, contactName string
+	var reserved any
+	var notes *string
+	var hamsterID, hamsterName *string
+	var holdExpires *time.Time
+	var version int
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT r.title, r.status::text, r.reserved_at, r.notes, r.version, r.hold_expires_at,
+		       r.contact_id::text, c.name, r.hamster_id::text,
+		       CASE WHEN h.id IS NULL THEN NULL ELSE COALESCE(NULLIF(h.name,''), h.internal_code) END
+		FROM crm_reservation r
+		JOIN crm_contact c ON c.owner_id=r.owner_id AND c.id=r.contact_id
+		LEFT JOIN hamster h ON h.owner_id=r.owner_id AND h.id=r.hamster_id AND h.deleted_at IS NULL
+		WHERE r.owner_id=$1 AND r.id=$2
+	`, ownerID, reservationID).Scan(
+		&title, &status, &reserved, &notes, &version, &holdExpires,
+		&contactID, &contactName, &hamsterID, &hamsterName,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("reservation not found")
+	}
+	item := map[string]any{
+		"id": reservationID.String(), "title": title, "status": status,
+		"reserved_at": reserved, "version": version,
+		"contact_id": contactID, "contact_name": contactName,
+	}
+	if notes != nil && *notes != "" {
+		item["notes"] = *notes
+	}
+	if hamsterID != nil {
+		item["hamster_id"] = *hamsterID
+	}
+	if hamsterName != nil {
+		item["hamster_name"] = *hamsterName
+	}
+	if holdExpires != nil {
+		item["hold_expires_at"] = holdExpires.UTC().Format(time.RFC3339)
+		item["hold_expired"] = !holdExpires.After(time.Now().UTC())
+	}
+	// Linked non-cancelled handover if any.
+	var handoverID, handoverStatus *string
+	var scheduled any
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT id::text, status::text, scheduled_at
+		FROM crm_handover
+		WHERE owner_id=$1 AND reservation_id=$2 AND status <> 'cancelled'
+		ORDER BY scheduled_at DESC
+		LIMIT 1
+	`, ownerID, reservationID).Scan(&handoverID, &handoverStatus, &scheduled)
+	if err == nil && handoverID != nil {
+		item["handover"] = map[string]any{
+			"id": *handoverID, "status": *handoverStatus, "scheduled_at": scheduled,
+		}
+	}
+	return item, nil
+}
+
+func (s *Server) toolGetCrmHandover(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	handoverID, err := uuid.Parse(stringArgMap(args, "handover_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid handover_id")
+	}
+	var status, contactID, contactName string
+	var scheduled, completed any
+	var notes *string
+	var reservationID, hamsterID, hamsterName *string
+	var version int
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT h.status::text, h.scheduled_at, h.completed_at, h.notes, h.version,
+		       h.contact_id::text, c.name, h.reservation_id::text, h.hamster_id::text,
+		       CASE WHEN hamster.id IS NULL THEN NULL ELSE COALESCE(NULLIF(hamster.name,''), hamster.internal_code) END
+		FROM crm_handover h
+		JOIN crm_contact c ON c.owner_id=h.owner_id AND c.id=h.contact_id
+		LEFT JOIN hamster ON hamster.owner_id=h.owner_id AND hamster.id=h.hamster_id AND hamster.deleted_at IS NULL
+		WHERE h.owner_id=$1 AND h.id=$2
+	`, ownerID, handoverID).Scan(
+		&status, &scheduled, &completed, &notes, &version,
+		&contactID, &contactName, &reservationID, &hamsterID, &hamsterName,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("handover not found")
+	}
+	item := map[string]any{
+		"id": handoverID.String(), "status": status, "scheduled_at": scheduled,
+		"version": version, "contact_id": contactID, "contact_name": contactName,
+	}
+	if completed != nil {
+		item["completed_at"] = completed
+	}
+	if notes != nil && *notes != "" {
+		item["notes"] = *notes
+	}
+	if reservationID != nil {
+		item["reservation_id"] = *reservationID
+	}
+	if hamsterID != nil {
+		item["hamster_id"] = *hamsterID
+	}
+	if hamsterName != nil {
+		item["hamster_name"] = *hamsterName
+	}
+	return item, nil
 }
 
 func (s *Server) toolListAccountingSummary(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {

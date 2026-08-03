@@ -94,7 +94,9 @@ func TestReadOnlyToolDefinitionsNonEmpty(t *testing.T) {
 		names[d.Function.Name] = true
 	}
 	for _, need := range []string{
-		"get_hamster", "list_crm_contacts", "list_crm_reservations", "list_crm_handovers",
+		"get_hamster", "list_crm_contacts", "get_crm_contact",
+		"list_crm_reservations", "get_crm_reservation",
+		"list_crm_handovers", "get_crm_handover",
 		"list_accounting_summary", "list_accounting_records", "search_docs",
 		"list_recent_weights", "list_health_records",
 		"list_breeding_plans", "get_breeding_plan", "list_pairing_attempts",

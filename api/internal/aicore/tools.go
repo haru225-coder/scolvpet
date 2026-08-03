@@ -144,6 +144,16 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 		{
 			Type: "function",
 			Function: ToolFunctionSchema{
+				Name:        "get_crm_contact",
+				Description: "读取单个客户详情（联系方式/备注/状态）及近期预订、交付摘要。参数 contact_id。",
+				Parameters: obj(map[string]any{
+					"contact_id": strProp,
+				}, "contact_id"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
 				Name:        "list_crm_reservations",
 				Description: "列出本舍预订（held/confirmed 等），可按状态筛选。",
 				Parameters: obj(map[string]any{
@@ -155,12 +165,32 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 		{
 			Type: "function",
 			Function: ToolFunctionSchema{
+				Name:        "get_crm_reservation",
+				Description: "读取单个预订详情（客户/仓鼠/状态/hold 过期/备注）。参数 reservation_id。",
+				Parameters: obj(map[string]any{
+					"reservation_id": strProp,
+				}, "reservation_id"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
 				Name:        "list_crm_handovers",
 				Description: "列出本舍交付单（scheduled/completed），可按状态筛选。",
 				Parameters: obj(map[string]any{
 					"status": strProp,
 					"limit":  map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
 				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "get_crm_handover",
+				Description: "读取单个交付单详情（客户/仓鼠/预订/状态/排期）。参数 handover_id。",
+				Parameters: obj(map[string]any{
+					"handover_id": strProp,
+				}, "handover_id"),
 			},
 		},
 		{
