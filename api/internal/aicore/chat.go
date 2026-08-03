@@ -193,7 +193,14 @@ func (c *OptionalLLMClient) runGeneralChat(ctx context.Context, req ChatRequest)
 			} else {
 				value, err := req.RunTool(ctx, name, args)
 				if err != nil {
-					result = map[string]any{"error": err.Error()}
+					// Surface Chinese-friendly errors so the model can explain to users.
+					result = map[string]any{"error": true, "message": err.Error(), "tool": name}
+					toolFacts = append(toolFacts, Fact{
+						Key:    "tool_error:" + name,
+						Label:  "工具失败 " + name,
+						Value:  truncate(err.Error(), 160),
+						Source: "tool",
+					})
 				} else {
 					result = value
 					toolFacts = append(toolFacts, Fact{
@@ -213,12 +220,21 @@ func (c *OptionalLLMClient) runGeneralChat(ctx context.Context, req ChatRequest)
 				"content":      toolResultJSON(result),
 			})
 		}
-		// 有写草案时：再跑一轮「只说话」合成自然语言，避免干巴巴一句「已准备好」。
+		// 有写草案或工具失败时：再跑一轮「只说话」合成自然语言。
 		if len(pendingActions) > 0 {
 			forceSynthesize = true
 			messages = append(messages, map[string]any{
 				"role":    "user",
 				"content": "工具结果已返回。请用自然、具体的中文总结你查到的内容，并说明待确认卡片上用户需要做什么。不要再调用工具。",
+			})
+			continue
+		}
+		// 本轮仅失败/读结果且已是最后几轮：提示模型收束，避免空转。
+		if round >= maxRounds-2 {
+			forceSynthesize = true
+			messages = append(messages, map[string]any{
+				"role":    "user",
+				"content": "请根据已有工具结果直接用中文给出结论与下一步建议，不要再调用工具。若有 error 字段请诚实说明原因。",
 			})
 			continue
 		}
@@ -304,31 +320,33 @@ func messageContentString(content any) string {
 }
 
 func generalChatSystemPrompt(kennelFacts string, withTools bool) string {
-	base := `你是「熊舍管家」App 里的经营搭档：像一个懂仓鼠繁育与日常照护的店长助理，不是客服话术机，也不是只读报表。
-能力：闲聊、养宠通识、文案润色、流程建议、解释 App；更重要的是——基于本舍真实数据帮用户想清楚下一步。
-说话：自然、具体、有判断；先给结论再补关键数字；少套话、少复读用户问题；不要用「作为 AI」开头。
+	base := `你是「熊舍管家」App 里的经营搭档：懂仓鼠繁育与日常照护，像店长助理，不是客服话术机。
+说话：自然、具体、有判断；先结论再补关键数字；少套话；不要用「作为 AI」开头。
 纪律：
-1. 涉及本舍数量、个体、任务、金额、状态时禁止编造；`
+1. 本舍数量/个体/任务/金额/状态禁止编造；`
 	if withTools {
-		base += `先调工具再答。
-只读：get_overview、search_hamsters、get_hamster、list_tasks（可用 query 搜标题）、list_enclosures、list_breeding_plans、get_breeding_plan、list_pairing_attempts、list_litters、list_crm_contacts、get_crm_contact、list_crm_reservations、get_crm_reservation、list_crm_handovers、get_crm_handover、list_accounting_summary、list_accounting_records、search_docs、get_doc、list_doc_templates、list_recent_weights、list_health_records。
-写入草案（需确认）：create_task、complete_task（task_id 或唯一 query）、create_weight_record、create_hamster、update_hamster、create_enclosure、create_crm_contact、update_crm_contact、create_crm_reservation、confirm_crm_reservation、cancel_crm_reservation、create_crm_handover、complete_crm_handover、create_accounting_record、create_health_record、record_pairing_observation、create_separation_task、create_contract、create_receipt。
-完成任务闭环：先 list_tasks(query=关键词) 拿到 id，再 complete_task(task_id)；若标题唯一也可直接 complete_task(query=…)。
-繁育：问孕期/预产用 list_breeding_plans(state=gestation) 或 get_breeding_plan；问配对过程用 list_pairing_attempts；记观察用 record_pairing_observation；分笼提醒用 create_separation_task（真正执行分笼仍走 App 分笼流程）。
-单据：search_docs/get_doc 查；list_doc_templates 选模板；create_contract/create_receipt 只建 draft，签发仍走 App。
-2. 工具结果优先于下方快照；快照可能过期。
-3. 改数据时必须走写入工具生成「待确认」；明确说「你确认后才会写入」，禁止说「已创建/已完成」。
-4. 问题含糊时给最可能解读 + 1～2 个方向，少空泛反问。
-5. 主动给可执行建议，且须有工具数据支撑。`
+		base += `有工具就先查再答（参数以各工具 schema 为准，勿背参数表）。
+场景选型：
+· 概况数量 → get_overview
+· 仓鼠 → search_hamsters / get_hamster；新建改档案 → create_hamster / update_hamster
+· 任务 → list_tasks(query?)；完成 → complete_task(task_id 或唯一 query)；新建 → create_task
+· 笼盒 → list_enclosures / create_enclosure
+· 繁育 → list_breeding_plans / get_breeding_plan / list_pairing_attempts / list_litters；记观察 → record_pairing_observation；分笼提醒 → create_separation_task（真正分笼走 App）
+· CRM → list/get 客户·预订·交付；写入 create/update/confirm/cancel/complete 对应工具
+· 财务 → list_accounting_summary / list_accounting_records / create_accounting_record
+· 单据 → search_docs / get_doc / list_doc_templates；create_contract / create_receipt 仅 draft，签发走 App
+· 健康体重 → list_recent_weights / list_health_records / create_weight_record / create_health_record
+闭环：先 list/get 拿 id，再写入。工具结果优先于下方快照。
+写入必须走工具生成「待确认」卡片；明确说确认后才会写入，禁止说「已创建/已完成」。
+问题含糊时给最可能解读 + 1～2 个方向；建议须有工具数据支撑。`
 	} else {
 		base += `只能依据下方「本舍结构化事实」；没有的就诚实说不确定。
-2. 不要声称已经改过业务数据。
-3. 写操作需要用户确认。
-4. 问题含糊时给方向而不是空泛客套。`
+不要声称已经改过业务数据；写操作需要用户确认。
+问题含糊时给方向而不是空泛客套。`
 	}
 	base += `
-6. 中文为主；需要分点用短列表，不要输出 JSON/代码围栏（除非用户明确要求）。
-7. 不要假装能访问外部网页或本 App 以外的系统。`
+中文为主；需要分点用短列表；不要输出 JSON/代码围栏（除非用户明确要求）。
+不要假装能访问外部网页或本 App 以外的系统。`
 	facts := strings.TrimSpace(kennelFacts)
 	if facts == "" {
 		facts = "（暂无快照）"

@@ -328,19 +328,20 @@ class _AssistantPageState extends State<AssistantPage> {
       actions.where(_canExecuteAction).toList(growable: false);
 
   bool _canExecuteAction(AssistantAction action) {
+    // Server-side draft/confirm (CRM/finance/docs/health/breeding/…): any type
+    // with action_id is confirmable — do not hardcode a growing type whitelist.
+    // task_draft 是本地草稿（无 action_id），交由下方分支判定，保持与
+    // _handleAgentAction 的排除逻辑一致。
+    if (action.type != 'task_draft' &&
+        action.requiresConfirmation &&
+        (action.actionId?.trim().isNotEmpty ?? false)) {
+      return true;
+    }
     switch (action.type) {
       case 'task_draft':
         return widget.onOpenTaskDraft != null &&
             _payloadText(action, 'target_type').isNotEmpty &&
             _payloadText(action, 'target_id').isNotEmpty;
-      case 'create_task':
-      case 'complete_task':
-      case 'create_weight_record':
-      case 'create_hamster':
-      case 'update_hamster':
-      case 'create_enclosure':
-        return action.requiresConfirmation &&
-            (action.actionId?.trim().isNotEmpty ?? false);
       case 'open_hamster':
         final id = _payloadText(action, 'hamster_id');
         return widget.onOpenHamsterDetail != null &&
@@ -447,15 +448,14 @@ class _AssistantPageState extends State<AssistantPage> {
   };
 
   void _handleAgentAction(AssistantAction action) {
+    // Prefer server confirm for any backend-drafted write (CRM/docs/health/…).
+    if (action.type != 'task_draft' &&
+        action.requiresConfirmation &&
+        (action.actionId?.trim().isNotEmpty ?? false)) {
+      _confirmServerAction(action);
+      return;
+    }
     switch (action.type) {
-      case 'create_task':
-      case 'complete_task':
-      case 'create_weight_record':
-      case 'create_hamster':
-      case 'update_hamster':
-      case 'create_enclosure':
-        _confirmServerAction(action);
-        return;
       case 'task_draft':
         final targetType = action.payload['target_type']?.toString() ?? '';
         final targetId = action.payload['target_id']?.toString() ?? '';
@@ -517,6 +517,7 @@ class _AssistantPageState extends State<AssistantPage> {
         widget.onOpenGrowth?.call();
         return;
       default:
+        showIosMessage(context, '当前版本暂不支持此操作（${action.type}）');
         return;
     }
   }

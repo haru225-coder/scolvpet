@@ -9,7 +9,14 @@ import type { ApiEnvelope } from '../../../api/types'
 import { humanShortLabel, openPage } from '../../../utils/tab-routes'
 
 type Turn = { role: 'user' | 'assistant'; text: string; facts?: string[]; actions?: any[] }
-const PRESETS = ['现在有多少只在养？', '有没有逾期任务？', '繁育概况怎么样？', '幼崽护理要注意什么？', '你能做什么？']
+const PRESETS = [
+  '现在有多少只在养？',
+  '有没有逾期任务？',
+  '最近客户预订怎么样？',
+  '本月收支摘要？',
+  '有哪些孕期计划？',
+  '你能做什么？',
+]
 
 export default function AssistantPage() {
   const [question, setQuestion] = useState('')
@@ -50,7 +57,12 @@ export default function AssistantPage() {
   }
 
   async function resolveAction(action: any, confirm: boolean) {
-    if (!action.actionId) return
+    // task_draft 等本地草稿动作没有 action_id，确认/取消按钮不应出现；
+    // 若仍被触发（数据异常），给提示而不是静默 return。
+    if (!action.actionId) {
+      setMessage('此操作需先点击卡片进入详情页处理')
+      return
+    }
     setBusy(true)
     try {
       if (confirm) await p2Api.confirmAssistantAction({ actionId: action.actionId, idempotencyKey: newIdempotencyKey() })
@@ -104,7 +116,7 @@ export default function AssistantPage() {
             {turns.length ? <Button block variant="outlined" disabled={busy} onClick={clearConversation}>清空当前对话</Button> : null}
           </Section>
           <Section header="对话">
-            {turns.length === 0 ? <Cell title="例如：今天有哪些逾期照护任务？" subtitle="助手只读取当前经营账号的数据" /> : turns.map((turn, index) => <View key={`${turn.role}-${index}`} style={{ padding: '12px 16px' }}><Text style={{ fontWeight: '600' }}>{turn.role === 'user' ? '我' : '熊舍助手'}</Text><Text style={{ display: 'block', paddingTop: '6px' }}>{turn.text}</Text>{turn.facts?.map((fact) => <Text key={fact} style={{ display: 'block', paddingTop: '4px', color: 'rgba(255,255,255,0.55)' }}>{fact}</Text>)}{turn.actions?.map((action) => <View key={action.actionId || action.label} style={{ paddingTop: '10px' }}><Cell title={action.label} subtitle={action.summary} value={<Tag tone={action.status === 'executed' ? 'success' : action.status === 'cancelled' ? 'danger' : 'warning'}>{action.status ? humanShortLabel(action.status) : (action.requiresConfirmation ? '待确认' : '建议')}</Tag>} onClick={() => openAction(action)} />{action.requiresConfirmation && !action.status ? <View style={{ display: 'flex', gap: '12px', paddingTop: '8px' }}><Button variant="outlined" disabled={busy} onClick={() => void resolveAction(action, true)}>确认执行</Button><Button variant="text" disabled={busy} onClick={() => void resolveAction(action, false)}>取消</Button></View> : null}</View>)}</View>)}
+            {turns.length === 0 ? <Cell title="例如：今天有哪些逾期照护任务？" subtitle="助手只读取当前经营账号的数据" /> : turns.map((turn, index) => <View key={`${turn.role}-${index}`} style={{ padding: '12px 16px' }}><Text style={{ fontWeight: '600' }}>{turn.role === 'user' ? '我' : '熊舍助手'}</Text><Text style={{ display: 'block', paddingTop: '6px' }}>{turn.text}</Text>{turn.facts?.map((fact) => <Text key={fact} style={{ display: 'block', paddingTop: '4px', color: 'rgba(255,255,255,0.55)' }}>{fact}</Text>)}{turn.actions?.map((action) => <View key={action.actionId || action.label} style={{ paddingTop: '10px' }}><Cell title={action.label} subtitle={action.summary} value={<Tag tone={action.status === 'executed' ? 'success' : action.status === 'cancelled' ? 'danger' : 'warning'}>{action.status ? humanShortLabel(action.status) : (action.requiresConfirmation ? '待确认' : '建议')}</Tag>} onClick={() => openAction(action)} />{action.requiresConfirmation && action.actionId && !action.status ? <View style={{ display: 'flex', gap: '12px', paddingTop: '8px' }}><Button variant="outlined" disabled={busy} onClick={() => void resolveAction(action, true)}>确认执行</Button><Button variant="text" disabled={busy} onClick={() => void resolveAction(action, false)}>取消</Button></View> : null}</View>)}</View>)}
           </Section>
           <Section header="提问">
             <FormRow label="问题"><Input value={question} placeholder="输入经营问题" onInput={(event) => setQuestion(event.detail.value)} onConfirm={() => void ask()} /></FormRow>

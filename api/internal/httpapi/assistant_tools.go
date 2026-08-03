@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -27,8 +28,74 @@ func (s *Server) runAssistantTool(
 	args map[string]any,
 ) (any, error) {
 	if s.Store == nil || s.Store.Pool == nil {
-		return nil, fmt.Errorf("database unavailable")
+		return nil, fmt.Errorf("数据库不可用")
 	}
+	result, err := s.dispatchAssistantTool(ctx, ownerID, sess, name, args)
+	if err != nil {
+		mapped := mapAssistantToolError(err)
+		// 仅未识别的未知错误（收敛为通用文案）需要告警；常见业务错误
+		// 映射后用户侧可见，无需刷日志。
+		if errors.Is(mapped, errOperationFailed) {
+			s.Logger.Warn("assistant tool failed", "tool", name, "owner", ownerID.String(), "error", err)
+		}
+		return nil, mapped
+	}
+	return result, nil
+}
+
+// errOperationFailed 是未识别英文错误的统一收敛文案，不向用户透出内部细节。
+var errOperationFailed = errors.New("操作失败，请稍后重试")
+
+func mapAssistantToolError(err error) error {
+	if err == nil {
+		return nil
+	}
+	msg := err.Error()
+	// 已含中文的文案（含内嵌数据的中文模板）视为用户友好，直接保留——
+	// 放在 switch 之前，避免中文模板内嵌的英文关键词（如查询词恰为
+	// "conflict"）被误映射改写。「英文模板+中文数据」的误判场景已由
+	// 源头中文化（resolveOpenTaskForComplete）消除。
+	if containsCJK(msg) {
+		return err
+	}
+	// 常见英文错误关键词映射为用户友好中文。
+	switch {
+	case strings.Contains(msg, "not found"):
+		return fmt.Errorf("找不到对应记录（%s）", msg)
+	case strings.Contains(msg, "session required"):
+		return fmt.Errorf("写操作需要有效会话，请重新打开助手后再试")
+	case strings.Contains(msg, "required"):
+		return fmt.Errorf("缺少必要参数：%s", msg)
+	case strings.Contains(msg, "invalid"):
+		return fmt.Errorf("参数无效：%s", msg)
+	case strings.Contains(msg, "conflict"):
+		return fmt.Errorf("操作冲突，请刷新后再试（%s）", msg)
+	case strings.Contains(msg, "unknown tool"):
+		return fmt.Errorf("不支持的工具：%s", msg)
+	case strings.Contains(msg, "unsupported action"):
+		return fmt.Errorf("不支持的确认动作：%s", msg)
+	}
+	// 未知英文错误不把内部细节透给用户（原始错误已记录到服务端日志）。
+	return errOperationFailed
+}
+
+// containsCJK reports whether s contains any CJK unified ideograph (U+4E00–U+9FFF).
+func containsCJK(s string) bool {
+	for _, r := range s {
+		if r >= 0x4E00 && r <= 0x9FFF {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Server) dispatchAssistantTool(
+	ctx context.Context,
+	ownerID uuid.UUID,
+	sess assistantToolSession,
+	name string,
+	args map[string]any,
+) (any, error) {
 	switch name {
 	case "get_overview":
 		snap, err := s.loadAssistantSnapshot(ctx, ownerID)
@@ -268,7 +335,7 @@ func (s *Server) resolveOpenTaskForComplete(ctx context.Context, ownerID uuid.UU
 		return uuid.Nil, "", "", err
 	}
 	if len(hits) == 0 {
-		return uuid.Nil, "", "", fmt.Errorf("no open task matches query %q", q)
+		return uuid.Nil, "", "", fmt.Errorf("没有匹配的未完成任务（查询词：%s），可先 list_tasks 查看全部任务", q)
 	}
 	if len(hits) > 1 {
 		// Prefer exact title match if unique.
@@ -281,7 +348,7 @@ func (s *Server) resolveOpenTaskForComplete(ctx context.Context, ownerID uuid.UU
 		if len(exact) == 1 {
 			return exact[0].id, exact[0].title, exact[0].status, nil
 		}
-		return uuid.Nil, "", "", fmt.Errorf("query %q matches %d open tasks; use list_tasks then complete_task(task_id)", q, len(hits))
+		return uuid.Nil, "", "", fmt.Errorf("查询词「%s」匹配到 %d 个未完成任务，请先 list_tasks 再 complete_task(task_id)", q, len(hits))
 	}
 	return hits[0].id, hits[0].title, hits[0].status, nil
 }
