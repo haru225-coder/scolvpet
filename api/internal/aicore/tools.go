@@ -81,9 +81,32 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 			Type: "function",
 			Function: ToolFunctionSchema{
 				Name:        "list_breeding_plans",
-				Description: "列出本舍繁育计划摘要。",
+				Description: "列出本舍繁育计划摘要；可筛 state（如 gestation/pairing/planned）。含预产窗口 expected_birth_start/end。",
 				Parameters: obj(map[string]any{
+					"state": strProp,
 					"limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 20},
+				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "get_breeding_plan",
+				Description: "读取单个繁育计划详情（父母、状态、配对基准、预产窗口、当前配对尝试）。参数 plan_id。",
+				Parameters: obj(map[string]any{
+					"plan_id": strProp,
+				}, "plan_id"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "list_pairing_attempts",
+				Description: "列出本舍配对尝试（active/separated 等）；可筛 status、plan_id。",
+				Parameters: obj(map[string]any{
+					"status":  strProp,
+					"plan_id": strProp,
+					"limit":   map[string]any{"type": "integer", "minimum": 1, "maximum": 20},
 				}),
 			},
 		},
@@ -367,6 +390,16 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 			Function: ToolFunctionSchema{
 				Name:        "confirm_crm_reservation",
 				Description: "确认预订草案（held→confirmed，需用户确认）。参数 reservation_id。",
+				Parameters: obj(map[string]any{
+					"reservation_id": strProp,
+				}, "reservation_id"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "cancel_crm_reservation",
+				Description: "取消预订草案（held/confirmed→cancelled，需用户确认）。参数 reservation_id。",
 				Parameters: obj(map[string]any{
 					"reservation_id": strProp,
 				}, "reservation_id"),

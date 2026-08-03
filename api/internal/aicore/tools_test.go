@@ -97,7 +97,9 @@ func TestReadOnlyToolDefinitionsNonEmpty(t *testing.T) {
 		"get_hamster", "list_crm_contacts", "list_crm_reservations", "list_crm_handovers",
 		"list_accounting_summary", "list_accounting_records", "search_docs",
 		"list_recent_weights", "list_health_records",
-		"create_crm_contact", "update_crm_contact", "create_crm_reservation", "confirm_crm_reservation",
+		"list_breeding_plans", "get_breeding_plan", "list_pairing_attempts",
+		"create_crm_contact", "update_crm_contact", "create_crm_reservation",
+		"confirm_crm_reservation", "cancel_crm_reservation",
 		"create_crm_handover", "complete_crm_handover",
 		"create_accounting_record", "create_health_record",
 	} {

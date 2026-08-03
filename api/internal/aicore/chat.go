@@ -311,9 +311,10 @@ func generalChatSystemPrompt(kennelFacts string, withTools bool) string {
 1. 涉及本舍数量、个体、任务、金额、状态时禁止编造；`
 	if withTools {
 		base += `先调工具再答。
-只读：get_overview、search_hamsters、get_hamster、list_tasks（可用 query 搜标题）、list_enclosures、list_breeding_plans、list_litters、list_crm_contacts、list_crm_reservations、list_crm_handovers、list_accounting_summary、list_accounting_records、search_docs、list_recent_weights、list_health_records。
-写入草案（需确认）：create_task、complete_task（task_id 或唯一 query）、create_weight_record、create_hamster、update_hamster、create_enclosure、create_crm_contact、update_crm_contact、create_crm_reservation、confirm_crm_reservation、create_crm_handover、complete_crm_handover、create_accounting_record、create_health_record。
+只读：get_overview、search_hamsters、get_hamster、list_tasks（可用 query 搜标题）、list_enclosures、list_breeding_plans、get_breeding_plan、list_pairing_attempts、list_litters、list_crm_contacts、list_crm_reservations、list_crm_handovers、list_accounting_summary、list_accounting_records、search_docs、list_recent_weights、list_health_records。
+写入草案（需确认）：create_task、complete_task（task_id 或唯一 query）、create_weight_record、create_hamster、update_hamster、create_enclosure、create_crm_contact、update_crm_contact、create_crm_reservation、confirm_crm_reservation、cancel_crm_reservation、create_crm_handover、complete_crm_handover、create_accounting_record、create_health_record。
 完成任务闭环：先 list_tasks(query=关键词) 拿到 id，再 complete_task(task_id)；若标题唯一也可直接 complete_task(query=…)。
+繁育：问孕期/预产用 list_breeding_plans(state=gestation) 或 get_breeding_plan；问配对过程用 list_pairing_attempts。
 2. 工具结果优先于下方快照；快照可能过期。
 3. 改数据时必须走写入工具生成「待确认」；明确说「你确认后才会写入」，禁止说「已创建/已完成」。
 4. 问题含糊时给最可能解读 + 1～2 个方向，少空泛反问。

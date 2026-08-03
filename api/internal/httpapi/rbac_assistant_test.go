@@ -13,7 +13,8 @@ func TestAssistantConfirmMirrorsDirectRBAC(t *testing.T) {
 	confirmable := []string{
 		"create_task", "complete_task", "create_weight_record",
 		"create_hamster", "update_hamster", "create_enclosure",
-		"create_crm_contact", "update_crm_contact", "create_crm_reservation", "confirm_crm_reservation",
+		"create_crm_contact", "update_crm_contact", "create_crm_reservation",
+		"confirm_crm_reservation", "cancel_crm_reservation",
 		"create_crm_handover", "complete_crm_handover",
 		"create_accounting_record", "create_health_record",
 	}
@@ -38,7 +39,8 @@ func TestAssistantConfirmMirrorsDirectRBAC(t *testing.T) {
 			t.Fatalf("breeder must keep health-record writes via confirm")
 		}
 		// staff keeps CRM writes through confirm.
-		if strings.HasPrefix(actionType, "create_crm_") || actionType == "confirm_crm_reservation" || actionType == "complete_crm_handover" {
+		if strings.HasPrefix(actionType, "create_crm_") || actionType == "confirm_crm_reservation" ||
+			actionType == "cancel_crm_reservation" || actionType == "complete_crm_handover" {
 			if !principalCanRequest("staff", http.MethodPost, route) {
 				t.Fatalf("staff must keep CRM writes via confirm for %s", actionType)
 			}

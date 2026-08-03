@@ -53,6 +53,10 @@ func (s *Server) runAssistantTool(
 		return s.toolListEnclosures(ctx, ownerID, args)
 	case "list_breeding_plans":
 		return s.toolListBreedingPlans(ctx, ownerID, args)
+	case "get_breeding_plan":
+		return s.toolGetBreedingPlan(ctx, ownerID, args)
+	case "list_pairing_attempts":
+		return s.toolListPairingAttempts(ctx, ownerID, args)
 	case "list_litters":
 		return s.toolListLitters(ctx, ownerID, args)
 	case "get_hamster":
@@ -93,6 +97,8 @@ func (s *Server) runAssistantTool(
 		return s.toolDraftCreateCrmReservation(ctx, ownerID, sess, args)
 	case "confirm_crm_reservation":
 		return s.toolDraftConfirmCrmReservation(ctx, ownerID, sess, args)
+	case "cancel_crm_reservation":
+		return s.toolDraftCancelCrmReservation(ctx, ownerID, sess, args)
 	case "create_crm_handover":
 		return s.toolDraftCreateCrmHandover(ctx, ownerID, sess, args)
 	case "complete_crm_handover":
@@ -513,6 +519,8 @@ func (s *Server) executeAssistantAction(ctx context.Context, ownerID uuid.UUID, 
 		return s.executeCreateCrmReservation(ctx, ownerID, payload)
 	case "confirm_crm_reservation":
 		return s.executeConfirmCrmReservation(ctx, ownerID, payload)
+	case "cancel_crm_reservation":
+		return s.executeCancelCrmReservation(ctx, ownerID, payload)
 	case "create_crm_handover":
 		return s.executeCreateCrmHandover(ctx, ownerID, payload)
 	case "complete_crm_handover":
@@ -981,6 +989,42 @@ func (s *Server) executeConfirmCrmReservation(ctx context.Context, ownerID uuid.
 	}, nil
 }
 
+func (s *Server) executeCancelCrmReservation(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	reservationID, err := uuid.Parse(stringArgMap(payload, "reservation_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid reservation_id")
+	}
+	var title, status string
+	var version int
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT title, status::text, version
+		FROM crm_reservation WHERE owner_id=$1 AND id=$2
+	`, ownerID, reservationID).Scan(&title, &status, &version)
+	if err != nil {
+		return nil, fmt.Errorf("reservation not found")
+	}
+	if status != "held" && status != "confirmed" {
+		return nil, fmt.Errorf("reservation cannot be cancelled (status=%s)", status)
+	}
+	tag, err := s.Store.Pool.Exec(ctx, `
+		UPDATE crm_reservation
+		SET status='cancelled'::crm_reservation_status, version=version+1, updated_at=now()
+		WHERE owner_id=$1 AND id=$2 AND version=$3 AND status IN ('held','confirmed')
+	`, ownerID, reservationID, version)
+	if err != nil {
+		return nil, err
+	}
+	if tag.RowsAffected() != 1 {
+		return nil, fmt.Errorf("reservation cancel conflict")
+	}
+	return map[string]any{
+		"reservation_id": reservationID.String(),
+		"title":          title,
+		"status":         "cancelled",
+		"previous":       status,
+	}, nil
+}
+
 func (s *Server) executeCompleteCrmHandover(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
 	handoverID, err := uuid.Parse(stringArgMap(payload, "handover_id"))
 	if err != nil {
@@ -1446,31 +1490,219 @@ func (s *Server) toolListEnclosures(ctx context.Context, ownerID uuid.UUID, args
 
 func (s *Server) toolListBreedingPlans(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
 	limit := toolLimit(args, 15, 1, 20)
-	rows, err := s.Store.Pool.Query(ctx, `
-		SELECT id::text, state::text, COALESCE(name,''),
-		       planned_pairing_at, created_at
-		FROM breeding_plan
-		WHERE owner_id=$1 AND deleted_at IS NULL
-		ORDER BY updated_at DESC
-		LIMIT $2
-	`, ownerID, limit)
+	state := stringArgMap(args, "state")
+	query := `
+		SELECT p.id::text, p.state::text, COALESCE(p.name,''),
+		       p.planned_pairing_at, p.mating_baseline_at,
+		       p.expected_birth_start, p.expected_birth_end,
+		       p.sire_id::text, p.dam_id::text,
+		       COALESCE(NULLIF(sire.name,''), sire.internal_code, ''),
+		       COALESCE(NULLIF(dam.name,''), dam.internal_code, ''),
+		       p.created_at
+		FROM breeding_plan p
+		LEFT JOIN hamster sire ON sire.owner_id=p.owner_id AND sire.id=p.sire_id AND sire.deleted_at IS NULL
+		LEFT JOIN hamster dam ON dam.owner_id=p.owner_id AND dam.id=p.dam_id AND dam.deleted_at IS NULL
+		WHERE p.owner_id=$1 AND p.deleted_at IS NULL`
+	qargs := []any{ownerID}
+	if state != "" {
+		query += ` AND p.state::text=$2`
+		qargs = append(qargs, state)
+		query += ` ORDER BY p.updated_at DESC LIMIT $3`
+		qargs = append(qargs, limit)
+	} else {
+		query += ` ORDER BY p.updated_at DESC LIMIT $2`
+		qargs = append(qargs, limit)
+	}
+	rows, err := s.Store.Pool.Query(ctx, query, qargs...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	out := make([]map[string]any, 0)
+	now := time.Now().UTC()
 	for rows.Next() {
-		var id, state, name string
-		var pairing, created any
-		if err := rows.Scan(&id, &state, &name, &pairing, &created); err != nil {
+		var id, st, name, sireID, damID, sireName, damName string
+		var pairing, baseline, birthStart, birthEnd, created any
+		if err := rows.Scan(&id, &st, &name, &pairing, &baseline, &birthStart, &birthEnd, &sireID, &damID, &sireName, &damName, &created); err != nil {
 			return nil, err
 		}
-		out = append(out, map[string]any{
-			"id": id, "state": state, "name": name,
-			"planned_pairing_at": pairing, "created_at": created,
-		})
+		item := map[string]any{
+			"id": id, "state": st, "name": name,
+			"sire_id": sireID, "dam_id": damID,
+			"sire_name": sireName, "dam_name": damName,
+			"created_at": created,
+		}
+		if pairing != nil {
+			item["planned_pairing_at"] = pairing
+		}
+		if baseline != nil {
+			item["mating_baseline_at"] = baseline
+		}
+		if birthStart != nil {
+			item["expected_birth_start"] = birthStart
+		}
+		if birthEnd != nil {
+			item["expected_birth_end"] = birthEnd
+		}
+		// Hint if currently inside expected birth window.
+		if bs, ok := birthStart.(time.Time); ok {
+			if be, ok2 := birthEnd.(time.Time); ok2 {
+				item["in_birth_window"] = !now.Before(bs) && !now.After(be)
+			}
+		}
+		out = append(out, item)
 	}
 	return map[string]any{"count": len(out), "plans": out}, rows.Err()
+}
+
+func (s *Server) toolGetBreedingPlan(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	planID, err := uuid.Parse(stringArgMap(args, "plan_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid plan_id")
+	}
+	var (
+		id, state, name, sireID, damID, sireName, damName string
+		pairing, baseline, birthStart, birthEnd, actualBirth, created any
+		activeAttempt, litterID *string
+		notes *string
+	)
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT p.id::text, p.state::text, COALESCE(p.name,''),
+		       p.planned_pairing_at, p.mating_baseline_at,
+		       p.expected_birth_start, p.expected_birth_end, p.actual_birth_at,
+		       p.sire_id::text, p.dam_id::text,
+		       COALESCE(NULLIF(sire.name,''), sire.internal_code, ''),
+		       COALESCE(NULLIF(dam.name,''), dam.internal_code, ''),
+		       p.notes, p.created_at,
+		       (SELECT pa.id::text FROM pairing_attempt pa
+		         WHERE pa.owner_id=p.owner_id AND pa.breeding_plan_id=p.id
+		           AND pa.status IN ('active','safety_hold') AND pa.deleted_at IS NULL
+		         ORDER BY pa.attempt_no DESC LIMIT 1),
+		       (SELECT l.id::text FROM litter l
+		         WHERE l.owner_id=p.owner_id AND l.breeding_plan_id=p.id
+		           AND l.state <> 'voided' AND l.deleted_at IS NULL
+		         ORDER BY l.created_at DESC LIMIT 1)
+		FROM breeding_plan p
+		LEFT JOIN hamster sire ON sire.owner_id=p.owner_id AND sire.id=p.sire_id AND sire.deleted_at IS NULL
+		LEFT JOIN hamster dam ON dam.owner_id=p.owner_id AND dam.id=p.dam_id AND dam.deleted_at IS NULL
+		WHERE p.owner_id=$1 AND p.id=$2 AND p.deleted_at IS NULL
+	`, ownerID, planID).Scan(
+		&id, &state, &name, &pairing, &baseline, &birthStart, &birthEnd, &actualBirth,
+		&sireID, &damID, &sireName, &damName, &notes, &created, &activeAttempt, &litterID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("breeding plan not found")
+	}
+	item := map[string]any{
+		"id": id, "state": state, "name": name,
+		"sire_id": sireID, "dam_id": damID,
+		"sire_name": sireName, "dam_name": damName,
+		"created_at": created,
+	}
+	if pairing != nil {
+		item["planned_pairing_at"] = pairing
+	}
+	if baseline != nil {
+		item["mating_baseline_at"] = baseline
+	}
+	if birthStart != nil {
+		item["expected_birth_start"] = birthStart
+	}
+	if birthEnd != nil {
+		item["expected_birth_end"] = birthEnd
+	}
+	if actualBirth != nil {
+		item["actual_birth_at"] = actualBirth
+	}
+	if notes != nil && *notes != "" {
+		item["notes"] = *notes
+	}
+	if activeAttempt != nil {
+		item["active_pairing_attempt_id"] = *activeAttempt
+	}
+	if litterID != nil {
+		item["litter_id"] = *litterID
+	}
+	now := time.Now().UTC()
+	if bs, ok := birthStart.(time.Time); ok {
+		if be, ok2 := birthEnd.(time.Time); ok2 {
+			item["in_birth_window"] = !now.Before(bs) && !now.After(be)
+			if now.Before(bs) {
+				item["days_to_birth_window"] = int(bs.Sub(now).Hours() / 24)
+			}
+		}
+	}
+	return item, nil
+}
+
+func (s *Server) toolListPairingAttempts(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	limit := toolLimit(args, 15, 1, 20)
+	status := stringArgMap(args, "status")
+	planRaw := stringArgMap(args, "plan_id")
+	query := `
+		SELECT pa.id::text, pa.breeding_plan_id::text, pa.attempt_no, pa.status::text,
+		       COALESCE(pa.result::text,''), pa.started_at, pa.separated_at, pa.separation_deadline,
+		       pa.sire_id::text, pa.dam_id::text,
+		       COALESCE(NULLIF(sire.name,''), sire.internal_code, ''),
+		       COALESCE(NULLIF(dam.name,''), dam.internal_code, ''),
+		       COALESCE(p.name,'')
+		FROM pairing_attempt pa
+		JOIN breeding_plan p ON p.owner_id=pa.owner_id AND p.id=pa.breeding_plan_id
+		LEFT JOIN hamster sire ON sire.owner_id=pa.owner_id AND sire.id=pa.sire_id AND sire.deleted_at IS NULL
+		LEFT JOIN hamster dam ON dam.owner_id=pa.owner_id AND dam.id=pa.dam_id AND dam.deleted_at IS NULL
+		WHERE pa.owner_id=$1 AND pa.deleted_at IS NULL`
+	qargs := []any{ownerID}
+	argN := 2
+	if status != "" {
+		query += fmt.Sprintf(` AND pa.status::text=$%d`, argN)
+		qargs = append(qargs, status)
+		argN++
+	}
+	if planRaw != "" {
+		pid, err := uuid.Parse(planRaw)
+		if err != nil {
+			return nil, fmt.Errorf("invalid plan_id")
+		}
+		query += fmt.Sprintf(` AND pa.breeding_plan_id=$%d`, argN)
+		qargs = append(qargs, pid)
+		argN++
+	}
+	query += fmt.Sprintf(` ORDER BY pa.started_at DESC NULLS LAST LIMIT $%d`, argN)
+	qargs = append(qargs, limit)
+	rows, err := s.Store.Pool.Query(ctx, query, qargs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make([]map[string]any, 0)
+	now := time.Now().UTC()
+	for rows.Next() {
+		var id, planID, st, result, sireID, damID, sireName, damName, planName string
+		var attemptNo int
+		var started, separated, deadline any
+		if err := rows.Scan(&id, &planID, &attemptNo, &st, &result, &started, &separated, &deadline, &sireID, &damID, &sireName, &damName, &planName); err != nil {
+			return nil, err
+		}
+		item := map[string]any{
+			"id": id, "plan_id": planID, "attempt_no": attemptNo, "status": st,
+			"sire_id": sireID, "dam_id": damID, "sire_name": sireName, "dam_name": damName,
+			"plan_name": planName, "started_at": started,
+		}
+		if result != "" {
+			item["result"] = result
+		}
+		if separated != nil {
+			item["separated_at"] = separated
+		}
+		if deadline != nil {
+			item["separation_deadline"] = deadline
+			if dl, ok := deadline.(time.Time); ok && st == "active" {
+				item["past_separation_deadline"] = now.After(dl)
+			}
+		}
+		out = append(out, item)
+	}
+	return map[string]any{"count": len(out), "attempts": out}, rows.Err()
 }
 
 func (s *Server) toolListLitters(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
@@ -2349,6 +2581,49 @@ func (s *Server) toolDraftConfirmCrmReservation(ctx context.Context, ownerID uui
 		"pending_confirmation": true,
 		"action_id":            action.ID.String(),
 		"type":                 "confirm_crm_reservation",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolDraftCancelCrmReservation(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	reservationID, err := uuid.Parse(stringArgMap(args, "reservation_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid reservation_id")
+	}
+	var title, status, contactName string
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT r.title, r.status::text, c.name
+		FROM crm_reservation r
+		JOIN crm_contact c ON c.owner_id=r.owner_id AND c.id=r.contact_id
+		WHERE r.owner_id=$1 AND r.id=$2
+	`, ownerID, reservationID).Scan(&title, &status, &contactName)
+	if err != nil {
+		return nil, fmt.Errorf("reservation not found")
+	}
+	if status != "held" && status != "confirmed" {
+		return nil, fmt.Errorf("reservation cannot be cancelled (status=%s)", status)
+	}
+	payload := map[string]any{
+		"reservation_id": reservationID.String(),
+		"title":          title,
+		"contact_name":   contactName,
+		"current_status": status,
+	}
+	summary := fmt.Sprintf("取消预订「%s」→ 客户 %s（当前 %s）", title, contactName, status)
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "cancel_crm_reservation", "确认取消预订", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "cancel_crm_reservation",
 		"label":                action.Label,
 		"summary":              action.Summary,
 		"payload":              payload,
