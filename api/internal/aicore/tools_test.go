@@ -94,8 +94,10 @@ func TestReadOnlyToolDefinitionsNonEmpty(t *testing.T) {
 		names[d.Function.Name] = true
 	}
 	for _, need := range []string{
-		"get_hamster", "list_crm_contacts", "list_crm_reservations",
-		"list_accounting_summary", "search_docs", "list_recent_weights", "create_crm_contact",
+		"get_hamster", "list_crm_contacts", "list_crm_reservations", "list_crm_handovers",
+		"list_accounting_summary", "search_docs", "list_recent_weights",
+		"create_crm_contact", "create_crm_reservation", "create_crm_handover",
+		"create_accounting_record", "create_health_record",
 	} {
 		if !names[need] {
 			t.Fatalf("missing tool %s", need)

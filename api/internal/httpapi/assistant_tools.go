@@ -61,6 +61,8 @@ func (s *Server) runAssistantTool(
 		return s.toolListCrmContacts(ctx, ownerID, args)
 	case "list_crm_reservations":
 		return s.toolListCrmReservations(ctx, ownerID, args)
+	case "list_crm_handovers":
+		return s.toolListCrmHandovers(ctx, ownerID, args)
 	case "list_accounting_summary":
 		return s.toolListAccountingSummary(ctx, ownerID, args)
 	case "search_docs":
@@ -81,6 +83,14 @@ func (s *Server) runAssistantTool(
 		return s.toolDraftCreateEnclosure(ctx, ownerID, sess, args)
 	case "create_crm_contact":
 		return s.toolDraftCreateCrmContact(ctx, ownerID, sess, args)
+	case "create_crm_reservation":
+		return s.toolDraftCreateCrmReservation(ctx, ownerID, sess, args)
+	case "create_crm_handover":
+		return s.toolDraftCreateCrmHandover(ctx, ownerID, sess, args)
+	case "create_accounting_record":
+		return s.toolDraftCreateAccountingRecord(ctx, ownerID, sess, args)
+	case "create_health_record":
+		return s.toolDraftCreateHealthRecord(ctx, ownerID, sess, args)
 	default:
 		return nil, fmt.Errorf("unknown tool %s", name)
 	}
@@ -424,6 +434,14 @@ func (s *Server) executeAssistantAction(ctx context.Context, ownerID uuid.UUID, 
 		return s.executeCreateEnclosure(ctx, ownerID, payload)
 	case "create_crm_contact":
 		return s.executeCreateCrmContact(ctx, ownerID, payload)
+	case "create_crm_reservation":
+		return s.executeCreateCrmReservation(ctx, ownerID, payload)
+	case "create_crm_handover":
+		return s.executeCreateCrmHandover(ctx, ownerID, payload)
+	case "create_accounting_record":
+		return s.executeCreateAccountingRecord(ctx, ownerID, payload)
+	case "create_health_record":
+		return s.executeCreateHealthRecord(ctx, ownerID, payload)
 	default:
 		return nil, fmt.Errorf("unsupported action type %s", actionType)
 	}
@@ -458,6 +476,330 @@ func (s *Server) executeCreateCrmContact(ctx context.Context, ownerID uuid.UUID,
 		"contact_id": id.String(),
 		"name":       name,
 		"status":     status,
+	}, nil
+}
+
+func (s *Server) executeCreateCrmReservation(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	contactID, err := uuid.Parse(stringArgMap(payload, "contact_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid contact_id")
+	}
+	var contactStatus, contactName string
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT status::text, name FROM crm_contact WHERE owner_id=$1 AND id=$2
+	`, ownerID, contactID).Scan(&contactStatus, &contactName)
+	if err != nil {
+		return nil, fmt.Errorf("contact not found")
+	}
+	if contactStatus == "archived" {
+		return nil, fmt.Errorf("archived contact cannot reserve")
+	}
+	title := stringArgMap(payload, "title")
+	if title == "" {
+		title = "预订"
+	}
+	notes := stringArgMap(payload, "notes")
+	var hamsterID *uuid.UUID
+	if raw := stringArgMap(payload, "hamster_id"); raw != "" {
+		hid, parseErr := uuid.Parse(raw)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid hamster_id")
+		}
+		var lifecycle string
+		err = s.Store.Pool.QueryRow(ctx, `
+			SELECT lifecycle_status::text FROM hamster
+			WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+		`, ownerID, hid).Scan(&lifecycle)
+		if err != nil {
+			return nil, fmt.Errorf("hamster not found")
+		}
+		if lifecycle != "active" {
+			return nil, fmt.Errorf("hamster not reservable")
+		}
+		var open bool
+		err = s.Store.Pool.QueryRow(ctx, `
+			SELECT EXISTS(
+				SELECT 1 FROM crm_reservation
+				WHERE owner_id=$1 AND hamster_id=$2
+				  AND (
+				    status = 'confirmed'
+				    OR (status = 'held' AND (hold_expires_at IS NULL OR hold_expires_at > now()))
+				  )
+			)
+		`, ownerID, hid).Scan(&open)
+		if err != nil {
+			return nil, err
+		}
+		if open {
+			return nil, fmt.Errorf("hamster already reserved")
+		}
+		hamsterID = &hid
+	}
+	orgID, err := s.currentOrganizationID(ctx, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	holdExpires := time.Now().UTC().Add(30 * time.Minute)
+	var id uuid.UUID
+	err = s.Store.Pool.QueryRow(ctx, `
+		INSERT INTO crm_reservation (
+			owner_id, organization_id, contact_id, hamster_id, title, status, notes, hold_expires_at
+		) VALUES ($1,$2,$3,$4,$5,'held',NULLIF($6,''),$7)
+		RETURNING id
+	`, ownerID, orgID, contactID, hamsterID, title, notes, holdExpires).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+	out := map[string]any{
+		"reservation_id": id.String(),
+		"contact_id":     contactID.String(),
+		"contact_name":   contactName,
+		"title":          title,
+		"status":         "held",
+	}
+	if hamsterID != nil {
+		out["hamster_id"] = hamsterID.String()
+	}
+	return out, nil
+}
+
+func (s *Server) executeCreateCrmHandover(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	contactID, err := uuid.Parse(stringArgMap(payload, "contact_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid contact_id")
+	}
+	var contactStatus string
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT status::text FROM crm_contact WHERE owner_id=$1 AND id=$2
+	`, ownerID, contactID).Scan(&contactStatus)
+	if err != nil {
+		return nil, fmt.Errorf("contact not found")
+	}
+	if contactStatus == "archived" {
+		return nil, fmt.Errorf("archived contact cannot handover")
+	}
+	var reservationID *uuid.UUID
+	var hamsterID *uuid.UUID
+	if raw := stringArgMap(payload, "reservation_id"); raw != "" {
+		rid, parseErr := uuid.Parse(raw)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid reservation_id")
+		}
+		var resContact uuid.UUID
+		var resHamster *uuid.UUID
+		var resStatus string
+		err = s.Store.Pool.QueryRow(ctx, `
+			SELECT contact_id, hamster_id, status::text
+			FROM crm_reservation WHERE owner_id=$1 AND id=$2
+		`, ownerID, rid).Scan(&resContact, &resHamster, &resStatus)
+		if err != nil {
+			return nil, fmt.Errorf("reservation not found")
+		}
+		if resContact != contactID {
+			return nil, fmt.Errorf("reservation contact mismatch")
+		}
+		if resStatus != "held" && resStatus != "confirmed" {
+			return nil, fmt.Errorf("reservation not open for handover")
+		}
+		var exists bool
+		err = s.Store.Pool.QueryRow(ctx, `
+			SELECT EXISTS(
+				SELECT 1 FROM crm_handover
+				WHERE owner_id=$1 AND reservation_id=$2 AND status <> 'cancelled'
+			)
+		`, ownerID, rid).Scan(&exists)
+		if err != nil {
+			return nil, err
+		}
+		if exists {
+			return nil, fmt.Errorf("reservation already has handover")
+		}
+		reservationID = &rid
+		hamsterID = resHamster
+	}
+	if raw := stringArgMap(payload, "hamster_id"); raw != "" {
+		hid, parseErr := uuid.Parse(raw)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid hamster_id")
+		}
+		hamsterID = &hid
+	}
+	if hamsterID == nil {
+		return nil, fmt.Errorf("hamster_id required (or via reservation)")
+	}
+	var lifecycle string
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT lifecycle_status::text FROM hamster
+		WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+	`, ownerID, *hamsterID).Scan(&lifecycle)
+	if err != nil {
+		return nil, fmt.Errorf("hamster not found")
+	}
+	if lifecycle != "active" {
+		return nil, fmt.Errorf("hamster not active")
+	}
+	scheduledAt := time.Now().UTC()
+	if raw := stringArgMap(payload, "scheduled_at"); raw != "" {
+		if parsed, parseErr := time.Parse(time.RFC3339, raw); parseErr == nil {
+			scheduledAt = parsed.UTC()
+		}
+	}
+	notes := stringArgMap(payload, "notes")
+	orgID, err := s.currentOrganizationID(ctx, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	var id uuid.UUID
+	err = s.Store.Pool.QueryRow(ctx, `
+		INSERT INTO crm_handover (
+			owner_id, organization_id, contact_id, reservation_id, hamster_id, status, scheduled_at, notes
+		) VALUES ($1,$2,$3,$4,$5,'scheduled',$6,NULLIF($7,''))
+		RETURNING id
+	`, ownerID, orgID, contactID, reservationID, hamsterID, scheduledAt, notes).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+	out := map[string]any{
+		"handover_id":  id.String(),
+		"contact_id":   contactID.String(),
+		"hamster_id":   hamsterID.String(),
+		"status":       "scheduled",
+		"scheduled_at": scheduledAt.Format(time.RFC3339),
+	}
+	if reservationID != nil {
+		out["reservation_id"] = reservationID.String()
+	}
+	return out, nil
+}
+
+func (s *Server) executeCreateAccountingRecord(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	entryType := stringArgMap(payload, "entry_type")
+	if entryType != "income" && entryType != "expense" {
+		return nil, fmt.Errorf("entry_type must be income or expense")
+	}
+	amountCents := int64(0)
+	switch v := payload["amount_cents"].(type) {
+	case float64:
+		amountCents = int64(v)
+	case int:
+		amountCents = int64(v)
+	case int64:
+		amountCents = v
+	default:
+		return nil, fmt.Errorf("invalid amount_cents")
+	}
+	if amountCents <= 0 {
+		return nil, fmt.Errorf("amount_cents must be > 0")
+	}
+	title := stringArgMap(payload, "title")
+	if title == "" {
+		return nil, fmt.Errorf("title required")
+	}
+	currency := stringArgMap(payload, "currency")
+	if currency == "" {
+		currency = "CNY"
+	}
+	notes := stringArgMap(payload, "notes")
+	var contactID *uuid.UUID
+	if raw := stringArgMap(payload, "contact_id"); raw != "" {
+		cid, parseErr := uuid.Parse(raw)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid contact_id")
+		}
+		var n int
+		err := s.Store.Pool.QueryRow(ctx, `
+			SELECT count(*) FROM crm_contact WHERE owner_id=$1 AND id=$2
+		`, ownerID, cid).Scan(&n)
+		if err != nil || n == 0 {
+			return nil, fmt.Errorf("contact not found")
+		}
+		contactID = &cid
+	}
+	occurredAt := time.Now().UTC()
+	if raw := stringArgMap(payload, "occurred_at"); raw != "" {
+		if parsed, err := time.Parse(time.RFC3339, raw); err == nil {
+			occurredAt = parsed.UTC()
+		} else if parsed, err := time.ParseInLocation("2006-01-02", raw, time.Local); err == nil {
+			occurredAt = parsed.UTC()
+		}
+	}
+	orgID, err := s.currentOrganizationID(ctx, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	var id uuid.UUID
+	err = s.Store.Pool.QueryRow(ctx, `
+		INSERT INTO accounting_record (
+			owner_id, organization_id, category_id, entry_type, amount_cents, currency,
+			title, notes, contact_id, occurred_at
+		) VALUES ($1,$2,NULL,$3::accounting_entry_type,$4,$5,$6,NULLIF($7,''),$8,$9)
+		RETURNING id
+	`, ownerID, orgID, entryType, amountCents, currency, title, notes, contactID, occurredAt).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"record_id":    id.String(),
+		"entry_type":   entryType,
+		"amount_cents": amountCents,
+		"title":        title,
+		"currency":     currency,
+		"occurred_at":  occurredAt.Format(time.RFC3339),
+	}, nil
+}
+
+func (s *Server) executeCreateHealthRecord(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	hamsterID, err := uuid.Parse(stringArgMap(payload, "hamster_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid hamster_id")
+	}
+	var n int
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT count(*) FROM hamster WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+	`, ownerID, hamsterID).Scan(&n)
+	if err != nil || n == 0 {
+		return nil, fmt.Errorf("hamster not found")
+	}
+	recType := stringArgMap(payload, "type")
+	switch recType {
+	case "daily_check", "anomaly", "medication", "follow_up", "isolation", "death":
+	default:
+		return nil, fmt.Errorf("invalid health record type")
+	}
+	observedAt := time.Now().UTC()
+	if raw := stringArgMap(payload, "observed_at"); raw != "" {
+		if parsed, parseErr := time.Parse(time.RFC3339, raw); parseErr == nil {
+			observedAt = parsed.UTC()
+		}
+	}
+	input := i5core.CreateHealthRecordInput{
+		HamsterID:  &hamsterID,
+		Type:       recType,
+		ObservedAt: observedAt,
+	}
+	if notes := stringArgMap(payload, "notes"); notes != "" {
+		input.Notes = &notes
+	}
+	if sev := stringArgMap(payload, "severity"); sev != "" {
+		switch sev {
+		case "info", "low", "medium", "high", "critical":
+			input.Severity = &sev
+		default:
+			return nil, fmt.Errorf("invalid severity")
+		}
+	}
+	idem := "assistant-health-" + uuid.NewString()
+	result, err := s.i5CoreService().CreateHealthRecord(ctx, ownerID, i5core.WriteOptions{
+		IdempotencyKey: idem, RequestMethod: "POST", RequestPath: "/v1/assistant/actions/confirm",
+	}, input)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"health_record_id": result.Value.ID.String(),
+		"hamster_id":       hamsterID.String(),
+		"type":             recType,
+		"observed_at":      observedAt.Format(time.RFC3339),
 	}, nil
 }
 
@@ -1175,6 +1517,333 @@ func (s *Server) toolDraftCreateCrmContact(ctx context.Context, ownerID uuid.UUI
 		"pending_confirmation": true,
 		"action_id":            action.ID.String(),
 		"type":                 "create_crm_contact",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolListCrmHandovers(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	limit := toolLimit(args, 15, 1, 30)
+	status := stringArgMap(args, "status")
+	query := `
+		SELECT h.id::text, h.status::text, h.scheduled_at, h.completed_at,
+		       h.contact_id::text, c.name, h.hamster_id::text, h.reservation_id::text,
+		       CASE WHEN hamster.id IS NULL THEN NULL ELSE COALESCE(NULLIF(hamster.name,''), hamster.internal_code) END
+		FROM crm_handover h
+		JOIN crm_contact c ON c.owner_id=h.owner_id AND c.id=h.contact_id
+		LEFT JOIN hamster ON hamster.owner_id=h.owner_id AND hamster.id=h.hamster_id AND hamster.deleted_at IS NULL
+		WHERE h.owner_id=$1 AND h.status <> 'cancelled'`
+	qargs := []any{ownerID}
+	if status != "" {
+		query += ` AND h.status::text=$2`
+		qargs = append(qargs, status)
+		query += ` ORDER BY h.scheduled_at DESC LIMIT $3`
+		qargs = append(qargs, limit)
+	} else {
+		query += ` ORDER BY h.scheduled_at DESC LIMIT $2`
+		qargs = append(qargs, limit)
+	}
+	rows, err := s.Store.Pool.Query(ctx, query, qargs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make([]map[string]any, 0)
+	for rows.Next() {
+		var id, st, contactID, contactName string
+		var scheduled, completed any
+		var hamsterID, reservationID, hamsterName *string
+		if err := rows.Scan(&id, &st, &scheduled, &completed, &contactID, &contactName, &hamsterID, &reservationID, &hamsterName); err != nil {
+			return nil, err
+		}
+		item := map[string]any{
+			"id": id, "status": st, "scheduled_at": scheduled,
+			"contact_id": contactID, "contact_name": contactName,
+		}
+		if completed != nil {
+			item["completed_at"] = completed
+		}
+		if hamsterID != nil {
+			item["hamster_id"] = *hamsterID
+		}
+		if reservationID != nil {
+			item["reservation_id"] = *reservationID
+		}
+		if hamsterName != nil {
+			item["hamster_name"] = *hamsterName
+		}
+		out = append(out, item)
+	}
+	return map[string]any{"count": len(out), "handovers": out}, rows.Err()
+}
+
+func (s *Server) toolDraftCreateCrmReservation(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	contactID, err := uuid.Parse(stringArgMap(args, "contact_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid contact_id")
+	}
+	var contactName, contactStatus string
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT name, status::text FROM crm_contact WHERE owner_id=$1 AND id=$2
+	`, ownerID, contactID).Scan(&contactName, &contactStatus)
+	if err != nil {
+		return nil, fmt.Errorf("contact not found")
+	}
+	if contactStatus == "archived" {
+		return nil, fmt.Errorf("archived contact cannot reserve")
+	}
+	title := stringArgMap(args, "title")
+	if title == "" {
+		title = "预订"
+	}
+	payload := map[string]any{
+		"contact_id": contactID.String(), "title": title, "contact_name": contactName,
+	}
+	if notes := stringArgMap(args, "notes"); notes != "" {
+		payload["notes"] = notes
+	}
+	if raw := stringArgMap(args, "hamster_id"); raw != "" {
+		hid, parseErr := uuid.Parse(raw)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid hamster_id")
+		}
+		var n int
+		err = s.Store.Pool.QueryRow(ctx, `
+			SELECT count(*) FROM hamster WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+		`, ownerID, hid).Scan(&n)
+		if err != nil || n == 0 {
+			return nil, fmt.Errorf("hamster not found")
+		}
+		payload["hamster_id"] = hid.String()
+	}
+	summary := fmt.Sprintf("新建预订「%s」→ 客户 %s", title, contactName)
+	if hid, ok := payload["hamster_id"].(string); ok {
+		summary += " · 仓鼠 " + hid[:8]
+	}
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "create_crm_reservation", "确认新建预订", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "create_crm_reservation",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolDraftCreateCrmHandover(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	contactID, err := uuid.Parse(stringArgMap(args, "contact_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid contact_id")
+	}
+	var contactName, contactStatus string
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT name, status::text FROM crm_contact WHERE owner_id=$1 AND id=$2
+	`, ownerID, contactID).Scan(&contactName, &contactStatus)
+	if err != nil {
+		return nil, fmt.Errorf("contact not found")
+	}
+	if contactStatus == "archived" {
+		return nil, fmt.Errorf("archived contact cannot handover")
+	}
+	hamsterRaw := stringArgMap(args, "hamster_id")
+	reservationRaw := stringArgMap(args, "reservation_id")
+	if hamsterRaw == "" && reservationRaw == "" {
+		return nil, fmt.Errorf("hamster_id or reservation_id required")
+	}
+	payload := map[string]any{
+		"contact_id": contactID.String(), "contact_name": contactName,
+	}
+	if hamsterRaw != "" {
+		hid, parseErr := uuid.Parse(hamsterRaw)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid hamster_id")
+		}
+		var n int
+		err = s.Store.Pool.QueryRow(ctx, `
+			SELECT count(*) FROM hamster WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+		`, ownerID, hid).Scan(&n)
+		if err != nil || n == 0 {
+			return nil, fmt.Errorf("hamster not found")
+		}
+		payload["hamster_id"] = hid.String()
+	}
+	if reservationRaw != "" {
+		rid, parseErr := uuid.Parse(reservationRaw)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid reservation_id")
+		}
+		var n int
+		err = s.Store.Pool.QueryRow(ctx, `
+			SELECT count(*) FROM crm_reservation WHERE owner_id=$1 AND id=$2
+		`, ownerID, rid).Scan(&n)
+		if err != nil || n == 0 {
+			return nil, fmt.Errorf("reservation not found")
+		}
+		payload["reservation_id"] = rid.String()
+	}
+	scheduledAt := time.Now().UTC()
+	if raw := stringArgMap(args, "scheduled_at"); raw != "" {
+		if parsed, parseErr := time.Parse(time.RFC3339, raw); parseErr == nil {
+			scheduledAt = parsed.UTC()
+		}
+	}
+	payload["scheduled_at"] = scheduledAt.Format(time.RFC3339)
+	if notes := stringArgMap(args, "notes"); notes != "" {
+		payload["notes"] = notes
+	}
+	summary := fmt.Sprintf("新建交付 → 客户 %s @ %s", contactName, scheduledAt.Format(time.RFC3339))
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "create_crm_handover", "确认新建交付", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "create_crm_handover",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolDraftCreateAccountingRecord(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	entryType := stringArgMap(args, "entry_type")
+	if entryType != "income" && entryType != "expense" {
+		return nil, fmt.Errorf("entry_type must be income or expense")
+	}
+	amountCents := int64(0)
+	switch v := args["amount_cents"].(type) {
+	case float64:
+		amountCents = int64(v)
+	case int:
+		amountCents = int64(v)
+	case int64:
+		amountCents = v
+	default:
+		return nil, fmt.Errorf("invalid amount_cents")
+	}
+	if amountCents <= 0 {
+		return nil, fmt.Errorf("amount_cents must be > 0")
+	}
+	title := stringArgMap(args, "title")
+	if title == "" {
+		return nil, fmt.Errorf("title required")
+	}
+	currency := stringArgMap(args, "currency")
+	if currency == "" {
+		currency = "CNY"
+	}
+	payload := map[string]any{
+		"entry_type": entryType, "amount_cents": amountCents, "title": title, "currency": currency,
+	}
+	if notes := stringArgMap(args, "notes"); notes != "" {
+		payload["notes"] = notes
+	}
+	if raw := stringArgMap(args, "contact_id"); raw != "" {
+		cid, parseErr := uuid.Parse(raw)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid contact_id")
+		}
+		var n int
+		err := s.Store.Pool.QueryRow(ctx, `
+			SELECT count(*) FROM crm_contact WHERE owner_id=$1 AND id=$2
+		`, ownerID, cid).Scan(&n)
+		if err != nil || n == 0 {
+			return nil, fmt.Errorf("contact not found")
+		}
+		payload["contact_id"] = cid.String()
+	}
+	if raw := stringArgMap(args, "occurred_at"); raw != "" {
+		payload["occurred_at"] = raw
+	}
+	typeLabel := "收入"
+	if entryType == "expense" {
+		typeLabel = "支出"
+	}
+	summary := fmt.Sprintf("记账%s %.2f %s「%s」", typeLabel, float64(amountCents)/100.0, currency, title)
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "create_accounting_record", "确认记账", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "create_accounting_record",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolDraftCreateHealthRecord(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	hamsterID, err := uuid.Parse(stringArgMap(args, "hamster_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid hamster_id")
+	}
+	var name string
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT COALESCE(name,'') FROM hamster WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+	`, ownerID, hamsterID).Scan(&name)
+	if err != nil {
+		return nil, fmt.Errorf("hamster not found")
+	}
+	recType := stringArgMap(args, "type")
+	switch recType {
+	case "daily_check", "anomaly", "medication", "follow_up", "isolation", "death":
+	default:
+		return nil, fmt.Errorf("invalid health record type")
+	}
+	observedAt := time.Now().UTC()
+	if raw := stringArgMap(args, "observed_at"); raw != "" {
+		if parsed, parseErr := time.Parse(time.RFC3339, raw); parseErr == nil {
+			observedAt = parsed.UTC()
+		}
+	}
+	payload := map[string]any{
+		"hamster_id": hamsterID.String(), "type": recType,
+		"observed_at": observedAt.Format(time.RFC3339), "name": name,
+	}
+	if notes := stringArgMap(args, "notes"); notes != "" {
+		payload["notes"] = notes
+	}
+	if sev := stringArgMap(args, "severity"); sev != "" {
+		switch sev {
+		case "info", "low", "medium", "high", "critical":
+			payload["severity"] = sev
+		default:
+			return nil, fmt.Errorf("invalid severity")
+		}
+	}
+	summary := fmt.Sprintf("健康记录 %s → %s @ %s", recType, firstNonEmptyName(name, hamsterID.String()[:8]), observedAt.Format(time.RFC3339))
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "create_health_record", "确认健康记录", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "create_health_record",
 		"label":                action.Label,
 		"summary":              action.Summary,
 		"payload":              payload,

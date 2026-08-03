@@ -131,6 +131,17 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 		{
 			Type: "function",
 			Function: ToolFunctionSchema{
+				Name:        "list_crm_handovers",
+				Description: "列出本舍交付单（scheduled/completed），可按状态筛选。",
+				Parameters: obj(map[string]any{
+					"status": strProp,
+					"limit":  map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
+				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
 				Name:        "list_accounting_summary",
 				Description: "本舍财务摘要：最近 N 天收入/支出合计与笔数（默认 30 天）。",
 				Parameters: obj(map[string]any{
@@ -251,6 +262,63 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 					"notes":  strProp,
 					"status": strProp,
 				}, "name"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "create_crm_reservation",
+				Description: "新建预订草案（需确认）。参数 contact_id 必填；可选 hamster_id、title、notes。",
+				Parameters: obj(map[string]any{
+					"contact_id": strProp,
+					"hamster_id": strProp,
+					"title":      strProp,
+					"notes":      strProp,
+				}, "contact_id"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "create_crm_handover",
+				Description: "新建交付草案（需确认）。参数 contact_id 必填；须提供 hamster_id 或 reservation_id（或两者）；可选 scheduled_at(RFC3339)、notes。",
+				Parameters: obj(map[string]any{
+					"contact_id":     strProp,
+					"hamster_id":     strProp,
+					"reservation_id": strProp,
+					"scheduled_at":   strProp,
+					"notes":          strProp,
+				}, "contact_id"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "create_accounting_record",
+				Description: "记一笔账草案（需确认）。参数 entry_type(income|expense)、amount_cents、title 必填；可选 currency(默认CNY)、contact_id、notes、occurred_at(RFC3339或日期)。",
+				Parameters: obj(map[string]any{
+					"entry_type":   strProp,
+					"amount_cents": map[string]any{"type": "integer", "minimum": 1},
+					"title":        strProp,
+					"currency":     strProp,
+					"contact_id":   strProp,
+					"notes":        strProp,
+					"occurred_at":  strProp,
+				}, "entry_type", "amount_cents", "title"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "create_health_record",
+				Description: "登记健康记录草案（需确认）。参数 hamster_id、type(daily_check|anomaly|medication|follow_up|isolation|death) 必填；可选 notes、severity(info|low|medium|high|critical)、observed_at(RFC3339)。",
+				Parameters: obj(map[string]any{
+					"hamster_id":  strProp,
+					"type":        strProp,
+					"notes":       strProp,
+					"severity":   strProp,
+					"observed_at": strProp,
+				}, "hamster_id", "type"),
 			},
 		},
 	}

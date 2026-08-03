@@ -12,6 +12,8 @@ func TestAssistantConfirmMirrorsDirectRBAC(t *testing.T) {
 	confirmable := []string{
 		"create_task", "complete_task", "create_weight_record",
 		"create_hamster", "update_hamster", "create_enclosure",
+		"create_crm_contact", "create_crm_reservation", "create_crm_handover",
+		"create_accounting_record", "create_health_record",
 	}
 	for _, actionType := range confirmable {
 		route, known := assistantActionRoute(actionType)
@@ -20,7 +22,8 @@ func TestAssistantConfirmMirrorsDirectRBAC(t *testing.T) {
 		}
 		direct := principalCanRequest("staff", http.MethodPost, route)
 		if actionType == "create_enclosure" || actionType == "create_weight_record" ||
-			actionType == "create_task" || actionType == "complete_task" {
+			actionType == "create_task" || actionType == "complete_task" ||
+			actionType == "create_accounting_record" || actionType == "create_health_record" {
 			if direct {
 				t.Fatalf("staff unexpectedly passes the direct rule for %s (%s)", actionType, route)
 			}
@@ -28,6 +31,14 @@ func TestAssistantConfirmMirrorsDirectRBAC(t *testing.T) {
 		// breeder keeps its legitimate writes through confirm.
 		if actionType == "create_weight_record" && !principalCanRequest("breeder", http.MethodPost, route) {
 			t.Fatalf("breeder must keep weight-record writes via confirm")
+		}
+		if actionType == "create_health_record" && !principalCanRequest("breeder", http.MethodPost, route) {
+			t.Fatalf("breeder must keep health-record writes via confirm")
+		}
+		// staff keeps CRM writes through confirm.
+		if (actionType == "create_crm_contact" || actionType == "create_crm_reservation" || actionType == "create_crm_handover") &&
+			!principalCanRequest("staff", http.MethodPost, route) {
+			t.Fatalf("staff must keep CRM writes via confirm for %s", actionType)
 		}
 	}
 	if _, known := assistantActionRoute("future_unmapped_action"); known {
