@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/scolvpet/scolvpet/api/internal/i2core"
+	"github.com/scolvpet/scolvpet/api/internal/i3core"
 	"github.com/scolvpet/scolvpet/api/internal/i5core"
 )
 
@@ -107,6 +108,10 @@ func (s *Server) runAssistantTool(
 		return s.toolDraftCreateAccountingRecord(ctx, ownerID, sess, args)
 	case "create_health_record":
 		return s.toolDraftCreateHealthRecord(ctx, ownerID, sess, args)
+	case "record_pairing_observation":
+		return s.toolDraftRecordPairingObservation(ctx, ownerID, sess, args)
+	case "create_separation_task":
+		return s.toolDraftCreateSeparationTask(ctx, ownerID, sess, args)
 	default:
 		return nil, fmt.Errorf("unknown tool %s", name)
 	}
@@ -499,7 +504,7 @@ func (s *Server) resolveDefaultSpeciesRule(ctx context.Context, ownerID uuid.UUI
 
 func (s *Server) executeAssistantAction(ctx context.Context, ownerID uuid.UUID, actionType string, payload map[string]any) (any, error) {
 	switch actionType {
-	case "create_task":
+	case "create_task", "create_separation_task":
 		return s.executeCreateTask(ctx, ownerID, payload)
 	case "complete_task":
 		return s.executeCompleteTask(ctx, ownerID, payload)
@@ -529,9 +534,113 @@ func (s *Server) executeAssistantAction(ctx context.Context, ownerID uuid.UUID, 
 		return s.executeCreateAccountingRecord(ctx, ownerID, payload)
 	case "create_health_record":
 		return s.executeCreateHealthRecord(ctx, ownerID, payload)
+	case "record_pairing_observation":
+		return s.executeRecordPairingObservation(ctx, ownerID, payload)
 	default:
 		return nil, fmt.Errorf("unsupported action type %s", actionType)
 	}
+}
+
+func (s *Server) executeRecordPairingObservation(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	attemptID, err := uuid.Parse(stringArgMap(payload, "attempt_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid attempt_id")
+	}
+	obsType := stringArgMap(payload, "type")
+	switch obsType {
+	case "contact", "chase", "conflict", "mating", "separated", "other":
+	default:
+		return nil, fmt.Errorf("invalid observation type")
+	}
+	// Load current version for optimistic concurrency (If-Match equivalent).
+	var version int
+	var status string
+	var startedAt, deadline time.Time
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT version, status::text, started_at, separation_deadline
+		FROM pairing_attempt
+		WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+	`, ownerID, attemptID).Scan(&version, &status, &startedAt, &deadline)
+	if err != nil {
+		return nil, fmt.Errorf("pairing attempt not found")
+	}
+	if status != "active" && status != "safety_hold" {
+		return nil, fmt.Errorf("pairing attempt not open for observation (status=%s)", status)
+	}
+	observedAt := time.Now().UTC()
+	if raw := stringArgMap(payload, "observed_at"); raw != "" {
+		if parsed, parseErr := time.Parse(time.RFC3339, raw); parseErr == nil {
+			observedAt = parsed.UTC()
+		}
+	}
+	if observedAt.Before(startedAt) || observedAt.After(deadline) {
+		// Clamp to window rather than hard-fail for slightly skewed client clocks near now.
+		if time.Since(observedAt).Abs() < 2*time.Minute {
+			if observedAt.Before(startedAt) {
+				observedAt = startedAt
+			}
+			if observedAt.After(deadline) {
+				observedAt = deadline
+			}
+		} else {
+			return nil, fmt.Errorf("observed_at outside pairing window")
+		}
+	}
+	input := i3core.RecordObservationInput{
+		ExpectedVersion: version,
+		ObservedAt:      observedAt,
+		Type:            obsType,
+	}
+	if notes := stringArgMap(payload, "notes"); notes != "" {
+		input.Notes = &notes
+	}
+	if sev := stringArgMap(payload, "severity"); sev != "" {
+		switch sev {
+		case "info", "low", "medium", "high", "critical":
+			input.Severity = &sev
+		default:
+			return nil, fmt.Errorf("invalid severity")
+		}
+	}
+	if v, ok := payload["duration_seconds"]; ok {
+		switch n := v.(type) {
+		case float64:
+			d := int(n)
+			if d < 0 {
+				return nil, fmt.Errorf("invalid duration_seconds")
+			}
+			input.DurationSeconds = &d
+		case int:
+			if n < 0 {
+				return nil, fmt.Errorf("invalid duration_seconds")
+			}
+			input.DurationSeconds = &n
+		}
+	}
+	tx, err := s.Store.Pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+	idem := "assistant-obs-" + uuid.NewString()
+	observation, newVersion, baseline, err := s.i3CoreService().RecordObservationTx(ctx, tx, ownerID, attemptID, input, idem)
+	if err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	out := map[string]any{
+		"observation_id":          observation.ID.String(),
+		"attempt_id":              attemptID.String(),
+		"type":                    obsType,
+		"observed_at":             observedAt.Format(time.RFC3339),
+		"pairing_attempt_version": newVersion,
+	}
+	if baseline != nil {
+		out["baseline_candidate_at"] = baseline.UTC().Format(time.RFC3339)
+	}
+	return out, nil
 }
 
 func (s *Server) executeCreateCrmContact(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
@@ -2414,6 +2523,188 @@ func (s *Server) toolDraftCreateHealthRecord(ctx context.Context, ownerID uuid.U
 		"pending_confirmation": true,
 		"action_id":            action.ID.String(),
 		"type":                 "create_health_record",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolDraftRecordPairingObservation(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	attemptID, err := uuid.Parse(stringArgMap(args, "attempt_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid attempt_id")
+	}
+	obsType := stringArgMap(args, "type")
+	switch obsType {
+	case "contact", "chase", "conflict", "mating", "separated", "other":
+	default:
+		return nil, fmt.Errorf("type must be contact|chase|conflict|mating|separated|other")
+	}
+	var status string
+	var attemptNo int
+	var planName string
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT pa.status::text, pa.attempt_no, COALESCE(p.name,'')
+		FROM pairing_attempt pa
+		JOIN breeding_plan p ON p.owner_id=pa.owner_id AND p.id=pa.breeding_plan_id
+		WHERE pa.owner_id=$1 AND pa.id=$2 AND pa.deleted_at IS NULL
+	`, ownerID, attemptID).Scan(&status, &attemptNo, &planName)
+	if err != nil {
+		return nil, fmt.Errorf("pairing attempt not found")
+	}
+	if status != "active" && status != "safety_hold" {
+		return nil, fmt.Errorf("pairing attempt not open (status=%s)", status)
+	}
+	observedAt := time.Now().UTC()
+	if raw := stringArgMap(args, "observed_at"); raw != "" {
+		if parsed, parseErr := time.Parse(time.RFC3339, raw); parseErr == nil {
+			observedAt = parsed.UTC()
+		}
+	}
+	payload := map[string]any{
+		"attempt_id": attemptID.String(), "type": obsType,
+		"observed_at": observedAt.Format(time.RFC3339),
+		"attempt_no":  attemptNo, "plan_name": planName,
+	}
+	if notes := stringArgMap(args, "notes"); notes != "" {
+		payload["notes"] = notes
+	}
+	if sev := stringArgMap(args, "severity"); sev != "" {
+		switch sev {
+		case "info", "low", "medium", "high", "critical":
+			payload["severity"] = sev
+		default:
+			return nil, fmt.Errorf("invalid severity")
+		}
+	}
+	if v, ok := args["duration_seconds"]; ok {
+		switch n := v.(type) {
+		case float64:
+			if int(n) < 0 {
+				return nil, fmt.Errorf("invalid duration_seconds")
+			}
+			payload["duration_seconds"] = int(n)
+		case int:
+			if n < 0 {
+				return nil, fmt.Errorf("invalid duration_seconds")
+			}
+			payload["duration_seconds"] = n
+		}
+	}
+	label := planName
+	if label == "" {
+		label = attemptID.String()[:8]
+	}
+	summary := fmt.Sprintf("配对观察 %s → 计划「%s」第%d次 @ %s", obsType, label, attemptNo, observedAt.Format(time.RFC3339))
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "record_pairing_observation", "确认记录配对观察", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "record_pairing_observation",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolDraftCreateSeparationTask(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	attemptRaw := stringArgMap(args, "attempt_id")
+	planRaw := stringArgMap(args, "plan_id")
+	if attemptRaw == "" && planRaw == "" {
+		return nil, fmt.Errorf("attempt_id or plan_id required")
+	}
+	var (
+		targetType string
+		targetID   uuid.UUID
+		label      string
+	)
+	if attemptRaw != "" {
+		aid, err := uuid.Parse(attemptRaw)
+		if err != nil {
+			return nil, fmt.Errorf("invalid attempt_id")
+		}
+		var status, planName string
+		var attemptNo int
+		err = s.Store.Pool.QueryRow(ctx, `
+			SELECT pa.status::text, pa.attempt_no, COALESCE(p.name,'')
+			FROM pairing_attempt pa
+			JOIN breeding_plan p ON p.owner_id=pa.owner_id AND p.id=pa.breeding_plan_id
+			WHERE pa.owner_id=$1 AND pa.id=$2 AND pa.deleted_at IS NULL
+		`, ownerID, aid).Scan(&status, &attemptNo, &planName)
+		if err != nil {
+			return nil, fmt.Errorf("pairing attempt not found")
+		}
+		targetType = "pairing_attempt"
+		targetID = aid
+		label = fmt.Sprintf("配对尝试#%d %s", attemptNo, planName)
+		if status != "active" && status != "safety_hold" {
+			// still allow reminder for recently active attempts
+			label += " (" + status + ")"
+		}
+	} else {
+		pid, err := uuid.Parse(planRaw)
+		if err != nil {
+			return nil, fmt.Errorf("invalid plan_id")
+		}
+		var planName, state string
+		err = s.Store.Pool.QueryRow(ctx, `
+			SELECT COALESCE(name,''), state::text
+			FROM breeding_plan WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+		`, ownerID, pid).Scan(&planName, &state)
+		if err != nil {
+			return nil, fmt.Errorf("breeding plan not found")
+		}
+		targetType = "breeding_plan"
+		targetID = pid
+		label = firstNonEmptyName(planName, pid.String()[:8]) + " (" + state + ")"
+	}
+	scheduledAt := time.Now().UTC().Add(30 * time.Minute)
+	if raw := stringArgMap(args, "scheduled_at"); raw != "" {
+		if parsed, err := time.Parse(time.RFC3339, raw); err == nil {
+			scheduledAt = parsed.UTC()
+		}
+	}
+	priority := stringArgMap(args, "priority")
+	if priority == "" {
+		priority = "high"
+	}
+	switch priority {
+	case "low", "normal", "high", "urgent", "critical":
+	default:
+		return nil, fmt.Errorf("invalid priority")
+	}
+	title := "分笼提醒：" + label
+	payload := map[string]any{
+		"task_type":    "separate_now",
+		"target_type":  targetType,
+		"target_id":    targetID.String(),
+		"title":        title,
+		"scheduled_at": scheduledAt.Format(time.RFC3339),
+		"priority":     priority,
+	}
+	if notes := stringArgMap(args, "notes"); notes != "" {
+		payload["notes"] = notes
+	}
+	summary := fmt.Sprintf("创建分笼任务「%s」@ %s", title, scheduledAt.Format(time.RFC3339))
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "create_separation_task", "确认创建分笼任务", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "create_separation_task",
 		"label":                action.Label,
 		"summary":              action.Summary,
 		"payload":              payload,

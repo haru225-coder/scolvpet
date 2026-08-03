@@ -415,6 +415,36 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 				}, "handover_id"),
 			},
 		},
+		// Breeding write drafts
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "record_pairing_observation",
+				Description: "记录配对观察草案（需确认）。参数 attempt_id、type(contact|chase|conflict|mating|separated|other)；可选 observed_at(RFC3339)、duration_seconds、severity、notes。",
+				Parameters: obj(map[string]any{
+					"attempt_id":       strProp,
+					"type":             strProp,
+					"observed_at":      strProp,
+					"duration_seconds": map[string]any{"type": "integer", "minimum": 0},
+					"severity":        strProp,
+					"notes":            strProp,
+				}, "attempt_id", "type"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "create_separation_task",
+				Description: "创建分笼提醒任务草案（需确认）。参数 attempt_id 或 plan_id 二选一；可选 scheduled_at(RFC3339)、notes、priority。",
+				Parameters: obj(map[string]any{
+					"attempt_id":   strProp,
+					"plan_id":      strProp,
+					"scheduled_at": strProp,
+					"notes":        strProp,
+					"priority":     strProp,
+				}),
+			},
+		},
 	}
 }
 

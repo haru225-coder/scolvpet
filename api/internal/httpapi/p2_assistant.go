@@ -265,7 +265,7 @@ func (s *Server) chatAssistant(w http.ResponseWriter, r *http.Request) {
 // route whose RBAC rule governs it; confirm re-checks that rule.
 func assistantActionRoute(actionType string) (string, bool) {
 	switch actionType {
-	case "create_task", "complete_task":
+	case "create_task", "complete_task", "create_separation_task":
 		return "/v1/tasks", true
 	case "create_weight_record":
 		return "/v1/weight-records", true
@@ -283,6 +283,8 @@ func assistantActionRoute(actionType string) (string, bool) {
 		return "/v1/accounting/records", true
 	case "create_health_record":
 		return "/v1/health-records", true
+	case "record_pairing_observation":
+		return "/v1/pairing-attempts", true
 	}
 	return "", false
 }

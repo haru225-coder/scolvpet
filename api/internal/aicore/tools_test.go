@@ -102,6 +102,7 @@ func TestReadOnlyToolDefinitionsNonEmpty(t *testing.T) {
 		"confirm_crm_reservation", "cancel_crm_reservation",
 		"create_crm_handover", "complete_crm_handover",
 		"create_accounting_record", "create_health_record",
+		"record_pairing_observation", "create_separation_task",
 	} {
 		if !names[need] {
 			t.Fatalf("missing tool %s", need)
