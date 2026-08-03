@@ -148,19 +148,22 @@ class MemoryAccountingRepository implements AccountingRepository {
 
   @override
   Future<AccountingSummary> getSummary({DateTime? from, DateTime? to}) async {
-    final now = DateTime.now();
-    final rangeFrom = from ?? DateTime(now.year, now.month, 1).toUtc();
-    final rangeTo =
-        to ??
-        DateTime(
-          now.year,
-          now.month + 1,
-          1,
-        ).subtract(const Duration(microseconds: 1)).toUtc();
-    final inRange = _records.where((r) {
-      return !r.occurredAt.isBefore(rangeFrom) &&
-          !r.occurredAt.isAfter(rangeTo);
-    }).toList();
+    // 未传范围时汇总全部记录（与生产透传语义一致）；此前按「系统当月」
+    // 过滤会让固定日期的测试数据在跨月后失配（如 7 月 18 的记录在 8 月跑
+    // 测试时被当月过滤掉）。
+    final inRange = from == null && to == null
+        ? List<AccountingRecord>.from(_records)
+        : _records.where((r) {
+            final lo = from ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final hi = to ?? DateTime.fromMillisecondsSinceEpoch(1 << 62);
+            return !r.occurredAt.isBefore(lo) && !r.occurredAt.isAfter(hi);
+          }).toList();
+    final rangeFrom = from ?? (inRange.isEmpty
+        ? DateTime.now()
+        : inRange.map((r) => r.occurredAt).reduce((a, b) => a.isBefore(b) ? a : b));
+    final rangeTo = to ?? (inRange.isEmpty
+        ? DateTime.now()
+        : inRange.map((r) => r.occurredAt).reduce((a, b) => a.isAfter(b) ? a : b));
     var income = 0;
     var expense = 0;
     final map = <String, AccountingCategorySum>{};
