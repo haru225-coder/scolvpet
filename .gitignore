@@ -17,3 +17,7 @@ apps/miniprogram-next.zip
 *.keystore
 *.p12
 **/key.properties
+
+# local WeChat preview artifacts (never commit)
+apps/miniprogram-next/.preview/
+apps/miniprogram-next/scolvpet-mp-preview-qr*.png
