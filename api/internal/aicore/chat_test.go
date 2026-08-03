@@ -65,3 +65,23 @@ func TestFormatKennelFacts(t *testing.T) {
 		t.Fatal(s)
 	}
 }
+
+func TestGeneralChatSystemPromptIsAgentic(t *testing.T) {
+	p := generalChatSystemPrompt("在养=3", true)
+	if strings.Contains(p, "只读助手") || strings.Contains(p, "Grok Build") {
+		t.Fatalf("prompt still sounds read-only/legacy: %s", p)
+	}
+	if !strings.Contains(p, "get_overview") || !strings.Contains(p, "待确认") {
+		t.Fatalf("prompt missing tool guidance: %s", p)
+	}
+}
+
+func TestSynthesizeFromTools(t *testing.T) {
+	ans := synthesizeFromTools(
+		[]Fact{{Key: "tool:get_overview", Label: "工具 get_overview", Value: `{"open_tasks":2}`, Source: "tool"}},
+		[]AgentAction{{Type: "create_task", Label: "创建任务", Summary: "给布丁建清洁任务", RequiresConfirmation: true}},
+	)
+	if ans.Mode != "llm" || !strings.Contains(ans.Answer, "待确认") {
+		t.Fatalf("%+v", ans)
+	}
+}

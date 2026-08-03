@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -58,9 +59,10 @@ func (s *Server) assistantCapabilities(w http.ResponseWriter, r *http.Request) {
 			},
 			// OpenAPI AssistantCapabilities.mode_default 为 const "rules"；
 			// LLM 是否可用只看 llm_available，勿写 agent（客户端 enum 会炸）。
-			"mode_default":  "rules",
+			"mode_default":  "llm",
 			"llm_available": llm,
-			"disclaimer":    "通用对话 + 本舍结构化事实；写操作需确认后执行（工具链后续版本）。",
+			"model":         assistantConfiguredModel(),
+			"disclaimer":    "通用对话 + 本舍工具核验；写操作以确认卡为准，确认前不改库。",
 		},
 		"meta": responseMeta(r),
 	})
@@ -422,6 +424,15 @@ func (s *Server) cancelAssistantAction(w http.ResponseWriter, r *http.Request) {
 		"data": map[string]any{"action_id": updated.ID, "status": updated.Status},
 		"meta": responseMeta(r),
 	})
+}
+
+func assistantConfiguredModel() string {
+	for _, key := range []string{"AI_MODEL", "XAI_MODEL"} {
+		if v := strings.TrimSpace(os.Getenv(key)); v != "" {
+			return v
+		}
+	}
+	return "deepseek-v4-flash-0731"
 }
 
 func (s *Server) askAssistant(w http.ResponseWriter, r *http.Request) {

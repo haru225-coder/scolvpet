@@ -86,16 +86,20 @@ func (c *OptionalLLMClient) runGeneralChat(ctx context.Context, req ChatRequest)
 	allowed := allowedToolNames()
 	toolFacts := make([]Fact, 0, 8)
 	pendingActions := make([]AgentAction, 0, 4)
-	const maxRounds = 4
+	const maxRounds = 6
+	// After write drafts or final tool batch, force one synthesis round without tools.
+	forceSynthesize := false
 
 	for round := 0; round < maxRounds; round++ {
 		payload := map[string]any{
 			"model":       c.Model,
 			"messages":    messages,
-			"temperature": 0.35,
-			"max_tokens":  1200,
+			"temperature": 0.55,
+			// Flash-0731 会占用 reasoning tokens；给足输出预算避免正文被挤空。
+			"max_tokens": 4096,
 		}
-		if len(req.Tools) > 0 && req.RunTool != nil {
+		toolsOn := len(req.Tools) > 0 && req.RunTool != nil && !forceSynthesize
+		if toolsOn {
 			payload["tools"] = req.Tools
 			payload["tool_choice"] = "auto"
 		}
@@ -120,9 +124,10 @@ func (c *OptionalLLMClient) runGeneralChat(ctx context.Context, req ChatRequest)
 		var parsed struct {
 			Choices []struct {
 				Message struct {
-					Role      string `json:"role"`
-					Content   any    `json:"content"`
-					ToolCalls []struct {
+					Role             string `json:"role"`
+					Content          any    `json:"content"`
+					ReasoningContent string `json:"reasoning_content"`
+					ToolCalls        []struct {
 						ID       string `json:"id"`
 						Type     string `json:"type"`
 						Function struct {
@@ -145,15 +150,19 @@ func (c *OptionalLLMClient) runGeneralChat(ctx context.Context, req ChatRequest)
 
 		if len(msg.ToolCalls) == 0 {
 			if strings.TrimSpace(contentText) == "" {
+				// 推理模型偶发只填 reasoning_content；勿整轮失败掉进弱规则模板。
+				if len(toolFacts) > 0 || len(pendingActions) > 0 {
+					return synthesizeFromTools(toolFacts, pendingActions), nil
+				}
 				return Answer{}, fmt.Errorf("empty chat response")
 			}
 			facts := toolFacts
 			if len(facts) == 0 && req.Snapshot != nil {
 				facts = snapshotFacts(*req.Snapshot)
 			}
-			disclaimer := "通用对话 + 本舍工具核验：数量与状态以 tool/结构化事实为准；写操作需你确认后执行。"
+			disclaimer := "本舍数量/状态以工具查询为准；写操作需你点确认后才会执行。"
 			if len(pendingActions) > 0 {
-				disclaimer = "已生成待确认写操作卡片；确认前不会改库。"
+				disclaimer = "已生成待确认操作卡片；确认前不会改库。"
 			}
 			return Answer{
 				Answer:     strings.TrimSpace(contentText),
@@ -190,7 +199,7 @@ func (c *OptionalLLMClient) runGeneralChat(ctx context.Context, req ChatRequest)
 					toolFacts = append(toolFacts, Fact{
 						Key:    "tool:" + name,
 						Label:  "工具 " + name,
-						Value:  truncate(toolResultJSON(value), 160),
+						Value:  truncate(toolResultJSON(value), 240),
 						Source: "tool",
 					})
 					if action, ok := agentActionFromToolResult(name, value); ok && len(pendingActions) < 3 {
@@ -204,36 +213,72 @@ func (c *OptionalLLMClient) runGeneralChat(ctx context.Context, req ChatRequest)
 				"content":      toolResultJSON(result),
 			})
 		}
-		// Write drafts already require UI confirm; stop looping so we return
-		// promptly instead of burning remaining rounds.
+		// 有写草案时：再跑一轮「只说话」合成自然语言，避免干巴巴一句「已准备好」。
 		if len(pendingActions) > 0 {
-			answerText := "已准备好待确认操作，请在卡片上确认或取消。"
-			if trimmed := strings.TrimSpace(contentText); trimmed != "" {
-				answerText = trimmed
-			}
-			return Answer{
-				Answer:     answerText,
-				Intent:     "general",
-				Mode:       "llm",
-				Facts:      toolFacts,
-				Actions:    pendingActions,
-				Disclaimer: "已生成待确认写操作卡片；确认前不会改库。",
-			}, nil
+			forceSynthesize = true
+			messages = append(messages, map[string]any{
+				"role":    "user",
+				"content": "工具结果已返回。请用自然、具体的中文总结你查到的内容，并说明待确认卡片上用户需要做什么。不要再调用工具。",
+			})
+			continue
 		}
 	}
 	// Prefer returning partial tool facts over hard failure when the model
 	// keeps requesting tools past maxRounds (fallback still available upstream).
-	if len(toolFacts) > 0 {
-		return Answer{
-			Answer:     "已查询本舍数据，但对话轮次用尽。可继续追问，或换一种说法。",
-			Intent:     "general",
-			Mode:       "llm",
-			Facts:      toolFacts,
-			Actions:    pendingActions,
-			Disclaimer: "通用对话 + 本舍工具核验：数量与状态以 tool/结构化事实为准；写操作需你确认后执行。",
-		}, nil
+	if len(toolFacts) > 0 || len(pendingActions) > 0 {
+		return synthesizeFromTools(toolFacts, pendingActions), nil
 	}
 	return Answer{}, fmt.Errorf("tool loop exceeded max rounds")
+}
+
+func synthesizeFromTools(toolFacts []Fact, pending []AgentAction) Answer {
+	var b strings.Builder
+	if len(pending) > 0 {
+		b.WriteString("我已经根据本舍数据准备好待确认操作")
+		if len(pending) == 1 {
+			b.WriteString("：")
+			b.WriteString(pending[0].Summary)
+		} else {
+			b.WriteString("：")
+			for i, a := range pending {
+				if i > 0 {
+					b.WriteString("；")
+				}
+				b.WriteString(a.Summary)
+			}
+		}
+		b.WriteString("。请在下方卡片确认后才会写入。")
+	} else {
+		b.WriteString("已查到本舍相关数据")
+		if len(toolFacts) > 0 {
+			b.WriteString("（")
+			for i, f := range toolFacts {
+				if i >= 3 {
+					break
+				}
+				if i > 0 {
+					b.WriteString("；")
+				}
+				b.WriteString(f.Label)
+				b.WriteString("=")
+				b.WriteString(f.Value)
+			}
+			b.WriteString("）")
+		}
+		b.WriteString("。你可以继续追问细节，例如某只个体、某条任务或下一步怎么做。")
+	}
+	disclaimer := "本舍数量/状态以工具查询为准；写操作需你点确认后才会执行。"
+	if len(pending) > 0 {
+		disclaimer = "已生成待确认操作卡片；确认前不会改库。"
+	}
+	return Answer{
+		Answer:     b.String(),
+		Intent:     "general",
+		Mode:       "llm",
+		Facts:      toolFacts,
+		Actions:    pending,
+		Disclaimer: disclaimer,
+	}
 }
 
 func (c *OptionalLLMClient) httpClientForChat() *http.Client {
@@ -259,27 +304,31 @@ func messageContentString(content any) string {
 }
 
 func generalChatSystemPrompt(kennelFacts string, withTools bool) string {
-	base := `你是「熊舍管家」App 内的通用 AI 助手（模型：Grok Build）。
-你可以：闲聊、养宠通识、经营文案、流程建议、解释 App 功能。
+	base := `你是「熊舍管家」App 里的经营搭档：像一个懂仓鼠繁育与日常照护的店长助理，不是客服话术机，也不是只读报表。
+能力：闲聊、养宠通识、文案润色、流程建议、解释 App；更重要的是——基于本舍真实数据帮用户想清楚下一步。
+说话：自然、具体、有判断；先给结论再补关键数字；少套话、少复读用户问题；不要用「作为 AI」开头。
 纪律：
-1. 涉及本舍具体数量、个体、任务、金额、状态时，禁止编造；`
+1. 涉及本舍数量、个体、任务、金额、状态时禁止编造；`
 	if withTools {
-		base += `必须先调用工具（get_overview / search_hamsters / list_tasks / create_task 等）再回答。
-2. 工具结果优先于下方快照；快照仅作参考。
-3. 用户要求创建/完成任务、登记体重、新建/更新仓鼠、新建笼盒时，调用对应写入工具生成「待确认草案」；向用户说明需在 App 点确认后才会生效，禁止说「已创建/已完成」。`
+		base += `先调工具再答。常用：get_overview（总览）、search_hamsters（搜个体）、list_tasks（待办/逾期）、list_enclosures / list_breeding_plans / list_litters。
+2. 工具结果优先于下方快照；快照可能过期。
+3. 用户要改数据时：调用 create_task / complete_task / create_weight_record / create_hamster / update_hamster / create_enclosure 生成「待确认」；明确说「你确认后才会写入」，禁止说「已创建/已完成」。
+4. 若用户问题含糊，先给最可能的解读 + 1～2 个可选方向，而不是只反问「请说明」。
+5. 主动给可执行建议（例如逾期优先处理哪类任务），但建议必须能被工具数据支撑。`
 	} else {
-		base += `只能依据下方「本舍结构化事实」；没有的就说明不确定。
+		base += `只能依据下方「本舍结构化事实」；没有的就诚实说不确定。
 2. 不要声称已经改过业务数据。
-3. 写操作需要用户确认。`
+3. 写操作需要用户确认。
+4. 问题含糊时给方向而不是空泛客套。`
 	}
 	base += `
-4. 用简洁自然的中文；需要分点时用短列表。
-5. 不要输出 JSON 或 Markdown 代码围栏，除非用户明确要求代码。`
+6. 中文为主；需要分点用短列表，不要输出 JSON/代码围栏（除非用户明确要求）。
+7. 不要假装能访问外部网页或本 App 以外的系统。`
 	facts := strings.TrimSpace(kennelFacts)
 	if facts == "" {
 		facts = "（暂无快照）"
 	}
-	return base + "\n\n本舍结构化事实（参考）：\n" + facts
+	return base + "\n\n本舍结构化事实（参考，工具结果优先）：\n" + facts
 }
 
 func agentActionFromToolResult(toolName string, value any) (AgentAction, bool) {

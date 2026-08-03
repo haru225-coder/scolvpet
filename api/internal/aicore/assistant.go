@@ -114,7 +114,7 @@ func AnswerFromSnapshot(question string, snap Snapshot) Answer {
 	var body string
 	switch intent {
 	case IntentHelp:
-		body = "我是只读助手，可以回答：在养数量、待办/逾期任务、繁育概况、用量与套餐。请用自然语言提问，例如「现在有多少只在养？」「有没有逾期任务？」"
+		body = "我是熊舍管家助手：能查本舍在养/任务/繁育/用量，也能起草任务、体重、档案等（改库前会让你确认）。直接问就行，例如「今天有什么该做的」「逾期任务有哪些」「帮我给某某记个体重」。"
 	case IntentHamsters:
 		body = fmt.Sprintf("%s当前在养仓鼠约 %d 只，笼盒 %d 个。", orgPrefix(snap), snap.ActiveHamsters, snap.Enclosures)
 	case IntentTasks:
@@ -149,7 +149,7 @@ func AnswerFromSnapshot(question string, snap Snapshot) Answer {
 		Intent:     intent,
 		Mode:       "rules",
 		Facts:      facts,
-		Disclaimer: "只读助手：基于结构化查询，不会修改任何数据。",
+		Disclaimer: "规则快照模式：未走智能对话时的兜底。完整能力请用对话（chat）并开启 LLM。",
 	}
 }
 
