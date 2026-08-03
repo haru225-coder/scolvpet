@@ -9,6 +9,26 @@ const appConfig = fs.readFileSync(path.join(projectRoot, 'src/app.config.ts'), '
 const generatedApi = /defaultApi|p1Api|p1CrmApi|p2Api|geneticApi/
 const permissionOrAction = /CapabilityButton|actionCapability|canUseCapability|readBreederSession/
 const staleSampleMarker = /TODO|FIXME|假数据|样例页/
+const directRequestMarker = /\b(?:Taro|wx)\.request\s*\(/
+const directRequestAllowlist = [
+  'src/api/taro-fetch.ts',
+  // 开发真机：登录前探测 API 是否可达（域名/证书），必须用裸 request 才能看到微信 errMsg
+  'src/auth/dev-session.ts',
+  'src/packages/animals/detail/index.tsx',
+  'src/packages/data-center/actions/index.tsx'
+]
+
+function sourceFiles(directory: string): string[] {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = path.join(directory, entry.name)
+    if (entry.isDirectory()) return sourceFiles(entryPath)
+    return /\.tsx?$/.test(entry.name) ? [entryPath] : []
+  })
+}
+
+function withoutComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+}
 
 function isRouteRegistered(route: string) {
   if (route.startsWith('pages/')) return appConfig.includes(`'${route}'`)
@@ -97,5 +117,14 @@ describe('M1–M4 migration surface gate', () => {
       const content = fs.readFileSync(path.join(projectRoot, source), 'utf8')
       for (const operation of operations) expect(content, `${source} missing ${operation}`).toContain(operation)
     }
+  })
+
+  it('B 端业务不新增直接 HTTP，请求仅经 adapter 或预签二进制例外', () => {
+    const directRequestFiles = sourceFiles(path.join(projectRoot, 'src'))
+      .filter((sourcePath) => directRequestMarker.test(withoutComments(fs.readFileSync(sourcePath, 'utf8'))))
+      .map((sourcePath) => path.relative(projectRoot, sourcePath))
+      .sort()
+
+    expect(directRequestFiles).toEqual([...directRequestAllowlist].sort())
   })
 })

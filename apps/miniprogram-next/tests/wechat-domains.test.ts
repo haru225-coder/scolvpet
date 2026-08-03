@@ -15,7 +15,9 @@ describe('微信小程序文件传输边界', () => {
   it('合法域名清单覆盖 request、downloadFile、uploadFile 三类通道', () => {
     const readme = fs.readFileSync(path.join(appRoot, 'README.md'), 'utf8')
     for (const channel of ['request', 'downloadFile', 'uploadFile']) expect(readme).toContain(channel)
-    expect(readme).toContain('api.scolvpet.cn')
+    expect(readme).toContain('pet.scolv.com')
     expect(readme).toContain('uploadUrl')
+    // 预签名 PUT 走 request，不是 uploadFile 通道
+    expect(readme).toContain('Taro.request')
   })
 })
