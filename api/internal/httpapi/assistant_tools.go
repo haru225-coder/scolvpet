@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/scolvpet/scolvpet/api/internal/domain"
 	"github.com/scolvpet/scolvpet/api/internal/i2core"
 	"github.com/scolvpet/scolvpet/api/internal/i3core"
 	"github.com/scolvpet/scolvpet/api/internal/i5core"
@@ -43,37 +44,210 @@ func (s *Server) runAssistantTool(
 	return result, nil
 }
 
-// errOperationFailed 是未识别英文错误的统一收敛文案，不向用户透出内部细节。
+// errOperationFailed 是兜底哨兵：仅真正的 unknown 错误（无 code、无已知
+// 关键词、非中文文案）收敛到这里；业务/状态错误必须走 code 通道或显式映射。
 var errOperationFailed = errors.New("操作失败，请稍后重试")
+
+// toolErrorCN 把类型化错误 code 渲染为用户可见中文文案。
+// params 里的状态值经 statusCN 中文化，禁止把英文原文拼进文案。
+// 迁移说明：httpapi 只做 code → 本地化文案，不做任何关键词嗅探；
+// containsCJK 与关键词 switch 是过渡层，迁移完成后删除。
+var toolErrorCN = map[string]func(params map[string]any) string{
+	domain.ErrTaskNotOpen: func(p map[string]any) string {
+		return fmt.Sprintf("该任务当前为「%s」，无法执行此操作", statusCN(p["status"]))
+	},
+	domain.ErrPairingNotOpenForObservation: func(p map[string]any) string {
+		return fmt.Sprintf("该配对记录当前为「%s」，无法记录观察", statusCN(p["status"]))
+	},
+	domain.ErrReservationNotHeld: func(p map[string]any) string {
+		if _, ok := p["current"]; ok {
+			return fmt.Sprintf("当前预订状态为「%s」，仅「已保留」的预订可以确认", statusCN(p["current"]))
+		}
+		return "仅「已保留」的预订可以确认"
+	},
+	domain.ErrReservationHoldExpired: func(map[string]any) string {
+		return "预订保留已过期，请重新发起预订"
+	},
+	domain.ErrReservationNotCancellable: func(p map[string]any) string {
+		return fmt.Sprintf("当前预订状态为「%s」，无法取消", statusCN(p["status"]))
+	},
+	domain.ErrHandoverNotScheduled: func(p map[string]any) string {
+		if _, ok := p["current"]; ok {
+			return fmt.Sprintf("当前交付状态为「%s」，仅「已排期」的交付可以完成", statusCN(p["current"]))
+		}
+		return "仅「已排期」的交付可以完成"
+	},
+	domain.ErrReservationNotOpenForHandover: func(p map[string]any) string {
+		return fmt.Sprintf("当前预订状态为「%s」，无法安排交付", statusCN(p["current"]))
+	},
+	domain.ErrReservationAlreadyHasHandover: func(map[string]any) string {
+		return "该预订已有关联交付记录"
+	},
+	domain.ErrArchivedContactCannotReserve: func(map[string]any) string {
+		return "已归档客户不能新增预订"
+	},
+	domain.ErrArchivedContactCannotHandover: func(map[string]any) string {
+		return "已归档客户不能发起交付"
+	},
+	domain.ErrHamsterNotReservable: func(map[string]any) string {
+		return "该仓鼠当前不可预订"
+	},
+	domain.ErrHamsterAlreadyReserved: func(map[string]any) string {
+		return "该仓鼠已有有效预订"
+	},
+	domain.ErrHamsterNotActive: func(map[string]any) string {
+		return "该仓鼠不在活跃状态"
+	},
+	domain.ErrHamsterNotTransferable: func(map[string]any) string {
+		return "该仓鼠当前不可转移"
+	},
+	domain.ErrHandoverMissingHamster: func(map[string]any) string {
+		return "交付记录缺少仓鼠信息"
+	},
+	domain.ErrNoSpeciesRule: func(map[string]any) string {
+		return "未配置可用的品种规则"
+	},
+	domain.ErrNoDocTemplate: func(p map[string]any) string {
+		return fmt.Sprintf("暂无「%s」模板，请先在 App 创建", kindCN(p["kind"]))
+	},
+	domain.ErrObservedAtOutsideWindow: func(map[string]any) string {
+		return "观察时间超出配对窗口"
+	},
+	domain.ErrInvalidSex: func(map[string]any) string {
+		return "性别必须为「公 / 母 / 未定」"
+	},
+	domain.ErrNoFieldsToUpdate: func(map[string]any) string {
+		return "没有可更新的字段"
+	},
+	domain.ErrInvalidEntryType: func(map[string]any) string {
+		return "收支类型必须为「收入 / 支出」"
+	},
+	domain.ErrAmountNegative: func(map[string]any) string {
+		return "金额不能为负数"
+	},
+	domain.ErrAmountNotPositive: func(map[string]any) string {
+		return "金额必须大于 0"
+	},
+	domain.ErrInvalidDocStatus: func(map[string]any) string {
+		return "单据状态必须为「草稿 / 已签发 / 已撤销」"
+	},
+	domain.ErrInvalidDocKind: func(map[string]any) string {
+		return "单据类型必须为「合同 / 回执」"
+	},
+	domain.ErrInvalidObservationType: func(map[string]any) string {
+		return "观察类型必须为「接触 / 追逐 / 冲突 / 交配 / 已分离 / 其他」"
+	},
+	domain.ErrOperationConflict: func(map[string]any) string {
+		return "操作冲突，数据已被他人修改，请刷新后再试"
+	},
+	domain.ErrReservationMismatch: func(map[string]any) string {
+		return "预订关联的客户或仓鼠与本次操作不一致"
+	},
+}
+
+// statusCN 把数据库枚举状态值翻译为中文展示；未知值回退「未知状态」，
+// 避免把英文原文透给用户。
+func statusCN(v any) string {
+	switch s, _ := v.(string); s {
+	case "pending":
+		return "待处理"
+	case "in_progress":
+		return "进行中"
+	case "completed":
+		return "已完成"
+	case "snoozed":
+		return "已顺延"
+	case "cancelled", "canceled":
+		return "已取消"
+	case "superseded":
+		return "已替代"
+	case "held":
+		return "已保留"
+	case "confirmed":
+		return "已确认"
+	case "handed_over":
+		return "已交付"
+	case "scheduled":
+		return "已排期"
+	case "lead":
+		return "潜在客户"
+	case "active":
+		return "进行中"
+	case "archived":
+		return "已归档"
+	case "transferred":
+		return "已转移"
+	case "retired":
+		return "已退役"
+	case "deceased":
+		return "已离世"
+	case "separated":
+		return "已分离"
+	case "safety_hold":
+		return "安全保留"
+	case "expired":
+		return "已过期"
+	case "draft":
+		return "草稿"
+	case "issued":
+		return "已签发"
+	case "revoked":
+		return "已撤销"
+	default:
+		return "未知状态"
+	}
+}
+
+// kindCN 把文档模板类型翻译为中文。
+func kindCN(v any) string {
+	switch k, _ := v.(string); k {
+	case "contract":
+		return "合同"
+	case "receipt":
+		return "回执"
+	default:
+		return "未知类型"
+	}
+}
 
 func mapAssistantToolError(err error) error {
 	if err == nil {
 		return nil
 	}
+	// 类型化错误优先：code → 中文文案（含结构化状态参数）。
+	var toolErr *domain.ToolError
+	if errors.As(err, &toolErr) {
+		if render, ok := toolErrorCN[toolErr.Code]; ok {
+			return errors.New(render(toolErr.Params))
+		}
+		// 未注册的 code：不应出现；收敛为兜底（runAssistantTool 会 Warn 原始错误）。
+		return errOperationFailed
+	}
 	msg := err.Error()
-	// 已含中文的文案（含内嵌数据的中文模板）视为用户友好，直接保留——
+	// 过渡层：已含中文的文案（含内嵌数据的中文模板）视为用户友好，直接保留——
 	// 放在 switch 之前，避免中文模板内嵌的英文关键词（如查询词恰为
 	// "conflict"）被误映射改写。「英文模板+中文数据」的误判场景已由
 	// 源头中文化（resolveOpenTaskForComplete）消除。
 	if containsCJK(msg) {
 		return err
 	}
-	// 常见英文错误关键词映射为用户友好中文。
+	// 过渡层：常见英文错误关键词映射为用户友好中文（存量错误迁移
+	// 到 code 通道后删除）。不拼接英文原文——验收要求 C 端无英文原文。
 	switch {
 	case strings.Contains(msg, "not found"):
-		return fmt.Errorf("找不到对应记录（%s）", msg)
+		return fmt.Errorf("找不到对应记录，请检查名称或编号后重试")
 	case strings.Contains(msg, "session required"):
 		return fmt.Errorf("写操作需要有效会话，请重新打开助手后再试")
 	case strings.Contains(msg, "required"):
-		return fmt.Errorf("缺少必要参数：%s", msg)
+		return fmt.Errorf("缺少必要参数，请补充完整后再试")
 	case strings.Contains(msg, "invalid"):
-		return fmt.Errorf("参数无效：%s", msg)
+		return fmt.Errorf("参数无效，请检查输入后重试")
 	case strings.Contains(msg, "conflict"):
-		return fmt.Errorf("操作冲突，请刷新后再试（%s）", msg)
+		return fmt.Errorf("操作冲突，请刷新后再试")
 	case strings.Contains(msg, "unknown tool"):
-		return fmt.Errorf("不支持的工具：%s", msg)
+		return fmt.Errorf("不支持的工具，请换个说法重试")
 	case strings.Contains(msg, "unsupported action"):
-		return fmt.Errorf("不支持的确认动作：%s", msg)
+		return fmt.Errorf("不支持的确认动作")
 	}
 	// 未知英文错误不把内部细节透给用户（原始错误已记录到服务端日志）。
 	return errOperationFailed
@@ -266,7 +440,7 @@ func (s *Server) toolDraftCompleteTask(ctx context.Context, ownerID uuid.UUID, s
 		return nil, err
 	}
 	if status != "pending" && status != "in_progress" && status != "snoozed" {
-		return nil, fmt.Errorf("task not open (status=%s)", status)
+		return nil, domain.NewToolError(domain.ErrTaskNotOpen, map[string]any{"status": status})
 	}
 	payload := map[string]any{"task_id": taskID.String(), "title": title, "current_status": status}
 	summary := fmt.Sprintf("完成任务「%s」(%s)", firstNonEmptyName(title, taskID.String()[:8]), taskID.String()[:8])
@@ -430,7 +604,7 @@ func (s *Server) toolDraftCreateHamster(ctx context.Context, ownerID uuid.UUID, 
 		sex = "unknown"
 	}
 	if sex != "male" && sex != "female" && sex != "unknown" {
-		return nil, fmt.Errorf("sex must be male|female|unknown")
+		return nil, domain.NewToolError(domain.ErrInvalidSex, nil)
 	}
 	ruleID, err := s.resolveDefaultSpeciesRule(ctx, ownerID, stringArgMap(args, "species_rule_version_id"))
 	if err != nil {
@@ -491,7 +665,7 @@ func (s *Server) toolDraftUpdateHamster(ctx context.Context, ownerID uuid.UUID, 
 	}
 	if v := stringArgMap(args, "sex"); v != "" {
 		if v != "male" && v != "female" && v != "unknown" {
-			return nil, fmt.Errorf("sex must be male|female|unknown")
+			return nil, domain.NewToolError(domain.ErrInvalidSex, nil)
 		}
 		payload["sex"] = v
 		changed = append(changed, "sex="+v)
@@ -501,7 +675,7 @@ func (s *Server) toolDraftUpdateHamster(ctx context.Context, ownerID uuid.UUID, 
 		changed = append(changed, "notes")
 	}
 	if len(changed) == 0 {
-		return nil, fmt.Errorf("no fields to update")
+		return nil, domain.NewToolError(domain.ErrNoFieldsToUpdate, nil)
 	}
 	summary := fmt.Sprintf("更新仓鼠 %s：%s", firstNonEmptyName(name, code), strings.Join(changed, ", "))
 	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "update_hamster", "确认更新仓鼠", summary, payload, true)
@@ -577,7 +751,7 @@ func (s *Server) resolveDefaultSpeciesRule(ctx context.Context, ownerID uuid.UUI
 			SELECT id FROM species_rule_version WHERE scope='system' ORDER BY created_at DESC LIMIT 1
 		`).Scan(&id)
 		if err != nil {
-			return uuid.Nil, fmt.Errorf("no species rule available")
+			return uuid.Nil, domain.NewToolError(domain.ErrNoSpeciesRule, nil)
 		}
 	}
 	return id, nil
@@ -635,7 +809,7 @@ func (s *Server) executeRecordPairingObservation(ctx context.Context, ownerID uu
 	switch obsType {
 	case "contact", "chase", "conflict", "mating", "separated", "other":
 	default:
-		return nil, fmt.Errorf("invalid observation type")
+		return nil, domain.NewToolError(domain.ErrInvalidObservationType, nil)
 	}
 	// Load current version for optimistic concurrency (If-Match equivalent).
 	var version int
@@ -650,7 +824,7 @@ func (s *Server) executeRecordPairingObservation(ctx context.Context, ownerID uu
 		return nil, fmt.Errorf("pairing attempt not found")
 	}
 	if status != "active" && status != "safety_hold" {
-		return nil, fmt.Errorf("pairing attempt not open for observation (status=%s)", status)
+		return nil, domain.NewToolError(domain.ErrPairingNotOpenForObservation, map[string]any{"status": status})
 	}
 	observedAt := time.Now().UTC()
 	if raw := stringArgMap(payload, "observed_at"); raw != "" {
@@ -668,7 +842,7 @@ func (s *Server) executeRecordPairingObservation(ctx context.Context, ownerID uu
 				observedAt = deadline
 			}
 		} else {
-			return nil, fmt.Errorf("observed_at outside pairing window")
+			return nil, domain.NewToolError(domain.ErrObservedAtOutsideWindow, nil)
 		}
 	}
 	input := i3core.RecordObservationInput{
@@ -749,7 +923,7 @@ func (s *Server) resolveDocTemplateID(ctx context.Context, ownerID uuid.UUID, ki
 		LIMIT 1
 	`, ownerID, kind).Scan(&id, &name)
 	if err != nil {
-		return uuid.Nil, "", fmt.Errorf("no %s template; create one in App first", kind)
+		return uuid.Nil, "", domain.NewToolError(domain.ErrNoDocTemplate, map[string]any{"kind": kind})
 	}
 	return id, name, nil
 }
@@ -866,7 +1040,7 @@ func (s *Server) executeCreateReceipt(ctx context.Context, ownerID uuid.UUID, pa
 		return nil, fmt.Errorf("invalid amount_cents")
 	}
 	if amountCents < 0 {
-		return nil, fmt.Errorf("amount_cents cannot be negative")
+		return nil, domain.NewToolError(domain.ErrAmountNegative, nil)
 	}
 	currency := stringArgMap(payload, "currency")
 	if currency == "" {
@@ -1016,7 +1190,7 @@ func (s *Server) executeUpdateCrmContact(ctx context.Context, ownerID uuid.UUID,
 		return nil, err
 	}
 	if tag.RowsAffected() != 1 {
-		return nil, fmt.Errorf("contact update conflict")
+		return nil, domain.NewToolError(domain.ErrOperationConflict, nil)
 	}
 	return map[string]any{
 		"contact_id": contactID.String(),
@@ -1040,7 +1214,7 @@ func (s *Server) executeCreateCrmReservation(ctx context.Context, ownerID uuid.U
 		return nil, fmt.Errorf("contact not found")
 	}
 	if contactStatus == "archived" {
-		return nil, fmt.Errorf("archived contact cannot reserve")
+		return nil, domain.NewToolError(domain.ErrArchivedContactCannotReserve, nil)
 	}
 	title := stringArgMap(payload, "title")
 	if title == "" {
@@ -1062,7 +1236,7 @@ func (s *Server) executeCreateCrmReservation(ctx context.Context, ownerID uuid.U
 			return nil, fmt.Errorf("hamster not found")
 		}
 		if lifecycle != "active" {
-			return nil, fmt.Errorf("hamster not reservable")
+			return nil, domain.NewToolError(domain.ErrHamsterNotReservable, nil)
 		}
 		var open bool
 		err = s.Store.Pool.QueryRow(ctx, `
@@ -1079,7 +1253,7 @@ func (s *Server) executeCreateCrmReservation(ctx context.Context, ownerID uuid.U
 			return nil, err
 		}
 		if open {
-			return nil, fmt.Errorf("hamster already reserved")
+			return nil, domain.NewToolError(domain.ErrHamsterAlreadyReserved, nil)
 		}
 		hamsterID = &hid
 	}
@@ -1124,7 +1298,7 @@ func (s *Server) executeCreateCrmHandover(ctx context.Context, ownerID uuid.UUID
 		return nil, fmt.Errorf("contact not found")
 	}
 	if contactStatus == "archived" {
-		return nil, fmt.Errorf("archived contact cannot handover")
+		return nil, domain.NewToolError(domain.ErrArchivedContactCannotHandover, nil)
 	}
 	var reservationID *uuid.UUID
 	var hamsterID *uuid.UUID
@@ -1144,10 +1318,10 @@ func (s *Server) executeCreateCrmHandover(ctx context.Context, ownerID uuid.UUID
 			return nil, fmt.Errorf("reservation not found")
 		}
 		if resContact != contactID {
-			return nil, fmt.Errorf("reservation contact mismatch")
+			return nil, domain.NewToolError(domain.ErrReservationMismatch, nil)
 		}
 		if resStatus != "held" && resStatus != "confirmed" {
-			return nil, fmt.Errorf("reservation not open for handover")
+			return nil, domain.NewToolError(domain.ErrReservationNotOpenForHandover, map[string]any{"current": resStatus})
 		}
 		var exists bool
 		err = s.Store.Pool.QueryRow(ctx, `
@@ -1160,7 +1334,7 @@ func (s *Server) executeCreateCrmHandover(ctx context.Context, ownerID uuid.UUID
 			return nil, err
 		}
 		if exists {
-			return nil, fmt.Errorf("reservation already has handover")
+			return nil, domain.NewToolError(domain.ErrReservationAlreadyHasHandover, nil)
 		}
 		reservationID = &rid
 		hamsterID = resHamster
@@ -1184,7 +1358,7 @@ func (s *Server) executeCreateCrmHandover(ctx context.Context, ownerID uuid.UUID
 		return nil, fmt.Errorf("hamster not found")
 	}
 	if lifecycle != "active" {
-		return nil, fmt.Errorf("hamster not active")
+		return nil, domain.NewToolError(domain.ErrHamsterNotActive, nil)
 	}
 	scheduledAt := time.Now().UTC()
 	if raw := stringArgMap(payload, "scheduled_at"); raw != "" {
@@ -1223,7 +1397,7 @@ func (s *Server) executeCreateCrmHandover(ctx context.Context, ownerID uuid.UUID
 func (s *Server) executeCreateAccountingRecord(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
 	entryType := stringArgMap(payload, "entry_type")
 	if entryType != "income" && entryType != "expense" {
-		return nil, fmt.Errorf("entry_type must be income or expense")
+		return nil, domain.NewToolError(domain.ErrInvalidEntryType, nil)
 	}
 	amountCents := int64(0)
 	switch v := payload["amount_cents"].(type) {
@@ -1237,7 +1411,7 @@ func (s *Server) executeCreateAccountingRecord(ctx context.Context, ownerID uuid
 		return nil, fmt.Errorf("invalid amount_cents")
 	}
 	if amountCents <= 0 {
-		return nil, fmt.Errorf("amount_cents must be > 0")
+		return nil, domain.NewToolError(domain.ErrAmountNotPositive, nil)
 	}
 	title := stringArgMap(payload, "title")
 	if title == "" {
@@ -1367,10 +1541,10 @@ func (s *Server) executeConfirmCrmReservation(ctx context.Context, ownerID uuid.
 		return nil, fmt.Errorf("reservation not found")
 	}
 	if status != "held" {
-		return nil, fmt.Errorf("only held reservations can be confirmed")
+		return nil, domain.NewToolError(domain.ErrReservationNotHeld, nil)
 	}
 	if holdExpires != nil && !holdExpires.After(time.Now().UTC()) {
-		return nil, fmt.Errorf("reservation hold expired")
+		return nil, domain.NewToolError(domain.ErrReservationHoldExpired, nil)
 	}
 	tag, err := s.Store.Pool.Exec(ctx, `
 		UPDATE crm_reservation
@@ -1381,7 +1555,7 @@ func (s *Server) executeConfirmCrmReservation(ctx context.Context, ownerID uuid.
 		return nil, err
 	}
 	if tag.RowsAffected() != 1 {
-		return nil, fmt.Errorf("reservation confirm conflict")
+		return nil, domain.NewToolError(domain.ErrOperationConflict, nil)
 	}
 	return map[string]any{
 		"reservation_id": reservationID.String(),
@@ -1405,7 +1579,7 @@ func (s *Server) executeCancelCrmReservation(ctx context.Context, ownerID uuid.U
 		return nil, fmt.Errorf("reservation not found")
 	}
 	if status != "held" && status != "confirmed" {
-		return nil, fmt.Errorf("reservation cannot be cancelled (status=%s)", status)
+		return nil, domain.NewToolError(domain.ErrReservationNotCancellable, map[string]any{"status": status})
 	}
 	tag, err := s.Store.Pool.Exec(ctx, `
 		UPDATE crm_reservation
@@ -1416,7 +1590,7 @@ func (s *Server) executeCancelCrmReservation(ctx context.Context, ownerID uuid.U
 		return nil, err
 	}
 	if tag.RowsAffected() != 1 {
-		return nil, fmt.Errorf("reservation cancel conflict")
+		return nil, domain.NewToolError(domain.ErrOperationConflict, nil)
 	}
 	return map[string]any{
 		"reservation_id": reservationID.String(),
@@ -1442,10 +1616,10 @@ func (s *Server) executeCompleteCrmHandover(ctx context.Context, ownerID uuid.UU
 		return nil, fmt.Errorf("handover not found")
 	}
 	if current.Status != "scheduled" {
-		return nil, fmt.Errorf("only scheduled handovers can be completed")
+		return nil, domain.NewToolError(domain.ErrHandoverNotScheduled, nil)
 	}
 	if current.HamsterID == nil {
-		return nil, fmt.Errorf("handover missing hamster")
+		return nil, domain.NewToolError(domain.ErrHandoverMissingHamster, nil)
 	}
 	if current.Reservation != nil {
 		reservation, err := getCrmReservationTx(ctx, tx, ownerID, *current.Reservation, true)
@@ -1454,7 +1628,7 @@ func (s *Server) executeCompleteCrmHandover(ctx context.Context, ownerID uuid.UU
 		}
 		if reservation.Status != "confirmed" || reservation.ContactID != current.ContactID ||
 			reservation.HamsterID == nil || *reservation.HamsterID != *current.HamsterID {
-			return nil, fmt.Errorf("handover reservation mismatch")
+			return nil, domain.NewToolError(domain.ErrReservationMismatch, nil)
 		}
 		tag, err := tx.Exec(ctx, `
 			UPDATE crm_reservation
@@ -1465,7 +1639,7 @@ func (s *Server) executeCompleteCrmHandover(ctx context.Context, ownerID uuid.UU
 			return nil, err
 		}
 		if tag.RowsAffected() != 1 {
-			return nil, fmt.Errorf("reservation update conflict")
+			return nil, domain.NewToolError(domain.ErrOperationConflict, nil)
 		}
 	}
 	tag, err := tx.Exec(ctx, `
@@ -1477,7 +1651,7 @@ func (s *Server) executeCompleteCrmHandover(ctx context.Context, ownerID uuid.UU
 		return nil, err
 	}
 	if tag.RowsAffected() != 1 {
-		return nil, fmt.Errorf("hamster not transferable")
+		return nil, domain.NewToolError(domain.ErrHamsterNotTransferable, nil)
 	}
 	tag, err = tx.Exec(ctx, `
 		UPDATE crm_handover
@@ -1488,7 +1662,7 @@ func (s *Server) executeCompleteCrmHandover(ctx context.Context, ownerID uuid.UU
 		return nil, err
 	}
 	if tag.RowsAffected() != 1 {
-		return nil, fmt.Errorf("handover complete conflict")
+		return nil, domain.NewToolError(domain.ErrOperationConflict, nil)
 	}
 	if _, err := tx.Exec(ctx, `
 		UPDATE crm_contact
@@ -2514,7 +2688,7 @@ func (s *Server) toolSearchDocs(ctx context.Context, ownerID uuid.UUID, args map
 	}
 	if status != "" {
 		if status != "draft" && status != "issued" && status != "revoked" {
-			return nil, fmt.Errorf("status must be draft|issued|revoked")
+			return nil, domain.NewToolError(domain.ErrInvalidDocStatus, nil)
 		}
 		query += fmt.Sprintf(` AND d.status::text=$%d`, argN)
 		qargs = append(qargs, status)
@@ -2646,7 +2820,7 @@ func (s *Server) toolGetDoc(ctx context.Context, ownerID uuid.UUID, args map[str
 func (s *Server) toolListDocTemplates(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
 	kind := stringArgMap(args, "kind")
 	if kind != "contract" && kind != "receipt" {
-		return nil, fmt.Errorf("kind must be contract or receipt")
+		return nil, domain.NewToolError(domain.ErrInvalidDocKind, nil)
 	}
 	limit := toolLimit(args, 15, 1, 30)
 	rows, err := s.Store.Pool.Query(ctx, `
@@ -2814,7 +2988,7 @@ func (s *Server) toolDraftUpdateCrmContact(ctx context.Context, ownerID uuid.UUI
 		changed = append(changed, "status="+v)
 	}
 	if len(changed) == 0 {
-		return nil, fmt.Errorf("no fields to update")
+		return nil, domain.NewToolError(domain.ErrNoFieldsToUpdate, nil)
 	}
 	summary := fmt.Sprintf("更新客户「%s」：%s", curName, strings.Join(changed, ", "))
 	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "update_crm_contact", "确认更新客户", summary, payload, true)
@@ -2903,7 +3077,7 @@ func (s *Server) toolDraftCreateCrmReservation(ctx context.Context, ownerID uuid
 		return nil, fmt.Errorf("contact not found")
 	}
 	if contactStatus == "archived" {
-		return nil, fmt.Errorf("archived contact cannot reserve")
+		return nil, domain.NewToolError(domain.ErrArchivedContactCannotReserve, nil)
 	}
 	title := stringArgMap(args, "title")
 	if title == "" {
@@ -2964,7 +3138,7 @@ func (s *Server) toolDraftCreateCrmHandover(ctx context.Context, ownerID uuid.UU
 		return nil, fmt.Errorf("contact not found")
 	}
 	if contactStatus == "archived" {
-		return nil, fmt.Errorf("archived contact cannot handover")
+		return nil, domain.NewToolError(domain.ErrArchivedContactCannotHandover, nil)
 	}
 	hamsterRaw := stringArgMap(args, "hamster_id")
 	reservationRaw := stringArgMap(args, "reservation_id")
@@ -3034,7 +3208,7 @@ func (s *Server) toolDraftCreateAccountingRecord(ctx context.Context, ownerID uu
 	}
 	entryType := stringArgMap(args, "entry_type")
 	if entryType != "income" && entryType != "expense" {
-		return nil, fmt.Errorf("entry_type must be income or expense")
+		return nil, domain.NewToolError(domain.ErrInvalidEntryType, nil)
 	}
 	amountCents := int64(0)
 	switch v := args["amount_cents"].(type) {
@@ -3048,7 +3222,7 @@ func (s *Server) toolDraftCreateAccountingRecord(ctx context.Context, ownerID uu
 		return nil, fmt.Errorf("invalid amount_cents")
 	}
 	if amountCents <= 0 {
-		return nil, fmt.Errorf("amount_cents must be > 0")
+		return nil, domain.NewToolError(domain.ErrAmountNotPositive, nil)
 	}
 	title := stringArgMap(args, "title")
 	if title == "" {
@@ -3171,7 +3345,7 @@ func (s *Server) toolDraftRecordPairingObservation(ctx context.Context, ownerID 
 	switch obsType {
 	case "contact", "chase", "conflict", "mating", "separated", "other":
 	default:
-		return nil, fmt.Errorf("type must be contact|chase|conflict|mating|separated|other")
+		return nil, domain.NewToolError(domain.ErrInvalidObservationType, nil)
 	}
 	var status string
 	var attemptNo int
@@ -3186,7 +3360,7 @@ func (s *Server) toolDraftRecordPairingObservation(ctx context.Context, ownerID 
 		return nil, fmt.Errorf("pairing attempt not found")
 	}
 	if status != "active" && status != "safety_hold" {
-		return nil, fmt.Errorf("pairing attempt not open (status=%s)", status)
+		return nil, domain.NewToolError(domain.ErrPairingNotOpenForObservation, map[string]any{"status": status})
 	}
 	observedAt := time.Now().UTC()
 	if raw := stringArgMap(args, "observed_at"); raw != "" {
@@ -3416,7 +3590,7 @@ func (s *Server) toolDraftCreateReceipt(ctx context.Context, ownerID uuid.UUID, 
 		return nil, fmt.Errorf("amount_cents required")
 	}
 	if amountCents < 0 {
-		return nil, fmt.Errorf("amount_cents cannot be negative")
+		return nil, domain.NewToolError(domain.ErrAmountNegative, nil)
 	}
 	currency := stringArgMap(args, "currency")
 	if currency == "" {
@@ -3493,7 +3667,7 @@ func (s *Server) toolListAccountingRecords(ctx context.Context, ownerID uuid.UUI
 	argN := 3
 	if entryType != "" {
 		if entryType != "income" && entryType != "expense" {
-			return nil, fmt.Errorf("entry_type must be income or expense")
+			return nil, domain.NewToolError(domain.ErrInvalidEntryType, nil)
 		}
 		query += fmt.Sprintf(` AND r.entry_type=$%d::accounting_entry_type`, argN)
 		qargs = append(qargs, entryType)
@@ -3613,7 +3787,7 @@ func (s *Server) toolDraftConfirmCrmReservation(ctx context.Context, ownerID uui
 		return nil, fmt.Errorf("reservation not found")
 	}
 	if status != "held" {
-		return nil, fmt.Errorf("only held reservations can be confirmed (current=%s)", status)
+		return nil, domain.NewToolError(domain.ErrReservationNotHeld, map[string]any{"current": status})
 	}
 	payload := map[string]any{
 		"reservation_id": reservationID.String(),
@@ -3656,7 +3830,7 @@ func (s *Server) toolDraftCancelCrmReservation(ctx context.Context, ownerID uuid
 		return nil, fmt.Errorf("reservation not found")
 	}
 	if status != "held" && status != "confirmed" {
-		return nil, fmt.Errorf("reservation cannot be cancelled (status=%s)", status)
+		return nil, domain.NewToolError(domain.ErrReservationNotCancellable, map[string]any{"status": status})
 	}
 	payload := map[string]any{
 		"reservation_id": reservationID.String(),
@@ -3703,7 +3877,7 @@ func (s *Server) toolDraftCompleteCrmHandover(ctx context.Context, ownerID uuid.
 		return nil, fmt.Errorf("handover not found")
 	}
 	if status != "scheduled" {
-		return nil, fmt.Errorf("only scheduled handovers can be completed (current=%s)", status)
+		return nil, domain.NewToolError(domain.ErrHandoverNotScheduled, map[string]any{"current": status})
 	}
 	payload := map[string]any{
 		"handover_id": handoverID.String(), "contact_name": contactName, "current_status": status,

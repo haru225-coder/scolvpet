@@ -242,7 +242,11 @@ export default function BreedingDetailPage() {
       await defaultApi.completeBreedingPlan({
         idempotencyKey: newIdempotencyKey(),
         ifMatch: String(plan.version ?? 0),
-        planId
+        planId,
+        completeBreedingPlanRequest: {
+          completedAt: new Date(),
+          timezone: 'Asia/Taipei'
+        }
       })
     }, '繁育计划已完成')
   }

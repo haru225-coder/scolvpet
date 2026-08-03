@@ -57,10 +57,10 @@ export default function AssistantPage() {
   }
 
   async function resolveAction(action: any, confirm: boolean) {
-    // task_draft 等本地草稿动作没有 action_id，确认/取消按钮不应出现；
-    // 若仍被触发（数据异常），给提示而不是静默 return。
+    // 本地草稿动作（如 task_draft）不走服务端确认：它们跳转到新建表单处理，
+    // 不应出现确认/取消按钮；若仍被触发（数据异常），给中性提示而非报错。
     if (!action.actionId) {
-      setMessage('此操作需先点击卡片进入详情页处理')
+      setMessage('该操作已在本地处理，请直接在卡片上继续')
       return
     }
     setBusy(true)

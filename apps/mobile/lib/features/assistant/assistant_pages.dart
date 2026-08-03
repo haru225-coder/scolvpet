@@ -327,14 +327,19 @@ class _AssistantPageState extends State<AssistantPage> {
   List<AssistantAction> _executableActions(List<AssistantAction> actions) =>
       actions.where(_canExecuteAction).toList(growable: false);
 
+  /// 单一来源：该动作是否走服务端确认（有 action_id 的后端草稿写操作）。
+  /// 渲染（_canExecuteAction）与点击处理（_handleAgentAction）共用，
+  /// 避免两端各改一次判定逻辑。task_draft 是本地草稿，不在此列。
+  bool _isServerConfirmable(AssistantAction action) =>
+      action.type != 'task_draft' &&
+      action.requiresConfirmation &&
+      (action.actionId?.trim().isNotEmpty ?? false);
+
   bool _canExecuteAction(AssistantAction action) {
     // Server-side draft/confirm (CRM/finance/docs/health/breeding/…): any type
     // with action_id is confirmable — do not hardcode a growing type whitelist.
-    // task_draft 是本地草稿（无 action_id），交由下方分支判定，保持与
-    // _handleAgentAction 的排除逻辑一致。
-    if (action.type != 'task_draft' &&
-        action.requiresConfirmation &&
-        (action.actionId?.trim().isNotEmpty ?? false)) {
+    // task_draft 是本地草稿（无 action_id），交由下方分支判定。
+    if (_isServerConfirmable(action)) {
       return true;
     }
     switch (action.type) {
@@ -449,9 +454,7 @@ class _AssistantPageState extends State<AssistantPage> {
 
   void _handleAgentAction(AssistantAction action) {
     // Prefer server confirm for any backend-drafted write (CRM/docs/health/…).
-    if (action.type != 'task_draft' &&
-        action.requiresConfirmation &&
-        (action.actionId?.trim().isNotEmpty ?? false)) {
+    if (_isServerConfirmable(action)) {
       _confirmServerAction(action);
       return;
     }

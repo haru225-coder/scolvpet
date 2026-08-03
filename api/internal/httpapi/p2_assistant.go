@@ -379,8 +379,10 @@ func (s *Server) confirmAssistantAction(w http.ResponseWriter, r *http.Request) 
 		if s.Logger != nil {
 			s.Logger.Warn("assistant action execute failed", "error", execErr, "type", action.Type)
 		}
-		_, _ = s.Store.MarkAssistantAction(r.Context(), ownerID, actionID, "confirmed", "failed", map[string]any{"error": execErr.Error()})
-		writeAPIError(w, r, validationError("execute", "执行失败："+execErr.Error()))
+		// 执行失败同样走 code → 中文文案映射，避免把内部错误原文透给用户。
+		mappedExecErr := mapAssistantToolError(execErr)
+		_, _ = s.Store.MarkAssistantAction(r.Context(), ownerID, actionID, "confirmed", "failed", map[string]any{"error": mappedExecErr.Error()})
+		writeAPIError(w, r, validationError("execute", "执行失败："+mappedExecErr.Error()))
 		return
 	}
 	updated, err := s.Store.MarkAssistantAction(r.Context(), ownerID, actionID, "confirmed", "executed", result)
