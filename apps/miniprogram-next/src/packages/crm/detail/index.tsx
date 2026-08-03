@@ -1,11 +1,21 @@
 import { Input, Picker, ScrollView, Textarea, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useCallback, useEffect, useState } from 'react'
-import { Cell, Empty, FormRow, NavBar, Section, SectionList, Tag, crayon, paperGrain, metrics } from '@scolvpet/mp-ui'
+import { Cell, Empty, FormRow, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
 import { defaultApi, newIdempotencyKey, p1CrmApi } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import type { ApiEnvelope } from '../../../api/types'
+import { humanShortLabel } from '../../../utils/tab-routes'
+
+export function loadCrmDetail(type: string, recordId: string) {
+  switch (type) {
+    case 'contact': return p1CrmApi.getCrmContact({ contactId: recordId })
+    case 'reservation': return p1CrmApi.getCrmReservation({ reservationId: recordId })
+    case 'handover': return p1CrmApi.getCrmHandover({ handoverId: recordId })
+    default: throw new Error('CRM 记录类型无效')
+  }
+}
 
 export default function CrmDetailPage() {
   const [kind, setKind] = useState('')
@@ -20,12 +30,8 @@ export default function CrmDetailPage() {
 
   const load = useCallback(async (id: string, type: string) => {
     try {
-      const [contacts, reservations, handovers] = await Promise.all([
-        p1CrmApi.listCrmContacts(),
-        p1CrmApi.listCrmReservations(),
-        p1CrmApi.listCrmHandovers()
-      ])
-      const data = type === 'contact' ? contacts.data?.find((item: any) => item.id === id) : type === 'reservation' ? reservations.data?.find((item: any) => item.id === id) : handovers.data?.find((item: any) => item.id === id)
+      const response = await loadCrmDetail(type, id)
+      const data = response.data
       setRecord(data || null)
       setMessage(data ? 'CRM 操作会直接进入客户、预订和交付状态机' : '记录暂时不存在')
     } catch (cause) {
@@ -93,16 +99,38 @@ export default function CrmDetailPage() {
   const hamsterIndex = Math.max(0, hamsters.findIndex((item) => item.id === hamsterId))
 
   return (
-    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: crayon.paper, backgroundImage: paperGrain }}>
-      <NavBar title="CRM 详情" back right={<Tag tone="accent">CRM</Tag>} />
+    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
+      <NavBar title="客户详情" back />
       <ScrollView scrollY type="list" bounces enhanced showScrollbar={false} style={{ flex: 1 }}>
-        {!record ? <Empty title="正在读取 CRM 记录" description={message} /> : <SectionList>
+        {!record ? <Empty title="正在读取记录" description={message} /> : <SectionList>
           <Section header="记录" footer={message}>
-            <Cell title={record.name || record.title || record.contactName || recordId} subtitle={`${record.phone || record.hamsterName || record.notes || ''}`} value={<Tag tone={record.status === 'cancelled' ? 'danger' : 'success'}>{record.status || 'active'}</Tag>} />
-            <Cell title="记录 ID" value={record.id} />
+            <Cell
+              title={record.name || record.title || record.contactName || '客户记录'}
+              subtitle={`${record.phone || record.hamsterName || record.notes || humanShortLabel(kind) || ''}`}
+              value={
+                <Tag tone={record.status === 'cancelled' || record.status === 'canceled' ? 'danger' : 'success'}>
+                  {humanShortLabel(record.status || 'active')}
+                </Tag>
+              }
+            />
           </Section>
           {kind === 'contact' ? <Section header="客户经营动作">
-            {hamsters.length ? <FormRow label="关联个体"><Picker mode="selector" range={hamsterLabels} value={hamsterIndex} onChange={(event) => setHamsterId(hamsters[Number(event.detail.value)]?.id || '')}><Cell title={hamsterLabels[hamsterIndex] || '选择个体'} value={<Tag>选择</Tag>} /></Picker></FormRow> : <FormRow label="个体 ID"><Input value={hamsterId} placeholder="可选；暂无列表时粘贴个体 ID" onInput={(event) => setHamsterId(event.detail.value)} /></FormRow>}
+            {hamsters.length ? (
+              <FormRow label="关联个体">
+                <Picker mode="selector" range={hamsterLabels} value={hamsterIndex} onChange={(event) => setHamsterId(hamsters[Number(event.detail.value)]?.id || '')}>
+                  <Cell title={hamsterLabels[hamsterIndex] || '选择个体'} value={<Tag>选择</Tag>} />
+                </Picker>
+              </FormRow>
+            ) : (
+              <FormRow label="关联个体">
+                <Cell
+                  title="还没有个体"
+                  subtitle="去档案新增后可在这里选"
+                  chevron
+                  onClick={() => Taro.navigateTo({ url: '/packages/animals/create/index' })}
+                />
+              </FormRow>
+            )}
             <FormRow label="标题" divider><Input value={title} placeholder="预订标题" onInput={(event) => setTitle(event.detail.value)} /></FormRow>
             <FormRow label="备注" divider><Textarea value={notes} maxlength={1000} placeholder="可选" onInput={(event) => setNotes(event.detail.value)} /></FormRow>
             <CapabilityButton capability="write_crm" block disabled={busy} onClick={() => void createReservation()}>创建预订</CapabilityButton>

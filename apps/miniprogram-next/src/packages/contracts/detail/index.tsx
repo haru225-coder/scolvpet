@@ -1,11 +1,12 @@
 import { ScrollView, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useEffect, useRef, useState } from 'react'
-import { Button, Cell, NavBar, Section, SectionList, Tag, crayon, paperGrain, metrics } from '@scolvpet/mp-ui'
+import { Button, Cell, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
 import { downloadDocumentPdf, p1Api } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import { createIdempotencyIntent } from '../../../api/idempotency'
+import { humanShortLabel } from '../../../utils/tab-routes'
 
 type DocumentItem = {
   id: string
@@ -23,6 +24,10 @@ export function isDocumentVersionConflict(error: unknown) {
   return Number(response?.status) === 409
 }
 
+export function loadDocumentDetail(kind: 'contract' | 'receipt', documentId: string) {
+  return kind === 'receipt' ? p1Api.getReceipt({ documentId }) : p1Api.getContract({ documentId })
+}
+
 export default function ContractDetailPage() {
   const route = Taro.getCurrentInstance().router?.params || {}
   const kind = route.kind === 'receipt' ? 'receipt' : 'contract'
@@ -34,10 +39,9 @@ export default function ContractDetailPage() {
 
   async function load() {
     try {
-      const response = kind === 'receipt' ? await p1Api.listReceipts() : await p1Api.listContracts()
-      const found = ((response.data || []) as DocumentItem[]).find((entry) => entry.id === documentId)
-      if (!found) { setMessage('单据不存在或已不属于当前经营账号'); return }
-      setItem(found)
+      const response = await loadDocumentDetail(kind, documentId)
+      if (!response.data) { setMessage('单据不存在或已不属于当前经营账号'); return }
+      setItem(response.data as DocumentItem)
       setMessage('')
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : '单据加载失败')
@@ -88,16 +92,16 @@ export default function ContractDetailPage() {
     }
   }
 
-  return <View style={{ height: '100vh', backgroundColor: crayon.paper, backgroundImage: paperGrain }}>
-    <NavBar title={kind === 'receipt' ? '回执详情' : '合同详情'} back right={<Tag tone="accent">M3</Tag>} />
+  return <View style={{ height: '100vh', backgroundColor: palette.systemBackground }}>
+    <NavBar title={kind === 'receipt' ? '回执详情' : '合同详情'} back />
     <ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}>
       {message ? <SectionList><Section header="状态"><Cell title={message} /></Section></SectionList> : null}
       {item ? <SectionList>
-        <Section header="单据状态" footer={`版本 ${item.version ?? 0}`}>
-          <Cell title={item.title || (kind === 'receipt' ? '回执' : '合同')} subtitle={item.contactName || '未关联客户'} value={<Tag tone={item.status === 'issued' ? 'success' : item.status === 'archived' ? 'danger' : 'warning'}>{item.status || 'draft'}</Tag>} />
-          {item.publicUrl ? <Cell title="公开链接" subtitle={item.publicUrl} onClick={copyPublicUrl} /> : null}
+        <Section header="单据状态" footer={item.version != null ? `第 ${item.version} 版` : undefined}>
+          <Cell title={item.title || (kind === 'receipt' ? '回执' : '合同')} subtitle={item.contactName || '未关联客户'} value={<Tag tone={item.status === 'issued' ? 'success' : item.status === 'archived' || item.status === 'revoked' ? 'danger' : 'warning'}>{humanShortLabel(item.status || 'draft')}</Tag>} />
+          {item.publicUrl ? <Cell title="公开链接" subtitle="点此复制" onClick={copyPublicUrl} /> : null}
         </Section>
-        {item.bodyFilled ? <Section header="正文"><Text style={{ display: 'block', whiteSpace: 'pre-wrap', color: crayon.ink, padding: `0 ${metrics.pagePadding}px ${metrics.space16}px` }}>{item.bodyFilled}</Text></Section> : null}
+        {item.bodyFilled ? <Section header="正文"><Text style={{ display: 'block', whiteSpace: 'pre-wrap', color: 'rgba(255,255,255,0.85)', padding: `0 ${metrics.pagePadding}px ${metrics.space16}px` }}>{item.bodyFilled}</Text></Section> : null}
         <View style={{ padding: `0 ${metrics.pagePadding}px`, display: 'flex', gap: `${metrics.space12}px` }}>
           {item.status === 'draft' ? <CapabilityButton capability="write_documents" block disabled={busy} onClick={() => void transition('issue')}>签发{kind === 'receipt' ? '回执' : '合同'}</CapabilityButton> : null}
           {item.status === 'issued' ? <CapabilityButton capability="write_documents" variant="outlined" block disabled={busy} onClick={() => void transition('revoke')}>撤销并失效公开链接</CapabilityButton> : null}

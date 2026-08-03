@@ -1,11 +1,12 @@
 import { Input, ScrollView, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useEffect, useState } from 'react'
-import { Button, Cell, Empty, FormRow, LargeTitle, NavBar, Section, SectionList, Tag, crayon, paperGrain, metrics } from '@scolvpet/mp-ui'
+import { Button, Cell, Empty, FormRow, LargeTitle, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
 import { newIdempotencyKey, p2Api } from '../../../api/client'
 import { readBreederSession } from '../../../auth/session'
 import type { ApiEnvelope } from '../../../api/types'
+import { humanShortLabel, openPage } from '../../../utils/tab-routes'
 
 type Turn = { role: 'user' | 'assistant'; text: string; facts?: string[]; actions?: any[] }
 const PRESETS = ['现在有多少只在养？', '有没有逾期任务？', '繁育概况怎么样？', '幼崽护理要注意什么？', '你能做什么？']
@@ -20,7 +21,7 @@ export default function AssistantPage() {
 
   useEffect(() => {
     if (!readBreederSession()) {
-      setMessage('请先登录 B 端经营账号')
+      setMessage('请先登录经营账号')
       return
     }
     void p2Api.assistantCapabilities().then((response: ApiEnvelope) => setCapabilities(response.data)).catch((cause: unknown) => setMessage(cause instanceof Error ? cause.message : '助手能力加载失败'))
@@ -85,12 +86,14 @@ export default function AssistantPage() {
       }).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&')
       Taro.navigateTo({ url: `/packages/reminders/create/index?${query}` })
     }
-    else if (type === 'open_tasks' || type === 'open_data_center') Taro.navigateTo({ url: type === 'open_tasks' ? '/pages/today/index' : '/packages/data-center/index/index' })
+    else if (type === 'open_tasks' || type === 'open_data_center') {
+      openPage(type === 'open_tasks' ? '/pages/today/index' : '/packages/data-center/index/index')
+    }
   }
 
   return (
-    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: crayon.paper, backgroundImage: paperGrain }}>
-      <NavBar title="AI 助手" back right={<Tag tone="accent">M4</Tag>} />
+    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
+      <NavBar title="AI 助手" back />
       <ScrollView scrollY type="list" bounces enhanced showScrollbar={false} style={{ flex: 1 }}>
         <LargeTitle title="AI 助手" />
         {capabilities ? <SectionList><Section header="当前能力" footer={capabilities.disclaimer}><Cell title={capabilities.llmAvailable ? '规则 + AI' : '规则助手'} subtitle={`${(capabilities.intents || []).join(' · ')}`} value={<Tag tone="success">在线</Tag>} /></Section></SectionList> : null}
@@ -101,7 +104,7 @@ export default function AssistantPage() {
             {turns.length ? <Button block variant="outlined" disabled={busy} onClick={clearConversation}>清空当前对话</Button> : null}
           </Section>
           <Section header="对话">
-            {turns.length === 0 ? <Cell title="例如：今天有哪些逾期照护任务？" subtitle="助手只读取当前经营账号的数据" /> : turns.map((turn, index) => <View key={`${turn.role}-${index}`} style={{ padding: '12px 16px' }}><Text style={{ fontWeight: '600' }}>{turn.role === 'user' ? '我' : '熊舍助手'}</Text><Text style={{ display: 'block', paddingTop: '6px' }}>{turn.text}</Text>{turn.facts?.map((fact) => <Text key={fact} style={{ display: 'block', paddingTop: '4px', color: crayon.ink }}>{fact}</Text>)}{turn.actions?.map((action) => <View key={action.actionId || action.label} style={{ paddingTop: '10px' }}><Cell title={action.label} subtitle={action.summary} value={<Tag tone={action.status === 'executed' ? 'success' : action.status === 'cancelled' ? 'danger' : 'warning'}>{action.status || (action.requiresConfirmation ? '待确认' : '建议')}</Tag>} onClick={() => openAction(action)} />{action.requiresConfirmation && !action.status ? <View style={{ display: 'flex', gap: '12px', paddingTop: '8px' }}><Button variant="outlined" disabled={busy} onClick={() => void resolveAction(action, true)}>确认执行</Button><Button variant="text" disabled={busy} onClick={() => void resolveAction(action, false)}>取消</Button></View> : null}</View>)}</View>)}
+            {turns.length === 0 ? <Cell title="例如：今天有哪些逾期照护任务？" subtitle="助手只读取当前经营账号的数据" /> : turns.map((turn, index) => <View key={`${turn.role}-${index}`} style={{ padding: '12px 16px' }}><Text style={{ fontWeight: '600' }}>{turn.role === 'user' ? '我' : '熊舍助手'}</Text><Text style={{ display: 'block', paddingTop: '6px' }}>{turn.text}</Text>{turn.facts?.map((fact) => <Text key={fact} style={{ display: 'block', paddingTop: '4px', color: 'rgba(255,255,255,0.55)' }}>{fact}</Text>)}{turn.actions?.map((action) => <View key={action.actionId || action.label} style={{ paddingTop: '10px' }}><Cell title={action.label} subtitle={action.summary} value={<Tag tone={action.status === 'executed' ? 'success' : action.status === 'cancelled' ? 'danger' : 'warning'}>{action.status ? humanShortLabel(action.status) : (action.requiresConfirmation ? '待确认' : '建议')}</Tag>} onClick={() => openAction(action)} />{action.requiresConfirmation && !action.status ? <View style={{ display: 'flex', gap: '12px', paddingTop: '8px' }}><Button variant="outlined" disabled={busy} onClick={() => void resolveAction(action, true)}>确认执行</Button><Button variant="text" disabled={busy} onClick={() => void resolveAction(action, false)}>取消</Button></View> : null}</View>)}</View>)}
           </Section>
           <Section header="提问">
             <FormRow label="问题"><Input value={question} placeholder="输入经营问题" onInput={(event) => setQuestion(event.detail.value)} onConfirm={() => void ask()} /></FormRow>
