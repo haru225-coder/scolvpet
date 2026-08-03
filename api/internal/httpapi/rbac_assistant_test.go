@@ -13,7 +13,7 @@ func TestAssistantConfirmMirrorsDirectRBAC(t *testing.T) {
 	confirmable := []string{
 		"create_task", "complete_task", "create_weight_record",
 		"create_hamster", "update_hamster", "create_enclosure",
-		"create_crm_contact", "create_crm_reservation", "confirm_crm_reservation",
+		"create_crm_contact", "update_crm_contact", "create_crm_reservation", "confirm_crm_reservation",
 		"create_crm_handover", "complete_crm_handover",
 		"create_accounting_record", "create_health_record",
 	}

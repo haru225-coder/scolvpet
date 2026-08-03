@@ -59,8 +59,9 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 			Type: "function",
 			Function: ToolFunctionSchema{
 				Name:        "list_tasks",
-				Description: "列出本舍未完成任务（pending/in_progress/snoozed），可筛逾期。",
+				Description: "列出或搜索本舍未完成任务（pending/in_progress/snoozed）。可按标题关键词 query 搜索、筛逾期；返回 id 供 complete_task 使用。",
 				Parameters: obj(map[string]any{
+					"query":        strProp,
 					"overdue_only": map[string]any{"type": "boolean"},
 					"limit":        map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
 				}),
@@ -217,10 +218,11 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 			Type: "function",
 			Function: ToolFunctionSchema{
 				Name:        "complete_task",
-				Description: "完成指定任务的草案（需用户确认）。参数 task_id。",
+				Description: "完成任务草案（需用户确认）。优先传 task_id；若只有标题可传 query（须唯一匹配一条未完成任务，否则先 list_tasks）。",
 				Parameters: obj(map[string]any{
 					"task_id": strProp,
-				}, "task_id"),
+					"query":   strProp,
+				}),
 			},
 		},
 		{
@@ -286,6 +288,21 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 					"notes":  strProp,
 					"status": strProp,
 				}, "name"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "update_crm_contact",
+				Description: "更新客户草案（需确认）。参数 contact_id 必填；可选 name、phone、wechat、notes、status(lead|active|archived)。至少改一项。",
+				Parameters: obj(map[string]any{
+					"contact_id": strProp,
+					"name":       strProp,
+					"phone":      strProp,
+					"wechat":     strProp,
+					"notes":      strProp,
+					"status":     strProp,
+				}, "contact_id"),
 			},
 		},
 		{

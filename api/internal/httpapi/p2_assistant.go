@@ -273,7 +273,7 @@ func assistantActionRoute(actionType string) (string, bool) {
 		return "/v1/hamsters", true
 	case "create_enclosure":
 		return "/v1/enclosures", true
-	case "create_crm_contact":
+	case "create_crm_contact", "update_crm_contact":
 		return "/v1/crm/contacts", true
 	case "create_crm_reservation", "confirm_crm_reservation":
 		return "/v1/crm/reservations", true

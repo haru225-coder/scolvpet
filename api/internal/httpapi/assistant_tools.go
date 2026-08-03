@@ -87,6 +87,8 @@ func (s *Server) runAssistantTool(
 		return s.toolDraftCreateEnclosure(ctx, ownerID, sess, args)
 	case "create_crm_contact":
 		return s.toolDraftCreateCrmContact(ctx, ownerID, sess, args)
+	case "update_crm_contact":
+		return s.toolDraftUpdateCrmContact(ctx, ownerID, sess, args)
 	case "create_crm_reservation":
 		return s.toolDraftCreateCrmReservation(ctx, ownerID, sess, args)
 	case "confirm_crm_reservation":
@@ -167,20 +169,15 @@ func (s *Server) toolDraftCompleteTask(ctx context.Context, ownerID uuid.UUID, s
 	if sess.SessionID == uuid.Nil {
 		return nil, fmt.Errorf("session required for write draft")
 	}
-	taskIDStr := stringArgMap(args, "task_id")
-	taskID, err := uuid.Parse(taskIDStr)
+	taskID, title, status, err := s.resolveOpenTaskForComplete(ctx, ownerID, args)
 	if err != nil {
-		return nil, fmt.Errorf("invalid task_id")
+		return nil, err
 	}
-	var title, status string
-	err = s.Store.Pool.QueryRow(ctx, `
-		SELECT COALESCE(title,''), status::text FROM care_task WHERE owner_id=$1 AND id=$2
-	`, ownerID, taskID).Scan(&title, &status)
-	if err != nil {
-		return nil, fmt.Errorf("task not found")
+	if status != "pending" && status != "in_progress" && status != "snoozed" {
+		return nil, fmt.Errorf("task not open (status=%s)", status)
 	}
 	payload := map[string]any{"task_id": taskID.String(), "title": title, "current_status": status}
-	summary := fmt.Sprintf("完成任务「%s」(%s)", title, taskID.String()[:8])
+	summary := fmt.Sprintf("完成任务「%s」(%s)", firstNonEmptyName(title, taskID.String()[:8]), taskID.String()[:8])
 	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "complete_task", "确认完成任务", summary, payload, true)
 	if err != nil {
 		return nil, err
@@ -194,6 +191,74 @@ func (s *Server) toolDraftCompleteTask(ctx context.Context, ownerID uuid.UUID, s
 		"payload":              payload,
 		"status":               "pending",
 	}, nil
+}
+
+// resolveOpenTaskForComplete picks a task by task_id, or by unique open-title query.
+func (s *Server) resolveOpenTaskForComplete(ctx context.Context, ownerID uuid.UUID, args map[string]any) (uuid.UUID, string, string, error) {
+	if raw := stringArgMap(args, "task_id"); raw != "" {
+		taskID, err := uuid.Parse(raw)
+		if err != nil {
+			return uuid.Nil, "", "", fmt.Errorf("invalid task_id")
+		}
+		var title, status string
+		err = s.Store.Pool.QueryRow(ctx, `
+			SELECT COALESCE(title,''), status::text FROM care_task WHERE owner_id=$1 AND id=$2
+		`, ownerID, taskID).Scan(&title, &status)
+		if err != nil {
+			return uuid.Nil, "", "", fmt.Errorf("task not found")
+		}
+		return taskID, title, status, nil
+	}
+	q := stringArgMap(args, "query")
+	if q == "" {
+		return uuid.Nil, "", "", fmt.Errorf("task_id or query required")
+	}
+	rows, err := s.Store.Pool.Query(ctx, `
+		SELECT id, COALESCE(title,''), status::text
+		FROM care_task
+		WHERE owner_id=$1
+		  AND status IN ('pending','in_progress','snoozed')
+		  AND (COALESCE(title,'') ILIKE $2 OR task_type::text ILIKE $2)
+		ORDER BY scheduled_at ASC NULLS LAST
+		LIMIT 5
+	`, ownerID, "%"+q+"%")
+	if err != nil {
+		return uuid.Nil, "", "", err
+	}
+	defer rows.Close()
+	type hit struct {
+		id     uuid.UUID
+		title  string
+		status string
+	}
+	hits := make([]hit, 0, 5)
+	for rows.Next() {
+		var h hit
+		if err := rows.Scan(&h.id, &h.title, &h.status); err != nil {
+			return uuid.Nil, "", "", err
+		}
+		hits = append(hits, h)
+	}
+	if err := rows.Err(); err != nil {
+		return uuid.Nil, "", "", err
+	}
+	if len(hits) == 0 {
+		return uuid.Nil, "", "", fmt.Errorf("no open task matches query %q", q)
+	}
+	if len(hits) > 1 {
+		// Prefer exact title match if unique.
+		exact := make([]hit, 0)
+		for _, h := range hits {
+			if strings.EqualFold(h.title, q) {
+				exact = append(exact, h)
+			}
+		}
+		if len(exact) == 1 {
+			return exact[0].id, exact[0].title, exact[0].status, nil
+		}
+		return uuid.Nil, "", "", fmt.Errorf("query %q matches %d open tasks; use list_tasks then complete_task(task_id)", q, len(hits))
+	}
+	return hits[0].id, hits[0].title, hits[0].status, nil
 }
 
 func (s *Server) toolDraftCreateWeight(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
@@ -442,6 +507,8 @@ func (s *Server) executeAssistantAction(ctx context.Context, ownerID uuid.UUID, 
 		return s.executeCreateEnclosure(ctx, ownerID, payload)
 	case "create_crm_contact":
 		return s.executeCreateCrmContact(ctx, ownerID, payload)
+	case "update_crm_contact":
+		return s.executeUpdateCrmContact(ctx, ownerID, payload)
 	case "create_crm_reservation":
 		return s.executeCreateCrmReservation(ctx, ownerID, payload)
 	case "confirm_crm_reservation":
@@ -487,6 +554,66 @@ func (s *Server) executeCreateCrmContact(ctx context.Context, ownerID uuid.UUID,
 	return map[string]any{
 		"contact_id": id.String(),
 		"name":       name,
+		"status":     status,
+	}, nil
+}
+
+func (s *Server) executeUpdateCrmContact(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	contactID, err := uuid.Parse(stringArgMap(payload, "contact_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid contact_id")
+	}
+	var curName, curPhone, curWechat, curNotes, curStatus string
+	var version int
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT name, COALESCE(phone,''), COALESCE(wechat,''), COALESCE(notes,''), status::text, version
+		FROM crm_contact WHERE owner_id=$1 AND id=$2
+	`, ownerID, contactID).Scan(&curName, &curPhone, &curWechat, &curNotes, &curStatus, &version)
+	if err != nil {
+		return nil, fmt.Errorf("contact not found")
+	}
+	name := curName
+	phone := curPhone
+	wechat := curWechat
+	notes := curNotes
+	status := curStatus
+	if v, ok := payload["name"]; ok {
+		if s, _ := v.(string); strings.TrimSpace(s) != "" {
+			name = strings.TrimSpace(s)
+		}
+	}
+	if _, ok := payload["phone"]; ok {
+		phone = stringArgMap(payload, "phone")
+	}
+	if _, ok := payload["wechat"]; ok {
+		wechat = stringArgMap(payload, "wechat")
+	}
+	if _, ok := payload["notes"]; ok {
+		notes = stringArgMap(payload, "notes")
+	}
+	if v := stringArgMap(payload, "status"); v != "" {
+		if v != "lead" && v != "active" && v != "archived" {
+			return nil, fmt.Errorf("invalid status")
+		}
+		status = v
+	}
+	tag, err := s.Store.Pool.Exec(ctx, `
+		UPDATE crm_contact
+		SET name=$3, phone=NULLIF($4,''), wechat=NULLIF($5,''), notes=NULLIF($6,''),
+		    status=$7::crm_contact_status, version=version+1, updated_at=now()
+		WHERE owner_id=$1 AND id=$2 AND version=$8
+	`, ownerID, contactID, name, phone, wechat, notes, status, version)
+	if err != nil {
+		return nil, err
+	}
+	if tag.RowsAffected() != 1 {
+		return nil, fmt.Errorf("contact update conflict")
+	}
+	return map[string]any{
+		"contact_id": contactID.String(),
+		"name":       name,
+		"phone":      phone,
+		"wechat":     wechat,
 		"status":     status,
 	}, nil
 }
@@ -1243,33 +1370,47 @@ func (s *Server) toolSearchHamsters(ctx context.Context, ownerID uuid.UUID, args
 func (s *Server) toolListTasks(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
 	limit := toolLimit(args, 15, 1, 30)
 	overdueOnly, _ := args["overdue_only"].(bool)
-	query := `
+	q := stringArgMap(args, "query")
+	sql := `
 		SELECT id::text, task_type::text, COALESCE(title,''),
-		       status::text, scheduled_at, priority::text
+		       status::text, scheduled_at, priority::text,
+		       target_type::text, target_id::text
 		FROM care_task
 		WHERE owner_id=$1
 		  AND status IN ('pending','in_progress','snoozed')
 	`
+	qargs := []any{ownerID}
+	argN := 2
 	if overdueOnly {
-		query += ` AND scheduled_at < now()`
+		sql += ` AND scheduled_at < now()`
 	}
-	query += ` ORDER BY scheduled_at ASC NULLS LAST LIMIT $2`
-	rows, err := s.Store.Pool.Query(ctx, query, ownerID, limit)
+	if q != "" {
+		sql += fmt.Sprintf(` AND (COALESCE(title,'') ILIKE $%d OR task_type::text ILIKE $%d)`, argN, argN)
+		qargs = append(qargs, "%"+q+"%")
+		argN++
+	}
+	sql += fmt.Sprintf(` ORDER BY scheduled_at ASC NULLS LAST LIMIT $%d`, argN)
+	qargs = append(qargs, limit)
+	rows, err := s.Store.Pool.Query(ctx, sql, qargs...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	out := make([]map[string]any, 0)
+	now := time.Now().UTC()
 	for rows.Next() {
-		var id, taskType, title, status, priority string
-		var scheduled any
-		if err := rows.Scan(&id, &taskType, &title, &status, &scheduled, &priority); err != nil {
+		var id, taskType, title, status, priority, targetType, targetID string
+		var scheduled time.Time
+		if err := rows.Scan(&id, &taskType, &title, &status, &scheduled, &priority, &targetType, &targetID); err != nil {
 			return nil, err
 		}
-		out = append(out, map[string]any{
+		item := map[string]any{
 			"id": id, "task_type": taskType, "title": title,
 			"status": status, "scheduled_at": scheduled, "priority": priority,
-		})
+			"target_type": targetType, "target_id": targetID,
+			"overdue": scheduled.Before(now),
+		}
+		out = append(out, item)
 	}
 	return map[string]any{"count": len(out), "tasks": out}, rows.Err()
 }
@@ -1653,6 +1794,67 @@ func (s *Server) toolDraftCreateCrmContact(ctx context.Context, ownerID uuid.UUI
 		"pending_confirmation": true,
 		"action_id":            action.ID.String(),
 		"type":                 "create_crm_contact",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolDraftUpdateCrmContact(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	contactID, err := uuid.Parse(stringArgMap(args, "contact_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid contact_id")
+	}
+	var curName, curStatus string
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT name, status::text FROM crm_contact WHERE owner_id=$1 AND id=$2
+	`, ownerID, contactID).Scan(&curName, &curStatus)
+	if err != nil {
+		return nil, fmt.Errorf("contact not found")
+	}
+	payload := map[string]any{
+		"contact_id": contactID.String(), "current_name": curName, "current_status": curStatus,
+	}
+	changed := make([]string, 0, 5)
+	if v := stringArgMap(args, "name"); v != "" {
+		payload["name"] = v
+		changed = append(changed, "name="+v)
+	}
+	if _, ok := args["phone"]; ok {
+		payload["phone"] = stringArgMap(args, "phone")
+		changed = append(changed, "phone")
+	}
+	if _, ok := args["wechat"]; ok {
+		payload["wechat"] = stringArgMap(args, "wechat")
+		changed = append(changed, "wechat")
+	}
+	if _, ok := args["notes"]; ok {
+		payload["notes"] = stringArgMap(args, "notes")
+		changed = append(changed, "notes")
+	}
+	if v := stringArgMap(args, "status"); v != "" {
+		if v != "lead" && v != "active" && v != "archived" {
+			return nil, fmt.Errorf("invalid status")
+		}
+		payload["status"] = v
+		changed = append(changed, "status="+v)
+	}
+	if len(changed) == 0 {
+		return nil, fmt.Errorf("no fields to update")
+	}
+	summary := fmt.Sprintf("更新客户「%s」：%s", curName, strings.Join(changed, ", "))
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "update_crm_contact", "确认更新客户", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "update_crm_contact",
 		"label":                action.Label,
 		"summary":              action.Summary,
 		"payload":              payload,
