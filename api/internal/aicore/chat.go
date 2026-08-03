@@ -35,7 +35,7 @@ type ChatRequest struct {
 	RunTool ToolRunner
 }
 
-// Chat runs general conversation with grok-build-0.1 when configured.
+// Chat runs general conversation with the configured AI_MODEL (default deepseek-v4-flash-0731).
 // Without LLM or on failure: rules AnswerFromSnapshot if Snapshot is set, else a fixed help line.
 func (c *OptionalLLMClient) Chat(ctx context.Context, req ChatRequest) (Answer, error) {
 	fallback := chatFallback(req)

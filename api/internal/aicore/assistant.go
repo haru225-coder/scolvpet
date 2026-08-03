@@ -170,7 +170,8 @@ func firstEnv(keys ...string) string {
 	return ""
 }
 
-// NewOptionalLLMFromEnv reads AI_* then XAI_*; defaults to Grok2API (gk.scolv.com) + grok-build-0.1.
+// NewOptionalLLMFromEnv reads AI_* then XAI_*; defaults to CPA OpenAI-compatible
+// endpoint + deepseek-v4-flash-0731 (Token Rhythm via hadeworks / cliproxy).
 func NewOptionalLLMFromEnv() *OptionalLLMClient {
 	key := firstEnv("AI_API_KEY", "XAI_API_KEY")
 	if key == "" {
@@ -178,19 +179,20 @@ func NewOptionalLLMFromEnv() *OptionalLLMClient {
 	}
 	base := firstEnv("AI_BASE_URL", "XAI_BASE_URL")
 	if base == "" {
-		base = "https://gk.scolv.com:8443/v1"
+		base = "https://hadeworks.com/v1"
 	}
 	model := firstEnv("AI_MODEL", "XAI_MODEL")
 	if model == "" {
-		model = "grok-build-0.1"
+		model = "deepseek-v4-flash-0731"
 	}
 	// 控制在移动端默认 receiveTimeout(12s) 之内：上游慢/429 时尽快回退 rules，
 	// 避免整次 ask 卡满 20s 导致客户端先超时显示「助手请求失败」。
+	// Flash-0731 推理略慢时允许到 12s 边界，仍优先失败回退而非挂死。
 	return &OptionalLLMClient{
 		APIKey:  key,
 		BaseURL: strings.TrimRight(base, "/"),
 		Model:   model,
-		HTTP:    &http.Client{Timeout: 8 * time.Second},
+		HTTP:    &http.Client{Timeout: 12 * time.Second},
 	}
 }
 

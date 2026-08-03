@@ -31,11 +31,11 @@ func NewGeneratorFromEnv() Generator {
 	}
 	base := firstEnv("AI_BASE_URL", "XAI_BASE_URL")
 	if base == "" {
-		base = "https://gk.scolv.com:8443/v1"
+		base = "https://hadeworks.com/v1"
 	}
 	model := firstEnv("AI_MODEL", "XAI_MODEL")
 	if model == "" {
-		model = "grok-build-0.1"
+		model = "deepseek-v4-flash-0731"
 	}
 	return &LLMGenerator{
 		APIKey: key, BaseURL: strings.TrimRight(base, "/"), Model: model,
