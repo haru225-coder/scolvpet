@@ -1,1 +1,1 @@
-export default definePageConfig({ navigationStyle: 'custom', renderer: 'skyline' })
+export default definePageConfig({ navigationStyle: 'custom' })
