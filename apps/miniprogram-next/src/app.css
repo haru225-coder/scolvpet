@@ -1,12 +1,33 @@
-/* —— mp-ui 全局钩子(组件走内联样式,仅动画/hover 需落 class)—— */
+/* —— mp-ui 全局钩子：流媒体式顺滑动效 —— */
 @keyframes mp-sheet-in {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+    opacity: 0.85;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-/* Cell 按压反馈:走平台原生 hover-class,不写 JS(docs/34 press 90ms) */
+@keyframes mp-mask-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mp-mask-in {
+  animation: mp-mask-in 220ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-mask-in {
+    animation: none;
+  }
+}
+
+/* 列表行按压提亮 */
 .mp-press {
-  background-color: rgba(58, 47, 41, 0.06);
+  background-color: rgba(255, 255, 255, 0.06);
 }
 
 /* —— C 端混写页共享样式:原样迁自 apps/miniprogram/app.wxss,勿改动 ——

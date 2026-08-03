@@ -61,6 +61,20 @@ class App extends Component<PropsWithChildren> {
 
   onLaunch(options?: { query?: Record<string, string> }) {
     config.assertRuntimeConfig()
+    // 开发构建：启动时清掉粘住的「离线假会话」。
+    // 否则真机扫码仍会读到 offline-dev-token，所有请求被短路，看起来永远离线。
+    try {
+      if ((config as { APP_ENV?: string }).APP_ENV === 'development') {
+        const offlineFlag = wx.getStorageSync('scolvpet_offline_dev_mode')
+        const breeder = wx.getStorageSync('scolvpet_breeder_session') || {}
+        if (offlineFlag === true || breeder.accessToken === 'offline-dev-token') {
+          wx.removeStorageSync('scolvpet_offline_dev_mode')
+          wx.removeStorageSync('scolvpet_breeder_session')
+        }
+      }
+    } catch (_) {
+      // ignore
+    }
     try {
       const stored = wx.getStorageSync('scolvpet_customer') || {}
       if (stored.phone) this.globalData.phone = stored.phone
