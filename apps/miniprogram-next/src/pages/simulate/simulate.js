@@ -1,4 +1,28 @@
 const api = require('../../utils/api');
+// genetics-copy 是 TS 模块，C 端原生页用内联展示层（与 genetics-copy.ts 文案对齐）
+function formatGeneticsPercent(probability) {
+  const p = Math.min(1, Math.max(0, Number(probability) || 0));
+  return `${Math.round(p * 100)}%`;
+}
+function formatAboutNInM(probability) {
+  const p = Math.min(1, Math.max(0, Number(probability) || 0));
+  if (p <= 0) return '约不会出现';
+  if (p >= 0.999) return '约每只都会';
+  for (let n = 2; n <= 12; n += 1) {
+    const m = Math.round(p * n);
+    if (m >= 1 && Math.abs(m / n - p) <= 0.03) return `约 ${n} 只里 ${m} 只`;
+  }
+  return `约 4 只里 ${Math.min(4, Math.max(1, Math.round(p * 4)))} 只`;
+}
+function buildConclusionLine(outcomes) {
+  const list = outcomes || [];
+  if (!list.length) return '能配，但有 1 项资料缺失，结果只能算参考';
+  const kinds = new Set(list.map((o) => o.phenotype || o.phenotypeLabel || '')).size;
+  const top = [...list].sort((a, b) => Number(b.probability || b.percent || 0) - Number(a.probability || a.percent || 0))[0];
+  const label = (top && (top.phenotype || top.phenotypeLabel)) || '';
+  if (kinds <= 1 && label) return `这一配没问题，宝宝大概率是「${label}」`;
+  return `这一配能配，会出 ${kinds} 种毛色`;
+}
 
 Page({
   data: {
@@ -89,26 +113,32 @@ Page({
         dam_hamster_id: damId,
       });
       const data = (res && res.data) || res || {};
-      const outcomes = (data.outcomes || []).map((o) => ({
-        ...o,
-        percentLabel: `${(Number(o.percent != null ? o.percent : o.probability * 100) || 0).toFixed(1)}%`,
-      }));
+      const outcomes = (data.outcomes || []).map((o) => {
+        const p = Number(o.percent != null ? o.percent / 100 : o.probability) || 0;
+        return {
+          ...o,
+          displayName: o.phenotype || o.phenotypeLabel || '没登记',
+          percentLabel: formatGeneticsPercent(p),
+          aboutLabel: formatAboutNInM(p),
+        };
+      });
       this.setData({
         loading: false,
         result: {
           ...data,
           outcomes,
+          conclusionLine: buildConclusionLine(outcomes),
           selfName: data.sire_name || selfName,
           mateName: data.dam_name || mateName,
         },
       });
     } catch (err) {
-      this.setData({ loading: false, error: err.message || '模拟失败（需公开档案含表型）' });
+      this.setData({ loading: false, error: err.message || '资料不足，算不准（需公开档案含表型）' });
     }
   },
   onShareAppMessage() {
     return {
-      title: '繁育模拟结果',
+      title: '这两只会生出什么',
       path: `/pages/simulate/simulate?slug=${encodeURIComponent(this.data.slug)}&self=${encodeURIComponent(this.data.selfId)}&mate=${encodeURIComponent(this.data.mateId)}`,
     };
   },

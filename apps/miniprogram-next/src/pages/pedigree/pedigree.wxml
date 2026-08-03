@@ -5,7 +5,7 @@
 </view>
 <block wx:else>
   <view class="card">
-    <view style="font-weight:800;font-size:34rpx;">🧬 {{title}}</view>
+    <view style="font-weight:800;font-size:34rpx;">这只从哪来 · {{title}}</view>
     <view class="muted" style="margin-top:8rpx;">{{note}}</view>
   </view>
   <view class="card gen" wx:for="{{rows}}" wx:key="label">
@@ -29,5 +29,5 @@
       </view>
     </view>
   </view>
-  <view class="card muted" style="font-size:24rpx;">点击「查看 ›」可浏览该祖先的谱系;未公开/未登记的个体不可查看。</view>
+  <view class="card muted" style="font-size:24rpx;">点「查看 ›」可往上看；灰色「没登记」的不能点。</view>
 </block>

@@ -53,15 +53,20 @@ test('三代行构建:曾祖代仅列已登记,祖代按父系/母系正确标�
   assert.equal(gp[0].name, '年糕');
   assert.equal(gp[1].name, '未公开'); // 已登记但未公开
   assert.equal(gp[2].name, '豆包');
-  assert.equal(gp[3].name, '未登记'); // 无边
+  assert.equal(gp[3].name, '没登记'); // 无边
+  assert.deepEqual(
+    rows[2].nodes.map((n) => n.role),
+    ['爸爸', '妈妈'],
+  );
+  assert.equal(rows[3].nodes[0].role, '这只');
 });
 
-test('tappable:公开且有 id 才可 re-root;未公开/未登记不可点', () => {
+test('tappable:公开且有 id 才可 re-root;未公开/没登记不可点', () => {
   const rows = buildPedigreeRows(FIXTURE, 'me');
   const gp = rows[1].nodes;
   assert.equal(gp[0].tappable, true);
   assert.equal(gp[1].tappable, false); // 未公开
-  assert.equal(gp[3].tappable, false); // 未登记
+  assert.equal(gp[3].tappable, false); // 没登记
   const me = rows[3].nodes[0];
   assert.equal(me.tappable, true); // 页面层再按 id === 当前根 跳过导航
 });
@@ -77,7 +82,7 @@ test('无曾祖数据时不出曾祖代行;父母缺边时祖代四空位仍齐'
   );
   assert.deepEqual(
     rows[0].nodes.map((n) => n.name),
-    ['未登记', '未登记', '未登记', '未登记'],
+    ['没登记', '没登记', '没登记', '没登记'],
   );
   assert.equal(rows[2].nodes[0].name, '独苗');
 });

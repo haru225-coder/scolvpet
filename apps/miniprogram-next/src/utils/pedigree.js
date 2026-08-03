@@ -16,7 +16,7 @@ function nodeCard(n, role) {
 }
 
 function emptyCard(role) {
-  return { role, name: '未登记', sex: '', public: false, id: '', tappable: false };
+  return { role, name: '没登记', sex: '', public: false, id: '', tappable: false };
 }
 
 function buildPedigreeRows(data, fallbackRootId) {
@@ -69,12 +69,12 @@ function buildPedigreeRows(data, fallbackRootId) {
   rows.push({ label: '祖代', nodes: gp });
   rows.push({
     label: '父母',
-    nodes: [nodeCard(byId[sireId], '父本'), nodeCard(byId[damId], '母本')],
+    nodes: [nodeCard(byId[sireId], '爸爸'), nodeCard(byId[damId], '妈妈')],
   });
   rows.push({
     label: '当前',
     nodes: [
-      nodeCard(byId[rootId] || { public_name: data && data.root_public_name, public: true }, '本人'),
+      nodeCard(byId[rootId] || { public_name: data && data.root_public_name, public: true }, '这只'),
     ],
   });
   return rows;

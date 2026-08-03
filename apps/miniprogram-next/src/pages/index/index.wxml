@@ -6,7 +6,8 @@
 
 <view class="card" wx:if="{{!autoEntering}}">
   <view style="font-weight:700;">进入熊舍</view>
-  <input class="field" placeholder="公开路径 slug，例如 my-cattery" value="{{slug}}" bindinput="onSlug" />
+  <view class="muted" style="margin-top:8rpx;">已预填示例路径，点「进入熊舍」即可体验；有宠舍码会自动带上路径。</view>
+  <input class="field" placeholder="熊舍公开路径（已预填示例）" value="{{slug}}" bindinput="onSlug" />
   <input class="field" placeholder="手机号（预订时必填）" value="{{phone}}" bindinput="onPhone" />
   <input class="field" placeholder="微信号（选填）" value="{{wechat}}" bindinput="onWechat" />
   <view style="margin-top:28rpx;" class="btn-primary" bindtap="enterCatalog">进入熊舍</view>
