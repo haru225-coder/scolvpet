@@ -261,8 +261,8 @@ class _PedigreePageState extends State<PedigreePage> {
                     ),
               title: Text(
                 _currentHamsterLabel == null
-                    ? '血统档案'
-                    : '血统档案 · $_currentHamsterLabel',
+                    ? '这只从哪来'
+                    : '这只从哪来 · $_currentHamsterLabel',
               ),
               actions: [
                 IconButton(
@@ -294,13 +294,13 @@ class _PedigreePageState extends State<PedigreePage> {
                       icon: CupertinoIcons.info_circle,
                       color: IosColors.systemIndigo,
                       text: widget.canEdit
-                          ? '空格「+」填入；已填格子可「替换 / 解除」（必须写纠错原因）。缺中间代会自动补档。'
-                          : '血统遗传图：祖代在上、当前个体在下。点已知祖先可上溯；双指缩放。',
+                          ? '灰色虚线「没登记」可点「补一下」。已填的可替换/解除（要写原因）。'
+                          : '祖代在上、这只在下。点已知祖先可往上翻；双指缩放。',
                     ),
                     const SizedBox(height: 12),
                     Text(
                       '向上 $filled 代 · 已识别祖先 $known 只'
-                      '${descendants.isEmpty ? '' : ' · 直系后代 ${descendants.length} 只'}'
+                      '${descendants.isEmpty ? '' : ' · 孩子 ${descendants.length} 只'}'
                       '${graph.commonAncestors.isEmpty ? '' : ' · 共同祖先 ${graph.commonAncestors.length}'}',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
@@ -310,10 +310,10 @@ class _PedigreePageState extends State<PedigreePage> {
                         icon: CupertinoIcons.arrow_up_right,
                         color: IosColors.systemOrange,
                         text:
-                            '还没有父本或母本关系，所以目前只显示当前个体。繁育确认父母并完成个体化后，这里会自动展开。',
+                            '还没有爸爸或妈妈关系，所以目前只显示这只。确认繁育父母并完成个体化后，这里会自动展开。',
                         actionLabel: widget.onOpenBreeding == null
                             ? null
-                            : '前往繁育',
+                            : '去试配',
                         onAction: widget.onOpenBreeding,
                       ),
                     if (graph.edges.isEmpty) const SizedBox(height: 12),
@@ -322,6 +322,9 @@ class _PedigreePageState extends State<PedigreePage> {
                       rows: visibleRows,
                       canEdit: widget.canEdit,
                       assigning: widget.controller.assigning,
+                      commonAncestorIds: {
+                        for (final a in graph.commonAncestors) a.hamsterId,
+                      },
                       onSlotTap: _onSlotTap,
                     ),
                     if (descendants.isNotEmpty) ...[
@@ -332,21 +335,20 @@ class _PedigreePageState extends State<PedigreePage> {
                       ),
                     ],
                     if (graph.commonAncestors.isNotEmpty) ...[
-                      const IosSectionHeader('共同祖先提示'),
+                      const IosSectionHeader('共同祖先'),
                       IosGroupedSection(
                         margin: EdgeInsets.zero,
                         children: [
                           for (final a in graph.commonAncestors)
                             IosListTile(
                               leading: const IosGlyph(
-                                icon: CupertinoIcons.share_up,
-                                color: IosColors.systemIndigo,
+                                icon: CupertinoIcons.exclamationmark_triangle_fill,
+                                color: IosColors.systemRed,
                               ),
                               title:
-                                  graph.nodeById[a.hamsterId]?.displayName ??
-                                  '未命名祖先',
+                                  '有共同祖先：${graph.nodeById[a.hamsterId]?.name?.trim().isNotEmpty == true ? graph.nodeById[a.hamsterId]!.name!.trim() : (graph.nodeById[a.hamsterId]?.displayName ?? '没登记')}',
                               subtitle:
-                                  '在血统中出现 ${a.paths} 次 · 最近第 ${a.minimumGeneration} 代',
+                                  '在谱系里出现 ${a.paths} 次 · 最近第 ${a.minimumGeneration} 代',
                               showChevron: false,
                             ),
                         ],
@@ -371,12 +373,14 @@ class _ClassicPedigreeChart extends StatelessWidget {
     required this.onSlotTap,
     this.canEdit = false,
     this.assigning = false,
+    this.commonAncestorIds = const <String>{},
   });
 
   final List<List<PedigreeTreeSlot>> rows;
   final Future<void> Function(PedigreeTreeSlot slot) onSlotTap;
   final bool canEdit;
   final bool assigning;
+  final Set<String> commonAncestorIds;
 
   @override
   Widget build(BuildContext context) {
@@ -396,7 +400,7 @@ class _ClassicPedigreeChart extends StatelessWidget {
             Icon(CupertinoIcons.arrow_branch, size: 16, color: palette.accent),
             const SizedBox(width: 6),
             Text(
-              '血统遗传图',
+              '这只从哪来',
               key: const Key('pedigree-tree-title'),
               style: Theme.of(
                 context,
@@ -404,7 +408,7 @@ class _ClassicPedigreeChart extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              canEdit ? '点空位填入 · 双指缩放' : '双指缩放 · 拖动画布',
+              canEdit ? '点空位补一下 · 双指缩放' : '双指缩放 · 拖动画布',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -412,8 +416,8 @@ class _ClassicPedigreeChart extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           canEdit
-              ? '空白格点一下就能选仓鼠或新建；爷爷/曾祖缺中间代时会自动补。'
-              : '祖代在上 → 父本/母本分叉 → 当前个体在下（标准二分谱系）',
+              ? '灰色虚线是「没登记」，点一下就能补；缺中间代会自动建档。'
+              : '祖代在上 → 爸爸/妈妈分叉 → 这只在下',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: palette.secondaryLabel,
           ),
@@ -462,6 +466,10 @@ class _ClassicPedigreeChart extends StatelessWidget {
                                 alpha: 0.55,
                               ),
                               damColor: palette.accent.withValues(alpha: 0.65),
+                              commonAncestorIds: commonAncestorIds,
+                              riskColor: IosColors.systemRed.withValues(
+                                alpha: 0.85,
+                              ),
                             ),
                           ),
                         ),
@@ -480,6 +488,8 @@ class _ClassicPedigreeChart extends StatelessWidget {
                             child: _PedigreeGeneticNode(
                               chartNode: n,
                               canEdit: canEdit,
+                              isCommonAncestor: n.slot.node != null &&
+                                  commonAncestorIds.contains(n.slot.node!.id),
                               onTap: () => onSlotTap(n.slot),
                             ),
                           ),
@@ -515,10 +525,18 @@ class _ClassicPedigreeChart extends StatelessWidget {
             const SizedBox(width: 10),
             _LegendChip(
               color: palette.secondaryLabel,
-              label: canEdit ? '+ 可填入' : '未知',
+              label: canEdit ? '没登记·补一下' : '没登记',
               shape: BoxShape.rectangle,
               dashed: true,
             ),
+            if (commonAncestorIds.isNotEmpty) ...[
+              const SizedBox(width: 10),
+              _LegendChip(
+                color: IosColors.systemRed,
+                label: '共同祖先',
+                shape: BoxShape.rectangle,
+              ),
+            ],
           ],
         ),
       ],
@@ -567,12 +585,23 @@ class _ClassicPedigreeConnectorPainter extends CustomPainter {
     required this.lineColor,
     required this.sireColor,
     required this.damColor,
+    this.commonAncestorIds = const <String>{},
+    this.riskColor = const Color(0xE0FF3B30),
   });
 
   final List<PedigreeChartEdge> edges;
   final Color lineColor;
   final Color sireColor;
   final Color damColor;
+  final Set<String> commonAncestorIds;
+  final Color riskColor;
+
+  bool _isRisk(PedigreeChartEdge e) {
+    final p = e.parentNodeId;
+    final c = e.childNodeId;
+    return (p != null && commonAncestorIds.contains(p)) ||
+        (c != null && commonAncestorIds.contains(c));
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -588,6 +617,7 @@ class _ClassicPedigreeConnectorPainter extends CustomPainter {
       final childX = group.first.childCenterX;
       final childTop = group.first.childTopY;
       final branchY = group.first.branchY;
+      final groupRisk = group.any(_isRisk);
 
       double minX = childX;
       double maxX = childX;
@@ -597,8 +627,8 @@ class _ClassicPedigreeConnectorPainter extends CustomPainter {
       }
 
       final barPaint = Paint()
-        ..color = lineColor
-        ..strokeWidth = 2
+        ..color = groupRisk ? riskColor : lineColor
+        ..strokeWidth = groupRisk ? 2.6 : 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round;
 
@@ -612,9 +642,12 @@ class _ClassicPedigreeConnectorPainter extends CustomPainter {
       canvas.drawLine(Offset(minX, branchY), Offset(maxX, branchY), barPaint);
 
       for (final e in group) {
+        final risk = _isRisk(e);
         final paint = Paint()
-          ..color = e.isSire ? sireColor : damColor
-          ..strokeWidth = 2
+          ..color = risk
+              ? riskColor
+              : (e.isSire ? sireColor : damColor)
+          ..strokeWidth = risk ? 2.6 : 2
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round;
         // Drop from bar to parent bottom.
@@ -627,13 +660,16 @@ class _ClassicPedigreeConnectorPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(e.parentCenterX, branchY),
           2.5,
-          Paint()..color = e.isSire ? sireColor : damColor,
+          Paint()
+            ..color = risk
+                ? riskColor
+                : (e.isSire ? sireColor : damColor),
         );
       }
       canvas.drawCircle(
         Offset(childX, branchY),
         2.5,
-        Paint()..color = lineColor,
+        Paint()..color = groupRisk ? riskColor : lineColor,
       );
     }
   }
@@ -643,7 +679,9 @@ class _ClassicPedigreeConnectorPainter extends CustomPainter {
       oldDelegate.edges != edges ||
       oldDelegate.lineColor != lineColor ||
       oldDelegate.sireColor != sireColor ||
-      oldDelegate.damColor != damColor;
+      oldDelegate.damColor != damColor ||
+      oldDelegate.commonAncestorIds != commonAncestorIds ||
+      oldDelegate.riskColor != riskColor;
 }
 
 /// Compact genetic-chart cell: sex glyph + relationship + name / fill affordance.
@@ -652,11 +690,13 @@ class _PedigreeGeneticNode extends StatelessWidget {
     required this.chartNode,
     this.onTap,
     this.canEdit = false,
+    this.isCommonAncestor = false,
   });
 
   final PedigreeChartNode chartNode;
   final VoidCallback? onTap;
   final bool canEdit;
+  final bool isCommonAncestor;
 
   PedigreeTreeSlot get slot => chartNode.slot;
 
@@ -692,11 +732,11 @@ class _PedigreeGeneticNode extends StatelessWidget {
   }
 
   String get _shortName {
-    if (slot.isUnknown) return canEdit ? '点此填入' : '？';
+    if (slot.isUnknown) return canEdit ? '补一下' : '没登记';
     final n = slot.node!;
     final name = n.name?.trim();
     if (name != null && name.isNotEmpty) return name;
-    return n.internalCode.isEmpty ? '未命名' : n.internalCode;
+    return n.internalCode.isEmpty ? '没登记' : n.internalCode;
   }
 
   @override
@@ -706,6 +746,13 @@ class _PedigreeGeneticNode extends StatelessWidget {
     final sex = _sexColor(context);
     final relationship = pedigreeRelationshipLabel(slot.rolePath);
     final fillable = unknown && canEdit && !_isRoot;
+    final borderColor = isCommonAncestor
+        ? IosColors.systemRed
+        : (fillable
+              ? sex.withValues(alpha: 0.55)
+              : (unknown
+                    ? palette.separator
+                    : sex.withValues(alpha: _isRoot ? 0.7 : 0.4)));
 
     final card = Container(
       key: Key('pedigree-slot-${slot.generation}-${slot.rolePath.join('-')}'),
@@ -715,24 +762,23 @@ class _PedigreeGeneticNode extends StatelessWidget {
             ? (fillable
                   ? sex.withValues(alpha: 0.06)
                   : palette.secondaryFill.withValues(alpha: 0.7))
-            : (_isRoot
-                  ? palette.accentSoft
-                  : palette.secondaryGroupedBackground),
+            : (isCommonAncestor
+                  ? IosColors.systemRed.withValues(alpha: 0.08)
+                  : (_isRoot
+                        ? palette.accentSoft
+                        : palette.secondaryGroupedBackground)),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: fillable
-              ? sex.withValues(alpha: 0.55)
-              : (unknown
-                    ? palette.separator
-                    : sex.withValues(alpha: _isRoot ? 0.7 : 0.4)),
-          width: _isRoot || fillable ? 2 : 1.2,
+          color: borderColor,
+          width: isCommonAncestor || _isRoot || fillable ? 2 : 1.2,
           strokeAlign: BorderSide.strokeAlignInside,
         ),
         boxShadow: unknown
             ? null
             : [
                 BoxShadow(
-                  color: sex.withValues(alpha: 0.12),
+                  color: (isCommonAncestor ? IosColors.systemRed : sex)
+                      .withValues(alpha: 0.12),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -750,7 +796,7 @@ class _PedigreeGeneticNode extends StatelessWidget {
                   isMale: _isMale,
                   isFemale: _isFemale,
                   unknown: unknown,
-                  color: sex,
+                  color: isCommonAncestor ? IosColors.systemRed : sex,
                 ),
               const SizedBox(width: 4),
               Expanded(
@@ -761,7 +807,7 @@ class _PedigreeGeneticNode extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: sex,
+                    color: isCommonAncestor ? IosColors.systemRed : sex,
                   ),
                 ),
               ),
@@ -770,17 +816,31 @@ class _PedigreeGeneticNode extends StatelessWidget {
           const SizedBox(height: 4),
           Expanded(
             child: Text(
-              _shortName,
+              unknown && !canEdit ? '没登记' : _shortName,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w800,
-                color: unknown ? sex.withValues(alpha: 0.85) : palette.label,
+                color: unknown
+                    ? sex.withValues(alpha: 0.85)
+                    : (isCommonAncestor
+                          ? IosColors.systemRed
+                          : palette.label),
                 height: 1.15,
               ),
             ),
           ),
-          if (!unknown &&
+          if (unknown && canEdit)
+            Text(
+              '没登记',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: palette.tertiaryLabel,
+                fontSize: 9,
+              ),
+            )
+          else if (!unknown &&
               slot.node!.varietyCode != null &&
               slot.node!.varietyCode!.trim().isNotEmpty)
             Text(
@@ -1191,7 +1251,7 @@ class _DescendantsSection extends StatelessWidget {
                   },
                 ),
                 title: nodes[i].displayName,
-                subtitle: nodes[i].varietyCode ?? '点按查看其血统',
+                subtitle: nodes[i].varietyCode ?? '点按查看这只从哪来',
                 onTap: () => onOpen(nodes[i]),
               ),
             ],

@@ -631,7 +631,7 @@ class _HamsterDetailPageState extends State<HamsterDetailPage> {
                       alignment: Alignment.centerLeft,
                       child: TextButton(
                         onPressed: widget.onOpenGenetic,
-                        child: const Text('繁育模拟'),
+                        child: const Text('试配一下'),
                       ),
                     ),
                 ],

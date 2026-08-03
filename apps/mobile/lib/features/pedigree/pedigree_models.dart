@@ -216,11 +216,11 @@ int maxFilledGeneration(List<List<PedigreeTreeSlot>> rows) {
 
 /// Human-facing relationship label for an ancestor role path.
 ///
-/// gen0 [] → 当前个体；gen1 → 父本/母本；gen2 → 爷爷/奶奶/外公/外婆。
+/// 口语：爸爸/妈妈/爷爷…（展示层；权威边 role 仍是 sire/dam）。
 String pedigreeRelationshipLabel(List<String> rolePath) {
-  if (rolePath.isEmpty) return '当前个体';
+  if (rolePath.isEmpty) return '这只';
   if (rolePath.length == 1) {
-    return rolePath.single == 'sire' ? '父本' : '母本';
+    return rolePath.single == 'sire' ? '爸爸' : '妈妈';
   }
   if (rolePath.length == 2) {
     return switch ('${rolePath[0]}/${rolePath[1]}') {
@@ -228,11 +228,11 @@ String pedigreeRelationshipLabel(List<String> rolePath) {
       'sire/dam' => '奶奶',
       'dam/sire' => '外公',
       'dam/dam' => '外婆',
-      _ => rolePath.map((r) => r == 'sire' ? '父' : '母').join(''),
+      _ => rolePath.map((r) => r == 'sire' ? '爸' : '妈').join(''),
     };
   }
-  // 更深代：父系·母系… 路径
-  return '${rolePath.map((r) => r == 'sire' ? '父' : '母').join('系·')}系';
+  // 更深代：口语路径
+  return '${rolePath.map((r) => r == 'sire' ? '爸' : '妈').join('·')}系';
 }
 
 /// Target for filling one empty pedigree slot via a parentage edge.
@@ -336,6 +336,8 @@ class PedigreeChartEdge {
     required this.parentBottomY,
     required this.branchY,
     required this.isSire,
+    this.parentNodeId,
+    this.childNodeId,
   });
 
   final double childCenterX;
@@ -346,6 +348,10 @@ class PedigreeChartEdge {
   /// Horizontal bar Y between parent bottoms and child top.
   final double branchY;
   final bool isSire;
+
+  /// 展示层：用于共同祖先连线标红（非权威字段）。
+  final String? parentNodeId;
+  final String? childNodeId;
 }
 
 /// Full layout for a classic vertical pedigree genetic chart.
@@ -466,6 +472,8 @@ PedigreeChartLayout layoutClassicPedigreeChart(
             parentBottomY: sire.bottom,
             branchY: branchY,
             isSire: true,
+            parentNodeId: sire.slot.node?.id,
+            childNodeId: child.slot.node?.id,
           ),
         );
       }
@@ -478,6 +486,8 @@ PedigreeChartLayout layoutClassicPedigreeChart(
             parentBottomY: dam.bottom,
             branchY: branchY,
             isSire: false,
+            parentNodeId: dam.slot.node?.id,
+            childNodeId: child.slot.node?.id,
           ),
         );
       }

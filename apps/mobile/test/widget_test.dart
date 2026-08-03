@@ -131,7 +131,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('繁育模拟'), findsWidgets);
+      expect(find.text('这两只会生出什么'), findsWidgets);
       expect(find.text('配对预测'), findsWidgets);
       // 回到首页，经右上角账号入口进入原「我的」能力
       await tester.tap(

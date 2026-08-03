@@ -25,9 +25,9 @@ void main() {
   });
 
   test('pedigreeRelationshipLabel covers classic three generations', () {
-    expect(pedigreeRelationshipLabel(const []), '当前个体');
-    expect(pedigreeRelationshipLabel(const ['sire']), '父本');
-    expect(pedigreeRelationshipLabel(const ['dam']), '母本');
+    expect(pedigreeRelationshipLabel(const []), '这只');
+    expect(pedigreeRelationshipLabel(const ['sire']), '爸爸');
+    expect(pedigreeRelationshipLabel(const ['dam']), '妈妈');
     expect(pedigreeRelationshipLabel(const ['sire', 'sire']), '爷爷');
     expect(pedigreeRelationshipLabel(const ['sire', 'dam']), '奶奶');
     expect(pedigreeRelationshipLabel(const ['dam', 'sire']), '外公');
@@ -241,8 +241,8 @@ void main() {
       },
     );
     expect(ok, isTrue);
-    expect(stubs, contains('父本')); // intermediate
-    // First edge: root ← stub 父本; second: stub ← grandpa
+    expect(stubs, contains('爸爸')); // intermediate 人话标签
+    // First edge: root ← stub 爸爸; second: stub ← grandpa
     expect(repo.created, hasLength(2));
     expect(repo.created.first.childId, 'h-root');
     expect(repo.created.last.parentId, 'grandpa-1');
@@ -312,13 +312,13 @@ void main() {
     }
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('血统档案 · 雪团'), findsOneWidget);
+    expect(find.textContaining('这只从哪来 · 雪团'), findsOneWidget);
     expect(find.byKey(const Key('pedigree-tree')), findsOneWidget);
     expect(find.byKey(const Key('pedigree-chart-viewer')), findsOneWidget);
-    expect(find.text('血统遗传图'), findsOneWidget);
-    expect(find.text('当前个体'), findsOneWidget);
-    expect(find.text('父本'), findsWidgets);
-    expect(find.text('母本'), findsWidgets);
+    expect(find.text('这只从哪来'), findsOneWidget);
+    expect(find.text('这只'), findsOneWidget);
+    expect(find.text('爸爸'), findsWidgets);
+    expect(find.text('妈妈'), findsWidgets);
     expect(find.text('爷爷'), findsWidgets);
     expect(find.text('奶奶'), findsWidgets);
     expect(find.byKey(const Key('pedigree-slot-0-')), findsOneWidget);

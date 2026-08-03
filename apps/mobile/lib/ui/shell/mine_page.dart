@@ -174,11 +174,11 @@ class _MinePage extends StatelessWidget {
                       key: const Key('mine-open-genetic'),
                       leading: const BearGlyphTile(
                         icon: CupertinoIcons.lab_flask_solid,
-                        semanticLabel: '繁育模拟',
+                        semanticLabel: '这两只会生出什么',
                         size: 32,
                         padding: 4,
                       ),
-                      title: '繁育模拟',
+                      title: '这两只会生出什么',
                       subtitle: '配对概率与本窝记录',
                       onTap: onOpenGenetic,
                     ),

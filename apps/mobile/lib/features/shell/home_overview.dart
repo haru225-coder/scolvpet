@@ -625,7 +625,7 @@ class _SimulateHeroCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '繁育模拟',
+                            '这两只会生出什么',
                             key: const Key('home-simulate-title'),
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w800,
@@ -711,7 +711,7 @@ class _SimulateHeroCard extends StatelessWidget {
                     ),
                   ),
                   label: const Text(
-                    '开始模拟',
+                    '试配一下',
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                   ),
                 ),
