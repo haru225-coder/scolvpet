@@ -15,6 +15,14 @@ class MemoryCrmRepository implements CrmRepository {
       List<CrmContact>.from(_contacts);
 
   @override
+  Future<CrmContact> getContact(String id) async {
+    return _contacts.firstWhere(
+      (c) => c.id == id,
+      orElse: () => throw const CrmRepositoryException('客户不存在'),
+    );
+  }
+
+  @override
   Future<CrmContact> createContact(CrmContactDraft draft) async {
     final name = draft.name.trim();
     if (name.isEmpty) throw const CrmRepositoryException('客户名称必填');
@@ -73,6 +81,15 @@ class MemoryCrmRepository implements CrmRepository {
     );
     _reservations.insert(0, item);
     return item;
+  }
+
+  @override
+  Future<CrmReservation> getReservation(String id) async {
+    final list = await listReservations();
+    return list.firstWhere(
+      (r) => r.id == id,
+      orElse: () => throw const CrmRepositoryException('预订不存在'),
+    );
   }
 
   @override
@@ -136,6 +153,15 @@ class MemoryCrmRepository implements CrmRepository {
         hamsterName: h.hamsterName,
       );
     }).toList();
+  }
+
+  @override
+  Future<CrmHandover> getHandover(String id) async {
+    final list = await listHandovers();
+    return list.firstWhere(
+      (h) => h.id == id,
+      orElse: () => throw const CrmRepositoryException('交付单不存在'),
+    );
   }
 
   @override

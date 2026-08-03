@@ -24,6 +24,7 @@ void main() {
     expect(doc.status, 'draft');
     expect(doc.bodyFilled, contains('阿花'));
     expect(doc.bodyFilled, contains('雪球'));
+    expect((await repo.getDocument('contract', doc.id)).title, '雪球交付');
     final issued = await repo.issueDocument('contract', doc.id, doc.version);
     expect(issued.status, 'issued');
     expect(issued.issuedAt, isNotNull);

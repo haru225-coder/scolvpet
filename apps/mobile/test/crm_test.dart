@@ -22,6 +22,7 @@ void main() {
       expect(contact.phone, '13800001111');
       expect(contact.wechat, 'xiaowang_hamster');
       expect(contact.notes, '偏好温顺个体');
+      expect((await repo.getContact(contact.id)).name, '小王');
 
       final reservation = await repo.createReservation(
         CrmReservationDraft(
@@ -37,6 +38,7 @@ void main() {
         reservation.version,
       );
       expect(confirmed.status, 'confirmed');
+      expect((await repo.getReservation(confirmed.id)).status, 'confirmed');
 
       final plannedAt = DateTime(2026, 8, 21, 14, 30);
       final handover = await repo.createHandover(
@@ -56,6 +58,7 @@ void main() {
       expect(done.completedAt, isNotNull);
       expect(done.hamsterId, 'h-1');
       expect(done.scheduledAt, plannedAt.toUtc());
+      expect((await repo.getHandover(done.id)).status, 'completed');
 
       final reservations = await repo.listReservations();
       expect(reservations.single.status, 'handed_over');

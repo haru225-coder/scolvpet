@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:scolvpet_api/scolvpet_api.dart' show P1CRMApi;
 import 'package:uuid/uuid.dart';
 
 import '../../core/api_client.dart';
@@ -7,14 +8,17 @@ import 'crm_models.dart';
 
 abstract interface class CrmRepository {
   Future<List<CrmContact>> listContacts();
+  Future<CrmContact> getContact(String id);
   Future<CrmContact> createContact(CrmContactDraft draft);
 
   Future<List<CrmReservation>> listReservations();
+  Future<CrmReservation> getReservation(String id);
   Future<CrmReservation> createReservation(CrmReservationDraft draft);
   Future<CrmReservation> confirmReservation(String id, int version);
   Future<CrmReservation> cancelReservation(String id, int version);
 
   Future<List<CrmHandover>> listHandovers();
+  Future<CrmHandover> getHandover(String id);
   Future<CrmHandover> createHandover(CrmHandoverDraft draft);
   Future<CrmHandover> completeHandover(String id, int version);
 }
@@ -34,9 +38,11 @@ String crmErrorMessage(Object error) => apiErrorMessage(
 );
 
 class DefaultApiCrmRepository implements CrmRepository {
-  DefaultApiCrmRepository({required this.client});
+  DefaultApiCrmRepository({required this.client})
+    : _p1CrmApi = P1CRMApi(client.p2Dio);
 
   final ApiClient client;
+  final P1CRMApi _p1CrmApi;
   final _uuid = const Uuid();
   String _key() => 'crm-${_uuid.v4()}';
 
@@ -66,6 +72,14 @@ class DefaultApiCrmRepository implements CrmRepository {
   }
 
   @override
+  Future<CrmContact> getContact(String id) async {
+    final response = await _p1CrmApi.getCrmContact(contactId: id);
+    final data = response.data?.data;
+    if (data == null) throw const CrmRepositoryException('响应为空');
+    return CrmContact.fromJson(data.toJson());
+  }
+
+  @override
   Future<CrmContact> createContact(CrmContactDraft draft) async {
     final response = await client.dio.post<Map<String, dynamic>>(
       '/crm/contacts',
@@ -87,6 +101,14 @@ class DefaultApiCrmRepository implements CrmRepository {
       '/crm/reservations',
     );
     return _listData(response).map(CrmReservation.fromJson).toList();
+  }
+
+  @override
+  Future<CrmReservation> getReservation(String id) async {
+    final response = await _p1CrmApi.getCrmReservation(reservationId: id);
+    final data = response.data?.data;
+    if (data == null) throw const CrmRepositoryException('响应为空');
+    return CrmReservation.fromJson(data.toJson());
   }
 
   @override
@@ -132,6 +154,14 @@ class DefaultApiCrmRepository implements CrmRepository {
       '/crm/handovers',
     );
     return _listData(response).map(CrmHandover.fromJson).toList();
+  }
+
+  @override
+  Future<CrmHandover> getHandover(String id) async {
+    final response = await _p1CrmApi.getCrmHandover(handoverId: id);
+    final data = response.data?.data;
+    if (data == null) throw const CrmRepositoryException('响应为空');
+    return CrmHandover.fromJson(data.toJson());
   }
 
   @override

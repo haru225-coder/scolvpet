@@ -42,6 +42,14 @@ class MemoryContractsRepository implements ContractsRepository {
       .toList();
 
   @override
+  Future<DocDocument> getDocument(String kind, String id) async {
+    return _documents.firstWhere(
+      (d) => d.kind == kind && d.id == id,
+      orElse: () => throw const ContractsRepositoryException('文档不存在'),
+    );
+  }
+
+  @override
   Future<DocDocument> createContract(ContractDraft draft) async {
     final tpl = _requireTemplate(draft.templateId, 'contract');
     final title = draft.title.trim().isEmpty ? tpl.name : draft.title.trim();

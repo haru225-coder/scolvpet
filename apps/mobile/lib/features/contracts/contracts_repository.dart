@@ -11,6 +11,7 @@ abstract interface class ContractsRepository {
   Future<DocTemplate> createTemplate(String kind, DocTemplateDraft draft);
 
   Future<List<DocDocument>> listDocuments(String kind);
+  Future<DocDocument> getDocument(String kind, String id);
   Future<DocDocument> createContract(ContractDraft draft);
   Future<DocDocument> createReceipt(ReceiptDraft draft);
   Future<DocDocument> issueDocument(String kind, String id, int version);
@@ -103,6 +104,18 @@ class DefaultApiContractsRepository implements ContractsRepository {
   Future<List<DocDocument>> listDocuments(String kind) async {
     final response = await client.dio.get<Map<String, dynamic>>(_base(kind));
     return _listData(response).map(DocDocument.fromJson).toList();
+  }
+
+  @override
+  Future<DocDocument> getDocument(String kind, String id) async {
+    final response = kind == 'receipt'
+        ? await _p1Api.getReceipt(documentId: id)
+        : await _p1Api.getContract(documentId: id);
+    final data = response.data?.data;
+    if (data == null) {
+      throw const ContractsRepositoryException('响应为空');
+    }
+    return DocDocument.fromJson(data.toJson());
   }
 
   @override
