@@ -95,6 +95,18 @@ export interface CreateCrmReservationOperationRequest {
     idempotencyKey?: string;
 }
 
+export interface GetCrmContactRequest {
+    contactId: string;
+}
+
+export interface GetCrmHandoverRequest {
+    handoverId: string;
+}
+
+export interface GetCrmReservationRequest {
+    reservationId: string;
+}
+
 /**
  *
  */
@@ -457,6 +469,171 @@ export class P1CRMApi extends runtime.BaseAPI {
      */
     async createCrmReservation(requestParameters: CreateCrmReservationOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CrmReservationResponse> {
         const response = await this.createCrmReservationRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getCrmContact without sending the request
+     */
+    async getCrmContactRequestOpts(requestParameters: GetCrmContactRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['contactId'] == null) {
+            throw new runtime.RequiredError(
+                'contactId',
+                'Required parameter "contactId" was null or undefined when calling getCrmContact().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/v1/crm/contacts/{contact_id}`;
+        urlPath = urlPath.replace('{contact_id}', encodeURIComponent(String(requestParameters['contactId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可读取单个客户档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 获取 CRM 客户详情
+     */
+    async getCrmContactRaw(requestParameters: GetCrmContactRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CrmContactResponse>> {
+        const requestOptions = await this.getCrmContactRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CrmContactResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可读取单个客户档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 获取 CRM 客户详情
+     */
+    async getCrmContact(requestParameters: GetCrmContactRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CrmContactResponse> {
+        const response = await this.getCrmContactRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getCrmHandover without sending the request
+     */
+    async getCrmHandoverRequestOpts(requestParameters: GetCrmHandoverRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['handoverId'] == null) {
+            throw new runtime.RequiredError(
+                'handoverId',
+                'Required parameter "handoverId" was null or undefined when calling getCrmHandover().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/v1/crm/handovers/{handover_id}`;
+        urlPath = urlPath.replace('{handover_id}', encodeURIComponent(String(requestParameters['handoverId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可读取单个交付记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 获取客户交付详情
+     */
+    async getCrmHandoverRaw(requestParameters: GetCrmHandoverRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CrmHandoverResponse>> {
+        const requestOptions = await this.getCrmHandoverRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CrmHandoverResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可读取单个交付记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 获取客户交付详情
+     */
+    async getCrmHandover(requestParameters: GetCrmHandoverRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CrmHandoverResponse> {
+        const response = await this.getCrmHandoverRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getCrmReservation without sending the request
+     */
+    async getCrmReservationRequestOpts(requestParameters: GetCrmReservationRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['reservationId'] == null) {
+            throw new runtime.RequiredError(
+                'reservationId',
+                'Required parameter "reservationId" was null or undefined when calling getCrmReservation().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/v1/crm/reservations/{reservation_id}`;
+        urlPath = urlPath.replace('{reservation_id}', encodeURIComponent(String(requestParameters['reservationId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可读取单个预订记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 获取客户预订详情
+     */
+    async getCrmReservationRaw(requestParameters: GetCrmReservationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CrmReservationResponse>> {
+        const requestOptions = await this.getCrmReservationRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CrmReservationResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可读取单个预订记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 获取客户预订详情
+     */
+    async getCrmReservation(requestParameters: GetCrmReservationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CrmReservationResponse> {
+        const response = await this.getCrmReservationRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

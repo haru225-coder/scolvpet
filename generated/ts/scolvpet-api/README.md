@@ -219,8 +219,10 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *P1Api* | [**downloadContractPdf**](docs/P1Api.md#downloadcontractpdf) | **GET** /v1/contracts/{document_id}/pdf | 下载已签发合同 PDF
 *P1Api* | [**downloadReceiptPdf**](docs/P1Api.md#downloadreceiptpdf) | **GET** /v1/receipts/{document_id}/pdf | 下载已签发回执 PDF
 *P1Api* | [**getAccountingSummary**](docs/P1Api.md#getaccountingsummary) | **GET** /v1/accounting/summary | 读取记账汇总
+*P1Api* | [**getContract**](docs/P1Api.md#getcontract) | **GET** /v1/contracts/{document_id} | 获取合同单据详情
 *P1Api* | [**getCurrentEntitlement**](docs/P1Api.md#getcurrententitlement) | **GET** /v1/entitlements/current | 读取当前权益快照
 *P1Api* | [**getEntitlementCatalog**](docs/P1Api.md#getentitlementcatalog) | **GET** /v1/entitlements/catalog | 读取权益套餐目录
+*P1Api* | [**getReceipt**](docs/P1Api.md#getreceipt) | **GET** /v1/receipts/{document_id} | 获取回执单据详情
 *P1Api* | [**inviteOrganizationMember**](docs/P1Api.md#inviteorganizationmemberoperation) | **POST** /v1/organization-members | 邀请熊舍成员
 *P1Api* | [**issueContract**](docs/P1Api.md#issuecontract) | **POST** /v1/contracts/{document_id}/issue | 签发合同
 *P1Api* | [**issueReceipt**](docs/P1Api.md#issuereceipt) | **POST** /v1/receipts/{document_id}/issue | 签发回执
@@ -248,6 +250,9 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *P1CRMApi* | [**createCrmContact**](docs/P1CRMApi.md#createcrmcontactoperation) | **POST** /v1/crm/contacts | 创建 CRM 客户
 *P1CRMApi* | [**createCrmHandover**](docs/P1CRMApi.md#createcrmhandoveroperation) | **POST** /v1/crm/handovers | 创建交付记录
 *P1CRMApi* | [**createCrmReservation**](docs/P1CRMApi.md#createcrmreservationoperation) | **POST** /v1/crm/reservations | 创建客户预订
+*P1CRMApi* | [**getCrmContact**](docs/P1CRMApi.md#getcrmcontact) | **GET** /v1/crm/contacts/{contact_id} | 获取 CRM 客户详情
+*P1CRMApi* | [**getCrmHandover**](docs/P1CRMApi.md#getcrmhandover) | **GET** /v1/crm/handovers/{handover_id} | 获取客户交付详情
+*P1CRMApi* | [**getCrmReservation**](docs/P1CRMApi.md#getcrmreservation) | **GET** /v1/crm/reservations/{reservation_id} | 获取客户预订详情
 *P1CRMApi* | [**listCrmContacts**](docs/P1CRMApi.md#listcrmcontacts) | **GET** /v1/crm/contacts | 列出 CRM 客户
 *P1CRMApi* | [**listCrmHandovers**](docs/P1CRMApi.md#listcrmhandovers) | **GET** /v1/crm/handovers | 列出交付记录
 *P1CRMApi* | [**listCrmReservations**](docs/P1CRMApi.md#listcrmreservations) | **GET** /v1/crm/reservations | 列出客户预订

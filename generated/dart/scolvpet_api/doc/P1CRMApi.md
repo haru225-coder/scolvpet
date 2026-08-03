@@ -15,6 +15,9 @@ Method | HTTP request | Description
 [**createCrmContact**](P1CRMApi.md#createcrmcontact) | **POST** /v1/crm/contacts | 创建 CRM 客户
 [**createCrmHandover**](P1CRMApi.md#createcrmhandover) | **POST** /v1/crm/handovers | 创建交付记录
 [**createCrmReservation**](P1CRMApi.md#createcrmreservation) | **POST** /v1/crm/reservations | 创建客户预订
+[**getCrmContact**](P1CRMApi.md#getcrmcontact) | **GET** /v1/crm/contacts/{contact_id} | 获取 CRM 客户详情
+[**getCrmHandover**](P1CRMApi.md#getcrmhandover) | **GET** /v1/crm/handovers/{handover_id} | 获取客户交付详情
+[**getCrmReservation**](P1CRMApi.md#getcrmreservation) | **GET** /v1/crm/reservations/{reservation_id} | 获取客户预订详情
 [**listCrmContacts**](P1CRMApi.md#listcrmcontacts) | **GET** /v1/crm/contacts | 列出 CRM 客户
 [**listCrmHandovers**](P1CRMApi.md#listcrmhandovers) | **GET** /v1/crm/handovers | 列出交付记录
 [**listCrmReservations**](P1CRMApi.md#listcrmreservations) | **GET** /v1/crm/reservations | 列出客户预订
@@ -286,6 +289,135 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getCrmContact**
+> CrmContactResponse getCrmContact(contactId)
+
+获取 CRM 客户详情
+
+需要 Bearer 令牌；当前熊舍成员可读取单个客户档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP1CRMApi();
+final String contactId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 客户 ID
+
+try {
+    final response = api.getCrmContact(contactId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P1CRMApi->getCrmContact: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **contactId** | **String**| 客户 ID |
+
+### Return type
+
+[**CrmContactResponse**](CrmContactResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getCrmHandover**
+> CrmHandoverResponse getCrmHandover(handoverId)
+
+获取客户交付详情
+
+需要 Bearer 令牌；当前熊舍成员可读取单个交付记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP1CRMApi();
+final String handoverId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 交付 ID
+
+try {
+    final response = api.getCrmHandover(handoverId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P1CRMApi->getCrmHandover: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **handoverId** | **String**| 交付 ID |
+
+### Return type
+
+[**CrmHandoverResponse**](CrmHandoverResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getCrmReservation**
+> CrmReservationResponse getCrmReservation(reservationId)
+
+获取客户预订详情
+
+需要 Bearer 令牌；当前熊舍成员可读取单个预订记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP1CRMApi();
+final String reservationId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 预订 ID
+
+try {
+    final response = api.getCrmReservation(reservationId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P1CRMApi->getCrmReservation: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **reservationId** | **String**| 预订 ID |
+
+### Return type
+
+[**CrmReservationResponse**](CrmReservationResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

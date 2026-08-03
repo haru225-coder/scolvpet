@@ -21,10 +21,12 @@ func TestP1ContractRoutesRequireAuth(t *testing.T) {
 		{http.MethodPost, "/v1/contracts/templates"},
 		{http.MethodGet, "/v1/contracts"},
 		{http.MethodPost, "/v1/contracts"},
+		{http.MethodGet, "/v1/contracts/00000000-0000-0000-0000-000000000001"},
 		{http.MethodGet, "/v1/receipts/templates"},
 		{http.MethodPost, "/v1/receipts/templates"},
 		{http.MethodGet, "/v1/receipts"},
 		{http.MethodPost, "/v1/receipts"},
+		{http.MethodGet, "/v1/receipts/00000000-0000-0000-0000-000000000001"},
 		{http.MethodPost, "/v1/contracts/00000000-0000-0000-0000-000000000001/revoke"},
 		{http.MethodPost, "/v1/receipts/00000000-0000-0000-0000-000000000001/revoke"},
 	}

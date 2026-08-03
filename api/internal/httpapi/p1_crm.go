@@ -18,12 +18,15 @@ import (
 func (s *Server) registerP1CrmRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v1/crm/contacts", s.listCrmContacts)
 	mux.HandleFunc("POST /v1/crm/contacts", s.createCrmContact)
+	mux.HandleFunc("GET /v1/crm/contacts/{contact_id}", s.getCrmContactDetail)
 	mux.HandleFunc("GET /v1/crm/reservations", s.listCrmReservations)
 	mux.HandleFunc("POST /v1/crm/reservations", s.createCrmReservation)
+	mux.HandleFunc("GET /v1/crm/reservations/{reservation_id}", s.getCrmReservationDetail)
 	mux.HandleFunc("POST /v1/crm/reservations/{reservation_id}/confirm", s.confirmCrmReservation)
 	mux.HandleFunc("POST /v1/crm/reservations/{reservation_id}/cancel", s.cancelCrmReservation)
 	mux.HandleFunc("GET /v1/crm/handovers", s.listCrmHandovers)
 	mux.HandleFunc("POST /v1/crm/handovers", s.createCrmHandover)
+	mux.HandleFunc("GET /v1/crm/handovers/{handover_id}", s.getCrmHandoverDetail)
 	mux.HandleFunc("POST /v1/crm/handovers/{handover_id}/complete", s.completeCrmHandover)
 }
 
@@ -116,6 +119,25 @@ func (s *Server) listCrmContacts(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, map[string]any{"data": items, "meta": responseMeta(r)})
 }
 
+func (s *Server) getCrmContactDetail(w http.ResponseWriter, r *http.Request) {
+	ownerID, ok := s.authenticateMemberOwner(w, r)
+	if !ok {
+		return
+	}
+	contactID, err := uuid.Parse(r.PathValue("contact_id"))
+	if err != nil || contactID == uuid.Nil {
+		writeAPIError(w, r, store.ErrNotFound)
+		return
+	}
+	item, err := s.getCrmContact(r.Context(), ownerID, contactID)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	w.Header().Set("ETag", store.FormatETag(item.Version))
+	writeJSON(w, r, http.StatusOK, crmEnvelope(r, item))
+}
+
 func (s *Server) createCrmContact(w http.ResponseWriter, r *http.Request) {
 	ownerID, ok := s.authenticateMemberOwner(w, r)
 	if !ok {
@@ -205,6 +227,25 @@ func (s *Server) listCrmReservations(w http.ResponseWriter, r *http.Request) {
 		items = append(items, item)
 	}
 	writeJSON(w, r, http.StatusOK, map[string]any{"data": items, "meta": responseMeta(r)})
+}
+
+func (s *Server) getCrmReservationDetail(w http.ResponseWriter, r *http.Request) {
+	ownerID, ok := s.authenticateMemberOwner(w, r)
+	if !ok {
+		return
+	}
+	reservationID, err := uuid.Parse(r.PathValue("reservation_id"))
+	if err != nil || reservationID == uuid.Nil {
+		writeAPIError(w, r, store.ErrNotFound)
+		return
+	}
+	item, err := s.getCrmReservation(r.Context(), ownerID, reservationID)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	w.Header().Set("ETag", store.FormatETag(item.Version))
+	writeJSON(w, r, http.StatusOK, crmEnvelope(r, item))
 }
 
 func (s *Server) createCrmReservation(w http.ResponseWriter, r *http.Request) {
@@ -395,6 +436,25 @@ func (s *Server) listCrmHandovers(w http.ResponseWriter, r *http.Request) {
 		items = append(items, item)
 	}
 	writeJSON(w, r, http.StatusOK, map[string]any{"data": items, "meta": responseMeta(r)})
+}
+
+func (s *Server) getCrmHandoverDetail(w http.ResponseWriter, r *http.Request) {
+	ownerID, ok := s.authenticateMemberOwner(w, r)
+	if !ok {
+		return
+	}
+	handoverID, err := uuid.Parse(r.PathValue("handover_id"))
+	if err != nil || handoverID == uuid.Nil {
+		writeAPIError(w, r, store.ErrNotFound)
+		return
+	}
+	item, err := s.getCrmHandover(r.Context(), ownerID, handoverID)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	w.Header().Set("ETag", store.FormatETag(item.Version))
+	writeJSON(w, r, http.StatusOK, crmEnvelope(r, item))
 }
 
 func (s *Server) createCrmHandover(w http.ResponseWriter, r *http.Request) {

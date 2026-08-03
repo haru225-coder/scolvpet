@@ -4429,6 +4429,34 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/CreateCrmContactRequest"
+  "/v1/crm/contacts/{contact_id}":
+    get:
+      tags:
+      - P1 CRM
+      operationId: getCrmContact
+      summary: 获取 CRM 客户详情
+      description: 需要 Bearer 令牌；当前熊舍成员可读取单个客户档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: contact_id
+        in: path
+        required: true
+        description: 客户 ID
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: CRM 客户详情获取成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmContactResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
   "/v1/crm/reservations":
     get:
       tags:
@@ -4475,6 +4503,34 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/CreateCrmReservationRequest"
+  "/v1/crm/reservations/{reservation_id}":
+    get:
+      tags:
+      - P1 CRM
+      operationId: getCrmReservation
+      summary: 获取客户预订详情
+      description: 需要 Bearer 令牌；当前熊舍成员可读取单个预订记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: reservation_id
+        in: path
+        required: true
+        description: 预订 ID
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: 客户预订详情获取成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmReservationResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
   "/v1/crm/reservations/{reservation_id}/confirm":
     post:
       tags:
@@ -4583,6 +4639,34 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/CreateCrmHandoverRequest"
+  "/v1/crm/handovers/{handover_id}":
+    get:
+      tags:
+      - P1 CRM
+      operationId: getCrmHandover
+      summary: 获取客户交付详情
+      description: 需要 Bearer 令牌；当前熊舍成员可读取单个交付记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: handover_id
+        in: path
+        required: true
+        description: 交付 ID
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: 客户交付详情获取成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CrmHandoverResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
   "/v1/crm/handovers/{handover_id}/complete":
     post:
       tags:
@@ -4705,6 +4789,34 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/CreateContractRequest"
+  "/v1/contracts/{document_id}":
+    get:
+      tags:
+      - P1 合同与回执
+      operationId: getContract
+      summary: 获取合同单据详情
+      description: 需要 Bearer 令牌；当前熊舍成员可读取单个合同单据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        description: 合同单据 ID
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: 合同单据详情获取成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
   "/v1/contracts/{document_id}/issue":
     post:
       tags:
@@ -4888,6 +5000,34 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/CreateReceiptRequest"
+  "/v1/receipts/{document_id}":
+    get:
+      tags:
+      - P1 合同与回执
+      operationId: getReceipt
+      summary: 获取回执单据详情
+      description: 需要 Bearer 令牌；当前熊舍成员可读取单个回执单据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        description: 回执单据 ID
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: 回执单据详情获取成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DocumentResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
   "/v1/receipts/{document_id}/pdf":
     get:
       tags:

@@ -22,8 +22,10 @@ Method | HTTP request | Description
 [**downloadContractPdf**](P1Api.md#downloadcontractpdf) | **GET** /v1/contracts/{document_id}/pdf | 下载已签发合同 PDF
 [**downloadReceiptPdf**](P1Api.md#downloadreceiptpdf) | **GET** /v1/receipts/{document_id}/pdf | 下载已签发回执 PDF
 [**getAccountingSummary**](P1Api.md#getaccountingsummary) | **GET** /v1/accounting/summary | 读取记账汇总
+[**getContract**](P1Api.md#getcontract) | **GET** /v1/contracts/{document_id} | 获取合同单据详情
 [**getCurrentEntitlement**](P1Api.md#getcurrententitlement) | **GET** /v1/entitlements/current | 读取当前权益快照
 [**getEntitlementCatalog**](P1Api.md#getentitlementcatalog) | **GET** /v1/entitlements/catalog | 读取权益套餐目录
+[**getReceipt**](P1Api.md#getreceipt) | **GET** /v1/receipts/{document_id} | 获取回执单据详情
 [**inviteOrganizationMember**](P1Api.md#inviteorganizationmember) | **POST** /v1/organization-members | 邀请熊舍成员
 [**issueContract**](P1Api.md#issuecontract) | **POST** /v1/contracts/{document_id}/issue | 签发合同
 [**issueReceipt**](P1Api.md#issuereceipt) | **POST** /v1/receipts/{document_id}/issue | 签发回执
@@ -630,6 +632,49 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **getContract**
+> DocumentResponse getContract(documentId)
+
+获取合同单据详情
+
+需要 Bearer 令牌；当前熊舍成员可读取单个合同单据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP1Api();
+final String documentId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 合同单据 ID
+
+try {
+    final response = api.getContract(documentId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P1Api->getContract: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **documentId** | **String**| 合同单据 ID |
+
+### Return type
+
+[**DocumentResponse**](DocumentResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **getCurrentEntitlement**
 > EntitlementSnapshotResponse getCurrentEntitlement()
 
@@ -696,6 +741,49 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**EntitlementCatalogResponse**](EntitlementCatalogResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getReceipt**
+> DocumentResponse getReceipt(documentId)
+
+获取回执单据详情
+
+需要 Bearer 令牌；当前熊舍成员可读取单个回执单据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP1Api();
+final String documentId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 回执单据 ID
+
+try {
+    final response = api.getReceipt(documentId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P1Api->getReceipt: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **documentId** | **String**| 回执单据 ID |
+
+### Return type
+
+[**DocumentResponse**](DocumentResponse.md)
 
 ### Authorization
 

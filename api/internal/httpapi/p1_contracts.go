@@ -21,6 +21,7 @@ func (s *Server) registerP1ContractRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/contracts/templates", s.createContractTemplate)
 	mux.HandleFunc("GET /v1/contracts", s.listContracts)
 	mux.HandleFunc("POST /v1/contracts", s.createContract)
+	mux.HandleFunc("GET /v1/contracts/{document_id}", s.getContract)
 	mux.HandleFunc("POST /v1/contracts/{document_id}/issue", s.issueContract)
 	mux.HandleFunc("POST /v1/contracts/{document_id}/revoke", s.revokeContract)
 	mux.HandleFunc("GET /v1/contracts/{document_id}/pdf", s.downloadContractPDF)
@@ -29,6 +30,7 @@ func (s *Server) registerP1ContractRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/receipts/templates", s.createReceiptTemplate)
 	mux.HandleFunc("GET /v1/receipts", s.listReceipts)
 	mux.HandleFunc("POST /v1/receipts", s.createReceipt)
+	mux.HandleFunc("GET /v1/receipts/{document_id}", s.getReceipt)
 	mux.HandleFunc("POST /v1/receipts/{document_id}/issue", s.issueReceipt)
 	mux.HandleFunc("POST /v1/receipts/{document_id}/revoke", s.revokeReceipt)
 	mux.HandleFunc("GET /v1/receipts/{document_id}/pdf", s.downloadReceiptPDF)
@@ -114,6 +116,10 @@ func (s *Server) createReceiptTemplate(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) listContracts(w http.ResponseWriter, r *http.Request) {
 	s.listDocDocuments(w, r, "contract")
+}
+
+func (s *Server) getContract(w http.ResponseWriter, r *http.Request) {
+	s.getDocDocumentDetail(w, r, "contract")
 }
 
 func (s *Server) createContract(w http.ResponseWriter, r *http.Request) {
@@ -210,6 +216,10 @@ func (s *Server) revokeContract(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) listReceipts(w http.ResponseWriter, r *http.Request) {
 	s.listDocDocuments(w, r, "receipt")
+}
+
+func (s *Server) getReceipt(w http.ResponseWriter, r *http.Request) {
+	s.getDocDocumentDetail(w, r, "receipt")
 }
 
 func (s *Server) createReceipt(w http.ResponseWriter, r *http.Request) {
@@ -421,6 +431,26 @@ func (s *Server) listDocDocuments(w http.ResponseWriter, r *http.Request, kind s
 		items = append(items, item)
 	}
 	writeJSON(w, r, http.StatusOK, map[string]any{"data": items, "meta": responseMeta(r)})
+}
+
+func (s *Server) getDocDocumentDetail(w http.ResponseWriter, r *http.Request, kind string) {
+	ownerID, ok := s.authenticateMemberOwner(w, r)
+	if !ok {
+		return
+	}
+	documentID, err := uuid.Parse(r.PathValue("document_id"))
+	if err != nil || documentID == uuid.Nil {
+		writeAPIError(w, r, store.ErrNotFound)
+		return
+	}
+	item, err := s.getDocDocument(r.Context(), ownerID, documentID, kind)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	attachDocPublicURL(&item, r)
+	w.Header().Set("ETag", store.FormatETag(item.Version))
+	writeJSON(w, r, http.StatusOK, crmEnvelope(r, item))
 }
 
 func (s *Server) issueDocDocument(w http.ResponseWriter, r *http.Request, kind string) {

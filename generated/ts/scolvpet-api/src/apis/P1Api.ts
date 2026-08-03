@@ -259,6 +259,14 @@ export interface GetAccountingSummaryRequest {
     to?: Date;
 }
 
+export interface GetContractRequest {
+    documentId: string;
+}
+
+export interface GetReceiptRequest {
+    documentId: string;
+}
+
 export interface InviteOrganizationMemberOperationRequest {
     inviteOrganizationMemberRequest: InviteOrganizationMemberRequest;
     idempotencyKey?: string;
@@ -1109,6 +1117,61 @@ export class P1Api extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for getContract without sending the request
+     */
+    async getContractRequestOpts(requestParameters: GetContractRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentId'] == null) {
+            throw new runtime.RequiredError(
+                'documentId',
+                'Required parameter "documentId" was null or undefined when calling getContract().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/v1/contracts/{document_id}`;
+        urlPath = urlPath.replace('{document_id}', encodeURIComponent(String(requestParameters['documentId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可读取单个合同单据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 获取合同单据详情
+     */
+    async getContractRaw(requestParameters: GetContractRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentResponse>> {
+        const requestOptions = await this.getContractRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DocumentResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可读取单个合同单据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 获取合同单据详情
+     */
+    async getContract(requestParameters: GetContractRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentResponse> {
+        const response = await this.getContractRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for getCurrentEntitlement without sending the request
      */
     async getCurrentEntitlementRequestOpts(): Promise<runtime.RequestOpts> {
@@ -1199,6 +1262,61 @@ export class P1Api extends runtime.BaseAPI {
      */
     async getEntitlementCatalog(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EntitlementCatalogResponse> {
         const response = await this.getEntitlementCatalogRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getReceipt without sending the request
+     */
+    async getReceiptRequestOpts(requestParameters: GetReceiptRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentId'] == null) {
+            throw new runtime.RequiredError(
+                'documentId',
+                'Required parameter "documentId" was null or undefined when calling getReceipt().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/v1/receipts/{document_id}`;
+        urlPath = urlPath.replace('{document_id}', encodeURIComponent(String(requestParameters['documentId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可读取单个回执单据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 获取回执单据详情
+     */
+    async getReceiptRaw(requestParameters: GetReceiptRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentResponse>> {
+        const requestOptions = await this.getReceiptRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DocumentResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可读取单个回执单据。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 获取回执单据详情
+     */
+    async getReceipt(requestParameters: GetReceiptRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentResponse> {
+        const response = await this.getReceiptRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

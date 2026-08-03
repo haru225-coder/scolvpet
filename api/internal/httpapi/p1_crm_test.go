@@ -24,10 +24,13 @@ func TestP1CrmRoutesRequireAuth(t *testing.T) {
 	}{
 		{http.MethodGet, "/v1/crm/contacts"},
 		{http.MethodPost, "/v1/crm/contacts"},
+		{http.MethodGet, "/v1/crm/contacts/00000000-0000-0000-0000-000000000001"},
 		{http.MethodGet, "/v1/crm/reservations"},
 		{http.MethodPost, "/v1/crm/reservations"},
+		{http.MethodGet, "/v1/crm/reservations/00000000-0000-0000-0000-000000000001"},
 		{http.MethodGet, "/v1/crm/handovers"},
 		{http.MethodPost, "/v1/crm/handovers"},
+		{http.MethodGet, "/v1/crm/handovers/00000000-0000-0000-0000-000000000001"},
 		{http.MethodPost, "/v1/crm/reservations/00000000-0000-0000-0000-000000000001/confirm"},
 		{http.MethodPost, "/v1/crm/handovers/00000000-0000-0000-0000-000000000001/complete"},
 	}
