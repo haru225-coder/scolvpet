@@ -2,6 +2,15 @@
 // 实现 fetch 语义。业务代码禁止直接用 Taro.request / 手写 fetch 封装(docs/32 §4)。
 import Taro from '@tarojs/taro'
 
+import { storageGet } from '../utils/storage'
+
+// 与 offline-dev 同 key；这里不 import offline-dev，避免 client ↔ offline 循环依赖。
+const OFFLINE_DEV_FLAG_KEY = 'scolvpet_offline_dev_mode'
+
+function isOfflineDevMode() {
+  return storageGet(OFFLINE_DEV_FLAG_KEY) === true
+}
+
 type TaroRequestOption = {
   url: string
   method?: string
@@ -84,6 +93,31 @@ function toResponse(res: TaroResponse, url: string): Response {
   return shim as unknown as Response
 }
 
+/** 离线开发：不发任何 wx.request，避免真机合法域名。 */
+function offlineMockResponse(_url: string, method: string): TaroResponse {
+  const upper = method.toUpperCase()
+  // 读：空列表，页面可显示空态。
+  // 写：明确失败，禁止假 200 让用户以为保存成功。
+  if (upper === 'GET' || upper === 'HEAD') {
+    return {
+      statusCode: 200,
+      data: { data: [], meta: { offline: true } },
+      header: { 'content-type': 'application/json' }
+    }
+  }
+  return {
+    statusCode: 503,
+    data: {
+      error: {
+        code: 'OFFLINE_DEV_READ_ONLY',
+        message: '离线模式不能保存，请连上服务器后再试'
+      },
+      meta: { offline: true }
+    },
+    header: { 'content-type': 'application/json' }
+  }
+}
+
 /** 生成 fetchApi;requestFn 可注入用于测试,默认 Taro.request。 */
 export function createTaroFetch(requestFn?: RequestFn) {
   const doRequest: RequestFn =
@@ -103,11 +137,15 @@ export function createTaroFetch(requestFn?: RequestFn) {
     // OpenAPI 中历史 P1/P2 路径有一部分自带 /v1，而 Configuration
     // 统一 basePath 也带 /v1；与 Flutter ApiClient 同口径收敛为单个 /v1。
     const url = rawUrl.replace(/\/v1\/v1\//g, '/v1/')
+    const method = (init?.method || 'GET').toUpperCase()
+    if (isOfflineDevMode()) {
+      return toResponse(offlineMockResponse(url, method), url)
+    }
     const headers = (init?.headers || {}) as Record<string, string>
     const body = init?.body
     const res = await doRequest({
       url,
-      method: (init?.method || 'GET').toUpperCase(),
+      method,
       header: headers,
       // typescript-fetch 传 JSON.stringify 后的 string;Taro 会按 content-type 处理
       data: body == null ? undefined : body

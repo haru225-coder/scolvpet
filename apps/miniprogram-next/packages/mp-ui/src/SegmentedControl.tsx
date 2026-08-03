@@ -1,24 +1,26 @@
 import { View, Text } from '@tarojs/components'
-import { crayon, metrics, motion } from './tokens'
-import { palette, wobble } from './theme'
+import { motion } from './tokens'
+import { palette } from './theme'
 
+/**
+ * 筛选切换(2026-08-02 重做)。
+ *
+ * 原实现是通宽药丸 + 内嵌高亮块,空态下比内容还重。
+ * 现在:平铺文字 tab + 2px 下划线(橙=真选中)。
+ */
 export interface SegmentedControlProps {
   segments: string[]
   value: number
   onChange?: (index: number) => void
 }
 
-/** iOS 分段控件(docs/34 §8):9px 圆角,选中白底浮起。 */
 export function SegmentedControl({ segments, value, onChange }: SegmentedControlProps) {
   return (
     <View
       style={{
         display: 'flex',
-        backgroundColor: crayon.paperDeep,
-        border: `1.5px dashed ${crayon.strokeSoft}`,
-        borderRadius: wobble(0),
-        padding: '3px',
-        gap: '2px'
+        flexDirection: 'row',
+        borderBottom: `1px solid ${palette.separator}`
       }}
     >
       {segments.map((seg, i) => {
@@ -26,26 +28,20 @@ export function SegmentedControl({ segments, value, onChange }: SegmentedControl
         return (
           <View
             key={seg}
-            style={{
-              flex: 1,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: '28px',
-              borderRadius: wobble(i, 'bold'),
-              backgroundColor: selected ? '#FFFDF7' : 'transparent',
-              border: `2px solid ${selected ? crayon.stroke : 'transparent'}`,
-              transition: `background-color ${motion.press}ms ease`,
-              transform: selected ? 'rotate(-0.8deg)' : undefined
-            }}
             onClick={() => onChange && onChange(i)}
+            style={{
+              marginRight: '22px',
+              paddingBottom: '10px',
+              marginBottom: '-1px',
+              borderBottom: `2px solid ${selected ? palette.accent : 'transparent'}`,
+              transition: `border-color ${motion.press}ms ease`
+            }}
           >
             <Text
               style={{
-                fontSize: '13px',
+                fontSize: '14px',
                 fontWeight: selected ? 600 : 500,
-                color: selected ? crayon.ink : palette.secondaryLabel,
-                padding: `0 ${metrics.space8}px`
+                color: selected ? palette.label : 'rgba(255,255,255,0.42)'
               }}
             >
               {seg}

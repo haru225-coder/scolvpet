@@ -1,8 +1,11 @@
-// 今日经营首页：Skyline 按页开启 + 自定义导航(mp-ui NavBar,手势返回)。
-// 低端机不达标时允许整页回退 WebView(docs/32 §9):删掉 renderer 即回退。
+// 今日经营首页。
+// 注意：不要在 Tab 页上开 renderer: 'skyline'。
+// Skyline 不接管 custom-tab-bar，自绘底栏会退化成普通节点插到文档流最前面，
+// 结果是底栏跑到屏幕顶部压住状态栏（2026-08-02 真机复现）。
+// 三个 Tab 页统一走 WebView 渲染器，直到自绘底栏改为页内 fixed 组件为止。
 export default definePageConfig({
-  renderer: 'skyline',
   navigationStyle: 'custom',
-  disableScroll: true,
+  backgroundColor: '#14110F',
+  backgroundTextStyle: 'light',
   navigationBarTitleText: '今日'
 })

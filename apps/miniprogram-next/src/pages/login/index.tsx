@@ -6,17 +6,24 @@ import {
   SectionList,
   FormRow,
   Button,
-  Sticker,
-  crayon,
-  paperGrain,
-  crayonUnderline,
+  LargeTitle,
   palette,
-  metrics,
-  typeStyle
+  metrics
 } from '@scolvpet/mp-ui'
 import { defaultApi, newIdempotencyKey } from '../../api/client'
-import config from '../../utils/config'
+import { formatNetworkError } from '../../api/errors'
 import {
+  createDevelopmentBreederSession,
+  developmentLoginHints,
+  formatDevelopmentLoginError,
+  isDevelopmentQuickLoginEnabled,
+  shouldAutoEnterDevelopmentSession
+} from '../../auth/dev-session'
+import { isOfflineDevMode, isOfflineDevSession } from '../../auth/offline-dev'
+import { copyDiag } from '../../utils/diag'
+import {
+  clearBreederSession,
+  peekBreederSession,
   readSessionStorage,
   removeSessionStorage,
   restoreBreederSession,
@@ -24,17 +31,10 @@ import {
   writeSessionStorage
 } from '../../auth/session'
 
-const runtimeConfig = config as {
-  APP_ENV?: string
-  DEV_LOGIN_PHONE?: string
-  DEV_LOGIN_CODE?: string
-}
 // 开发一键登录只在「开发构建 + 确实注入了演示凭据」时存在；
 // config.js 在非开发语义下会把 DEV_LOGIN_* 强制清空，此处因而 fail-closed。
-const isDevelopmentBuild =
-  runtimeConfig.APP_ENV === 'development' &&
-  Boolean(runtimeConfig.DEV_LOGIN_PHONE) &&
-  Boolean(runtimeConfig.DEV_LOGIN_CODE)
+const isDevelopmentBuild = isDevelopmentQuickLoginEnabled()
+const devHints = developmentLoginHints()
 
 const BREEDER_WECHAT_TICKET_KEY = 'scolvpet_breeder_wechat_bind_ticket'
 
@@ -79,20 +79,59 @@ function saveSessionData(data: SessionData) {
 }
 
 export default function LoginPage() {
-  const [phone, setPhone] = useState('')
-  const [code, setCode] = useState('')
+  // 开发构建直接预填演示号 + Mock 码，真机不用猜「验证码发到哪」。
+  const [phone, setPhone] = useState(isDevelopmentBuild ? devHints.phone : '')
+  const [code, setCode] = useState(isDevelopmentBuild ? devHints.code : '')
   const [verificationId, setVerificationId] = useState('')
   const [wechatTicket, setWechatTicket] = useState(() => readSessionStorage<string>(BREEDER_WECHAT_TICKET_KEY) || '')
   const [cooldown, setCooldown] = useState(0)
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState(isDevelopmentBuild ? devHints.hint : '')
 
   useEffect(() => {
     let active = true
-    void restoreBreederSession().then((session) => {
-      if (active && session) void enterApp()
-    })
-    return () => { active = false }
+    void (async () => {
+      const session = await restoreBreederSession()
+      if (!active) return
+
+      // 已有真机（非离线）会话：直接进。
+      if (session && !isOfflineDevSession(session) && !isOfflineDevMode()) {
+        void enterApp()
+        return
+      }
+
+      // 开发构建：始终优先连 staging。
+      // 旧逻辑失败就静默 enterOfflineDevSession，真机扫预览码会永远「离线」；
+      // 且离线 token 粘在 storage 里，下次启动 restore 直接成功、再也不试网络。
+      if (!shouldAutoEnterDevelopmentSession()) {
+        if (session && !isOfflineDevSession(session)) void enterApp()
+        return
+      }
+
+      setBusy(true)
+      setMessage('正在连接服务器…')
+      try {
+        // 清掉粘住的离线会话，否则 fetch 仍被短路
+        if (isOfflineDevMode() || isOfflineDevSession(session || peekBreederSession())) {
+          clearBreederSession()
+        }
+        await createDevelopmentBreederSession(devHints.phone)
+        if (!active) return
+        Taro.showToast({ title: '已登录', icon: 'success' })
+        void enterApp()
+      } catch (error) {
+        if (!active) return
+        // 不再自动离线。留在登录页，把合法域名/网络原因写清楚；离线只能手点。
+        setMessage(formatDevelopmentLoginError(error))
+        Taro.showToast({ title: '连不上服务器', icon: 'none', duration: 2500 })
+      } finally {
+        if (active) setBusy(false)
+      }
+    })()
+    return () => {
+      active = false
+    }
+    // 仅挂载时自动进入；故意不依赖 phone，避免输入时反复打登录。
   }, [])
 
   useEffect(() => {
@@ -119,7 +158,7 @@ export default function LoginPage() {
       setCooldown(response.data.retryAfterSeconds || 60)
       setMessage(`验证码已发送，有效期 ${response.data.expiresInSeconds} 秒`)
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '验证码发送失败，请稍后重试')
+      setMessage(formatNetworkError(error, '验证码发送失败，请稍后重试'))
     } finally {
       setBusy(false)
     }
@@ -163,7 +202,7 @@ export default function LoginPage() {
       Taro.showToast({ title: '登录成功', icon: 'success' })
       void enterApp()
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '登录失败，请检查验证码')
+      setMessage(formatNetworkError(error, '登录失败，请检查验证码'))
     } finally {
       setBusy(false)
     }
@@ -191,7 +230,7 @@ export default function LoginPage() {
       Taro.showToast({ title: '登录成功', icon: 'success' })
       void enterApp()
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '微信登录暂不可用，请使用手机号验证码登录')
+      setMessage(formatNetworkError(error, '微信登录暂不可用，请使用手机号验证码登录'))
     } finally {
       setBusy(false)
     }
@@ -199,34 +238,14 @@ export default function LoginPage() {
 
   async function developmentQuickLogin() {
     if (!isDevelopmentBuild) return
-    const quickPhone = /^1\d{10}$/.test(phone)
-      ? phone
-      : runtimeConfig.DEV_LOGIN_PHONE || ''
-    const quickCode = runtimeConfig.DEV_LOGIN_CODE || ''
-    if (!quickPhone || !quickCode) return
     setBusy(true)
     setMessage('正在创建开发测试会话…')
     try {
-      const codeResponse = await defaultApi.sendVerificationCode({
-        idempotencyKey: `mp-dev-login-code-${Date.now()}`,
-        sendVerificationCodeRequest: { phone: apiPhone(quickPhone), purpose: 'login' } as any,
-        xTimezone: 'Asia/Taipei'
-      })
-      const response = await defaultApi.createSession({
-        idempotencyKey: newIdempotencyKey(),
-        phoneCodeLoginRequest: {
-          phone: apiPhone(quickPhone),
-          verificationId: codeResponse.data.verificationId,
-          code: quickCode,
-          device: { platform: 'android', appVersion: 'miniprogram-dev', deviceName: 'WeChat Mini Program Dev' }
-        } as any,
-        xTimezone: 'Asia/Taipei'
-      })
-      saveSessionData(response.data)
+      await createDevelopmentBreederSession(/^1\d{10}$/.test(phone) ? phone : devHints.phone)
       Taro.showToast({ title: '开发会话已就绪', icon: 'success' })
       void enterApp()
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '开发会话创建失败，请检查 staging 服务')
+      setMessage(formatDevelopmentLoginError(error))
     } finally {
       setBusy(false)
     }
@@ -236,48 +255,73 @@ export default function LoginPage() {
     <View
       style={{
         minHeight: '100vh',
-        backgroundColor: crayon.paper,
-        backgroundImage: paperGrain,
-        paddingTop: `${metrics.space32}px`
+        backgroundColor: palette.systemBackground,
+        paddingTop: `${metrics.space24}px`
       }}
     >
-      <View
+      <LargeTitle title="登录熊舍" />
+      <Text
         style={{
-          padding: `0 ${metrics.pagePadding}px ${metrics.sectionGap}px`,
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between'
+          display: 'block',
+          padding: `0 ${metrics.pagePadding}px ${metrics.space16}px`,
+          fontSize: '14px',
+          color: 'rgba(255,255,255,0.5)',
+          lineHeight: 1.5
         }}
       >
-        <Text
-          style={{
-            ...typeStyle('headlineSmall'),
-            color: crayon.ink,
-            paddingBottom: '8px',
-            backgroundImage: crayonUnderline(crayon.orange),
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'left bottom',
-            backgroundSize: '96px 8px'
-          }}
-        >
-          登录熊舍
-        </Text>
-        <Sticker name="seed" size={40} tilt={10} />
-      </View>
+        {wechatTicket
+          ? '微信已识别，补一下手机号验证码完成绑定'
+          : '用手机号验证码进入经营端'}
+      </Text>
       <SectionList>
-        {/* 探头的仓鼠:压在表单卡上沿 */}
-        <View style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '22px', marginBottom: '-14px', position: 'relative', zIndex: 1 }}>
-          <Sticker name="hamster" size={58} tilt={-6} />
-        </View>
-        <Section footer={wechatTicket ? '首次微信登录需要手机号验证码完成绑定' : 'B 端经营账号使用手机号验证码登录'}>
+        {isDevelopmentBuild ? (
+          <Section
+            header="开发真机"
+            footer="合法域名须与包内 API 一致。当前开发默认 https://pet.scolv.com（与公众平台 pet 域名对齐）。"
+          >
+            <View
+              style={{
+                padding: `${metrics.space12}px ${metrics.tilePadding}px`,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
+              }}
+            >
+              <Button block disabled={busy} onClick={developmentQuickLogin}>
+                {busy ? '正在登录…' : '连 pet.scolv.com 进入'}
+              </Button>
+              <Button
+                variant="outlined"
+                block
+                disabled={busy}
+                onClick={() => {
+                  void copyDiag().then((ok) =>
+                    Taro.showToast({ title: ok ? '诊断已复制' : '复制失败', icon: 'none' })
+                  )
+                }}
+              >
+                复制诊断信息（发给开发）
+              </Button>
+            </View>
+          </Section>
+        ) : null}
+        <Section
+          header="账号"
+          footer={
+            isDevelopmentBuild
+              ? '手填时：先获取验证码，框里默认 123456'
+              : '验证码登录后进入今日'
+          }
+        >
           <FormRow label="手机号">
             <Input
               type="number"
               maxlength={11}
-              placeholder="填写繁育者手机号"
-              placeholderStyle={`color: ${palette.tertiaryLabel}`}
+              placeholder="11 位手机号"
+              placeholderStyle="color: rgba(255,255,255,0.35)"
               value={phone}
               onInput={(e) => setPhone(e.detail.value)}
+              style={{ color: '#FFFFFF', fontSize: '16px' }}
             />
           </FormRow>
           <FormRow label="验证码" divider>
@@ -285,62 +329,45 @@ export default function LoginPage() {
               <Input
                 type="number"
                 maxlength={6}
-                placeholder="6 位验证码"
-                placeholderStyle={`color: ${palette.tertiaryLabel}`}
+                placeholder={isDevelopmentBuild ? '开发固定 123456' : '6 位验证码'}
+                placeholderStyle="color: rgba(255,255,255,0.35)"
                 value={code}
                 onInput={(e) => setCode(e.detail.value)}
-                style={{ flex: 1 }}
+                style={{ flex: 1, color: '#FFFFFF', fontSize: '16px' }}
               />
-              <Button
-                variant="outlined"
-                disabled={busy || cooldown > 0}
-                onClick={requestCode}
-              >
+              <Button variant="outlined" disabled={busy || cooldown > 0} onClick={requestCode}>
                 {cooldown ? `${cooldown}s` : '获取验证码'}
               </Button>
             </View>
           </FormRow>
         </Section>
-        <Button
-          variant="outlined"
-          block
-          disabled={busy}
-          onClick={wechatLogin}
-        >
-          {busy ? '处理中…' : '微信快捷登录'}
-        </Button>
-        {isDevelopmentBuild ? (
-          <View style={{ display: 'flex', flexDirection: 'column', gap: `${metrics.space8}px` }}>
-            <Button
-              variant="outlined"
-              block
-              disabled={busy}
-              onClick={developmentQuickLogin}
-            >
-              开发环境一键登录（免扫码）
-            </Button>
-            <Text style={{ display: 'block', color: palette.secondaryLabel, textAlign: 'center', fontSize: '12px' }}>
-              使用 staging Mock 会话，仅开发构建可见
-            </Text>
-          </View>
-        ) : null}
-        <Button
-          block
-          disabled={busy || phone.length !== 11 || code.length !== 6 || !verificationId}
-          onClick={login}
-        >
-          {busy ? '处理中…' : wechatTicket ? '绑定微信并登录' : '登录'}
-        </Button>
+        <View style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <Button variant="outlined" block disabled={busy} onClick={wechatLogin}>
+            {busy ? '处理中…' : '微信快捷登录'}
+          </Button>
+          <Button
+            block
+            disabled={busy || phone.length !== 11 || code.length !== 6 || !verificationId}
+            onClick={login}
+          >
+            {busy ? '处理中…' : wechatTicket ? '绑定微信并登录' : '登录'}
+          </Button>
+        </View>
         {message ? (
-          <Text style={{ display: 'block', color: crayon.ink, padding: `${metrics.space16}px ${metrics.pagePadding}px 0`, textAlign: 'center' }}>
+          <Text
+            style={{
+              display: 'block',
+              color: 'rgba(255,255,255,0.65)',
+              padding: `${metrics.space16}px ${metrics.pagePadding}px 0`,
+              textAlign: 'center',
+              fontSize: '13px',
+              lineHeight: '20px'
+            }}
+          >
             {message}
           </Text>
         ) : null}
-        <View style={{ display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'flex-end' }}>
-          <Sticker name="star" size={26} tilt={-10} />
-          <Sticker name="paw" size={30} tilt={8} />
-          <Sticker name="star" size={20} tilt={14} />
-        </View>
+        <View style={{ height: `${metrics.bottomSafePadding + 24}px` }} />
       </SectionList>
     </View>
   )

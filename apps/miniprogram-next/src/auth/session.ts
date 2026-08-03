@@ -1,8 +1,9 @@
 import { clearApiToken, defaultApi, getApiToken, newIdempotencyKey, setApiToken } from '../api/client'
 import { clearAllSnapshots } from '../offline/snapshots'
 import { storageGet, storageRemove, storageSet } from '../utils/storage'
-
 export const BREEDER_SESSION_KEY = 'scolvpet_breeder_session'
+// 与 offline-dev 同 key，写死字符串避免 session ↔ offline 循环 import
+const OFFLINE_DEV_FLAG_KEY = 'scolvpet_offline_dev_mode'
 
 // Storage 不加密、expiresAt 可被本地时间影响：这里加上窗口上限，
 // 避免调表/写脏数据得到一个几乎永不过期的会话；真正的防线仍是后端。
@@ -100,6 +101,11 @@ export function readBreederSession(): BreederSession | null {
 export function saveBreederSession(session: BreederSession) {
   setApiToken(session.accessToken)
   storageSet(BREEDER_SESSION_KEY, session)
+  // 真机会话落盘时关掉离线开关。否则扫码预览会一直吃本地 offline-dev-token，
+  // 所有请求被 taro-fetch 短路成空列表，看起来永远「离线」。
+  if (session.accessToken && session.accessToken !== 'offline-dev-token') {
+    storageRemove(OFFLINE_DEV_FLAG_KEY)
+  }
 }
 
 /**
@@ -144,6 +150,7 @@ export function clearBreederSession() {
   clearApiToken()
   storageRemove(BREEDER_SESSION_KEY)
   clearAllSnapshots()
+  storageRemove(OFFLINE_DEV_FLAG_KEY)
 }
 
 export function hasBreederSession() {

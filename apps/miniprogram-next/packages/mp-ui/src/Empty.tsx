@@ -1,16 +1,18 @@
 import { View, Text } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { metrics } from './tokens'
-import { palette, typeStyle } from './theme'
 import { Button } from './Button'
-import { Sticker } from './Stickers'
 
+/**
+ * 空态(2026-08-02 重做)。
+ *
+ * 默认不上插图,左对齐,安安静静两行字。需要插图的页面仍可主动传 illustration。
+ */
 export interface EmptyProps {
   title: string
   description?: string
   actionText?: string
   onAction?: () => void
-  /** 插画位(可选;仅品牌/引导/空态用图,docs/34 §10) */
   illustration?: ReactNode
 }
 
@@ -20,24 +22,23 @@ export function Empty({ title, description, actionText, onAction, illustration }
       style={{
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        padding: `${metrics.space32}px ${metrics.pagePadding}px`,
-        gap: `${metrics.space12}px`
+        alignItems: 'flex-start',
+        padding: `${metrics.space32 + 12}px ${metrics.space16}px`,
+        gap: '6px'
       }}
     >
-      {illustration ?? (
-        <View style={{ display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
-          <Sticker name="seed" size={30} tilt={-14} />
-          <Sticker name="hamster" size={88} tilt={-3} />
-          <Sticker name="seed" size={24} tilt={18} />
-        </View>
-      )}
-      <Text style={{ ...typeStyle('titleSmall'), color: palette.label }}>{title}</Text>
+      {illustration ? <View style={{ marginBottom: '10px' }}>{illustration}</View> : null}
+
+      <Text style={{ fontSize: '16px', fontWeight: 500, lineHeight: 1.4, color: 'rgba(255,255,255,0.72)' }}>
+        {title}
+      </Text>
+
       {description ? (
-        <Text style={{ ...typeStyle('bodyMedium'), textAlign: 'center' }}>{description}</Text>
+        <Text style={{ fontSize: '14px', lineHeight: 1.5, color: 'rgba(255,255,255,0.38)' }}>{description}</Text>
       ) : null}
+
       {actionText ? (
-        <View style={{ marginTop: `${metrics.space8}px` }}>
+        <View style={{ marginTop: '16px' }}>
           <Button variant="outlined" onClick={onAction}>
             {actionText}
           </Button>

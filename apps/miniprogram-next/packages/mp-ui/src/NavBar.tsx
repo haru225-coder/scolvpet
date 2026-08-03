@@ -1,8 +1,8 @@
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import type { ReactNode } from 'react'
-import { crayon, metrics, navBar, motion } from './tokens'
-import { palette, crayonUnderline } from './theme'
+import { metrics, navBar, motion } from './tokens'
+import { palette } from './theme'
 
 export interface NavBarProps {
   title: string
@@ -46,9 +46,9 @@ export function NavBar({ title, scrollTop = 0, back = false, onBack, right, larg
           right: 0,
           zIndex: 10,
           paddingTop: `${inset}px`,
-          backgroundColor: 'rgba(251, 242, 227, 0.96)',
-          transition: `border-color ${motion.press}ms linear`,
-          borderBottom: `1.5px dashed ${progress >= 1 ? crayon.strokeSoft : 'transparent'}`
+          backgroundColor: palette.navBarBackground,
+          transition: `border-color ${motion.press}ms linear, background-color ${motion.press}ms linear`,
+          borderBottom: progress >= 1 ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent'
         }}
       >
         <View
@@ -60,22 +60,21 @@ export function NavBar({ title, scrollTop = 0, back = false, onBack, right, larg
             boxSizing: 'border-box'
           }}
         >
-          {/* 触控目标 ≥44pt:点击落在整个左槽,不只箭头字形(docs/16 §4.2) */}
           <View
             style={{ width: '60px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}
             onClick={back ? onBack || (() => Taro.navigateBack()) : undefined}
           >
             {back ? (
-              <Text style={{ fontSize: `${navBar.iconSize}px`, color: palette.accent }}>‹</Text>
+              <Text style={{ fontSize: `${navBar.iconSize}px`, color: '#FFFFFF', fontWeight: 300 }}>‹</Text>
             ) : null}
           </View>
           <View style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
             <Text
               style={{
                 fontSize: `${navBar.titleFontSize}px`,
-                fontWeight: navBar.titleFontWeight,
+                fontWeight: 600,
                 letterSpacing: `${navBar.titleLetterSpacing}px`,
-                color: palette.label,
+                color: '#FFFFFF',
                 opacity: progress,
                 transition: `opacity ${motion.press}ms linear`
               }}
@@ -92,13 +91,12 @@ export function NavBar({ title, scrollTop = 0, back = false, onBack, right, larg
   )
 }
 
-/** 大标题块:放在页面滚动容器的第一个子节点,随内容滚入导航栏下方。
- *  蜡笔手账:标题下压一道蜡笔波浪线,右侧可贴装饰(sticker)。 */
+/** 大标题：流媒体式粗标题，装饰可选。 */
 export function LargeTitle({ title, sticker }: { title: string; sticker?: ReactNode }) {
   return (
     <View
       style={{
-        padding: `4px ${metrics.pagePadding}px 8px`,
+        padding: `8px ${metrics.pagePadding}px 12px`,
         display: 'flex',
         alignItems: 'flex-end',
         justifyContent: 'space-between'
@@ -106,16 +104,12 @@ export function LargeTitle({ title, sticker }: { title: string; sticker?: ReactN
     >
       <Text
         style={{
-          fontSize: `${navBar.largeTitleFontSize}px`,
-          fontWeight: navBar.largeTitleFontWeight,
-          letterSpacing: '-0.4px',
-          lineHeight: 1.25,
-          color: crayon.ink,
-          paddingBottom: '8px',
-          backgroundImage: crayonUnderline(crayon.orange),
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'left bottom',
-          backgroundSize: '104px 8px'
+          // 2026-08-02：32/800 压人，收到 28/600，与 Hero 页标题同阶
+          fontSize: '28px',
+          fontWeight: 600,
+          letterSpacing: '-0.5px',
+          lineHeight: 1.15,
+          color: '#FFFFFF'
         }}
       >
         {title}

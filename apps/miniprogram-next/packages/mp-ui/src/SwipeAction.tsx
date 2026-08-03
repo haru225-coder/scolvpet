@@ -1,7 +1,6 @@
 import { View, Text, type ITouchEvent } from '@tarojs/components'
 import { useRef, useState, type ReactNode } from 'react'
-import { motion, statusColors } from './tokens'
-import { palette } from './theme'
+import { motion } from './tokens'
 
 export interface SwipeActionItem {
   text: string
@@ -55,21 +54,22 @@ export function SwipeAction({ children, actions }: SwipeActionProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: a.danger ? statusColors.systemRed : palette.fill
+              // 2026-08-02：#E50914 是 Netflix 红。换成项目语义红。
+              backgroundColor: a.danger ? '#B4483E' : 'rgba(255,255,255,0.13)'
             }}
             onClick={() => {
               setOffset(0)
               if (a.onClick) a.onClick()
             }}
           >
-            <Text style={{ fontSize: '15px', color: a.danger ? '#FFFFFF' : palette.label }}>{a.text}</Text>
+            <Text style={{ fontSize: '13px', fontWeight: 600, color: '#FFFFFF' }}>{a.text}</Text>
           </View>
         ))}
       </View>
       <View
         style={{
           position: 'relative',
-          backgroundColor: palette.secondaryGroupedBackground,
+          backgroundColor: '#181716',
           transform: `translateX(${offset}px)`,
           transition: dragging ? 'none' : `transform ${motion.spring}ms cubic-bezier(0.22, 1, 0.36, 1)`
         }}

@@ -1,17 +1,17 @@
 import { View, Text } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { crayon } from './tokens'
-import { wobble } from './theme'
 
 export type TagTone = 'default' | 'accent' | 'success' | 'danger' | 'warning'
 
-// 蜡笔贴纸风:淡蜡底 + 同色描边 + 手贴微歪;语义色仅表达真实状态(docs/34 §2.2)
-const tones: Record<TagTone, { bg: string; fg: string; tilt: number }> = {
-  default: { bg: 'rgba(70, 54, 42, 0.09)', fg: '#7A6E66', tilt: -0.8 },
-  accent: { bg: 'rgba(224, 138, 79, 0.2)', fg: '#B26B3B', tilt: -2 },
-  success: { bg: 'rgba(124, 154, 109, 0.2)', fg: crayon.green, tilt: 1.8 },
-  danger: { bg: 'rgba(217, 108, 91, 0.18)', fg: crayon.red, tilt: -2.2 },
-  warning: { bg: 'rgba(239, 195, 95, 0.28)', fg: '#A2742B', tilt: 2 }
+const tones: Record<TagTone, { bg: string; fg: string }> = {
+  default: { bg: 'rgba(255,255,255,0.08)', fg: 'rgba(255,255,255,0.7)' },
+  // 2026-08-02：accent 不再当橙色装饰。页面层假徽章已删；剩余 Cell 上的
+  // accent（「选择」「目录」）也退成中性，橙色只留给底栏/筛选真选中态。
+  accent: { bg: 'rgba(255,255,255,0.06)', fg: 'rgba(255,255,255,0.5)' },
+  success: { bg: 'rgba(107, 168, 120, 0.18)', fg: '#8FCB9B' },
+  danger: { bg: 'rgba(226, 104, 91, 0.16)', fg: '#E2685B' },
+  warning: { bg: 'rgba(226, 192, 119, 0.18)', fg: crayon.yellow }
 }
 
 export function Tag({ children, tone = 'default' }: { children: ReactNode; tone?: TagTone }) {
@@ -21,16 +21,12 @@ export function Tag({ children, tone = 'default' }: { children: ReactNode; tone?
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        padding: '2px 9px',
-        borderRadius: wobble(t.tilt < 0 ? 0 : 1, 'bold'),
-        border: `2px solid ${t.fg}77`,
-        backgroundColor: t.bg,
-        transform: t.tilt ? `rotate(${t.tilt}deg)` : undefined
+        padding: '3px 9px',
+        borderRadius: '4px',
+        backgroundColor: t.bg
       }}
     >
-      <Text style={{ fontSize: '13px', fontWeight: 500, lineHeight: 1.38, color: t.fg }}>
-        {children}
-      </Text>
+      <Text style={{ fontSize: '12px', fontWeight: 600, lineHeight: 1.35, color: t.fg }}>{children}</Text>
     </View>
   )
 }

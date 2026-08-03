@@ -29,6 +29,15 @@ export interface ScolvPalette {
   navBarBackground: string
 }
 
+/**
+ * 主题模式单一开关(UI 重组 v3:B 端整体切「奶油深色」)。
+ * 改回浅色只需把 themeMode 改成 'light',无需改任何页面。
+ * 真源仍是 apps/mobile/lib/ui/theme/ios_theme.dart 的 ScolvPalette.dark,
+ * 本次未新增任何颜色。
+ */
+export type ThemeMode = 'light' | 'dark'
+export const themeMode: ThemeMode = 'dark'
+
 /** ScolvPalette.light */
 export const paletteLight: ScolvPalette = {
   groupedBackground: '#FFF8EF',
@@ -50,25 +59,25 @@ export const paletteLight: ScolvPalette = {
   navBarBackground: 'rgba(255, 253, 249, 0.97)'
 }
 
-/** ScolvPalette.dark */
+/** ScolvPalette.dark · 更深黑、更猛沉浸 */
 export const paletteDark: ScolvPalette = {
-  groupedBackground: '#14110F',
-  secondaryGroupedBackground: '#1E1A17',
-  systemBackground: '#14110F',
-  secondarySystemBackground: '#1E1A17',
-  label: '#F5EEE2',
-  secondaryLabel: '#AFA69C',
-  tertiaryLabel: '#7A726A',
-  quaternaryLabel: '#524C46',
-  separator: 'rgba(59, 61, 61, 0.15)',
-  opaqueSeparator: '#3B3834',
-  fill: 'rgba(245, 238, 226, 0.21)',
-  secondaryFill: 'rgba(245, 238, 226, 0.14)',
-  tertiaryFill: 'rgba(245, 238, 226, 0.08)',
-  accent: '#E0A070',
-  accentSoft: 'rgba(217, 139, 85, 0.20)',
-  tabBarBackground: 'rgba(20, 17, 15, 0.94)',
-  navBarBackground: 'rgba(20, 17, 15, 0.93)'
+  groupedBackground: '#050403',
+  secondaryGroupedBackground: '#14110F',
+  systemBackground: '#050403',
+  secondarySystemBackground: '#0C0A09',
+  label: '#FFFFFF',
+  secondaryLabel: 'rgba(255,255,255,0.68)',
+  tertiaryLabel: 'rgba(255,255,255,0.4)',
+  quaternaryLabel: 'rgba(255,255,255,0.26)',
+  separator: 'rgba(255,255,255,0.09)',
+  opaqueSeparator: '#2A2622',
+  fill: 'rgba(255,255,255,0.14)',
+  secondaryFill: 'rgba(255,255,255,0.09)',
+  tertiaryFill: 'rgba(255,255,255,0.05)',
+  accent: '#E8A56A',
+  accentSoft: 'rgba(232, 165, 106, 0.28)',
+  tabBarBackground: 'rgba(5, 4, 3, 0.98)',
+  navBarBackground: 'rgba(5, 4, 3, 0.9)'
 }
 
 /** 状态色(IosColors,两模式共用) */
@@ -104,24 +113,24 @@ export const metrics = {
   space16: 16,
   space24: 24,
   space32: 32,
-  pagePadding: 16,
-  sectionGap: 24,
+  pagePadding: 14,
+  sectionGap: 28,
   listGap: 12,
   tilePadding: 16,
-  tileVerticalPadding: 12,
+  tileVerticalPadding: 14,
   cardPadding: 16,
-  bottomSafePadding: 32,
-  rowMinHeight: 48,
+  bottomSafePadding: 36,
+  rowMinHeight: 52,
   hairline: 0.5,
   navBarHeight: 44,
-  tabBarHeight: 64
+  tabBarHeight: 68
 } as const
 
-/** 动效强度(IosMetrics,ms) */
+/** 动效：更跟手的弹回 */
 export const motion = {
-  spring: 280,
+  spring: 360,
   press: 90,
-  page: 320
+  page: 400
 } as const
 
 export interface TypeToken {
@@ -134,28 +143,18 @@ export interface TypeToken {
 }
 
 /** 字阶(_iosTextTheme;系统字体,不引私有字体名) */
+// 2026-08-02：原 14 档，页面实际只用 body 三档。重档 40/36/32 + 700 是「大标题压人」弹药库。
 export const typography: Record<string, TypeToken> = {
-  displayLarge: { fontSize: 40, fontWeight: 700, letterSpacing: -0.5, lineHeight: 1.08 },
-  displayMedium: { fontSize: 32, fontWeight: 700, letterSpacing: -0.4, lineHeight: 1.1 },
-  headlineLarge: { fontSize: 36, fontWeight: 700, letterSpacing: -0.4, lineHeight: 1.1 },
-  headlineMedium: { fontSize: 30, fontWeight: 700, letterSpacing: -0.3, lineHeight: 1.12 },
-  headlineSmall: { fontSize: 24, fontWeight: 700, letterSpacing: -0.2, lineHeight: 1.14 },
-  titleLarge: { fontSize: 22, fontWeight: 600, letterSpacing: -0.3, lineHeight: 1.18 },
-  titleMedium: { fontSize: 17, fontWeight: 600, letterSpacing: -0.24, lineHeight: 1.26 },
-  titleSmall: { fontSize: 15, fontWeight: 600, letterSpacing: -0.16, lineHeight: 1.28 },
   bodyLarge: { fontSize: 17, fontWeight: 400, letterSpacing: -0.16, lineHeight: 1.52 },
   bodyMedium: { fontSize: 15, fontWeight: 400, letterSpacing: -0.08, lineHeight: 1.56, color: 'secondary' },
-  bodySmall: { fontSize: 13, fontWeight: 400, letterSpacing: 0, lineHeight: 1.48, color: 'secondary' },
-  labelLarge: { fontSize: 17, fontWeight: 400, letterSpacing: -0.16, lineHeight: 1.4 },
-  labelMedium: { fontSize: 13, fontWeight: 500, letterSpacing: 0, lineHeight: 1.38, color: 'secondary' },
-  labelSmall: { fontSize: 12, fontWeight: 500, letterSpacing: 0.05, lineHeight: 1.36, color: 'tertiary' }
+  bodySmall: { fontSize: 13, fontWeight: 400, letterSpacing: 0, lineHeight: 1.48, color: 'secondary' }
 }
 
 /**
  * 蜡笔手账表层(2026-07-27 用户 Gate 裁定:iOS 素面判「AI 味」不过,
  * 叠加手绘/蜡笔质感;交互结构仍 iOS HIG)。色相与 palette 同族,饱和略提。
  */
-export const crayon = {
+export const crayonLight = {
   /** 牛皮纸底(替代 groupedBackground 用于 B 端新页) */
   paper: '#FBF2E3',
   paperDeep: '#F5E7D0',
@@ -169,6 +168,22 @@ export const crayon = {
   strokeSoft: 'rgba(70, 54, 42, 0.24)'
 } as const
 
+/** 深色手账层：与 Netflix 沉浸黑对齐，避免列表页偏灰棕 */
+export const crayonDark = {
+  paper: '#050403',
+  paperDeep: '#0C0A09',
+  ink: '#F5F5F5',
+  orange: '#E8A56A',
+  green: '#8FA890',
+  yellow: '#E2C077',
+  red: '#E08375',
+  stroke: 'rgba(255, 255, 255, 0.14)',
+  strokeSoft: 'rgba(255, 255, 255, 0.08)'
+} as const
+
+/** 当前模式的手账层。23 个页面直接 import { crayon },由此处一刀切。 */
+export const crayon = themeMode === 'dark' ? crayonDark : crayonLight
+
 /** 导航栏专用(AppBar:title 17/600/-0.41,大标题用 displayMedium 收缩到 title) */
 export const navBar = {
   titleFontSize: 17,
@@ -178,8 +193,6 @@ export const navBar = {
   largeTitleFontWeight: 700,
   iconSize: 22
 } as const
-
-export type ThemeMode = 'light' | 'dark'
 
 export function paletteOf(mode: ThemeMode): ScolvPalette {
   return mode === 'dark' ? paletteDark : paletteLight

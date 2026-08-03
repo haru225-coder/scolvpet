@@ -1,8 +1,9 @@
 import type { CSSProperties } from 'react'
-import { paletteLight, typography, type ScolvPalette, type TypeToken } from './tokens'
+import { paletteOf, themeMode, typography, type ScolvPalette, type TypeToken } from './tokens'
 
-// M0 先固定 light(docs/34 §2.1);M2 评估微信 DarkMode 后由 Provider 切换。
-export const palette: ScolvPalette = paletteLight
+// UI 重组 v3:整体切「奶油深色」= ScolvPalette.dark(docs/34 §2.1 需同步修订)。
+// 单一开关在 tokens.themeMode;此处不再硬绑 light。
+export const palette: ScolvPalette = paletteOf(themeMode)
 
 /** 把字阶 token 摊平成 CSSProperties(px = 设计 pt) */
 export function typeStyle(name: keyof typeof typography): CSSProperties {
@@ -23,32 +24,22 @@ export function typeStyle(name: keyof typeof typography): CSSProperties {
 }
 
 export const hairlineTop: CSSProperties = {
-  borderTop: `0.5px solid ${palette.separator}`
+  borderTop: `1px solid ${palette.separator}`
 }
 
-// —— 蜡笔手账表层工具(见 tokens.crayon 注释)——
+// 2026-08-02：删除 wobble() / paperGrain / crayonUnderline。
+// 装饰不能解决 AI 味；页面层从未真正需要它们。
 
-/** 手绘感圆角:四角不等,seed 取不同笔迹;gentle 用于卡片,bold 用于按钮/贴纸 */
-export function wobble(seed = 0, kind: 'gentle' | 'bold' = 'gentle'): string {
-  const gentle = [
-    '17px 21px 15px 23px / 21px 15px 23px 17px',
-    '22px 15px 21px 16px / 15px 22px 16px 21px',
-    '15px 23px 17px 21px / 23px 17px 21px 15px'
-  ]
-  const bold = [
-    '255px 25px 225px 25px / 25px 225px 25px 255px',
-    '25px 225px 25px 255px / 255px 25px 225px 25px'
-  ]
-  const set = kind === 'bold' ? bold : gentle
-  return set[Math.abs(seed) % set.length]
+/** @deprecated 兼容尚未去掉纸纹/蜡笔的旧页；新页禁止使用。 */
+export function wobble(_seed = 0, _kind: 'gentle' | 'bold' = 'gentle'): string {
+  return '8px'
 }
 
-/** 纸纹(SVG 噪点,低透明度;data URI,无外部资源) */
-export const paperGrain =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E\")"
+/** @deprecated 兼容旧页；新页用纯色底。 */
+export const paperGrain = 'none'
 
-/** 蜡笔波浪下划线(组头/大标题装饰) */
-export function crayonUnderline(color: string): string {
-  const c = encodeURIComponent(color)
-  return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='8' viewBox='0 0 72 8'%3E%3Cpath d='M1 5 Q 10 1.5 19 4.5 T 37 4 T 55 4.8 T 71 3.4' fill='none' stroke='${c}' stroke-width='3.4' stroke-linecap='round' opacity='0.95'/%3E%3C/svg%3E")`
+/** @deprecated 兼容旧页；新页禁止装饰下划线。 */
+export function crayonUnderline(_color: string): string {
+  return 'none'
 }
+

@@ -1,12 +1,10 @@
 import { View, Text } from '@tarojs/components'
-import { metrics, statusColors } from './tokens'
-import { palette } from './theme'
+import { useState } from 'react'
+import { metrics, motion, statusColors } from './tokens'
 import { Sheet } from './Sheet'
-import { hairlineTop } from './theme'
 
 export interface ActionPanelItem {
   text: string
-  /** 破坏性操作红字(需确认/可撤销路径由业务承担,docs/16 §4.2) */
   danger?: boolean
   onClick?: () => void
 }
@@ -18,48 +16,103 @@ export interface ActionPanelProps {
   onClose?: () => void
 }
 
-/** 动作面板:动作列表 + 分离的取消项。 */
+function Row({
+  text,
+  danger,
+  bold,
+  onClick
+}: {
+  text: string
+  danger?: boolean
+  bold?: boolean
+  onClick?: () => void
+}) {
+  const [pressed, setPressed] = useState(false)
+  return (
+    <View
+      onClick={onClick}
+      onTouchStart={() => setPressed(true)}
+      onTouchEnd={() => setPressed(false)}
+      onTouchCancel={() => setPressed(false)}
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        padding: '16px',
+        backgroundColor: pressed ? 'rgba(255,255,255,0.08)' : 'transparent',
+        transition: `background-color ${motion.press}ms ease`
+      }}
+    >
+      <Text
+        style={{
+          fontSize: '17px',
+          fontWeight: bold ? 700 : 500,
+          color: danger ? statusColors.systemRed : bold ? '#FFFFFF' : 'rgba(255,255,255,0.92)'
+        }}
+      >
+        {text}
+      </Text>
+    </View>
+  )
+}
+
 export function ActionPanel({ open, title, actions, onClose }: ActionPanelProps) {
   return (
     <Sheet open={open} onClose={onClose}>
-      <View style={{ padding: `0 ${metrics.pagePadding}px`, display: 'flex', flexDirection: 'column', gap: `${metrics.space8}px` }}>
-        <View style={{ backgroundColor: palette.secondaryGroupedBackground, borderRadius: `${metrics.continuousRadius}px`, overflow: 'hidden' }}>
+      <View
+        style={{
+          padding: `0 ${metrics.pagePadding}px ${metrics.space8}px`,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px'
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: '#1A1714',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            border: '1px solid rgba(255,255,255,0.06)'
+          }}
+        >
           {title ? (
-            <View style={{ display: 'flex', justifyContent: 'center', padding: `${metrics.space12}px` }}>
-              <Text style={{ fontSize: '13px', color: palette.secondaryLabel }}>{title}</Text>
+            <View
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '12px',
+                borderBottom: '1px solid rgba(255,255,255,0.06)'
+              }}
+            >
+              <Text style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)' }}>{title}</Text>
             </View>
           ) : null}
           {actions.map((a, i) => (
             <View
               key={a.text}
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                padding: '14px',
-                ...(i > 0 || title ? hairlineTop : {})
-              }}
-              onClick={() => {
-                if (a.onClick) a.onClick()
-                if (onClose) onClose()
-              }}
+              style={
+                i > 0 || title ? { borderTop: '1px solid rgba(255,255,255,0.06)' } : undefined
+              }
             >
-              <Text style={{ fontSize: '17px', color: a.danger ? statusColors.systemRed : palette.label }}>
-                {a.text}
-              </Text>
+              <Row
+                text={a.text}
+                danger={a.danger}
+                onClick={() => {
+                  if (a.onClick) a.onClick()
+                  if (onClose) onClose()
+                }}
+              />
             </View>
           ))}
         </View>
         <View
           style={{
-            display: 'flex',
-            justifyContent: 'center',
-            padding: '14px',
-            backgroundColor: palette.secondaryGroupedBackground,
-            borderRadius: `${metrics.continuousRadius}px`
+            backgroundColor: '#1A1714',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            border: '1px solid rgba(255,255,255,0.06)'
           }}
-          onClick={onClose}
         >
-          <Text style={{ fontSize: '17px', fontWeight: 600, color: palette.accent }}>取消</Text>
+          <Row text="取消" bold onClick={onClose} />
         </View>
       </View>
     </Sheet>

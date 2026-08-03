@@ -1,7 +1,7 @@
 import { View, Text } from '@tarojs/components'
 import { useState, type CSSProperties, type ReactNode } from 'react'
-import { crayon, motion } from './tokens'
-import { palette, wobble } from './theme'
+import { motion } from './tokens'
+import { palette } from './theme'
 
 export interface ButtonProps {
   children: ReactNode
@@ -11,7 +11,7 @@ export interface ButtonProps {
   onClick?: () => void
 }
 
-/** iOS 风按钮(docs/34 §8):filled 52 高圆角 16;outlined 胶囊;text 纯文字。 */
+/** 流媒体手感按钮：白实心主钮 / 半透明次钮 / 文字钮。 */
 export function Button({ children, variant = 'filled', disabled = false, block = false, onClick }: ButtonProps) {
   const [pressed, setPressed] = useState(false)
 
@@ -20,38 +20,38 @@ export function Button({ children, variant = 'filled', disabled = false, block =
     alignItems: 'center',
     justifyContent: 'center',
     boxSizing: 'border-box',
-    transition: `transform ${motion.press}ms ease, opacity ${motion.press}ms ease`,
-    // 蜡笔手账:按压是"捏一下"——缩 + 一丝歪
-    transform: pressed && !disabled ? 'scale(0.96) rotate(-0.8deg)' : 'scale(1)',
-    opacity: pressed && !disabled ? 0.85 : 1
+    transition: `transform ${motion.press}ms cubic-bezier(0.33, 1, 0.68, 1), opacity ${motion.press}ms ease, background-color ${motion.press}ms ease`,
+    transform: pressed && !disabled ? 'scale(0.97)' : 'scale(1)',
+    opacity: disabled ? 0.45 : 1
   }
+
+  // 2026-08-02：主钮原 800 字重 + 大投影，黑底上像浮在页面外。
+  // 降到 600 + 无投影；次钮灰实心改描边，避免和卡片抢层级。
   const variants: Record<string, CSSProperties> = {
     filled: {
-      minHeight: '52px',
-      padding: '14px 20px',
-      borderRadius: wobble(0, 'bold'),
-      border: `2px solid ${crayon.stroke}`,
-      backgroundColor: disabled ? palette.tertiaryFill : crayon.orange,
-      color: disabled ? palette.tertiaryLabel : '#FFFDF7',
-      fontSize: '17px',
-      fontWeight: 600,
-      letterSpacing: '-0.41px'
+      minHeight: '48px',
+      padding: '12px 20px',
+      borderRadius: '8px',
+      backgroundColor: pressed ? 'rgba(255,255,255,0.82)' : '#FFFFFF',
+      color: '#111111',
+      fontSize: '15px',
+      fontWeight: 600
     },
     outlined: {
-      minHeight: '36px',
-      padding: '8px 14px',
-      borderRadius: wobble(1, 'bold'),
-      border: `1.5px dashed ${disabled ? crayon.strokeSoft : crayon.stroke}`,
-      color: disabled ? palette.tertiaryLabel : '#B26B3B',
+      minHeight: '44px',
+      padding: '10px 18px',
+      borderRadius: '8px',
+      backgroundColor: pressed ? 'rgba(255,255,255,0.12)' : 'transparent',
+      border: '1px solid rgba(255,255,255,0.18)',
+      color: 'rgba(255,255,255,0.82)',
       fontSize: '15px',
-      fontWeight: 500,
-      letterSpacing: '-0.24px'
+      fontWeight: 600
     },
     text: {
       color: disabled ? palette.tertiaryLabel : palette.accent,
-      fontSize: '17px',
-      fontWeight: 400,
-      letterSpacing: '-0.41px'
+      fontSize: '16px',
+      fontWeight: 600,
+      letterSpacing: '0.1px'
     }
   }
 
@@ -60,11 +60,12 @@ export function Button({ children, variant = 'filled', disabled = false, block =
       style={{ ...base, ...variants[variant] }}
       onTouchStart={() => setPressed(true)}
       onTouchEnd={() => setPressed(false)}
+      onTouchCancel={() => setPressed(false)}
       onClick={() => {
         if (!disabled && onClick) onClick()
       }}
     >
-      <Text>{children}</Text>
+      <Text style={{ color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit' as never }}>{children}</Text>
     </View>
   )
 }
