@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -12,7 +13,8 @@ func TestAssistantConfirmMirrorsDirectRBAC(t *testing.T) {
 	confirmable := []string{
 		"create_task", "complete_task", "create_weight_record",
 		"create_hamster", "update_hamster", "create_enclosure",
-		"create_crm_contact", "create_crm_reservation", "create_crm_handover",
+		"create_crm_contact", "create_crm_reservation", "confirm_crm_reservation",
+		"create_crm_handover", "complete_crm_handover",
 		"create_accounting_record", "create_health_record",
 	}
 	for _, actionType := range confirmable {
@@ -36,9 +38,10 @@ func TestAssistantConfirmMirrorsDirectRBAC(t *testing.T) {
 			t.Fatalf("breeder must keep health-record writes via confirm")
 		}
 		// staff keeps CRM writes through confirm.
-		if (actionType == "create_crm_contact" || actionType == "create_crm_reservation" || actionType == "create_crm_handover") &&
-			!principalCanRequest("staff", http.MethodPost, route) {
-			t.Fatalf("staff must keep CRM writes via confirm for %s", actionType)
+		if strings.HasPrefix(actionType, "create_crm_") || actionType == "confirm_crm_reservation" || actionType == "complete_crm_handover" {
+			if !principalCanRequest("staff", http.MethodPost, route) {
+				t.Fatalf("staff must keep CRM writes via confirm for %s", actionType)
+			}
 		}
 	}
 	if _, known := assistantActionRoute("future_unmapped_action"); known {

@@ -152,6 +152,18 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 		{
 			Type: "function",
 			Function: ToolFunctionSchema{
+				Name:        "list_accounting_records",
+				Description: "列出本舍记账明细（标题/金额/类型/时间）；可筛 entry_type(income|expense)、最近 days。",
+				Parameters: obj(map[string]any{
+					"entry_type": strProp,
+					"days":       map[string]any{"type": "integer", "minimum": 1, "maximum": 366},
+					"limit":      map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
+				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
 				Name:        "search_docs",
 				Description: "按标题搜索本舍合同/回执单据（draft/issued）。",
 				Parameters: obj(map[string]any{
@@ -168,6 +180,18 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 				Description: "最近体重记录；可指定 hamster_id。",
 				Parameters: obj(map[string]any{
 					"hamster_id": strProp,
+					"limit":      map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
+				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "list_health_records",
+				Description: "最近健康记录；可指定 hamster_id、type(daily_check|anomaly|medication|follow_up|isolation|death)。",
+				Parameters: obj(map[string]any{
+					"hamster_id": strProp,
+					"type":       strProp,
 					"limit":      map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
 				}),
 			},
@@ -319,6 +343,26 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 					"severity":   strProp,
 					"observed_at": strProp,
 				}, "hamster_id", "type"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "confirm_crm_reservation",
+				Description: "确认预订草案（held→confirmed，需用户确认）。参数 reservation_id。",
+				Parameters: obj(map[string]any{
+					"reservation_id": strProp,
+				}, "reservation_id"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "complete_crm_handover",
+				Description: "完成交付草案（scheduled→completed，会转出仓鼠，需用户确认）。参数 handover_id。",
+				Parameters: obj(map[string]any{
+					"handover_id": strProp,
+				}, "handover_id"),
 			},
 		},
 	}

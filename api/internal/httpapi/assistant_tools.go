@@ -65,10 +65,14 @@ func (s *Server) runAssistantTool(
 		return s.toolListCrmHandovers(ctx, ownerID, args)
 	case "list_accounting_summary":
 		return s.toolListAccountingSummary(ctx, ownerID, args)
+	case "list_accounting_records":
+		return s.toolListAccountingRecords(ctx, ownerID, args)
 	case "search_docs":
 		return s.toolSearchDocs(ctx, ownerID, args)
 	case "list_recent_weights":
 		return s.toolListRecentWeights(ctx, ownerID, args)
+	case "list_health_records":
+		return s.toolListHealthRecords(ctx, ownerID, args)
 	case "create_task":
 		return s.toolDraftCreateTask(ctx, ownerID, sess, args)
 	case "complete_task":
@@ -85,8 +89,12 @@ func (s *Server) runAssistantTool(
 		return s.toolDraftCreateCrmContact(ctx, ownerID, sess, args)
 	case "create_crm_reservation":
 		return s.toolDraftCreateCrmReservation(ctx, ownerID, sess, args)
+	case "confirm_crm_reservation":
+		return s.toolDraftConfirmCrmReservation(ctx, ownerID, sess, args)
 	case "create_crm_handover":
 		return s.toolDraftCreateCrmHandover(ctx, ownerID, sess, args)
+	case "complete_crm_handover":
+		return s.toolDraftCompleteCrmHandover(ctx, ownerID, sess, args)
 	case "create_accounting_record":
 		return s.toolDraftCreateAccountingRecord(ctx, ownerID, sess, args)
 	case "create_health_record":
@@ -436,8 +444,12 @@ func (s *Server) executeAssistantAction(ctx context.Context, ownerID uuid.UUID, 
 		return s.executeCreateCrmContact(ctx, ownerID, payload)
 	case "create_crm_reservation":
 		return s.executeCreateCrmReservation(ctx, ownerID, payload)
+	case "confirm_crm_reservation":
+		return s.executeConfirmCrmReservation(ctx, ownerID, payload)
 	case "create_crm_handover":
 		return s.executeCreateCrmHandover(ctx, ownerID, payload)
+	case "complete_crm_handover":
+		return s.executeCompleteCrmHandover(ctx, ownerID, payload)
 	case "create_accounting_record":
 		return s.executeCreateAccountingRecord(ctx, ownerID, payload)
 	case "create_health_record":
@@ -800,6 +812,130 @@ func (s *Server) executeCreateHealthRecord(ctx context.Context, ownerID uuid.UUI
 		"hamster_id":       hamsterID.String(),
 		"type":             recType,
 		"observed_at":      observedAt.Format(time.RFC3339),
+	}, nil
+}
+
+func (s *Server) executeConfirmCrmReservation(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	reservationID, err := uuid.Parse(stringArgMap(payload, "reservation_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid reservation_id")
+	}
+	var title, status string
+	var version int
+	var holdExpires *time.Time
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT title, status::text, version, hold_expires_at
+		FROM crm_reservation WHERE owner_id=$1 AND id=$2
+	`, ownerID, reservationID).Scan(&title, &status, &version, &holdExpires)
+	if err != nil {
+		return nil, fmt.Errorf("reservation not found")
+	}
+	if status != "held" {
+		return nil, fmt.Errorf("only held reservations can be confirmed")
+	}
+	if holdExpires != nil && !holdExpires.After(time.Now().UTC()) {
+		return nil, fmt.Errorf("reservation hold expired")
+	}
+	tag, err := s.Store.Pool.Exec(ctx, `
+		UPDATE crm_reservation
+		SET status='confirmed'::crm_reservation_status, version=version+1, updated_at=now()
+		WHERE owner_id=$1 AND id=$2 AND version=$3 AND status='held'
+	`, ownerID, reservationID, version)
+	if err != nil {
+		return nil, err
+	}
+	if tag.RowsAffected() != 1 {
+		return nil, fmt.Errorf("reservation confirm conflict")
+	}
+	return map[string]any{
+		"reservation_id": reservationID.String(),
+		"title":          title,
+		"status":         "confirmed",
+	}, nil
+}
+
+func (s *Server) executeCompleteCrmHandover(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	handoverID, err := uuid.Parse(stringArgMap(payload, "handover_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid handover_id")
+	}
+	tx, err := s.Store.Pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	current, err := getCrmHandoverTx(ctx, tx, ownerID, handoverID, true)
+	if err != nil {
+		return nil, fmt.Errorf("handover not found")
+	}
+	if current.Status != "scheduled" {
+		return nil, fmt.Errorf("only scheduled handovers can be completed")
+	}
+	if current.HamsterID == nil {
+		return nil, fmt.Errorf("handover missing hamster")
+	}
+	if current.Reservation != nil {
+		reservation, err := getCrmReservationTx(ctx, tx, ownerID, *current.Reservation, true)
+		if err != nil {
+			return nil, fmt.Errorf("reservation not found")
+		}
+		if reservation.Status != "confirmed" || reservation.ContactID != current.ContactID ||
+			reservation.HamsterID == nil || *reservation.HamsterID != *current.HamsterID {
+			return nil, fmt.Errorf("handover reservation mismatch")
+		}
+		tag, err := tx.Exec(ctx, `
+			UPDATE crm_reservation
+			SET status='handed_over', version=version+1, updated_at=now()
+			WHERE owner_id=$1 AND id=$2 AND version=$3 AND status='confirmed'
+		`, ownerID, reservation.ID, reservation.Version)
+		if err != nil {
+			return nil, err
+		}
+		if tag.RowsAffected() != 1 {
+			return nil, fmt.Errorf("reservation update conflict")
+		}
+	}
+	tag, err := tx.Exec(ctx, `
+		UPDATE hamster
+		SET lifecycle_status='transferred', version=version+1, updated_at=now()
+		WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL AND lifecycle_status='active'
+	`, ownerID, *current.HamsterID)
+	if err != nil {
+		return nil, err
+	}
+	if tag.RowsAffected() != 1 {
+		return nil, fmt.Errorf("hamster not transferable")
+	}
+	tag, err = tx.Exec(ctx, `
+		UPDATE crm_handover
+		SET status='completed', completed_at=now(), version=version+1, updated_at=now()
+		WHERE owner_id=$1 AND id=$2 AND version=$3 AND status='scheduled'
+	`, ownerID, handoverID, current.Version)
+	if err != nil {
+		return nil, err
+	}
+	if tag.RowsAffected() != 1 {
+		return nil, fmt.Errorf("handover complete conflict")
+	}
+	if _, err := tx.Exec(ctx, `
+		UPDATE crm_contact
+		SET status='active', version=version+1, updated_at=now()
+		WHERE owner_id=$1 AND id=$2 AND status='lead'
+	`, ownerID, current.ContactID); err != nil {
+		return nil, err
+	}
+	if err := insertHandoverIncomeIfNeeded(ctx, tx, ownerID, current); err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"handover_id": handoverID.String(),
+		"status":      "completed",
+		"hamster_id":  current.HamsterID.String(),
+		"contact_id":  current.ContactID.String(),
 	}, nil
 }
 
@@ -1844,6 +1980,227 @@ func (s *Server) toolDraftCreateHealthRecord(ctx context.Context, ownerID uuid.U
 		"pending_confirmation": true,
 		"action_id":            action.ID.String(),
 		"type":                 "create_health_record",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolListAccountingRecords(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	limit := toolLimit(args, 15, 1, 30)
+	entryType := stringArgMap(args, "entry_type")
+	days := 30
+	if v, ok := args["days"].(float64); ok {
+		days = int(v)
+		if days < 1 {
+			days = 1
+		}
+		if days > 366 {
+			days = 366
+		}
+	}
+	query := `
+		SELECT r.id::text, r.entry_type::text, r.amount_cents, r.currency, r.title,
+		       COALESCE(r.notes,''), r.occurred_at, COALESCE(ct.name,'')
+		FROM accounting_record r
+		LEFT JOIN crm_contact ct ON ct.owner_id=r.owner_id AND ct.id=r.contact_id
+		WHERE r.owner_id=$1 AND r.occurred_at >= now() - ($2 * interval '1 day')`
+	qargs := []any{ownerID, days}
+	argN := 3
+	if entryType != "" {
+		if entryType != "income" && entryType != "expense" {
+			return nil, fmt.Errorf("entry_type must be income or expense")
+		}
+		query += fmt.Sprintf(` AND r.entry_type=$%d::accounting_entry_type`, argN)
+		qargs = append(qargs, entryType)
+		argN++
+	}
+	query += fmt.Sprintf(` ORDER BY r.occurred_at DESC, r.id DESC LIMIT $%d`, argN)
+	qargs = append(qargs, limit)
+	rows, err := s.Store.Pool.Query(ctx, query, qargs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make([]map[string]any, 0)
+	for rows.Next() {
+		var id, et, currency, title, notes, contactName string
+		var amount int64
+		var occurred any
+		if err := rows.Scan(&id, &et, &amount, &currency, &title, &notes, &occurred, &contactName); err != nil {
+			return nil, err
+		}
+		item := map[string]any{
+			"id": id, "entry_type": et, "amount_cents": amount, "currency": currency,
+			"title": title, "occurred_at": occurred, "amount_yuan": float64(amount) / 100.0,
+		}
+		if notes != "" {
+			item["notes"] = notes
+		}
+		if contactName != "" {
+			item["contact_name"] = contactName
+		}
+		out = append(out, item)
+	}
+	return map[string]any{"count": len(out), "days": days, "records": out}, rows.Err()
+}
+
+func (s *Server) toolListHealthRecords(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	limit := toolLimit(args, 15, 1, 30)
+	recType := stringArgMap(args, "type")
+	hamsterRaw := stringArgMap(args, "hamster_id")
+	query := `
+		SELECT hr.id::text, hr.record_type::text, hr.observed_at, hr.severity::text,
+		       COALESCE(hr.notes,''), hr.hamster_id::text,
+		       COALESCE(h.name,''), COALESCE(h.internal_code,'')
+		FROM health_record hr
+		LEFT JOIN hamster h ON h.owner_id=hr.owner_id AND h.id=hr.hamster_id AND h.deleted_at IS NULL
+		WHERE hr.owner_id=$1`
+	qargs := []any{ownerID}
+	argN := 2
+	if hamsterRaw != "" {
+		hid, err := uuid.Parse(hamsterRaw)
+		if err != nil {
+			return nil, fmt.Errorf("invalid hamster_id")
+		}
+		query += fmt.Sprintf(` AND hr.hamster_id=$%d`, argN)
+		qargs = append(qargs, hid)
+		argN++
+	}
+	if recType != "" {
+		switch recType {
+		case "daily_check", "anomaly", "medication", "follow_up", "isolation", "death":
+		default:
+			return nil, fmt.Errorf("invalid health record type")
+		}
+		query += fmt.Sprintf(` AND hr.record_type::text=$%d`, argN)
+		qargs = append(qargs, recType)
+		argN++
+	}
+	query += fmt.Sprintf(` ORDER BY hr.observed_at DESC LIMIT $%d`, argN)
+	qargs = append(qargs, limit)
+	rows, err := s.Store.Pool.Query(ctx, query, qargs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make([]map[string]any, 0)
+	for rows.Next() {
+		var id, typ, notes, name, code string
+		var observed any
+		var severity, hamsterID *string
+		if err := rows.Scan(&id, &typ, &observed, &severity, &notes, &hamsterID, &name, &code); err != nil {
+			return nil, err
+		}
+		item := map[string]any{
+			"id": id, "type": typ, "observed_at": observed,
+			"hamster_name": name, "internal_code": code,
+		}
+		if severity != nil && *severity != "" {
+			item["severity"] = *severity
+		}
+		if notes != "" {
+			item["notes"] = notes
+		}
+		if hamsterID != nil {
+			item["hamster_id"] = *hamsterID
+		}
+		out = append(out, item)
+	}
+	return map[string]any{"count": len(out), "records": out}, rows.Err()
+}
+
+func (s *Server) toolDraftConfirmCrmReservation(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	reservationID, err := uuid.Parse(stringArgMap(args, "reservation_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid reservation_id")
+	}
+	var title, status, contactName string
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT r.title, r.status::text, c.name
+		FROM crm_reservation r
+		JOIN crm_contact c ON c.owner_id=r.owner_id AND c.id=r.contact_id
+		WHERE r.owner_id=$1 AND r.id=$2
+	`, ownerID, reservationID).Scan(&title, &status, &contactName)
+	if err != nil {
+		return nil, fmt.Errorf("reservation not found")
+	}
+	if status != "held" {
+		return nil, fmt.Errorf("only held reservations can be confirmed (current=%s)", status)
+	}
+	payload := map[string]any{
+		"reservation_id": reservationID.String(),
+		"title":          title,
+		"contact_name":   contactName,
+		"current_status": status,
+	}
+	summary := fmt.Sprintf("确认预订「%s」→ 客户 %s", title, contactName)
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "confirm_crm_reservation", "确认预订", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "confirm_crm_reservation",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolDraftCompleteCrmHandover(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	handoverID, err := uuid.Parse(stringArgMap(args, "handover_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid handover_id")
+	}
+	var status, contactName string
+	var hamsterID *uuid.UUID
+	var hamsterLabel *string
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT h.status::text, c.name, h.hamster_id,
+		       CASE WHEN hamster.id IS NULL THEN NULL ELSE COALESCE(NULLIF(hamster.name,''), hamster.internal_code) END
+		FROM crm_handover h
+		JOIN crm_contact c ON c.owner_id=h.owner_id AND c.id=h.contact_id
+		LEFT JOIN hamster ON hamster.owner_id=h.owner_id AND hamster.id=h.hamster_id AND hamster.deleted_at IS NULL
+		WHERE h.owner_id=$1 AND h.id=$2
+	`, ownerID, handoverID).Scan(&status, &contactName, &hamsterID, &hamsterLabel)
+	if err != nil {
+		return nil, fmt.Errorf("handover not found")
+	}
+	if status != "scheduled" {
+		return nil, fmt.Errorf("only scheduled handovers can be completed (current=%s)", status)
+	}
+	payload := map[string]any{
+		"handover_id": handoverID.String(), "contact_name": contactName, "current_status": status,
+	}
+	if hamsterID != nil {
+		payload["hamster_id"] = hamsterID.String()
+	}
+	if hamsterLabel != nil {
+		payload["hamster_name"] = *hamsterLabel
+	}
+	label := contactName
+	if hamsterLabel != nil {
+		label = contactName + " / " + *hamsterLabel
+	}
+	summary := fmt.Sprintf("完成交付 → %s（将转出仓鼠）", label)
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "complete_crm_handover", "确认完成交付", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "complete_crm_handover",
 		"label":                action.Label,
 		"summary":              action.Summary,
 		"payload":              payload,

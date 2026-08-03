@@ -95,8 +95,10 @@ func TestReadOnlyToolDefinitionsNonEmpty(t *testing.T) {
 	}
 	for _, need := range []string{
 		"get_hamster", "list_crm_contacts", "list_crm_reservations", "list_crm_handovers",
-		"list_accounting_summary", "search_docs", "list_recent_weights",
-		"create_crm_contact", "create_crm_reservation", "create_crm_handover",
+		"list_accounting_summary", "list_accounting_records", "search_docs",
+		"list_recent_weights", "list_health_records",
+		"create_crm_contact", "create_crm_reservation", "confirm_crm_reservation",
+		"create_crm_handover", "complete_crm_handover",
 		"create_accounting_record", "create_health_record",
 	} {
 		if !names[need] {
