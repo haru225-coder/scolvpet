@@ -18,6 +18,7 @@ func TestAssistantConfirmMirrorsDirectRBAC(t *testing.T) {
 		"create_crm_handover", "complete_crm_handover",
 		"create_accounting_record", "create_health_record",
 		"record_pairing_observation", "create_separation_task",
+		"create_contract", "create_receipt",
 	}
 	for _, actionType := range confirmable {
 		route, known := assistantActionRoute(actionType)
@@ -53,6 +54,11 @@ func TestAssistantConfirmMirrorsDirectRBAC(t *testing.T) {
 			if !principalCanRequest("staff", http.MethodPost, route) {
 				t.Fatalf("staff must keep CRM writes via confirm for %s", actionType)
 			}
+		}
+		// staff keeps contract/receipt writes through confirm.
+		if (actionType == "create_contract" || actionType == "create_receipt") &&
+			!principalCanRequest("staff", http.MethodPost, route) {
+			t.Fatalf("staff must keep document writes via confirm for %s", actionType)
 		}
 	}
 	if _, known := assistantActionRoute("future_unmapped_action"); known {

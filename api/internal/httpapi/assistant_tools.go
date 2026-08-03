@@ -80,6 +80,10 @@ func (s *Server) runAssistantTool(
 		return s.toolListAccountingRecords(ctx, ownerID, args)
 	case "search_docs":
 		return s.toolSearchDocs(ctx, ownerID, args)
+	case "get_doc":
+		return s.toolGetDoc(ctx, ownerID, args)
+	case "list_doc_templates":
+		return s.toolListDocTemplates(ctx, ownerID, args)
 	case "list_recent_weights":
 		return s.toolListRecentWeights(ctx, ownerID, args)
 	case "list_health_records":
@@ -118,6 +122,10 @@ func (s *Server) runAssistantTool(
 		return s.toolDraftRecordPairingObservation(ctx, ownerID, sess, args)
 	case "create_separation_task":
 		return s.toolDraftCreateSeparationTask(ctx, ownerID, sess, args)
+	case "create_contract":
+		return s.toolDraftCreateContract(ctx, ownerID, sess, args)
+	case "create_receipt":
+		return s.toolDraftCreateReceipt(ctx, ownerID, sess, args)
 	default:
 		return nil, fmt.Errorf("unknown tool %s", name)
 	}
@@ -542,6 +550,10 @@ func (s *Server) executeAssistantAction(ctx context.Context, ownerID uuid.UUID, 
 		return s.executeCreateHealthRecord(ctx, ownerID, payload)
 	case "record_pairing_observation":
 		return s.executeRecordPairingObservation(ctx, ownerID, payload)
+	case "create_contract":
+		return s.executeCreateContract(ctx, ownerID, payload)
+	case "create_receipt":
+		return s.executeCreateReceipt(ctx, ownerID, payload)
 	default:
 		return nil, fmt.Errorf("unsupported action type %s", actionType)
 	}
@@ -645,6 +657,213 @@ func (s *Server) executeRecordPairingObservation(ctx context.Context, ownerID uu
 	}
 	if baseline != nil {
 		out["baseline_candidate_at"] = baseline.UTC().Format(time.RFC3339)
+	}
+	return out, nil
+}
+
+func (s *Server) resolveDocTemplateID(ctx context.Context, ownerID uuid.UUID, kind, explicit string) (uuid.UUID, string, error) {
+	if explicit != "" {
+		id, err := uuid.Parse(explicit)
+		if err != nil {
+			return uuid.Nil, "", fmt.Errorf("invalid template_id")
+		}
+		tpl, err := s.getDocTemplate(ctx, ownerID, id, kind)
+		if err != nil {
+			return uuid.Nil, "", fmt.Errorf("template not found")
+		}
+		return tpl.ID, tpl.Name, nil
+	}
+	var id uuid.UUID
+	var name string
+	err := s.Store.Pool.QueryRow(ctx, `
+		SELECT id, name FROM doc_template
+		WHERE owner_id=$1 AND kind=$2::doc_template_kind
+		ORDER BY updated_at DESC, id DESC
+		LIMIT 1
+	`, ownerID, kind).Scan(&id, &name)
+	if err != nil {
+		return uuid.Nil, "", fmt.Errorf("no %s template; create one in App first", kind)
+	}
+	return id, name, nil
+}
+
+func (s *Server) bindAssistantDocParties(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (documentPartyBound, error) {
+	contactRaw := stringArgMap(payload, "contact_id")
+	reservationRaw := stringArgMap(payload, "reservation_id")
+	handoverRaw := stringArgMap(payload, "handover_id")
+	if contactRaw == "" && reservationRaw == "" && handoverRaw == "" {
+		return documentPartyBound{}, fmt.Errorf("contact_id, reservation_id, or handover_id required")
+	}
+	var contactID *string
+	if contactRaw != "" {
+		if _, err := uuid.Parse(contactRaw); err != nil {
+			return documentPartyBound{}, fmt.Errorf("invalid contact_id")
+		}
+		contactID = &contactRaw
+	}
+	var reservationID *uuid.UUID
+	if reservationRaw != "" {
+		id, err := uuid.Parse(reservationRaw)
+		if err != nil {
+			return documentPartyBound{}, fmt.Errorf("invalid reservation_id")
+		}
+		reservationID = &id
+	}
+	var handoverID *uuid.UUID
+	if handoverRaw != "" {
+		id, err := uuid.Parse(handoverRaw)
+		if err != nil {
+			return documentPartyBound{}, fmt.Errorf("invalid handover_id")
+		}
+		handoverID = &id
+	}
+	return s.bindDocumentParties(ctx, ownerID, documentPartyInput{
+		ReservationID: reservationID,
+		ContactID:     contactID,
+		HandoverID:    handoverID,
+	})
+}
+
+func (s *Server) executeCreateContract(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	templateID, templateName, err := s.resolveDocTemplateID(ctx, ownerID, "contract", stringArgMap(payload, "template_id"))
+	if err != nil {
+		return nil, err
+	}
+	tpl, err := s.getDocTemplate(ctx, ownerID, templateID, "contract")
+	if err != nil {
+		return nil, fmt.Errorf("template not found")
+	}
+	bound, err := s.bindAssistantDocParties(ctx, ownerID, payload)
+	if err != nil {
+		return nil, err
+	}
+	title := stringArgMap(payload, "title")
+	if title == "" {
+		if bound.HamsterName != "" {
+			title = "交接协议 · " + bound.HamsterName
+		} else {
+			title = templateName
+			if title == "" {
+				title = tpl.Name
+			}
+		}
+	}
+	notes := stringArgMap(payload, "notes")
+	var notesPtr *string
+	if notes != "" {
+		notesPtr = &notes
+	}
+	filled := fillDocTemplate(tpl.Body, map[string]string{
+		"contact_name": bound.ContactName,
+		"title":        title,
+		"hamster_name": bound.HamsterName,
+		"amount":       "",
+		"date":         time.Now().In(time.Local).Format("2006-01-02"),
+		"notes":        notes,
+	})
+	orgID, err := s.currentOrganizationID(ctx, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	var id uuid.UUID
+	err = s.Store.Pool.QueryRow(ctx, `
+		INSERT INTO doc_document (
+			owner_id, organization_id, template_id, kind, contact_id, handover_id, reservation_id,
+			title, body_filled, currency, notes
+		) VALUES ($1,$2,$3,'contract',$4,$5,$6,$7,$8,'CNY',$9)
+		RETURNING id
+	`, ownerID, orgID, templateID, bound.ContactID, bound.HandoverID, bound.ReservationID, title, filled, notesPtr).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+	out := map[string]any{
+		"document_id": id.String(), "kind": "contract", "title": title, "status": "draft",
+		"template_id": templateID.String(), "contact_name": bound.ContactName,
+	}
+	if bound.ContactID != nil {
+		out["contact_id"] = bound.ContactID.String()
+	}
+	return out, nil
+}
+
+func (s *Server) executeCreateReceipt(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	amountCents := int64(0)
+	switch v := payload["amount_cents"].(type) {
+	case float64:
+		amountCents = int64(v)
+	case int:
+		amountCents = int64(v)
+	case int64:
+		amountCents = v
+	default:
+		return nil, fmt.Errorf("invalid amount_cents")
+	}
+	if amountCents < 0 {
+		return nil, fmt.Errorf("amount_cents cannot be negative")
+	}
+	currency := stringArgMap(payload, "currency")
+	if currency == "" {
+		currency = "CNY"
+	}
+	templateID, templateName, err := s.resolveDocTemplateID(ctx, ownerID, "receipt", stringArgMap(payload, "template_id"))
+	if err != nil {
+		return nil, err
+	}
+	tpl, err := s.getDocTemplate(ctx, ownerID, templateID, "receipt")
+	if err != nil {
+		return nil, fmt.Errorf("template not found")
+	}
+	bound, err := s.bindAssistantDocParties(ctx, ownerID, payload)
+	if err != nil {
+		return nil, err
+	}
+	title := stringArgMap(payload, "title")
+	if title == "" {
+		if bound.HamsterName != "" {
+			title = "收款回执 · " + bound.HamsterName
+		} else {
+			title = templateName
+			if title == "" {
+				title = tpl.Name
+			}
+		}
+	}
+	notes := stringArgMap(payload, "notes")
+	var notesPtr *string
+	if notes != "" {
+		notesPtr = &notes
+	}
+	amountYuan := fmt.Sprintf("%.2f", float64(amountCents)/100.0)
+	filled := fillDocTemplate(tpl.Body, map[string]string{
+		"contact_name": bound.ContactName,
+		"title":        title,
+		"hamster_name": bound.HamsterName,
+		"amount":       amountYuan + " " + currency,
+		"date":         time.Now().In(time.Local).Format("2006-01-02"),
+		"notes":        notes,
+	})
+	orgID, err := s.currentOrganizationID(ctx, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	var id uuid.UUID
+	err = s.Store.Pool.QueryRow(ctx, `
+		INSERT INTO doc_document (
+			owner_id, organization_id, template_id, kind, contact_id, handover_id, reservation_id,
+			title, body_filled, amount_cents, currency, notes
+		) VALUES ($1,$2,$3,'receipt',$4,$5,$6,$7,$8,$9,$10,$11)
+		RETURNING id
+	`, ownerID, orgID, templateID, bound.ContactID, bound.HandoverID, bound.ReservationID, title, filled, amountCents, currency, notesPtr).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+	out := map[string]any{
+		"document_id": id.String(), "kind": "receipt", "title": title, "status": "draft",
+		"amount_cents": amountCents, "currency": currency,
+		"template_id": templateID.String(), "contact_name": bound.ContactName,
+	}
+	if bound.ContactID != nil {
+		out["contact_id"] = bound.ContactID.String()
 	}
 	return out, nil
 }
@@ -2210,10 +2429,12 @@ func (s *Server) toolListAccountingSummary(ctx context.Context, ownerID uuid.UUI
 func (s *Server) toolSearchDocs(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
 	q := stringArgMap(args, "query")
 	kind := stringArgMap(args, "kind")
+	status := stringArgMap(args, "status")
+	contactRaw := stringArgMap(args, "contact_id")
 	limit := toolLimit(args, 15, 1, 30)
 	query := `
 		SELECT d.id::text, d.kind::text, d.title, d.status::text, d.amount_cents, d.currency,
-		       COALESCE(c.name, ''), d.issued_at, d.updated_at
+		       COALESCE(c.name, ''), d.contact_id::text, d.issued_at, d.updated_at
 		FROM doc_document d
 		LEFT JOIN crm_contact c ON c.owner_id=d.owner_id AND c.id=d.contact_id
 		WHERE d.owner_id=$1 AND d.status <> 'archived'`
@@ -2222,6 +2443,23 @@ func (s *Server) toolSearchDocs(ctx context.Context, ownerID uuid.UUID, args map
 	if kind == "contract" || kind == "receipt" {
 		query += fmt.Sprintf(` AND d.kind::text=$%d`, argN)
 		qargs = append(qargs, kind)
+		argN++
+	}
+	if status != "" {
+		if status != "draft" && status != "issued" && status != "revoked" {
+			return nil, fmt.Errorf("status must be draft|issued|revoked")
+		}
+		query += fmt.Sprintf(` AND d.status::text=$%d`, argN)
+		qargs = append(qargs, status)
+		argN++
+	}
+	if contactRaw != "" {
+		cid, err := uuid.Parse(contactRaw)
+		if err != nil {
+			return nil, fmt.Errorf("invalid contact_id")
+		}
+		query += fmt.Sprintf(` AND d.contact_id=$%d`, argN)
+		qargs = append(qargs, cid)
 		argN++
 	}
 	if q != "" {
@@ -2238,23 +2476,138 @@ func (s *Server) toolSearchDocs(ctx context.Context, ownerID uuid.UUID, args map
 	defer rows.Close()
 	out := make([]map[string]any, 0)
 	for rows.Next() {
-		var id, k, title, status, currency, contactName string
+		var id, k, title, st, currency, contactName string
+		var contactID *string
 		var amount *int64
 		var issued, updated any
-		if err := rows.Scan(&id, &k, &title, &status, &amount, &currency, &contactName, &issued, &updated); err != nil {
+		if err := rows.Scan(&id, &k, &title, &st, &amount, &currency, &contactName, &contactID, &issued, &updated); err != nil {
 			return nil, err
 		}
 		item := map[string]any{
-			"id": id, "kind": k, "title": title, "status": status,
+			"id": id, "kind": k, "title": title, "status": st,
 			"currency": currency, "contact_name": contactName,
 			"issued_at": issued, "updated_at": updated,
 		}
 		if amount != nil {
 			item["amount_cents"] = *amount
+			item["amount_yuan"] = float64(*amount) / 100.0
+		}
+		if contactID != nil {
+			item["contact_id"] = *contactID
 		}
 		out = append(out, item)
 	}
 	return map[string]any{"count": len(out), "documents": out}, rows.Err()
+}
+
+func (s *Server) toolGetDoc(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	docID, err := uuid.Parse(stringArgMap(args, "document_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid document_id")
+	}
+	kind := stringArgMap(args, "kind")
+	query := `
+		SELECT d.id::text, d.kind::text, d.title, d.status::text, d.body_filled,
+		       d.amount_cents, d.currency, d.template_id::text,
+		       d.contact_id::text, COALESCE(c.name,''),
+		       d.handover_id::text, d.reservation_id::text,
+		       d.issued_at, d.notes, d.version, d.updated_at,
+		       d.public_token
+		FROM doc_document d
+		LEFT JOIN crm_contact c ON c.owner_id=d.owner_id AND c.id=d.contact_id
+		WHERE d.owner_id=$1 AND d.id=$2`
+	qargs := []any{ownerID, docID}
+	if kind == "contract" || kind == "receipt" {
+		query += ` AND d.kind::text=$3`
+		qargs = append(qargs, kind)
+	}
+	var (
+		id, k, title, status, body, currency, templateID string
+		contactName                                      string
+		contactID, handoverID, reservationID             *string
+		amount                                           *int64
+		issued                                           any
+		notes                                            *string
+		version                                          int
+		updated                                          any
+		publicToken                                      *string
+	)
+	err = s.Store.Pool.QueryRow(ctx, query, qargs...).Scan(
+		&id, &k, &title, &status, &body, &amount, &currency, &templateID,
+		&contactID, &contactName, &handoverID, &reservationID,
+		&issued, &notes, &version, &updated, &publicToken,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("document not found")
+	}
+	// Truncate body for LLM context.
+	bodyPreview := body
+	if len(bodyPreview) > 1200 {
+		bodyPreview = bodyPreview[:1200] + "…"
+	}
+	item := map[string]any{
+		"id": id, "kind": k, "title": title, "status": status,
+		"body_preview": bodyPreview, "currency": currency,
+		"template_id": templateID, "contact_name": contactName,
+		"version": version, "updated_at": updated,
+	}
+	if amount != nil {
+		item["amount_cents"] = *amount
+		item["amount_yuan"] = float64(*amount) / 100.0
+	}
+	if contactID != nil {
+		item["contact_id"] = *contactID
+	}
+	if handoverID != nil {
+		item["handover_id"] = *handoverID
+	}
+	if reservationID != nil {
+		item["reservation_id"] = *reservationID
+	}
+	if issued != nil {
+		item["issued_at"] = issued
+	}
+	if notes != nil && *notes != "" {
+		item["notes"] = *notes
+	}
+	if publicToken != nil && status == "issued" {
+		item["has_public_share"] = true
+	}
+	return item, nil
+}
+
+func (s *Server) toolListDocTemplates(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	kind := stringArgMap(args, "kind")
+	if kind != "contract" && kind != "receipt" {
+		return nil, fmt.Errorf("kind must be contract or receipt")
+	}
+	limit := toolLimit(args, 15, 1, 30)
+	rows, err := s.Store.Pool.Query(ctx, `
+		SELECT id::text, name, version, updated_at,
+		       LEFT(body_text, 200)
+		FROM doc_template
+		WHERE owner_id=$1 AND kind=$2::doc_template_kind
+		ORDER BY updated_at DESC, id DESC
+		LIMIT $3
+	`, ownerID, kind, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make([]map[string]any, 0)
+	for rows.Next() {
+		var id, name, preview string
+		var version int
+		var updated any
+		if err := rows.Scan(&id, &name, &version, &updated, &preview); err != nil {
+			return nil, err
+		}
+		out = append(out, map[string]any{
+			"id": id, "name": name, "kind": kind, "version": version,
+			"updated_at": updated, "body_preview": preview,
+		})
+	}
+	return map[string]any{"count": len(out), "kind": kind, "templates": out}, rows.Err()
 }
 
 func (s *Server) toolListRecentWeights(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
@@ -2914,6 +3267,135 @@ func (s *Server) toolDraftCreateSeparationTask(ctx context.Context, ownerID uuid
 		"pending_confirmation": true,
 		"action_id":            action.ID.String(),
 		"type":                 "create_separation_task",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolDraftCreateContract(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	if stringArgMap(args, "contact_id") == "" && stringArgMap(args, "reservation_id") == "" && stringArgMap(args, "handover_id") == "" {
+		return nil, fmt.Errorf("contact_id, reservation_id, or handover_id required")
+	}
+	// Validate parties early so draft summary is accurate.
+	bound, err := s.bindAssistantDocParties(ctx, ownerID, args)
+	if err != nil {
+		return nil, err
+	}
+	templateID, templateName, err := s.resolveDocTemplateID(ctx, ownerID, "contract", stringArgMap(args, "template_id"))
+	if err != nil {
+		return nil, err
+	}
+	title := stringArgMap(args, "title")
+	if title == "" {
+		if bound.HamsterName != "" {
+			title = "交接协议 · " + bound.HamsterName
+		} else {
+			title = templateName
+		}
+	}
+	payload := map[string]any{
+		"title": title, "template_id": templateID.String(), "template_name": templateName,
+		"contact_name": bound.ContactName,
+	}
+	if bound.ContactID != nil {
+		payload["contact_id"] = bound.ContactID.String()
+	}
+	if bound.ReservationID != nil {
+		payload["reservation_id"] = bound.ReservationID.String()
+	}
+	if bound.HandoverID != nil {
+		payload["handover_id"] = bound.HandoverID.String()
+	}
+	if notes := stringArgMap(args, "notes"); notes != "" {
+		payload["notes"] = notes
+	}
+	summary := fmt.Sprintf("新建合同草稿「%s」→ %s（模板 %s）", title, firstNonEmptyName(bound.ContactName, "未命名客户"), templateName)
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "create_contract", "确认新建合同草稿", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "create_contract",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
+}
+
+func (s *Server) toolDraftCreateReceipt(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	if stringArgMap(args, "contact_id") == "" && stringArgMap(args, "reservation_id") == "" && stringArgMap(args, "handover_id") == "" {
+		return nil, fmt.Errorf("contact_id, reservation_id, or handover_id required")
+	}
+	amountCents := int64(0)
+	switch v := args["amount_cents"].(type) {
+	case float64:
+		amountCents = int64(v)
+	case int:
+		amountCents = int64(v)
+	case int64:
+		amountCents = v
+	default:
+		return nil, fmt.Errorf("amount_cents required")
+	}
+	if amountCents < 0 {
+		return nil, fmt.Errorf("amount_cents cannot be negative")
+	}
+	currency := stringArgMap(args, "currency")
+	if currency == "" {
+		currency = "CNY"
+	}
+	bound, err := s.bindAssistantDocParties(ctx, ownerID, args)
+	if err != nil {
+		return nil, err
+	}
+	templateID, templateName, err := s.resolveDocTemplateID(ctx, ownerID, "receipt", stringArgMap(args, "template_id"))
+	if err != nil {
+		return nil, err
+	}
+	title := stringArgMap(args, "title")
+	if title == "" {
+		if bound.HamsterName != "" {
+			title = "收款回执 · " + bound.HamsterName
+		} else {
+			title = templateName
+		}
+	}
+	payload := map[string]any{
+		"title": title, "template_id": templateID.String(), "template_name": templateName,
+		"amount_cents": amountCents, "currency": currency, "contact_name": bound.ContactName,
+	}
+	if bound.ContactID != nil {
+		payload["contact_id"] = bound.ContactID.String()
+	}
+	if bound.ReservationID != nil {
+		payload["reservation_id"] = bound.ReservationID.String()
+	}
+	if bound.HandoverID != nil {
+		payload["handover_id"] = bound.HandoverID.String()
+	}
+	if notes := stringArgMap(args, "notes"); notes != "" {
+		payload["notes"] = notes
+	}
+	summary := fmt.Sprintf("新建回执草稿「%s」%.2f %s → %s", title, float64(amountCents)/100.0, currency, firstNonEmptyName(bound.ContactName, "未命名客户"))
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "create_receipt", "确认新建回执草稿", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "create_receipt",
 		"label":                action.Label,
 		"summary":              action.Summary,
 		"payload":              payload,

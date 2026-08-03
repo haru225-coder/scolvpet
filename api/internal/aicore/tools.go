@@ -219,12 +219,36 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 			Type: "function",
 			Function: ToolFunctionSchema{
 				Name:        "search_docs",
-				Description: "按标题搜索本舍合同/回执单据（draft/issued）。",
+				Description: "按标题搜索本舍合同/回执；可筛 kind(contract|receipt)、status(draft|issued)、contact_id。",
 				Parameters: obj(map[string]any{
-					"query": strProp,
-					"kind":  map[string]any{"type": "string", "description": "contract|receipt|空=全部"},
-					"limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
+					"query":      strProp,
+					"kind":       map[string]any{"type": "string", "description": "contract|receipt|空=全部"},
+					"status":     strProp,
+					"contact_id": strProp,
+					"limit":      map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
 				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "get_doc",
+				Description: "读取单份合同/回执详情（正文摘要、金额、客户、状态）。参数 document_id；可选 kind(contract|receipt) 加速校验。",
+				Parameters: obj(map[string]any{
+					"document_id": strProp,
+					"kind":        strProp,
+				}, "document_id"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "list_doc_templates",
+				Description: "列出本舍合同/回执模板（创建单据前可先查）。参数 kind 必填 contract|receipt。",
+				Parameters: obj(map[string]any{
+					"kind":  strProp,
+					"limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
+				}, "kind"),
 			},
 		},
 		{
@@ -473,6 +497,38 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 					"notes":        strProp,
 					"priority":     strProp,
 				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "create_contract",
+				Description: "新建合同草稿草案（需确认，状态 draft 未签发）。须提供 contact_id / reservation_id / handover_id 至少一项；可选 template_id（默认最新合同模板）、title、notes。",
+				Parameters: obj(map[string]any{
+					"contact_id":     strProp,
+					"reservation_id": strProp,
+					"handover_id":    strProp,
+					"template_id":    strProp,
+					"title":          strProp,
+					"notes":          strProp,
+				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "create_receipt",
+				Description: "新建回执草稿草案（需确认，状态 draft）。参数 amount_cents 必填；须提供 contact_id / reservation_id / handover_id 至少一项；可选 template_id、title、currency(默认CNY)、notes。",
+				Parameters: obj(map[string]any{
+					"amount_cents":   map[string]any{"type": "integer", "minimum": 0},
+					"contact_id":     strProp,
+					"reservation_id": strProp,
+					"handover_id":    strProp,
+					"template_id":    strProp,
+					"title":          strProp,
+					"currency":       strProp,
+					"notes":          strProp,
+				}, "amount_cents"),
 			},
 		},
 	}

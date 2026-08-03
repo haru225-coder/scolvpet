@@ -97,7 +97,7 @@ func TestReadOnlyToolDefinitionsNonEmpty(t *testing.T) {
 		"get_hamster", "list_crm_contacts", "get_crm_contact",
 		"list_crm_reservations", "get_crm_reservation",
 		"list_crm_handovers", "get_crm_handover",
-		"list_accounting_summary", "list_accounting_records", "search_docs",
+		"list_accounting_summary", "list_accounting_records", "search_docs", "get_doc", "list_doc_templates",
 		"list_recent_weights", "list_health_records",
 		"list_breeding_plans", "get_breeding_plan", "list_pairing_attempts",
 		"create_crm_contact", "update_crm_contact", "create_crm_reservation",
@@ -105,6 +105,7 @@ func TestReadOnlyToolDefinitionsNonEmpty(t *testing.T) {
 		"create_crm_handover", "complete_crm_handover",
 		"create_accounting_record", "create_health_record",
 		"record_pairing_observation", "create_separation_task",
+		"create_contract", "create_receipt",
 	} {
 		if !names[need] {
 			t.Fatalf("missing tool %s", need)

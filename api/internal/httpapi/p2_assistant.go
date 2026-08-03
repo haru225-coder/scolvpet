@@ -285,6 +285,10 @@ func assistantActionRoute(actionType string) (string, bool) {
 		return "/v1/health-records", true
 	case "record_pairing_observation":
 		return "/v1/pairing-attempts", true
+	case "create_contract":
+		return "/v1/contracts", true
+	case "create_receipt":
+		return "/v1/receipts", true
 	}
 	return "", false
 }
