@@ -96,6 +96,71 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 				}),
 			},
 		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "get_hamster",
+				Description: "读取单只仓鼠档案详情（id/编号/名字/性别/状态/笼位/生日）。需要精确个体时用。",
+				Parameters: obj(map[string]any{
+					"hamster_id": strProp,
+				}, "hamster_id"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "list_crm_contacts",
+				Description: "列出或搜索本舍客户（姓名/手机/微信/状态）。",
+				Parameters: obj(map[string]any{
+					"query": strProp,
+					"limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
+				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "list_crm_reservations",
+				Description: "列出本舍预订（held/confirmed 等），可按状态筛选。",
+				Parameters: obj(map[string]any{
+					"status": strProp,
+					"limit":  map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
+				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "list_accounting_summary",
+				Description: "本舍财务摘要：最近 N 天收入/支出合计与笔数（默认 30 天）。",
+				Parameters: obj(map[string]any{
+					"days": map[string]any{"type": "integer", "minimum": 1, "maximum": 366},
+				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "search_docs",
+				Description: "按标题搜索本舍合同/回执单据（draft/issued）。",
+				Parameters: obj(map[string]any{
+					"query": strProp,
+					"kind":  map[string]any{"type": "string", "description": "contract|receipt|空=全部"},
+					"limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
+				}),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "list_recent_weights",
+				Description: "最近体重记录；可指定 hamster_id。",
+				Parameters: obj(map[string]any{
+					"hamster_id": strProp,
+					"limit":      map[string]any{"type": "integer", "minimum": 1, "maximum": 30},
+				}),
+			},
+		},
 		// Slice C write drafts (require user confirmation; do not claim executed).
 		{
 			Type: "function",
@@ -172,6 +237,20 @@ func ReadOnlyToolDefinitions() []ToolDefinition {
 					"code":     strProp,
 					"capacity": map[string]any{"type": "integer", "minimum": 1, "maximum": 20},
 				}, "code"),
+			},
+		},
+		{
+			Type: "function",
+			Function: ToolFunctionSchema{
+				Name:        "create_crm_contact",
+				Description: "新建客户草案（需确认）。参数 name 必填；可选 phone、wechat、notes、status(lead|active)。",
+				Parameters: obj(map[string]any{
+					"name":   strProp,
+					"phone":  strProp,
+					"wechat": strProp,
+					"notes":  strProp,
+					"status": strProp,
+				}, "name"),
 			},
 		},
 	}

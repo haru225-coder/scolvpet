@@ -273,6 +273,8 @@ func assistantActionRoute(actionType string) (string, bool) {
 		return "/v1/hamsters", true
 	case "create_enclosure":
 		return "/v1/enclosures", true
+	case "create_crm_contact":
+		return "/v1/crm/contacts", true
 	}
 	return "", false
 }

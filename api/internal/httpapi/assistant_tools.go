@@ -55,6 +55,18 @@ func (s *Server) runAssistantTool(
 		return s.toolListBreedingPlans(ctx, ownerID, args)
 	case "list_litters":
 		return s.toolListLitters(ctx, ownerID, args)
+	case "get_hamster":
+		return s.toolGetHamster(ctx, ownerID, args)
+	case "list_crm_contacts":
+		return s.toolListCrmContacts(ctx, ownerID, args)
+	case "list_crm_reservations":
+		return s.toolListCrmReservations(ctx, ownerID, args)
+	case "list_accounting_summary":
+		return s.toolListAccountingSummary(ctx, ownerID, args)
+	case "search_docs":
+		return s.toolSearchDocs(ctx, ownerID, args)
+	case "list_recent_weights":
+		return s.toolListRecentWeights(ctx, ownerID, args)
 	case "create_task":
 		return s.toolDraftCreateTask(ctx, ownerID, sess, args)
 	case "complete_task":
@@ -67,6 +79,8 @@ func (s *Server) runAssistantTool(
 		return s.toolDraftUpdateHamster(ctx, ownerID, sess, args)
 	case "create_enclosure":
 		return s.toolDraftCreateEnclosure(ctx, ownerID, sess, args)
+	case "create_crm_contact":
+		return s.toolDraftCreateCrmContact(ctx, ownerID, sess, args)
 	default:
 		return nil, fmt.Errorf("unknown tool %s", name)
 	}
@@ -408,9 +422,43 @@ func (s *Server) executeAssistantAction(ctx context.Context, ownerID uuid.UUID, 
 		return s.executeUpdateHamster(ctx, ownerID, payload)
 	case "create_enclosure":
 		return s.executeCreateEnclosure(ctx, ownerID, payload)
+	case "create_crm_contact":
+		return s.executeCreateCrmContact(ctx, ownerID, payload)
 	default:
 		return nil, fmt.Errorf("unsupported action type %s", actionType)
 	}
+}
+
+func (s *Server) executeCreateCrmContact(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
+	name := stringArgMap(payload, "name")
+	if name == "" {
+		return nil, fmt.Errorf("name required")
+	}
+	status := stringArgMap(payload, "status")
+	if status == "" {
+		status = "lead"
+	}
+	orgID, err := s.currentOrganizationID(ctx, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	phone := stringArgMap(payload, "phone")
+	wechat := stringArgMap(payload, "wechat")
+	notes := stringArgMap(payload, "notes")
+	var id uuid.UUID
+	err = s.Store.Pool.QueryRow(ctx, `
+		INSERT INTO crm_contact (owner_id, organization_id, name, phone, wechat, notes, status)
+		VALUES ($1,$2,$3,NULLIF($4,''),NULLIF($5,''),NULLIF($6,''),$7::crm_contact_status)
+		RETURNING id
+	`, ownerID, orgID, name, phone, wechat, notes, status).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"contact_id": id.String(),
+		"name":       name,
+		"status":     status,
+	}, nil
 }
 
 func (s *Server) executeCreateHamster(ctx context.Context, ownerID uuid.UUID, payload map[string]any) (any, error) {
@@ -834,4 +882,302 @@ func (s *Server) toolListLitters(ctx context.Context, ownerID uuid.UUID, args ma
 		})
 	}
 	return map[string]any{"count": len(out), "litters": out}, rows.Err()
+}
+
+func (s *Server) toolGetHamster(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	id, err := uuid.Parse(stringArgMap(args, "hamster_id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid hamster_id")
+	}
+	var name, code, sex, status string
+	var enclosure *string
+	var birth any
+	err = s.Store.Pool.QueryRow(ctx, `
+		SELECT COALESCE(name,''), COALESCE(internal_code,''), sex::text,
+		       lifecycle_status::text, current_enclosure_id::text, birth_date
+		FROM hamster
+		WHERE owner_id=$1 AND id=$2 AND deleted_at IS NULL
+	`, ownerID, id).Scan(&name, &code, &sex, &status, &enclosure, &birth)
+	if err != nil {
+		return nil, fmt.Errorf("hamster not found")
+	}
+	item := map[string]any{
+		"id": id.String(), "name": name, "internal_code": code,
+		"sex": sex, "lifecycle_status": status, "birth_date": birth,
+	}
+	if enclosure != nil {
+		item["current_enclosure_id"] = *enclosure
+	}
+	return item, nil
+}
+
+func (s *Server) toolListCrmContacts(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	q := stringArgMap(args, "query")
+	limit := toolLimit(args, 15, 1, 30)
+	var (
+		query string
+		qargs []any
+	)
+	if q == "" {
+		query = `
+			SELECT id::text, name, COALESCE(phone,''), COALESCE(wechat,''), status::text, updated_at
+			FROM crm_contact
+			WHERE owner_id=$1
+			ORDER BY updated_at DESC
+			LIMIT $2`
+		qargs = []any{ownerID, limit}
+	} else {
+		query = `
+			SELECT id::text, name, COALESCE(phone,''), COALESCE(wechat,''), status::text, updated_at
+			FROM crm_contact
+			WHERE owner_id=$1
+			  AND (name ILIKE $2 OR COALESCE(phone,'') ILIKE $2 OR COALESCE(wechat,'') ILIKE $2)
+			ORDER BY updated_at DESC
+			LIMIT $3`
+		qargs = []any{ownerID, "%" + q + "%", limit}
+	}
+	rows, err := s.Store.Pool.Query(ctx, query, qargs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make([]map[string]any, 0)
+	for rows.Next() {
+		var id, name, phone, wechat, status string
+		var updated any
+		if err := rows.Scan(&id, &name, &phone, &wechat, &status, &updated); err != nil {
+			return nil, err
+		}
+		out = append(out, map[string]any{
+			"id": id, "name": name, "phone": phone, "wechat": wechat,
+			"status": status, "updated_at": updated,
+		})
+	}
+	return map[string]any{"count": len(out), "contacts": out}, rows.Err()
+}
+
+func (s *Server) toolListCrmReservations(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	limit := toolLimit(args, 15, 1, 30)
+	status := stringArgMap(args, "status")
+	query := `
+		SELECT r.id::text, r.title, r.status::text, r.reserved_at, r.contact_id::text,
+		       c.name, r.hamster_id::text
+		FROM crm_reservation r
+		JOIN crm_contact c ON c.owner_id=r.owner_id AND c.id=r.contact_id
+		WHERE r.owner_id=$1`
+	qargs := []any{ownerID}
+	if status != "" {
+		query += ` AND r.status::text=$2`
+		qargs = append(qargs, status)
+		query += ` ORDER BY r.reserved_at DESC LIMIT $3`
+		qargs = append(qargs, limit)
+	} else {
+		query += ` ORDER BY r.reserved_at DESC LIMIT $2`
+		qargs = append(qargs, limit)
+	}
+	rows, err := s.Store.Pool.Query(ctx, query, qargs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make([]map[string]any, 0)
+	for rows.Next() {
+		var id, title, st, contactID, contactName string
+		var reserved any
+		var hamsterID *string
+		if err := rows.Scan(&id, &title, &st, &reserved, &contactID, &contactName, &hamsterID); err != nil {
+			return nil, err
+		}
+		item := map[string]any{
+			"id": id, "title": title, "status": st, "reserved_at": reserved,
+			"contact_id": contactID, "contact_name": contactName,
+		}
+		if hamsterID != nil {
+			item["hamster_id"] = *hamsterID
+		}
+		out = append(out, item)
+	}
+	return map[string]any{"count": len(out), "reservations": out}, rows.Err()
+}
+
+func (s *Server) toolListAccountingSummary(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	days := 30
+	if v, ok := args["days"].(float64); ok {
+		days = int(v)
+		if days < 1 {
+			days = 1
+		}
+		if days > 366 {
+			days = 366
+		}
+	}
+	var incomeCents, expenseCents int64
+	var incomeN, expenseN int
+	err := s.Store.Pool.QueryRow(ctx, `
+		SELECT
+		  COALESCE(SUM(CASE WHEN entry_type='income' THEN amount_cents ELSE 0 END),0),
+		  COALESCE(SUM(CASE WHEN entry_type='expense' THEN amount_cents ELSE 0 END),0),
+		  COALESCE(SUM(CASE WHEN entry_type='income' THEN 1 ELSE 0 END),0),
+		  COALESCE(SUM(CASE WHEN entry_type='expense' THEN 1 ELSE 0 END),0)
+		FROM accounting_record
+		WHERE owner_id=$1 AND occurred_at >= now() - ($2 * interval '1 day')
+	`, ownerID, days).Scan(&incomeCents, &expenseCents, &incomeN, &expenseN)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"days":                 days,
+		"income_cents":         incomeCents,
+		"expense_cents":        expenseCents,
+		"net_cents":            incomeCents - expenseCents,
+		"income_count":         incomeN,
+		"expense_count":        expenseN,
+		"income_yuan":          float64(incomeCents) / 100.0,
+		"expense_yuan":         float64(expenseCents) / 100.0,
+		"net_yuan":             float64(incomeCents-expenseCents) / 100.0,
+	}, nil
+}
+
+func (s *Server) toolSearchDocs(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	q := stringArgMap(args, "query")
+	kind := stringArgMap(args, "kind")
+	limit := toolLimit(args, 15, 1, 30)
+	query := `
+		SELECT d.id::text, d.kind::text, d.title, d.status::text, d.amount_cents, d.currency,
+		       COALESCE(c.name, ''), d.issued_at, d.updated_at
+		FROM doc_document d
+		LEFT JOIN crm_contact c ON c.owner_id=d.owner_id AND c.id=d.contact_id
+		WHERE d.owner_id=$1 AND d.status <> 'archived'`
+	qargs := []any{ownerID}
+	argN := 2
+	if kind == "contract" || kind == "receipt" {
+		query += fmt.Sprintf(` AND d.kind::text=$%d`, argN)
+		qargs = append(qargs, kind)
+		argN++
+	}
+	if q != "" {
+		query += fmt.Sprintf(` AND d.title ILIKE $%d`, argN)
+		qargs = append(qargs, "%"+q+"%")
+		argN++
+	}
+	query += fmt.Sprintf(` ORDER BY d.updated_at DESC LIMIT $%d`, argN)
+	qargs = append(qargs, limit)
+	rows, err := s.Store.Pool.Query(ctx, query, qargs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make([]map[string]any, 0)
+	for rows.Next() {
+		var id, k, title, status, currency, contactName string
+		var amount *int64
+		var issued, updated any
+		if err := rows.Scan(&id, &k, &title, &status, &amount, &currency, &contactName, &issued, &updated); err != nil {
+			return nil, err
+		}
+		item := map[string]any{
+			"id": id, "kind": k, "title": title, "status": status,
+			"currency": currency, "contact_name": contactName,
+			"issued_at": issued, "updated_at": updated,
+		}
+		if amount != nil {
+			item["amount_cents"] = *amount
+		}
+		out = append(out, item)
+	}
+	return map[string]any{"count": len(out), "documents": out}, rows.Err()
+}
+
+func (s *Server) toolListRecentWeights(ctx context.Context, ownerID uuid.UUID, args map[string]any) (any, error) {
+	limit := toolLimit(args, 10, 1, 30)
+	hamsterRaw := stringArgMap(args, "hamster_id")
+	var (
+		query string
+		qargs []any
+	)
+	if hamsterRaw == "" {
+		query = `
+			SELECT w.id::text, w.hamster_id::text, w.weight_g, w.recorded_at,
+			       COALESCE(h.name,''), COALESCE(h.internal_code,'')
+			FROM weight_record w
+			LEFT JOIN hamster h ON h.owner_id=w.owner_id AND h.id=w.hamster_id
+			WHERE w.owner_id=$1 AND w.hamster_id IS NOT NULL
+			ORDER BY w.recorded_at DESC
+			LIMIT $2`
+		qargs = []any{ownerID, limit}
+	} else {
+		hid, err := uuid.Parse(hamsterRaw)
+		if err != nil {
+			return nil, fmt.Errorf("invalid hamster_id")
+		}
+		query = `
+			SELECT w.id::text, w.hamster_id::text, w.weight_g, w.recorded_at,
+			       COALESCE(h.name,''), COALESCE(h.internal_code,'')
+			FROM weight_record w
+			LEFT JOIN hamster h ON h.owner_id=w.owner_id AND h.id=w.hamster_id
+			WHERE w.owner_id=$1 AND w.hamster_id=$2
+			ORDER BY w.recorded_at DESC
+			LIMIT $3`
+		qargs = []any{ownerID, hid, limit}
+	}
+	rows, err := s.Store.Pool.Query(ctx, query, qargs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make([]map[string]any, 0)
+	for rows.Next() {
+		var id, hamsterID, name, code string
+		var weight float64
+		var recorded any
+		if err := rows.Scan(&id, &hamsterID, &weight, &recorded, &name, &code); err != nil {
+			return nil, err
+		}
+		out = append(out, map[string]any{
+			"id": id, "hamster_id": hamsterID, "weight_g": weight,
+			"recorded_at": recorded, "hamster_name": name, "internal_code": code,
+		})
+	}
+	return map[string]any{"count": len(out), "weights": out}, rows.Err()
+}
+
+func (s *Server) toolDraftCreateCrmContact(ctx context.Context, ownerID uuid.UUID, sess assistantToolSession, args map[string]any) (any, error) {
+	if sess.SessionID == uuid.Nil {
+		return nil, fmt.Errorf("session required for write draft")
+	}
+	name := stringArgMap(args, "name")
+	if name == "" {
+		return nil, fmt.Errorf("name required")
+	}
+	status := stringArgMap(args, "status")
+	if status == "" {
+		status = "lead"
+	}
+	if status != "lead" && status != "active" && status != "archived" {
+		return nil, fmt.Errorf("invalid status")
+	}
+	payload := map[string]any{"name": name, "status": status}
+	if phone := stringArgMap(args, "phone"); phone != "" {
+		payload["phone"] = phone
+	}
+	if wechat := stringArgMap(args, "wechat"); wechat != "" {
+		payload["wechat"] = wechat
+	}
+	if notes := stringArgMap(args, "notes"); notes != "" {
+		payload["notes"] = notes
+	}
+	summary := fmt.Sprintf("新建客户「%s」(%s)", name, status)
+	action, err := s.Store.InsertAssistantAction(ctx, ownerID, sess.SessionID, nil, "create_crm_contact", "确认新建客户", summary, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"pending_confirmation": true,
+		"action_id":            action.ID.String(),
+		"type":                 "create_crm_contact",
+		"label":                action.Label,
+		"summary":              action.Summary,
+		"payload":              payload,
+		"status":               "pending",
+	}, nil
 }
