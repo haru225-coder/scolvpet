@@ -124,10 +124,14 @@ jobs:
       - name: API I1 smoke and integration checks
         env:
           DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
+          # Reuse the postgres service above; the runner image has no initdb/pg_ctl.
+          I1_USE_EXTERNAL_DB: '1'
         run: make smoke
       - name: Public reservation smoke
         env:
           DATABASE_URL: postgres://scolvpet:scolvpet@127.0.0.1:55432/scolvpet?sslmode=disable
+          # Reuse the postgres service above; the runner image has no initdb/pg_ctl.
+          PUBLIC_RESERVATION_USE_EXTERNAL_DB: '1'
         run: make reservation-smoke
       - name: Media smoke
         env:

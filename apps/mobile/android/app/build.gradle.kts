@@ -63,11 +63,19 @@ android {
     buildTypes {
         release {
             val releaseConfig = signingConfigs.findByName("release")
-            val hasReleaseKeystore = releaseConfig?.storeFile != null
-            check(hasReleaseKeystore) {
-                "Release signing is required. Set SCOLVPET_UPLOAD_* env vars or local properties."
-            }
             signingConfig = releaseConfig
+            // 签名校验只在真正构建 release 变体时执行（debug 构建如
+            // `flutter build apk --debug` 不应被 release 签名要求阻塞）。
+            // CI 的 flutter-build-android 走 debug；发布包在 release-android
+            // 阶段由 SCOLVPET_UPLOAD_* 环境变量提供签名。
+            val buildingRelease = gradle.startParameter.taskNames.any {
+                it.contains("Release") || it.contains("release")
+            }
+            if (buildingRelease) {
+                check(releaseConfig?.storeFile != null) {
+                    "Release signing is required. Set SCOLVPET_UPLOAD_* env vars or local properties."
+                }
+            }
         }
     }
 }

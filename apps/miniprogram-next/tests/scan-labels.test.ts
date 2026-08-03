@@ -1,3 +1,7 @@
+// 该测试断言任务时间标签（如 09:30），依赖运行时区：CI 为 UTC、本地可能为
+// Asia/Taipei。固定进程时区为测试数据的业务时区（+08:00），保证两端一致。
+process.env.TZ = 'Asia/Taipei'
+
 import { describe, expect, it } from 'vitest'
 import {
   ageLabel,
