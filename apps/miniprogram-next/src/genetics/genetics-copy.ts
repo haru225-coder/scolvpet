@@ -4,13 +4,13 @@
  */
 
 export const GeneticsUiCopy = {
-  pageTitle: '这两只会生出什么',
-  entryCta: '试配一下',
+  pageTitle: '试配模拟',
+  entryCta: '开始试配',
   runCta: '试配一下',
-  emptyHint: '选好父母表型后点「试配一下」',
-  resultHeading: '宝宝可能长这样',
+  emptyHint: '选好公、母的样子，点「试配一下」看结果',
+  resultHeading: '模拟结果',
   professionalSectionTitle: '专业信息（基因型）',
-  savePlanCta: '存成繁育计划',
+  savePlanCta: '（已停用）存成繁育计划',
   missingData: '资料不足，算不准',
   notRegistered: '没登记',
   riskBanner: '这一配有风险',

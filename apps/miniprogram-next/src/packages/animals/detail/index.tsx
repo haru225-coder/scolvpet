@@ -1,6 +1,7 @@
 import { Image, Input, Picker, ScrollView, Text, Textarea, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { formatUserError } from '../../../api/errors'
 import {
   NavBar,
   Section,
@@ -9,11 +10,14 @@ import {
   FormRow,
   Tag,
   Empty,
+  SegmentedControl,
   metrics,
-  palette
+  palette,
+  typeStyle
 } from '@scolvpet/mp-ui'
 
 import { defaultApi, geneticApi, newIdempotencyKey } from '../../../api/client'
+import { canUseCapability } from '../../../auth/permissions'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import { readBreederSession } from '../../../auth/session'
 import { readAnimalSnapshot, saveAnimalSnapshot } from '../../../offline/snapshots'
@@ -21,9 +25,50 @@ import config from '../../../utils/config'
 import { sha256 } from '../../../utils/sha256'
 import { decodePhenotype, encodePhenotype, readPhenotypeSeries, type PhenotypeSeries } from '../../../utils/phenotype'
 import { ageLabel, animalScanSubtitle, animalScanTitle, shortDate } from '../../../utils/scan-labels'
-import { humanShortLabel } from '../../../utils/tab-routes'
+import { DOMAIN_HOME, humanShortLabel } from '../../../utils/tab-routes'
 import type { ApiEnvelope } from '../../../api/types'
 
+/** 产品分段：先看再改，对齐 Flutter 个体档案主路径。 */
+const SEGMENTS = ['概览', '成长', '健康', '编辑'] as const
+
+function toDateInput(value: unknown): string {
+  if (!value) return ''
+  const raw = value instanceof Date ? value.toISOString() : String(value)
+  return raw.slice(0, 10)
+}
+
+function lifecycleTone(status: unknown): 'success' | 'danger' | 'warning' | 'default' {
+  if (status === 'deceased') return 'danger'
+  if (status === 'active') return 'success'
+  if (status === 'retired') return 'default'
+  return 'warning'
+}
+
+function lifecycleLabel(status: unknown): string {
+  if (status === 'active') return '在养'
+  return humanShortLabel(status) || '待确认'
+}
+
+function sexLabel(sex: unknown): string {
+  if (sex === 'male') return '公'
+  if (sex === 'female') return '母'
+  return '待定'
+}
+
+function enclosureLabel(animal: Record<string, unknown> | null | undefined): string {
+  if (!animal) return '未分配'
+  return String(
+    animal.currentEnclosureName ||
+      animal.enclosureName ||
+      (animal.currentEnclosureId ? '已分配' : '未分配')
+  )
+}
+
+/**
+ * 个体档案（产品化）。
+ * 2026-08：默认只读概览 + 分段快录；完整表单收进「编辑」。
+ * 能力与契约不变：头像预签、体重/健康追加、If-Match 档案更新、离线快照。
+ */
 export default function AnimalDetailPage() {
   const [animalId, setAnimalId] = useState('')
   const [animal, setAnimal] = useState<any>(null)
@@ -46,79 +91,99 @@ export default function AnimalDetailPage() {
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [segment, setSegment] = useState(0)
 
   useEffect(() => {
-    void geneticApi.listGeneticPhenotypeCatalog().then((response: ApiEnvelope) => setSeriesOptions(readPhenotypeSeries(response))).catch(() => undefined)
+    void geneticApi
+      .listGeneticPhenotypeCatalog()
+      .then((response: ApiEnvelope) => setSeriesOptions(readPhenotypeSeries(response)))
+      .catch(() => undefined)
   }, [])
 
   useEffect(() => {
     const decoded = decodePhenotype(animalVarietyCode)
     if (!decoded || !seriesOptions.some((item) => item.code === decoded.series)) return
-    setSeriesCode((current) => current === decoded.series ? current : decoded.series)
-    setPhenotypeLabel((current) => current === decoded.label ? current : decoded.label)
+    setSeriesCode((current) => (current === decoded.series ? current : decoded.series))
+    setPhenotypeLabel((current) => (current === decoded.label ? current : decoded.label))
   }, [animalVarietyCode, seriesOptions])
 
-  const load = useCallback(async (id: string) => {
-    if (!readBreederSession()) {
-      setMessage('请先登录经营账号')
-      setLoading(false)
-      return
-    }
-    try {
-      const [animalResponse, weightResponse, healthResponse] = await Promise.all([
-        defaultApi.getHamster({ hamsterId: id }),
-        defaultApi.listWeightRecords({ hamsterId: id, limit: 20 }),
-        defaultApi.listHealthRecords({ hamsterId: id, limit: 20 })
-      ])
-      const loadedAnimal: any = animalResponse.data
-      setAnimal(loadedAnimal)
-      setAnimalInternalCode(loadedAnimal?.internalCode || loadedAnimal?.internal_code || '')
-      setAnimalName(loadedAnimal?.name || '')
-      setAnimalSex(loadedAnimal?.sex || 'unknown')
-      setAnimalVarietyCode(loadedAnimal?.varietyCode || loadedAnimal?.variety_code || '')
-      setAnimalBirthDate(toDateInput(loadedAnimal?.birthDate || loadedAnimal?.birth_date))
-      setAnimalNotes(loadedAnimal?.notes || '')
-      setAvatarUrl('')
-      if (animalResponse.data?.coverMediaId) {
-        void resolveMediaUrl(String(animalResponse.data.coverMediaId)).then((url) => setAvatarUrl(url || ''))
-      }
-      setWeights(weightResponse.data || [])
-      setHealth(healthResponse.data || [])
-      saveAnimalSnapshot(id, { animal: animalResponse.data, weights: weightResponse.data || [], health: healthResponse.data || [] })
-    } catch (cause) {
-      const snapshot = readAnimalSnapshot<{ animal: any; weights: any[]; health: any[] }>(id)
-      if (snapshot) {
-        setAnimal(snapshot.value.animal)
-        setAnimalInternalCode(snapshot.value.animal?.internalCode || snapshot.value.animal?.internal_code || '')
-        setAnimalName(snapshot.value.animal?.name || '')
-        setAnimalSex(snapshot.value.animal?.sex || 'unknown')
-        setAnimalVarietyCode(snapshot.value.animal?.varietyCode || snapshot.value.animal?.variety_code || '')
-        setAnimalBirthDate(toDateInput(snapshot.value.animal?.birthDate || snapshot.value.animal?.birth_date))
-        setAnimalNotes(snapshot.value.animal?.notes || '')
-        setWeights(snapshot.value.weights)
-        setHealth(snapshot.value.health)
-        setMessage(`网络暂时不可用，展示 ${new Date(snapshot.savedAt).toLocaleString('zh-CN')} 的只读档案快照`)
-      } else setMessage(cause instanceof Error ? cause.message : '档案加载失败')
-    } finally {
-      setLoading(false)
-    }
+  const applyAnimalFields = useCallback((loadedAnimal: any) => {
+    setAnimal(loadedAnimal)
+    setAnimalInternalCode(loadedAnimal?.internalCode || loadedAnimal?.internal_code || '')
+    setAnimalName(loadedAnimal?.name || '')
+    setAnimalSex(loadedAnimal?.sex || 'unknown')
+    setAnimalVarietyCode(loadedAnimal?.varietyCode || loadedAnimal?.variety_code || '')
+    setAnimalBirthDate(toDateInput(loadedAnimal?.birthDate || loadedAnimal?.birth_date))
+    setAnimalNotes(loadedAnimal?.notes || '')
   }, [])
 
-  function toDateInput(value: unknown): string {
-    if (!value) return ''
-    const raw = value instanceof Date ? value.toISOString() : String(value)
-    return raw.slice(0, 10)
-  }
+  const load = useCallback(
+    async (id: string) => {
+      if (!readBreederSession()) {
+        setMessage('请先登录经营账号')
+        setLoading(false)
+        return
+      }
+      try {
+        const [animalResponse, weightResponse, healthResponse] = await Promise.all([
+          defaultApi.getHamster({ hamsterId: id }),
+          defaultApi.listWeightRecords({ hamsterId: id, limit: 20 }),
+          defaultApi.listHealthRecords({ hamsterId: id, limit: 20 })
+        ])
+        const loadedAnimal: any = animalResponse.data
+        applyAnimalFields(loadedAnimal)
+        setAvatarUrl('')
+        if (animalResponse.data?.coverMediaId) {
+          void resolveMediaUrl(String(animalResponse.data.coverMediaId)).then((url) => setAvatarUrl(url || ''))
+        }
+        setWeights(weightResponse.data || [])
+        setHealth(healthResponse.data || [])
+        saveAnimalSnapshot(id, {
+          animal: animalResponse.data,
+          weights: weightResponse.data || [],
+          health: healthResponse.data || []
+        })
+        setMessage('')
+      } catch (cause) {
+        const snapshot = readAnimalSnapshot<{ animal: any; weights: any[]; health: any[] }>(id)
+        if (snapshot) {
+          applyAnimalFields(snapshot.value.animal)
+          setWeights(snapshot.value.weights)
+          setHealth(snapshot.value.health)
+          setMessage(`暂时连不上服务器，展示 ${new Date(snapshot.savedAt).toLocaleString('zh-CN')} 的只读快照`)
+        } else {
+          setMessage(await formatUserError(cause, '档案加载失败'))
+        }
+      } finally {
+        setLoading(false)
+      }
+    },
+    [applyAnimalFields]
+  )
 
   const selectedSeries = seriesOptions.find((item) => item.code === seriesCode)
   const phenotypeOptions = selectedSeries?.phenotypes || []
   const phenotypeIndex = Math.max(0, phenotypeOptions.indexOf(phenotypeLabel))
 
+  const latestWeight = weights[0]
+  const metaLine = useMemo(() => {
+    if (!animal) return ''
+    return (
+      animalScanSubtitle({
+        ...animal,
+        corePhenotypeLabel: phenotypeLabel || animal.corePhenotypeLabel
+      }) || ''
+    )
+  }, [animal, phenotypeLabel])
+
   useLoad((options) => {
     const id = String(options?.id || '')
     setAnimalId(id)
     if (id) void load(id)
-    else { setMessage('缺少个体 ID'); setLoading(false) }
+    else {
+      setMessage('缺少个体 ID')
+      setLoading(false)
+    }
   })
 
   async function resolveMediaUrl(mediaId: string): Promise<string | null> {
@@ -127,7 +192,9 @@ export default function AnimalDetailPage() {
       const media: any = response.data
       const variants = Array.isArray(media?.variants) ? media.variants : []
       const preferred = ['thumbnail', 'preview', 'cover']
-      const selected = preferred.map((kind) => variants.find((item: any) => item.kind === kind && item.status === 'ready' && item.url)).find(Boolean)
+      const selected = preferred
+        .map((kind) => variants.find((item: any) => item.kind === kind && item.status === 'ready' && item.url))
+        .find(Boolean)
       const url = selected?.url || media?.originalUrl
       if (!url) return null
       if (/^https?:\/\//i.test(url)) return url
@@ -140,7 +207,11 @@ export default function AnimalDetailPage() {
 
   function readFile(filePath: string): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
-      Taro.getFileSystemManager().readFile({ filePath, success: (result) => resolve(result.data as ArrayBuffer), fail: reject })
+      Taro.getFileSystemManager().readFile({
+        filePath,
+        success: (result) => resolve(result.data as ArrayBuffer),
+        fail: reject
+      })
     })
   }
 
@@ -148,22 +219,40 @@ export default function AnimalDetailPage() {
     if (!animal || !animalId) return
     setAvatarBusy(true)
     try {
-      const chosen = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
+      const chosen = await Taro.chooseImage({
+        count: 1,
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera']
+      })
       const file: any = chosen.tempFiles?.[0]
       if (!file?.path) return
       const bytes = await readFile(file.path)
       const sizeBytes = Number(file.size || bytes.byteLength)
       if (!sizeBytes || sizeBytes > 20 * 1024 * 1024) throw new Error('头像文件需小于 20 MB')
       const extension = String(file.path).split('.').pop()?.toLowerCase()
-      const contentType = extension === 'png' ? 'image/png' : extension === 'webp' ? 'image/webp' : 'image/jpeg'
+      const contentType =
+        extension === 'png' ? 'image/png' : extension === 'webp' ? 'image/webp' : 'image/jpeg'
       const digest = sha256(bytes)
       const presign = await defaultApi.presignMediaUpload({
         idempotencyKey: newIdempotencyKey(),
-        mediaUploadPresignRequest: { fileName: file.name || `hamster-${animalId}.${extension || 'jpg'}`, contentType, sizeBytes, sha256: digest, purpose: 'hamster_profile' } as any
+        mediaUploadPresignRequest: {
+          fileName: file.name || `hamster-${animalId}.${extension || 'jpg'}`,
+          contentType,
+          sizeBytes,
+          sha256: digest,
+          purpose: 'hamster_profile'
+        } as any
       })
       const session: any = presign.data
-      const uploaded: any = await Taro.request({ url: session.uploadUrl, method: session.method || 'PUT', data: bytes, header: { ...(session.headers || {}), 'Content-Type': contentType } })
-      if (uploaded.statusCode < 200 || uploaded.statusCode >= 300) throw new Error(`图片上传失败（${uploaded.statusCode}）`)
+      const uploaded: any = await Taro.request({
+        url: session.uploadUrl,
+        method: session.method || 'PUT',
+        data: bytes,
+        header: { ...(session.headers || {}), 'Content-Type': contentType }
+      })
+      if (uploaded.statusCode < 200 || uploaded.statusCode >= 300) {
+        throw new Error(`图片上传失败（${uploaded.statusCode}）`)
+      }
       const headers = uploaded.header || uploaded.headers || {}
       const etagEntry = Object.entries(headers).find(([key]) => key.toLowerCase() === 'etag')
       const etag = etagEntry ? String(etagEntry[1]).trim() : ''
@@ -172,16 +261,26 @@ export default function AnimalDetailPage() {
         uploadId: session.id,
         idempotencyKey: newIdempotencyKey(),
         ifMatch: String(session.version ?? 0),
-        mediaUploadCompleteRequest: { objectEtag: etag, sizeBytes, sha256: digest, timezone: 'Asia/Taipei' }
+        mediaUploadCompleteRequest: {
+          objectEtag: etag,
+          sizeBytes,
+          sha256: digest,
+          timezone: 'Asia/Taipei'
+        }
       })
       const mediaId = (completed.data as any)?.media?.id
       if (!mediaId) throw new Error('媒体完成响应缺少 media ID')
-      await defaultApi.updateHamster({ idempotencyKey: newIdempotencyKey(), ifMatch: String(animal.version ?? 0), hamsterId: animalId, hamsterUpdateRequest: { coverMediaId: mediaId } })
+      await defaultApi.updateHamster({
+        idempotencyKey: newIdempotencyKey(),
+        ifMatch: String(animal.version ?? 0),
+        hamsterId: animalId,
+        hamsterUpdateRequest: { coverMediaId: mediaId }
+      })
       setMessage('头像已更新')
       await load(animalId)
     } catch (cause) {
       if ((cause as any)?.errMsg?.includes('cancel')) setMessage('已取消选择头像')
-      else setMessage(cause instanceof Error ? cause.message : '头像上传失败')
+      else setMessage(await formatUserError(cause, '头像上传失败'))
     } finally {
       setAvatarBusy(false)
     }
@@ -193,12 +292,17 @@ export default function AnimalDetailPage() {
     if (!confirmation.confirm) return
     setAvatarBusy(true)
     try {
-      await defaultApi.updateHamster({ idempotencyKey: newIdempotencyKey(), ifMatch: String(animal.version ?? 0), hamsterId: animalId, hamsterUpdateRequest: { coverMediaId: null } })
+      await defaultApi.updateHamster({
+        idempotencyKey: newIdempotencyKey(),
+        ifMatch: String(animal.version ?? 0),
+        hamsterId: animalId,
+        hamsterUpdateRequest: { coverMediaId: null }
+      })
       setAvatarUrl('')
       setMessage('头像已移除')
       await load(animalId)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '头像移除失败')
+      setMessage(await formatUserError(cause, '头像移除失败'))
     } finally {
       setAvatarBusy(false)
     }
@@ -230,7 +334,7 @@ export default function AnimalDetailPage() {
       setMessage('体重已记录')
       await load(animalId)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '体重记录失败')
+      setMessage(await formatUserError(cause, '体重记录失败'))
     }
   }
 
@@ -251,10 +355,10 @@ export default function AnimalDetailPage() {
           notes: animalNotes.trim() || null
         }
       })
-      setMessage('个体档案已更新')
+      setMessage('档案已保存')
       await load(animalId)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '个体档案更新失败')
+      setMessage(await formatUserError(cause, '档案保存失败'))
     } finally {
       setSavingProfile(false)
     }
@@ -269,236 +373,447 @@ export default function AnimalDetailPage() {
           type: 'daily_check',
           observedAt: new Date(),
           severity: 'info',
-          notes: note || '小程序端快速健康观察'
+          notes: note || '日常观察'
         }
       })
       setNote('')
       setMessage('健康观察已记录')
       await load(animalId)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '健康记录失败')
+      setMessage(await formatUserError(cause, '健康记录失败'))
     }
   }
 
+  function openTrialPairing() {
+    void Taro.navigateTo({ url: DOMAIN_HOME.geneticCreate })
+  }
+
+  /** 族谱：经营端从窝次反推父母（个体档案不带 sireId/damId）。 */
+  function openPedigree() {
+    if (!animalId) return
+    void Taro.navigateTo({
+      url: `${DOMAIN_HOME.pedigree}?id=${encodeURIComponent(animalId)}`
+    })
+  }
+
+  const navTitle = animal?.name || animal?.internalCode || '个体档案'
+
   return (
-    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
-      <NavBar title={animal?.name || animal?.internalCode || '个体档案'} back />
+    <View
+      style={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: palette.systemBackground
+      }}
+    >
+      <NavBar title={navTitle} back />
       <ScrollView scrollY type="list" bounces enhanced showScrollbar={false} style={{ flex: 1 }}>
-        {loading ? <Empty title="正在读取档案" /> : null}
+        {loading ? <Empty title="正在读取…" /> : null}
         {!loading && !animal ? <Empty title="档案暂不可用" description={message} /> : null}
+
         {animal ? (
-          <SectionList>
-            <Section header="基本信息" footer={message || '记录会进入后端审计链'}>
-              {avatarUrl ? <Image src={avatarUrl} mode="aspectFill" style={{ width: '96px', height: '96px', borderRadius: '48px', margin: '12px auto', display: 'block' }} /> : null}
-              <Cell
-                title={animalScanTitle(animal)}
-                subtitle={
-                  animalScanSubtitle({
-                    ...animal,
-                    corePhenotypeLabel: phenotypeLabel || animal.corePhenotypeLabel
-                  }) || undefined
-                }
-                value={
-                  <Tag
-                    tone={
-                      animal.lifecycleStatus === 'deceased'
-                        ? 'danger'
-                        : animal.lifecycleStatus === 'active'
-                          ? 'success'
-                          : 'warning'
-                    }
-                  >
-                    {animal.lifecycleStatus === 'active'
-                      ? '在养'
-                      : humanShortLabel(animal.lifecycleStatus || animal.status || 'active')}
-                  </Tag>
-                }
-              />
-              <Cell
-                title="日龄"
-                value={
-                  ageLabel(animal.birthDate || animal.birth_date) ||
-                  shortDate(animal.birthDate || animal.birth_date) ||
-                  '未记录出生'
-                }
-              />
-              <Cell
-                title="当前笼舍"
-                value={animal.currentEnclosureName || animal.enclosureName || (animal.currentEnclosureId ? '已分配' : '未分配')}
-              />
-              <Cell
-                title="繁育状态"
-                value={humanShortLabel(animal.breedingStatus) || '未记录'}
-              />
-            </Section>
-            <Section header="头像">
-              <CapabilityButton capability="write_hamster" block disabled={avatarBusy} onClick={() => void uploadAvatar()}>{avatarBusy ? '处理中…' : animal.coverMediaId ? '更换头像' : '从相册选择'}</CapabilityButton>
-              {animal.coverMediaId ? <CapabilityButton capability="write_hamster" block variant="outlined" disabled={avatarBusy} onClick={() => void removeAvatar()}>移除头像</CapabilityButton> : null}
-            </Section>
-            <Section header="档案编辑">
-              <FormRow label="内部编号">
-                <Input
-                  value={animalInternalCode}
-                  placeholder="内部编号"
-                  placeholderStyle="color: rgba(255,255,255,0.35)"
-                  onInput={(event) => setAnimalInternalCode(event.detail.value)}
-                  style={{ color: '#FFFFFF' }}
-                />
-              </FormRow>
-              <FormRow label="名称" divider>
-                <Input
-                  value={animalName}
-                  placeholder="可选"
-                  placeholderStyle="color: rgba(255,255,255,0.35)"
-                  onInput={(event) => setAnimalName(event.detail.value)}
-                  style={{ color: '#FFFFFF' }}
-                />
-              </FormRow>
-              <FormRow label="性别" divider>
-                <Picker
-                  mode="selector"
-                  range={['待定', '公', '母']}
-                  value={Math.max(0, ['unknown', 'male', 'female'].indexOf(animalSex))}
-                  onChange={(event) =>
-                    setAnimalSex(['unknown', 'male', 'female'][Number(event.detail.value)] || 'unknown')
-                  }
+          <View style={{ paddingBottom: metrics.bottomSafePadding }}>
+            {/* 身份卡：对照 Flutter profile card，一眼看完关键信息 */}
+            <View
+              style={{
+                margin: `${metrics.sectionGap}px ${metrics.pagePadding}px 0`,
+                padding: '16px',
+                borderRadius: `${metrics.continuousRadius}px`,
+                backgroundColor: palette.secondaryGroupedBackground,
+                border: `1px solid ${palette.separator}`
+              }}
+            >
+              <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
+                <View
+                  onClick={() => {
+                    if (canUseCapability('write_hamster') && !avatarBusy) void uploadAvatar()
+                  }}
+                  style={{
+                    width: '88px',
+                    height: '88px',
+                    borderRadius: '44px',
+                    overflow: 'hidden',
+                    flexShrink: 0,
+                    backgroundColor: palette.fill,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
                 >
-                  <Cell
-                    title={animalSex === 'male' ? '公' : animalSex === 'female' ? '母' : '待定'}
-                    value={<Tag>选择</Tag>}
-                  />
-                </Picker>
-              </FormRow>
-              {seriesOptions.length ? (
-                <>
-                  <FormRow label="样子系列" divider>
-                    <Picker
-                      mode="selector"
-                      range={seriesOptions.map((item) => item.name)}
-                      value={Math.max(0, seriesOptions.findIndex((item) => item.code === seriesCode))}
-                      onChange={(event) => {
-                        const selected = seriesOptions[Number(event.detail.value)]
-                        setSeriesCode(selected?.code || '')
-                        setPhenotypeLabel(selected?.phenotypes[0] || '')
-                        setAnimalVarietyCode(
-                          encodePhenotype(selected?.code || '', selected?.phenotypes[0] || '')
-                        )
+                  {avatarUrl ? (
+                    <Image src={avatarUrl} mode="aspectFill" style={{ width: '88px', height: '88px' }} />
+                  ) : (
+                    <Text style={{ ...typeStyle('bodySmall'), color: palette.tertiaryLabel }}>
+                      {avatarBusy
+                        ? '…'
+                        : canUseCapability('write_hamster')
+                          ? '点此上传'
+                          : '暂无头像'}
+                    </Text>
+                  )}
+                </View>
+                <View style={{ flex: 1, marginLeft: '14px', minWidth: 0 }}>
+                  <Text
+                    style={{
+                      fontSize: '20px',
+                      fontWeight: 600,
+                      letterSpacing: '-0.3px',
+                      lineHeight: 1.3,
+                      color: palette.label,
+                      display: 'block'
+                    }}
+                  >
+                    {animalScanTitle(animal)}
+                  </Text>
+                  {animal.name && animal.internalCode ? (
+                    <Text
+                      style={{
+                        ...typeStyle('bodyMedium'),
+                        color: palette.secondaryLabel,
+                        display: 'block',
+                        marginTop: '2px'
                       }}
                     >
-                      <Cell title={selectedSeries?.name || '选择系列'} value={<Tag>选择</Tag>} />
-                    </Picker>
-                  </FormRow>
-                  <FormRow label="样子" divider>
-                    <Picker
-                      mode="selector"
-                      range={phenotypeOptions}
-                      value={phenotypeIndex}
-                      onChange={(event) => {
-                        const label = phenotypeOptions[Number(event.detail.value)] || ''
-                        setPhenotypeLabel(label)
-                        setAnimalVarietyCode(encodePhenotype(seriesCode, label))
+                      {String(animal.internalCode)}
+                    </Text>
+                  ) : null}
+                  {metaLine ? (
+                    <Text
+                      style={{
+                        ...typeStyle('bodySmall'),
+                        color: palette.secondaryLabel,
+                        display: 'block',
+                        marginTop: '6px'
                       }}
                     >
-                      <Cell title={phenotypeLabel || '选择样子'} value={<Tag>选择</Tag>} />
-                    </Picker>
-                  </FormRow>
-                </>
+                      {metaLine}
+                    </Text>
+                  ) : null}
+                  <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: '10px', gap: '8px' }}>
+                    <Tag tone={lifecycleTone(animal.lifecycleStatus)}>
+                      {lifecycleLabel(animal.lifecycleStatus || animal.status)}
+                    </Tag>
+                    {latestWeight ? (
+                      <Tag>
+                        {String(latestWeight.weightG ?? latestWeight.weight_g ?? '-')} g
+                      </Tag>
+                    ) : null}
+                  </View>
+                </View>
+              </View>
+              {message ? (
+                <Text
+                  style={{
+                    ...typeStyle('bodySmall'),
+                    color: palette.secondaryLabel,
+                    display: 'block',
+                    marginTop: '12px'
+                  }}
+                >
+                  {message}
+                </Text>
               ) : null}
-              <FormRow label="出生日期" divider>
-                <Picker mode="date" value={animalBirthDate} onChange={(event) => setAnimalBirthDate(event.detail.value)}>
-                  <Cell title={animalBirthDate || '未填写'} value={<Tag>选择</Tag>} />
-                </Picker>
-              </FormRow>
-              <FormRow label="备注" divider>
-                <Textarea
-                  value={animalNotes}
-                  maxlength={1000}
-                  placeholder="可选"
-                  placeholderStyle="color: rgba(255,255,255,0.35)"
-                  onInput={(event) => setAnimalNotes(event.detail.value)}
-                  style={{ color: '#FFFFFF' }}
-                />
-              </FormRow>
-              <Cell
-                title={showAdvanced ? '收起高级' : '展开高级'}
-                subtitle="手动品系代码，选样子后通常可留空"
-                value={<Tag>{showAdvanced ? '已展开' : '折叠'}</Tag>}
-                onClick={() => setShowAdvanced((v) => !v)}
+            </View>
+
+            <View style={{ padding: `12px ${metrics.pagePadding}px 0` }}>
+              <SegmentedControl
+                segments={[...SEGMENTS]}
+                value={segment}
+                onChange={setSegment}
               />
-              {showAdvanced ? (
-                <FormRow label="品系代码" divider>
-                  <Input
-                    value={animalVarietyCode}
-                    placeholder={seriesOptions.length ? '可选，默认使用系列|表型' : '可选'}
-                    placeholderStyle="color: rgba(255,255,255,0.35)"
-                    onInput={(event) => setAnimalVarietyCode(event.detail.value)}
-                    style={{ color: '#FFFFFF' }}
-                  />
-                </FormRow>
-              ) : null}
-              <CapabilityButton capability="write_hamster" block disabled={savingProfile} onClick={() => void saveProfile()}>{savingProfile ? '保存中…' : '保存档案'}</CapabilityButton>
-            </Section>
-            <Section header="体重快录">
-              <FormRow label="克数">
-                <Input
-                  type="digit"
-                  placeholder="例如 128.5"
-                  placeholderStyle="color: rgba(255,255,255,0.35)"
-                  value={weight}
-                  onInput={(event) => setWeight(event.detail.value)}
-                  style={{ color: '#FFFFFF' }}
-                />
-              </FormRow>
-              <FormRow label="备注" divider>
-                <Input
-                  placeholder="可选"
-                  placeholderStyle="color: rgba(255,255,255,0.35)"
-                  value={note}
-                  onInput={(event) => setNote(event.detail.value)}
-                  style={{ color: '#FFFFFF' }}
-                />
-              </FormRow>
-              <CapabilityButton capability="write_weight" block onClick={() => void saveWeight()}>保存体重</CapabilityButton>
-            </Section>
-            <Section header="健康快录">
-              <CapabilityButton capability="write_health" block variant="outlined" onClick={() => void saveHealth()}>记录一次日常观察</CapabilityButton>
-            </Section>
-            <Section header="最近体重" footer={`共 ${weights.length} 条`}>
-              {weights.length
-                ? weights.slice(0, 10).map((item) => (
+            </View>
+
+            <SectionList>
+              {segment === 0 ? (
+                <>
+                  <Section header="关键信息">
                     <Cell
-                      key={item.id}
-                      title={`${item.weightG ?? item.weight_g ?? '-'} g`}
-                      subtitle={String(item.recordedAt || item.recorded_at || '')}
-                      value={<Tag>{humanShortLabel(item.source || 'manual') || '手记'}</Tag>}
-                    />
-                  ))
-                : <Cell title="暂无体重记录" />}
-            </Section>
-            <Section header="健康记录" footer={`共 ${health.length} 条`}>
-              {health.length
-                ? health.slice(0, 10).map((item) => (
-                    <Cell
-                      key={item.id}
-                      title={humanShortLabel(item.type) || item.type || '观察'}
-                      subtitle={item.notes || String(item.observedAt || '')}
+                      title="日龄"
                       value={
-                        <Tag
-                          tone={
-                            item.severity === 'high' || item.severity === 'critical'
-                              ? 'danger'
-                              : 'success'
-                          }
-                        >
-                          {humanShortLabel(item.severity || 'info') || '一般'}
-                        </Tag>
+                        ageLabel(animal.birthDate || animal.birth_date) ||
+                        shortDate(animal.birthDate || animal.birth_date) ||
+                        '未记录出生'
                       }
                     />
-                  ))
-                : <Cell title="暂无健康记录" />}
-            </Section>
-            <Text style={{ display: 'block', color: palette.secondaryLabel, padding: `0 ${metrics.pagePadding}px ${metrics.bottomSafePadding}px` }}>只追加记录，原始数据由服务端保留审计链。</Text>
-          </SectionList>
+                    <Cell title="性别" value={sexLabel(animal.sex)} />
+                    <Cell title="当前笼舍" value={enclosureLabel(animal)} />
+                    <Cell
+                      title="繁育状态"
+                      value={humanShortLabel(animal.breedingStatus) || '未记录'}
+                    />
+                    {(phenotypeLabel || animal.corePhenotypeLabel) ? (
+                      <Cell
+                        title="样子"
+                        value={String(phenotypeLabel || animal.corePhenotypeLabel)}
+                      />
+                    ) : null}
+                    {animalNotes || animal.notes ? (
+                      <Cell title="备注" subtitle={String(animalNotes || animal.notes)} />
+                    ) : null}
+                  </Section>
+                  <Section header="快捷动作">
+                    <Cell title="试配模拟" subtitle="用这个体的样子试配" chevron onClick={openTrialPairing} />
+                    <Cell
+                      title="看族谱"
+                      subtitle="父母与祖代（来自窝次记录）"
+                      chevron
+                      onClick={openPedigree}
+                    />
+                    {canUseCapability('write_hamster') ? (
+                      <Cell
+                        title={animal.coverMediaId ? '更换头像' : '上传头像'}
+                        subtitle={avatarBusy ? '处理中…' : '相册或拍照'}
+                        chevron
+                        onClick={() => {
+                          if (!avatarBusy) void uploadAvatar()
+                        }}
+                      />
+                    ) : null}
+                    {canUseCapability('write_hamster') && animal.coverMediaId ? (
+                      <Cell
+                        title="移除头像"
+                        onClick={() => {
+                          if (!avatarBusy) void removeAvatar()
+                        }}
+                      />
+                    ) : null}
+                    {canUseCapability('write_hamster') ? (
+                      <Cell title="编辑档案" subtitle="编号、样子、出生日期" chevron onClick={() => setSegment(3)} />
+                    ) : null}
+                    {canUseCapability('write_weight') ? (
+                      <Cell title="记体重" chevron onClick={() => setSegment(1)} />
+                    ) : null}
+                    {canUseCapability('write_health') ? (
+                      <Cell title="健康观察" chevron onClick={() => setSegment(2)} />
+                    ) : null}
+                  </Section>
+                </>
+              ) : null}
+
+              {segment === 1 ? (
+                <>
+                  <Section header="体重快录">
+                    <FormRow label="克数">
+                      <Input
+                        type="digit"
+                        placeholder="例如 128.5"
+                        placeholderStyle="color: rgba(255,255,255,0.35)"
+                        value={weight}
+                        onInput={(event) => setWeight(event.detail.value)}
+                        style={{ color: '#FFFFFF' }}
+                      />
+                    </FormRow>
+                    <FormRow label="备注" divider>
+                      <Input
+                        placeholder="可选"
+                        placeholderStyle="color: rgba(255,255,255,0.35)"
+                        value={note}
+                        onInput={(event) => setNote(event.detail.value)}
+                        style={{ color: '#FFFFFF' }}
+                      />
+                    </FormRow>
+                    <CapabilityButton capability="write_weight" block onClick={() => void saveWeight()}>
+                      保存体重
+                    </CapabilityButton>
+                  </Section>
+                  <Section header="最近体重" footer={weights.length ? `共 ${weights.length} 条` : undefined}>
+                    {weights.length ? (
+                      weights.slice(0, 10).map((item) => (
+                        <Cell
+                          key={item.id}
+                          title={`${item.weightG ?? item.weight_g ?? '-'} g`}
+                          subtitle={
+                            shortDate(item.recordedAt || item.recorded_at) ||
+                            String(item.recordedAt || item.recorded_at || '')
+                          }
+                          value={
+                            <Tag>{humanShortLabel(item.source || 'manual') || '手记'}</Tag>
+                          }
+                        />
+                      ))
+                    ) : (
+                      <Cell title="暂无体重记录" subtitle="快录一条即可开始跟踪" />
+                    )}
+                  </Section>
+                </>
+              ) : null}
+
+              {segment === 2 ? (
+                <>
+                  <Section header="健康快录">
+                    <FormRow label="备注">
+                      <Input
+                        placeholder="可选，例如精神状态"
+                        placeholderStyle="color: rgba(255,255,255,0.35)"
+                        value={note}
+                        onInput={(event) => setNote(event.detail.value)}
+                        style={{ color: '#FFFFFF' }}
+                      />
+                    </FormRow>
+                    <CapabilityButton
+                      capability="write_health"
+                      block
+                      variant="outlined"
+                      onClick={() => void saveHealth()}
+                    >
+                      记录一次日常观察
+                    </CapabilityButton>
+                  </Section>
+                  <Section header="健康记录" footer={health.length ? `共 ${health.length} 条` : undefined}>
+                    {health.length ? (
+                      health.slice(0, 10).map((item) => (
+                        <Cell
+                          key={item.id}
+                          title={humanShortLabel(item.type) || item.type || '观察'}
+                          subtitle={
+                            item.notes ||
+                            shortDate(item.observedAt || item.observed_at) ||
+                            String(item.observedAt || item.observed_at || '')
+                          }
+                          value={
+                            <Tag
+                              tone={
+                                item.severity === 'high' || item.severity === 'critical'
+                                  ? 'danger'
+                                  : 'success'
+                              }
+                            >
+                              {humanShortLabel(item.severity || 'info') || '一般'}
+                            </Tag>
+                          }
+                        />
+                      ))
+                    ) : (
+                      <Cell title="暂无健康记录" subtitle="日常观察会按时间列在这里" />
+                    )}
+                  </Section>
+                </>
+              ) : null}
+
+              {segment === 3 ? (
+                <Section header="档案编辑">
+                  <FormRow label="内部编号">
+                    <Input
+                      value={animalInternalCode}
+                      placeholder="内部编号"
+                      placeholderStyle="color: rgba(255,255,255,0.35)"
+                      onInput={(event) => setAnimalInternalCode(event.detail.value)}
+                      style={{ color: '#FFFFFF' }}
+                    />
+                  </FormRow>
+                  <FormRow label="名称" divider>
+                    <Input
+                      value={animalName}
+                      placeholder="可选"
+                      placeholderStyle="color: rgba(255,255,255,0.35)"
+                      onInput={(event) => setAnimalName(event.detail.value)}
+                      style={{ color: '#FFFFFF' }}
+                    />
+                  </FormRow>
+                  <FormRow label="性别" divider>
+                    <Picker
+                      mode="selector"
+                      range={['待定', '公', '母']}
+                      value={Math.max(0, ['unknown', 'male', 'female'].indexOf(animalSex))}
+                      onChange={(event) =>
+                        setAnimalSex(
+                          ['unknown', 'male', 'female'][Number(event.detail.value)] || 'unknown'
+                        )
+                      }
+                    >
+                      <Cell
+                        title={sexLabel(animalSex)}
+                        value={<Tag>选择</Tag>}
+                      />
+                    </Picker>
+                  </FormRow>
+                  {seriesOptions.length ? (
+                    <>
+                      <FormRow label="样子系列" divider>
+                        <Picker
+                          mode="selector"
+                          range={seriesOptions.map((item) => item.name)}
+                          value={Math.max(
+                            0,
+                            seriesOptions.findIndex((item) => item.code === seriesCode)
+                          )}
+                          onChange={(event) => {
+                            const selected = seriesOptions[Number(event.detail.value)]
+                            setSeriesCode(selected?.code || '')
+                            setPhenotypeLabel(selected?.phenotypes[0] || '')
+                            setAnimalVarietyCode(
+                              encodePhenotype(selected?.code || '', selected?.phenotypes[0] || '')
+                            )
+                          }}
+                        >
+                          <Cell title={selectedSeries?.name || '选择系列'} value={<Tag>选择</Tag>} />
+                        </Picker>
+                      </FormRow>
+                      <FormRow label="样子" divider>
+                        <Picker
+                          mode="selector"
+                          range={phenotypeOptions}
+                          value={phenotypeIndex}
+                          onChange={(event) => {
+                            const label = phenotypeOptions[Number(event.detail.value)] || ''
+                            setPhenotypeLabel(label)
+                            setAnimalVarietyCode(encodePhenotype(seriesCode, label))
+                          }}
+                        >
+                          <Cell title={phenotypeLabel || '选择样子'} value={<Tag>选择</Tag>} />
+                        </Picker>
+                      </FormRow>
+                    </>
+                  ) : null}
+                  <FormRow label="出生日期" divider>
+                    <Picker
+                      mode="date"
+                      value={animalBirthDate}
+                      onChange={(event) => setAnimalBirthDate(event.detail.value)}
+                    >
+                      <Cell title={animalBirthDate || '未填写'} value={<Tag>选择</Tag>} />
+                    </Picker>
+                  </FormRow>
+                  <FormRow label="备注" divider>
+                    <Textarea
+                      value={animalNotes}
+                      maxlength={1000}
+                      placeholder="可选"
+                      placeholderStyle="color: rgba(255,255,255,0.35)"
+                      onInput={(event) => setAnimalNotes(event.detail.value)}
+                      style={{ color: '#FFFFFF' }}
+                    />
+                  </FormRow>
+                  <Cell
+                    title={showAdvanced ? '收起高级' : '展开高级'}
+                    subtitle="手动品系代码，选样子后通常可留空"
+                    value={<Tag>{showAdvanced ? '已展开' : '折叠'}</Tag>}
+                    onClick={() => setShowAdvanced((v) => !v)}
+                  />
+                  {showAdvanced ? (
+                    <FormRow label="品系代码" divider>
+                      <Input
+                        value={animalVarietyCode}
+                        placeholder={seriesOptions.length ? '可选，默认使用系列|表型' : '可选'}
+                        placeholderStyle="color: rgba(255,255,255,0.35)"
+                        onInput={(event) => setAnimalVarietyCode(event.detail.value)}
+                        style={{ color: '#FFFFFF' }}
+                      />
+                    </FormRow>
+                  ) : null}
+                  <CapabilityButton
+                    capability="write_hamster"
+                    block
+                    disabled={savingProfile}
+                    onClick={() => void saveProfile()}
+                  >
+                    {savingProfile ? '保存中…' : '保存档案'}
+                  </CapabilityButton>
+                </Section>
+              ) : null}
+            </SectionList>
+          </View>
         ) : null}
       </ScrollView>
     </View>

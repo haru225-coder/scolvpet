@@ -2,7 +2,14 @@ import Taro from '@tarojs/taro'
 import { metrics } from '@scolvpet/mp-ui'
 
 /** 三栏 Tab（UI 重组 v3）。顺序与 app.config.ts tabBar.list 必须一致。 */
-export const TAB_PAGES = ['/pages/today/index', '/pages/population/index', '/pages/business/index'] as const
+// 2026-08-04：两栏 Tab。顺序与 app.config.ts tabBar.list 必须一致。
+export const TAB_PAGES = ['/pages/population/index', '/pages/trial/index'] as const
+
+/** 不占 Tab 但仍可进的页（旧深链 / 主视窗入口）。 */
+export const OFF_TAB_PAGES = {
+  today: '/pages/today/index',
+  business: '/pages/business/index'
+} as const
 export type TabPage = (typeof TAB_PAGES)[number]
 
 /** 自绘底栏选中态同步（各 Tab 页 useDidShow 时 markTabActive）。 */
@@ -15,12 +22,20 @@ export const TAB_ACTIVE_EVENT = 'scolvpet:tab-active'
 export const DOMAIN_HOME = {
   animals: '/packages/animals/index/index',
   litters: '/packages/litters/index/index',
+  /** 旧繁育计划入口：产品已改为试配模拟，深链仍指向 breeding 包再 redirect */
   breeding: '/packages/breeding/index/index',
   reminders: '/packages/reminders/index/index',
   crm: '/packages/crm/index/index',
   contracts: '/packages/contracts/index/index',
   finance: '/packages/finance/index/index',
+  /** 遗传列表（档案/位点摘要） */
   genetic: '/packages/genetic/index/index',
+  /** 试配模拟主路径：选表型 → 看结果 */
+  /** 试配已升为 Tab（主包） */
+  trial: '/pages/trial/index',
+  geneticCreate: '/packages/genetic/create/index',
+  /** 经营端族谱（需 ?id=） */
+  pedigree: '/packages/animals/pedigree/index',
   dataCenter: '/packages/data-center/index/index',
   ai: '/packages/ai/index/index',
   profile: '/packages/profile/index/index'

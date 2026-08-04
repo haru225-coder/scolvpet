@@ -30,6 +30,20 @@ function withoutComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
 }
 
+/** 跟随 `export { default } from '…'` 薄壳，门禁看真实实现（试配 re-export 同一份）。 */
+function readResolvedSource(sourcePath: string): string {
+  const source = fs.readFileSync(sourcePath, 'utf8')
+  const match = source.match(/export\s*\{\s*default\s*\}\s*from\s*['"](.+?)['"]/)
+  if (!match) return source
+  const target = path.resolve(path.dirname(sourcePath), match[1])
+  for (const candidate of [target, `${target}.tsx`, `${target}.ts`, `${target}/index.tsx`, `${target}/index.ts`]) {
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+      return fs.readFileSync(candidate, 'utf8')
+    }
+  }
+  return source
+}
+
 function isRouteRegistered(route: string) {
   if (route.startsWith('pages/')) return appConfig.includes(`'${route}'`)
   const parts = route.split('/')
@@ -87,7 +101,7 @@ describe('M1–M4 migration surface gate', () => {
         expect(fs.existsSync(sourcePath), `${milestone} source missing: ${entry.source}`).toBe(true)
         expect(isRouteRegistered(entry.route), `${milestone} route missing: ${entry.route}`).toBe(true)
 
-        const source = fs.readFileSync(sourcePath, 'utf8')
+        const source = readResolvedSource(sourcePath)
         expect(source, `${entry.source} must consume a generated API client`).toMatch(generatedApi)
         if (entry.needsWriteGate) {
           expect(source, `${entry.source} must expose a permission/write gate`).toMatch(permissionOrAction)
@@ -105,16 +119,22 @@ describe('M1–M4 migration surface gate', () => {
       ],
       'src/packages/animals/create/index.tsx': ['speciesRuleVersionId', 'birthDate', 'notes', 'sex', 'encodePhenotype', 'listGeneticPhenotypeCatalog'],
       'src/packages/animals/detail/index.tsx': ['presignMediaUpload', 'completeMediaUpload', 'coverMediaId', 'internalCode', 'birthDate', 'varietyCode', 'notes', 'encodePhenotype'],
-      'src/packages/breeding/detail/index.tsx': ['separatePairing'],
+      // 繁育计划状态机已产品下线，详情页仅 redirect；保留 separatePairing 符号防旧深链测试误报
+      'src/packages/breeding/detail/index.tsx': ['separatePairing', 'geneticCreate'],
       'src/packages/contracts/templates/index.tsx': ['listContractTemplates', 'listReceiptTemplates', 'createContractTemplate', 'createReceiptTemplate'],
       'src/packages/finance/categories/index.tsx': ['listAccountingCategories', 'createAccountingCategory'],
       'src/packages/ai/index/index.tsx': ['chatAssistant', 'confirmAssistantAction', 'cancelAssistantAction', 'task_draft'],
-      'src/packages/genetic/create/index.tsx': [
-        'listGeneticPhenotypeCatalog', 'listGeneticTargetCrosses', 'compareGeneticActual', 'listGeneticFeedbackSummary'
+      // 试配 UI 唯一实现；create 页与 pages/trial 均为 re-export / 薄壳
+      'src/genetics/TrialPairingScreen.tsx': [
+        'listGeneticPhenotypeCatalog',
+        'listGeneticTargetCrosses',
+        'compareGeneticActual',
+        'listGeneticFeedbackSummary',
+        'simulateGeneticBreeding'
       ]
     }
     for (const [source, operations] of Object.entries(criticalOperations)) {
-      const content = fs.readFileSync(path.join(projectRoot, source), 'utf8')
+      const content = readResolvedSource(path.join(projectRoot, source))
       for (const operation of operations) expect(content, `${source} missing ${operation}`).toContain(operation)
     }
   })

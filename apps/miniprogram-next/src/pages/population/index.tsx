@@ -12,6 +12,7 @@ import {
 } from '../../utils/scan-labels'
 import {
   DOMAIN_HOME,
+  OFF_TAB_PAGES,
   humanShortLabel,
   markTabActive,
   openPage,
@@ -108,12 +109,13 @@ export default function PopulationPage() {
         ) : null}
         {notice ? <Empty title={notice} description="点下方入口也能直接进列表" /> : null}
         {emptyBoth ? (
-          <Empty title="还没有个体和窝次" description="先建档几只，或从繁育计划开始" />
+          <Empty title="还没有个体和窝次" description="先建档几只，或直接去试配模拟看看结果" />
         ) : null}
         <SectionList>
           <Section header="常用">
-            <Cell title="繁育计划" subtitle="配哪一对、进度到哪" chevron onClick={() => openPage(DOMAIN_HOME.breeding)} />
-            <Cell title="试配一下" subtitle="这两只会生出什么" chevron onClick={() => openPage(DOMAIN_HOME.genetic)} />
+            {/* 试配已升为底标 Tab，页脚不再重复入口 */}
+            <Cell title="今日待办" chevron onClick={() => openPage(OFF_TAB_PAGES.today)} />
+            <Cell title="经营（客户 / 合同 / 账目）" chevron onClick={() => openPage(OFF_TAB_PAGES.business)} />
             <Cell title="提醒与日历" chevron onClick={() => openPage(DOMAIN_HOME.reminders)} />
           </Section>
         </SectionList>

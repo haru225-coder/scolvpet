@@ -5,24 +5,19 @@ import { metrics, palette } from '@scolvpet/mp-ui'
 
 import { TAB_ACTIVE_EVENT, TAB_PAGES } from '../utils/tab-routes'
 
+// 2026-08-04：两栏（种群 + 试配）。图标沍用现有 assets/tab/*，不新增二进制。
 const TABS = [
   {
     path: TAB_PAGES[0],
-    text: '今日',
-    icon: '/assets/tab/today.png',
-    iconActive: '/assets/tab/today-active.png'
-  },
-  {
-    path: TAB_PAGES[1],
     text: '种群',
     icon: '/assets/tab/population.png',
     iconActive: '/assets/tab/population-active.png'
   },
   {
-    path: TAB_PAGES[2],
-    text: '经营',
-    icon: '/assets/tab/business.png',
-    iconActive: '/assets/tab/business-active.png'
+    path: TAB_PAGES[1],
+    text: '试配',
+    icon: '/assets/tab/today.png',
+    iconActive: '/assets/tab/today-active.png'
   }
 ]
 

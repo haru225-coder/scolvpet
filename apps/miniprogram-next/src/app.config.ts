@@ -5,8 +5,11 @@
 // 体积门禁：单分包 <2MB，预警 1.6MB（scripts/check-mp-bundle-size.mjs）
 export default defineAppConfig({
   pages: [
-    'pages/today/index',
+    // 首屏 = 种群（管理）；trial = 试配推理器（tabBar 只能指主包页）
     'pages/population/index',
+    'pages/trial/index',
+    // 今日 / 经营：2026-08-04 从 tabBar 下掉，路径保留，旧深链不 404
+    'pages/today/index',
     'pages/business/index',
     'pages/login/index',
     // —— C 端原生混写页（原样并入，勿改路径）——
@@ -26,13 +29,9 @@ export default defineAppConfig({
     selectedColor: '#E0A070',
     backgroundColor: '#14110F',
     borderStyle: 'black',
+    // 2026-08-04：客户验收只要「管理 + 试配 + 族谱」。
+    // 今日 / 经营 不再占 Tab（页面保留，从主视窗入口进）。
     list: [
-      {
-        pagePath: 'pages/today/index',
-        text: '今日',
-        iconPath: 'assets/tab/today.png',
-        selectedIconPath: 'assets/tab/today-active.png'
-      },
       {
         pagePath: 'pages/population/index',
         text: '种群',
@@ -40,15 +39,15 @@ export default defineAppConfig({
         selectedIconPath: 'assets/tab/population-active.png'
       },
       {
-        pagePath: 'pages/business/index',
-        text: '经营',
-        iconPath: 'assets/tab/business.png',
-        selectedIconPath: 'assets/tab/business-active.png'
+        pagePath: 'pages/trial/index',
+        text: '试配',
+        iconPath: 'assets/tab/population.png',
+        selectedIconPath: 'assets/tab/population-active.png'
       }
     ]
   },
   subPackages: [
-    { root: 'packages/animals', pages: ['index/index', 'detail/index', 'create/index', 'batch-create/index'] },
+    { root: 'packages/animals', pages: ['index/index', 'detail/index', 'create/index', 'batch-create/index', 'pedigree/index'] },
     { root: 'packages/litters', pages: ['index/index', 'detail/index'] },
     { root: 'packages/reminders', pages: ['index/index', 'create/index', 'calendar/index', 'subscriptions/index'] },
     { root: 'packages/breeding', pages: ['index/index', 'detail/index', 'create/index'] },

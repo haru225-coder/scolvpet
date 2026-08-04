@@ -8,11 +8,10 @@ import {
 } from '../src/utils/tab-routes'
 
 describe('tab-routes 人话与底栏辅助', () => {
-  it('三栏路径固定', () => {
+  it('两栏路径固定（种群 / 试配）', () => {
     expect(TAB_PAGES).toEqual([
-      '/pages/today/index',
       '/pages/population/index',
-      '/pages/business/index'
+      '/pages/trial/index'
     ])
   })
 
