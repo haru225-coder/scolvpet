@@ -332,7 +332,7 @@ func (s *Store) UpdateOrganization(ctx context.Context, ownerID uuid.UUID, key, 
 		}
 		version, err := ParseETag(ifMatch)
 		if err != nil || version != org.Version {
-			return 0, nil, nil, fmt.Errorf("%w: current=%d", ErrVersionConflict, org.Version)
+			return 0, nil, nil, &VersionError{Current: org.Version}
 		}
 		name, mode, timezone := org.Name, org.Mode, org.Timezone
 		if update.Name != nil {

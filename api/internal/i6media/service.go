@@ -338,7 +338,7 @@ func (s *Service) Complete(ctx context.Context, ownerID, uploadID uuid.UUID, key
 			return 0, nil, nil, err
 		}
 		if upload.Version != expectedVersion {
-			return 0, nil, nil, fmt.Errorf("%w: current=%d", store.ErrVersionConflict, upload.Version)
+			return 0, nil, nil, &store.VersionError{Current: upload.Version}
 		}
 		if upload.ExpiresAt.Before(time.Now().UTC()) || upload.Kind == "" || upload.Status != "pending_upload" {
 			return 0, nil, nil, ErrConflict
@@ -524,7 +524,7 @@ func (s *Service) CreateEditRecipe(ctx context.Context, ownerID, mediaID uuid.UU
 			return 0, nil, nil, err
 		}
 		if asset.Version != expectedVersion {
-			return 0, nil, nil, fmt.Errorf("%w: current=%d", store.ErrVersionConflict, asset.Version)
+			return 0, nil, nil, &store.VersionError{Current: asset.Version}
 		}
 		if asset.Kind != "image" || asset.Status != "ready" {
 			return 0, nil, nil, ErrValidation
@@ -576,7 +576,7 @@ func (s *Service) RetryProcessing(ctx context.Context, ownerID, mediaID uuid.UUI
 			return 0, nil, nil, err
 		}
 		if asset.Version != expectedVersion {
-			return 0, nil, nil, fmt.Errorf("%w: current=%d", store.ErrVersionConflict, asset.Version)
+			return 0, nil, nil, &store.VersionError{Current: asset.Version}
 		}
 		organizationID, err := organizationIDTx(ctx, tx, ownerID)
 		if err != nil {
@@ -626,7 +626,7 @@ func (s *Service) SetCover(ctx context.Context, ownerID, mediaID uuid.UUID, key,
 			return 0, nil, nil, err
 		}
 		if asset.Version != expectedVersion {
-			return 0, nil, nil, fmt.Errorf("%w: current=%d", store.ErrVersionConflict, asset.Version)
+			return 0, nil, nil, &store.VersionError{Current: asset.Version}
 		}
 		organizationID, err := organizationIDTx(ctx, tx, ownerID)
 		if err != nil {
@@ -738,7 +738,7 @@ func (s *Service) RevokeShare(ctx context.Context, ownerID, shareID uuid.UUID, k
 			return 0, nil, nil, err
 		}
 		if currentVersion != expectedVersion {
-			return 0, nil, nil, fmt.Errorf("%w: current=%d", store.ErrVersionConflict, currentVersion)
+			return 0, nil, nil, &store.VersionError{Current: currentVersion}
 		}
 		if revokedAt != nil {
 			return 0, nil, nil, ErrConflict

@@ -1174,7 +1174,7 @@ func validationError(message string) error {
 }
 
 func versionError(current int) error {
-	return fmt.Errorf("%w: current=%d", ErrVersionConflict, current)
+	return &VersionError{Current: current}
 }
 
 func trimmedOptional(value *string) *string {

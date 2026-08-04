@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -241,7 +240,7 @@ func (s *Server) updateOrganizationMember(w http.ResponseWriter, r *http.Request
 			`, ownerID, memberID, current.Version, role, displayName)
 			member, err := scanOrganizationMember(row)
 			if errors.Is(err, store.ErrNotFound) {
-				return 0, nil, nil, fmt.Errorf("%w: current=%d", store.ErrVersionConflict, current.Version)
+				return 0, nil, nil, &store.VersionError{Current: current.Version}
 			}
 			if err != nil {
 				return 0, nil, nil, err
@@ -304,7 +303,7 @@ func (s *Server) revokeOrganizationMember(w http.ResponseWriter, r *http.Request
 			`, ownerID, memberID, current.Version)
 			member, err := scanOrganizationMember(row)
 			if errors.Is(err, store.ErrNotFound) {
-				return 0, nil, nil, fmt.Errorf("%w: current=%d", store.ErrVersionConflict, current.Version)
+				return 0, nil, nil, &store.VersionError{Current: current.Version}
 			}
 			if err != nil {
 				return 0, nil, nil, err
@@ -403,7 +402,7 @@ func validateMemberIfMatch(value string, currentVersion int) error {
 		return validationError("If-Match", "If-Match 必须是当前成员版本 ETag")
 	}
 	if version != currentVersion {
-		return fmt.Errorf("%w: current=%d", store.ErrVersionConflict, currentVersion)
+		return &store.VersionError{Current: currentVersion}
 	}
 	return nil
 }

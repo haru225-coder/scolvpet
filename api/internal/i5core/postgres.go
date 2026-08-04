@@ -447,7 +447,7 @@ func completeCareTaskTx(ctx context.Context, tx pgx.Tx, ownerID, taskID uuid.UUI
 		return CompleteTaskResult{}, err
 	}
 	if task.Version != input.ExpectedVersion {
-		return CompleteTaskResult{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, task.Version)
+		return CompleteTaskResult{}, &VersionError{Current: task.Version}
 	}
 	seen := make(map[uuid.UUID]struct{}, len(input.SubjectResults))
 	items := make([]CompletedTaskItem, 0, len(input.SubjectResults))
@@ -515,7 +515,7 @@ func completeCareTaskTx(ctx context.Context, tx pgx.Tx, ownerID, taskID uuid.UUI
 	`, ownerID, taskID, input.ExpectedVersion, status, input.CompletedAt))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return CompleteTaskResult{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, task.Version)
+			return CompleteTaskResult{}, &VersionError{Current: task.Version}
 		}
 		return CompleteTaskResult{}, mapPostgresError(err)
 	}
@@ -540,7 +540,7 @@ func cancelCareTaskTx(ctx context.Context, tx pgx.Tx, ownerID, taskID uuid.UUID,
 		return CareTask{}, err
 	}
 	if task.Version != input.ExpectedVersion {
-		return CareTask{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, task.Version)
+		return CareTask{}, &VersionError{Current: task.Version}
 	}
 	if !CanCancelTask(task.State) {
 		return CareTask{}, fmt.Errorf("%w: task in state %s cannot be cancelled", ErrValidation, task.State)
@@ -554,7 +554,7 @@ func cancelCareTaskTx(ctx context.Context, tx pgx.Tx, ownerID, taskID uuid.UUID,
 	`+careTaskReturning, ownerID, taskID, input.ExpectedVersion, reason))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return CareTask{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, task.Version)
+			return CareTask{}, &VersionError{Current: task.Version}
 		}
 		return CareTask{}, mapPostgresError(err)
 	}
@@ -571,7 +571,7 @@ func reopenCareTaskTx(ctx context.Context, tx pgx.Tx, ownerID, taskID uuid.UUID,
 		return CareTask{}, err
 	}
 	if task.Version != input.ExpectedVersion {
-		return CareTask{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, task.Version)
+		return CareTask{}, &VersionError{Current: task.Version}
 	}
 	if !CanReopenTask(task.State) {
 		return CareTask{}, fmt.Errorf("%w: only a completed or cancelled task can be reopened", ErrValidation)
@@ -595,7 +595,7 @@ func reopenCareTaskTx(ctx context.Context, tx pgx.Tx, ownerID, taskID uuid.UUID,
 	`+careTaskReturning, ownerID, taskID, input.ExpectedVersion))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return CareTask{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, task.Version)
+			return CareTask{}, &VersionError{Current: task.Version}
 		}
 		return CareTask{}, mapPostgresError(err)
 	}

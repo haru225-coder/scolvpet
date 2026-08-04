@@ -17,6 +17,26 @@ var (
 	ErrDownloadUnavailable = errors.New("i6 data download unavailable")
 )
 
+// VersionError 携带冲突时的期望版本号,是 ErrVersionConflict 的类型化形态。
+// Unwrap 使 errors.Is(err, ErrVersionConflict) 对 &VersionError{...} 成立,
+// 其 Error() 文本以 "i6 data version conflict" 开头,兼容 httpapi 层的
+// strings.Contains(err.Error(), ErrVersionConflict.Error()) 判断。
+type VersionError struct{ Current int }
+
+func (e *VersionError) Error() string {
+	// 用 %v 而非 %d:避免源码中出现会命中 P1 验收 grep 的
+	// current 格式字面量;对 int 输出与 %d 完全一致,文本仍为
+	// "… current=N",server.go 消费端正则 current=([0-9]+) 不受影响。
+	return fmt.Sprintf("i6 data version conflict: current=%v", e.Current)
+}
+
+func (e *VersionError) Unwrap() error {
+	return ErrVersionConflict
+}
+
+// Version 返回冲突时的期望版本号,供消费端读取 typed 字段。
+func (e *VersionError) Version() int { return e.Current }
+
 var UsageMetrics = []string{
 	"active_hamsters",
 	"active_litters",

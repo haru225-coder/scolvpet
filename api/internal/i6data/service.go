@@ -530,7 +530,8 @@ func (s *Service) retryBackupJob(ctx context.Context, ownerID, jobID uuid.UUID, 
 func retryExportJobTx(ctx context.Context, tx pgx.Tx, ownerID, jobID uuid.UUID, key, ifMatch string, input RetryJobInput) (ExportJob, error) {
 	version, err := store.ParseETag(ifMatch)
 	if err != nil {
-		return ExportJob{}, fmt.Errorf("%w: current=0", ErrVersionConflict)
+		// 解析失败按版本 0 冲突处理。
+		return ExportJob{}, &VersionError{Current: 0}
 	}
 	var asyncID, orgID uuid.UUID
 	var status string
@@ -550,7 +551,7 @@ func retryExportJobTx(ctx context.Context, tx pgx.Tx, ownerID, jobID uuid.UUID, 
 		return ExportJob{}, err
 	}
 	if version != currentVersion {
-		return ExportJob{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, currentVersion)
+		return ExportJob{}, &VersionError{Current: currentVersion}
 	}
 	if status != "failed" {
 		return ExportJob{}, fmt.Errorf("%w: export job status is %s", ErrConflict, status)
@@ -581,7 +582,8 @@ func retryExportJobTx(ctx context.Context, tx pgx.Tx, ownerID, jobID uuid.UUID, 
 func retryBackupJobTx(ctx context.Context, tx pgx.Tx, ownerID, jobID uuid.UUID, key, ifMatch string, input RetryJobInput) (BackupJob, error) {
 	version, err := store.ParseETag(ifMatch)
 	if err != nil {
-		return BackupJob{}, fmt.Errorf("%w: current=0", ErrVersionConflict)
+		// 解析失败按版本 0 冲突处理。
+		return BackupJob{}, &VersionError{Current: 0}
 	}
 	var orgID, asyncID uuid.UUID
 	var status string
@@ -597,7 +599,7 @@ func retryBackupJobTx(ctx context.Context, tx pgx.Tx, ownerID, jobID uuid.UUID, 
 		return BackupJob{}, err
 	}
 	if version != currentVersion {
-		return BackupJob{}, fmt.Errorf("%w: current=%d", ErrVersionConflict, currentVersion)
+		return BackupJob{}, &VersionError{Current: currentVersion}
 	}
 	if status != "failed" {
 		return BackupJob{}, fmt.Errorf("%w: backup job status is %s", ErrConflict, status)
