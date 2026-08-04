@@ -23,9 +23,54 @@ var (
 	ErrIdempotencyKeyRequired     = errors.New("idempotency key required")
 	ErrIdempotencyPayloadMismatch = errors.New("idempotency payload mismatch")
 	ErrIdempotencyInProgress      = errors.New("idempotency request in progress")
-	ErrVersionConflict            = errors.New("version conflict")
 	ErrDuplicate                  = errors.New("duplicate resource")
+	ErrUniqueViolation            = errors.New("unique constraint violation")
 )
+
+// VersionError 携带冲突时的期望版本号,是 ErrVersionConflict 的类型化形态。
+// 兼容性约定(P0 版本号协议改造):
+//   - 现有产出端 fmt.Errorf("%w: current=%d", ErrVersionConflict, v) 原样可用:
+//     %w 参数即哨兵指针本身,errors.Is 沿 Unwrap 链命中同一哨兵;
+//   - 新产出端 fmt.Errorf("%w: %d", &VersionError{Current: v}, ...) 也能被
+//     errors.Is(err, ErrVersionConflict) 匹配(由 Is 方法保证,不要求指针同一);
+//   - Error() 文本以 "version conflict" 开头,httpapi 层
+//     strings.Contains(err.Error(), ErrVersionConflict.Error()) 在 P2 清理前不失效。
+type VersionError struct{ Current int }
+
+func (e *VersionError) Error() string {
+	return fmt.Sprintf("version conflict: current=%d", e.Current)
+}
+
+// Version 返回冲突时的期望版本号,供消费端读取 typed 字段。
+func (e *VersionError) Version() int { return e.Current }
+
+// Is 让任意 *VersionError 与哨兵 ErrVersionConflict 互相视为同一错误,
+// 兼容新旧两种产出形式。
+func (e *VersionError) Is(target error) bool {
+	_, ok := target.(*VersionError)
+	return ok
+}
+
+// ErrVersionConflict 是版本冲突哨兵。在 P1 改造完成前,现有产出端仍以本
+// 哨兵作为 %w 参数;之后将改为填充 Current 的 *VersionError。
+var ErrVersionConflict = &VersionError{}
+
+// MapPostgresError 将 pgconn.PgError 的唯一约束冲突(SQLSTATE 23505)与
+// 排他约束冲突(23P01)统一包装为 ErrUniqueViolation,其余错误原样返回。
+// 这是 store 层唯一键冲突的最小映射入口,供 httpapi 层收口时消费。
+func MapPostgresError(err error) error {
+	if err == nil {
+		return nil
+	}
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		switch pgErr.Code {
+		case "23505", "23P01":
+			return fmt.Errorf("%w: %s", ErrUniqueViolation, pgErr.Message)
+		}
+	}
+	return err
+}
 
 type Store struct {
 	Pool *pgxpool.Pool
