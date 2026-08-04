@@ -489,7 +489,10 @@ func writeI5Error(w http.ResponseWriter, r *http.Request, err error) {
 		status, code, message = http.StatusConflict, "IDEMPOTENCY_IN_PROGRESS", "相同写请求正在处理中"
 	case errors.Is(err, i5core.ErrVersionConflict):
 		status, code, message = http.StatusConflict, "VERSION_CONFLICT", "资源版本已变化，请刷新后重试"
-		details["current_version"] = extractCurrentVersion(err.Error())
+		var vc versionCarrier
+		if errors.As(err, &vc) {
+			details["current_version"] = vc.Version()
+		}
 	default:
 		writeAPIError(w, r, err)
 		return

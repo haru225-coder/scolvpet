@@ -808,9 +808,12 @@ func writeAPIError(w http.ResponseWriter, r *http.Request, err error) {
 			status, code, message = http.StatusConflict, "IDEMPOTENCY_PAYLOAD_MISMATCH", "幂等键对应的载荷不一致"
 		case errors.Is(err, store.ErrIdempotencyInProgress):
 			status, code, message = http.StatusConflict, "IDEMPOTENCY_IN_PROGRESS", "相同写请求正在处理中"
-		case errors.Is(err, store.ErrVersionConflict) || strings.Contains(err.Error(), store.ErrVersionConflict.Error()):
+		case errors.Is(err, store.ErrVersionConflict):
 			status, code, message = http.StatusConflict, "VERSION_CONFLICT", "资源版本已变化，请刷新后重试"
-			details["current_version"] = extractCurrentVersion(err.Error())
+			var vc versionCarrier
+			if errors.As(err, &vc) {
+				details["current_version"] = vc.Version()
+			}
 		case errors.Is(err, auth.ErrInvalidCode):
 			status, code, message = http.StatusUnauthorized, "VERIFICATION_CODE_INVALID", "验证码不正确"
 		case errors.Is(err, auth.ErrVerification):
@@ -846,16 +849,6 @@ func writeAPIError(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 func writeStoredError(_ http.ResponseWriter, _ *http.Request, _ error) {}
-
-func extractCurrentVersion(message string) int {
-	match := regexp.MustCompile(`current=([0-9]+)`).FindStringSubmatch(message)
-	if len(match) == 2 {
-		var version int
-		_, _ = fmt.Sscanf(match[1], "%d", &version)
-		return version
-	}
-	return 0
-}
 
 var phonePattern = regexp.MustCompile(`^\+86[1-9][0-9]{10}$`)
 var codePattern = regexp.MustCompile(`^[0-9]{6}$`)

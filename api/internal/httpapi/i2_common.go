@@ -317,7 +317,10 @@ func writeI2CoreError(w http.ResponseWriter, r *http.Request, err error) {
 			status, code, message = http.StatusConflict, "DUPLICATE_RESOURCE", "资源已存在"
 		case errors.Is(err, i2core.ErrVersionConflict):
 			status, code, message = http.StatusConflict, "VERSION_CONFLICT", "资源已被其他操作更新"
-			currentVersion = extractCurrentVersion(err.Error())
+			var vc versionCarrier
+			if errors.As(err, &vc) {
+				currentVersion = vc.Version()
+			}
 			if currentVersion > 0 {
 				w.Header().Set("ETag", store.FormatETag(currentVersion))
 				details["current_version"] = currentVersion

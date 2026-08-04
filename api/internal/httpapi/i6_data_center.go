@@ -357,7 +357,11 @@ func writeI6Error(w http.ResponseWriter, r *http.Request, err error) {
 		return
 	}
 	if errors.Is(err, i6data.ErrVersionConflict) {
-		current := extractCurrentVersion(err.Error())
+		var vc versionCarrier
+		current := 0
+		if errors.As(err, &vc) {
+			current = vc.Version()
+		}
 		if current > 0 {
 			w.Header().Set("ETag", store.FormatETag(current))
 		}

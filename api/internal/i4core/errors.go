@@ -31,6 +31,9 @@ func (e *VersionError) Error() string {
 }
 func (e *VersionError) Unwrap() error { return ErrVersionConflict }
 
+// Version 返回冲突时的期望版本号,供消费端读取 typed 字段。
+func (e *VersionError) Version() int { return e.Current }
+
 type StateError struct{ Message string }
 
 func (e *StateError) Error() string { return e.Message }

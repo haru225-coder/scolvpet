@@ -454,10 +454,6 @@ func writeI4Error(w http.ResponseWriter, r *http.Request, err error) {
 			status, code, message = http.StatusConflict, "IDEMPOTENCY_PAYLOAD_MISMATCH", "幂等键对应的载荷不一致"
 		case errors.Is(err, i4core.ErrIdempotencyInProgress):
 			status, code, message = http.StatusConflict, "IDEMPOTENCY_IN_PROGRESS", "相同写请求正在处理中"
-		default:
-			if strings.Contains(err.Error(), "current=") {
-				status, code, message = http.StatusConflict, "VERSION_CONFLICT", "资源版本已变化，请刷新后重试"
-			}
 		}
 	}
 	writeJSON(w, r, status, map[string]any{"error": map[string]any{"code": code, "message": message, "field_errors": []any{}, "recovery_actions": []any{}, "details": details}, "meta": responseMeta(r)})
