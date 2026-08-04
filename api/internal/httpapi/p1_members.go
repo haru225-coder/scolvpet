@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/scolvpet/scolvpet/api/internal/store"
 )
@@ -442,10 +443,12 @@ func normalizeMemberPhone(value string) string {
 	return strings.TrimSpace(value)
 }
 
+// isUniqueViolation 仅凭 PostgreSQL SQLSTATE(23505/23P01)判定唯一键冲突,
+// 不依赖错误文本。errors.As 可穿透任意包装链。
 func isUniqueViolation(err error) bool {
-	if err == nil {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) {
 		return false
 	}
-	msg := err.Error()
-	return strings.Contains(msg, "duplicate key") || strings.Contains(msg, "unique constraint")
+	return pgErr.Code == "23505" || pgErr.Code == "23P01"
 }

@@ -2,12 +2,15 @@ package httpapi
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"log/slog"
+
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/scolvpet/scolvpet/api/internal/auth"
 	"github.com/scolvpet/scolvpet/api/internal/wechat"
@@ -149,5 +152,67 @@ func TestWechatSessionWithoutProviderDegrades(t *testing.T) {
 	recorder := postJSON(mux, "/v1/public/customer/wechat-sessions", `{"js_code":"anything"}`)
 	if recorder.Code != http.StatusServiceUnavailable {
 		t.Fatalf("expected 503 when no provider is wired, got %d", recorder.Code)
+	}
+}
+
+// createCustomerWechatBinding 的唯一键冲突必须由 pgconn.PgError 的
+// SQLSTATE(23505)+ 约束名区分,而不是靠错误文本/索引名字符串嗅探。
+func TestWechatBindingUniqueViolationMapsBySQLSTATEAndConstraint(t *testing.T) {
+	cases := []struct {
+		name        string
+		pgErr       *pgconn.PgError
+		wantHandled bool
+		wantStatus  int
+		wantCode    string
+	}{
+		{
+			name:        "openid active unique → 该微信已绑定手机号",
+			pgErr:       &pgconn.PgError{Code: "23505", ConstraintName: "ux_customer_wechat_identity_openid_active"},
+			wantHandled: true,
+			wantStatus:  http.StatusUnprocessableEntity,
+			wantCode:    "VALIDATION_ERROR",
+		},
+		{
+			name:        "phone active unique → 409 PHONE_ALREADY_BOUND",
+			pgErr:       &pgconn.PgError{Code: "23505", ConstraintName: "ux_customer_wechat_identity_phone_active"},
+			wantHandled: true,
+			wantStatus:  http.StatusConflict,
+			wantCode:    "PHONE_ALREADY_BOUND",
+		},
+		{
+			name:        "non-unique SQLSTATE not handled",
+			pgErr:       &pgconn.PgError{Code: "23503", ConstraintName: "fk_customer_wechat_identity_phone"},
+			wantHandled: false,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			conflict := wechatIdentityConflictError(tc.pgErr)
+			if !tc.wantHandled {
+				if conflict != nil {
+					t.Fatalf("expected no mapping, got %v", conflict)
+				}
+				return
+			}
+			if conflict == nil {
+				t.Fatal("expected a mapped client error, got nil")
+			}
+			recorder := httptest.NewRecorder()
+			writeAPIError(recorder, httptest.NewRequest(http.MethodPost, "/v1/test", nil), conflict)
+			if recorder.Code != tc.wantStatus {
+				t.Fatalf("status=%d want %d (body=%s)", recorder.Code, tc.wantStatus, recorder.Body.String())
+			}
+			if code := customerWechatErrorCode(t, recorder); code != tc.wantCode {
+				t.Fatalf("error code=%q want %q", code, tc.wantCode)
+			}
+		})
+	}
+}
+
+// 同样的文本若来自非 PgError,不再被当作唯一键冲突处理。
+func TestWechatBindingUniqueViolationIsNotTextSniffed(t *testing.T) {
+	conflict := wechatIdentityConflictError(errors.New(`duplicate key value violates unique constraint "ux_customer_wechat_identity_openid_active"`))
+	if conflict != nil {
+		t.Fatalf("text-only duplicate must not map, got %v", conflict)
 	}
 }

@@ -784,7 +784,15 @@ func permissionDenied(role string) error {
 	}
 }
 
+// versionCarrier 是携带期望版本号的 typed 版本冲突错误的最小接口。
+// 各包(i2core/i3core/i4core/i5core/i6data/store)的 *VersionError 均实现
+// Version(),errors.As 沿 Unwrap 链即可命中,消费端无需依赖错误文本。
+type versionCarrier interface{ Version() int }
+
 func writeAPIError(w http.ResponseWriter, r *http.Request, err error) {
+	// 唯一键冲突收口:任何冒到这里的 pgconn.PgError(23505/23P01)统一
+	// 识别为 store.ErrUniqueViolation,由下方 errors.Is 分支映射为 409。
+	err = store.MapPostgresError(err)
 	status, code, message := http.StatusInternalServerError, "INTERNAL_ERROR", "服务暂时不可用"
 	details := map[string]any{}
 	var typed *apiError
@@ -814,7 +822,7 @@ func writeAPIError(w http.ResponseWriter, r *http.Request, err error) {
 		case isRateLimitError(err):
 			status, code, message = http.StatusTooManyRequests, "RATE_LIMITED", "请求过于频繁，请稍后再试"
 		default:
-			if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "unique") {
+			if errors.Is(err, store.ErrUniqueViolation) {
 				status, code, message = http.StatusConflict, "CONFLICT", "资源状态冲突"
 			}
 		}

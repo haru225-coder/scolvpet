@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/scolvpet/scolvpet/api/internal/store"
 )
@@ -907,9 +908,10 @@ func (s *Server) createCrmReservationTx(
 		RETURNING id
 	`, ownerID, orgID, input.ContactID, input.HamsterID, title, emptyToNil(input.Notes), holdExpires).Scan(&id)
 	if err != nil {
-		// Unique index 兜底并发。
-		if strings.Contains(strings.ToLower(err.Error()), "ux_crm_reservation_open_hamster") ||
-			strings.Contains(strings.ToLower(err.Error()), "duplicate") {
+		// Unique index 兜底并发:只认 SQLSTATE(23505)+ 目标约束名,
+		// 不靠错误文本嗅探。
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" && pgErr.ConstraintName == "ux_crm_reservation_open_hamster" {
 			return uuid.Nil, conflictError("hamster_id", "该仓鼠已被预订，请选择其他个体")
 		}
 		return uuid.Nil, err

@@ -328,9 +328,8 @@ func (s *Server) createCustomerWechatBinding(w http.ResponseWriter, r *http.Requ
 		VALUES ($1, $2, $3)
 	`, openID, unionID, request.Phone)
 	if err != nil {
-		if strings.Contains(err.Error(), "ux_customer_wechat_identity_openid_active") ||
-			strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "unique") {
-			writeAPIError(w, r, validationError("openid", "该微信已绑定手机号，请直接登录"))
+		if conflict := wechatIdentityConflictError(err); conflict != nil {
+			writeAPIError(w, r, conflict)
 			return
 		}
 		writeAPIError(w, r, err)
@@ -342,6 +341,23 @@ func (s *Server) createCustomerWechatBinding(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	writeJSON(w, r, http.StatusCreated, envelope(r, data))
+}
+
+// wechatIdentityConflictError 将 createCustomerWechatBinding 的 INSERT 唯一键
+// 冲突(SQLSTATE 23505)按约束名映射为客户端错误:openid 活跃唯一 → 该微信已
+// 绑定手机号;phone 活跃唯一 → phoneAlreadyBoundError。非 23505 或未命中的
+// 约束返回 nil,交由 writeAPIError 兜底。禁止回退到索引名/英文串文本嗅探。
+func wechatIdentityConflictError(err error) error {
+	var databaseError *pgconn.PgError
+	if errors.As(err, &databaseError) && databaseError.Code == "23505" {
+		switch databaseError.ConstraintName {
+		case "ux_customer_wechat_identity_openid_active":
+			return validationError("openid", "该微信已绑定手机号，请直接登录")
+		case "ux_customer_wechat_identity_phone_active":
+			return phoneAlreadyBoundError()
+		}
+	}
+	return nil
 }
 
 // deleteCustomerWechatBinding revokes all active bindings for the customer's
