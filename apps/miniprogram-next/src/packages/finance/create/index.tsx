@@ -7,6 +7,7 @@ import { p1Api } from '../../../api/client'
 import { createIdempotencyIntent } from '../../../api/idempotency'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import type { ApiEnvelope } from '../../../api/types'
+import { formatUserError } from '../../../api/errors'
 
 type AccountingCategoryLike = { id?: string; name?: string; entryType?: string }
 
@@ -32,7 +33,7 @@ export default function CreateAccountingPage() {
       await p1Api.createAccountingRecord({ idempotencyKey: createIntent.getKey(), createAccountingRecordRequest: { title: title.trim(), amountCents, entryType, categoryId: categoryId || null, currency: 'CNY', occurredAt: new Date() } as any })
       createIntent.complete()
       Taro.showToast({ title: '收支已记录', icon: 'success' }); setTimeout(() => Taro.navigateBack(), 350)
-    } catch (cause) { setMessage(cause instanceof Error ? cause.message : '保存收支失败') } finally { setBusy(false) }
+    } catch (cause) { setMessage(await formatUserError(cause, '保存收支失败')) } finally { setBusy(false) }
   }
   const visibleCategories = filterCategoriesForEntryType(categories, entryType)
   const categoryLabels = visibleCategories.map((item) => `${item.name} · ${item.entryType === 'income' ? '收入' : '支出'}`)

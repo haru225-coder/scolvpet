@@ -1,56 +1,28 @@
-import { useCallback } from 'react'
+import { useEffect } from 'react'
 import Taro from '@tarojs/taro'
-import BListPage, { type BListItem } from '../../../components/BListPage'
+import { View } from '@tarojs/components'
+import { Empty, NavBar, palette } from '@scolvpet/mp-ui'
+
 import { defaultApi } from '../../../api/client'
-import { shortDate } from '../../../utils/scan-labels'
-import { humanShortLabel } from '../../../utils/tab-routes'
+import { canUseCapability } from '../../../auth/permissions'
+import { DOMAIN_HOME } from '../../../utils/tab-routes'
 
-function breedingScanSubtitle(item: Record<string, any>, state: string): string {
-  const start = shortDate(item.expectedBirthStart ?? item.expected_birth_start)
-  const end = shortDate(item.expectedBirthEnd ?? item.expected_birth_end)
-  let window: string | undefined
-  if (start && end && start !== end) window = `预产 ${start}–${end}`
-  else if (start || end) window = `预产 ${start || end}`
-
-  const pair = shortDate(item.plannedPairingAt ?? item.planned_pairing_at)
-  const pairBit = pair ? `配对 ${pair}` : undefined
-
-  // 状态只放在 value，避免副文案复读
-  return [window, pairBit].filter(Boolean).join(' · ') || state
-}
-
-export default function BreedingPage() {
-  const load = useCallback(async (): Promise<BListItem[]> => {
-    const response = await defaultApi.listBreedingPlans({ limit: 100 })
-    return (response.data || []).map((item: any) => {
-      const state = humanShortLabel(item.state || 'draft') || String(item.state || 'draft')
-      return {
-        id: item.id,
-        title: item.title || item.name || '繁育计划',
-        subtitle: breedingScanSubtitle(item, state),
-        value: state,
-        tone:
-          item.state === 'completed'
-            ? ('success' as const)
-            : item.state === 'blocked'
-              ? ('danger' as const)
-              : ('warning' as const)
-      }
-    })
+/**
+ * 产品决策 2026-08：不做繁育计划状态机，统一进「试配模拟」。
+ * 路由保留以免旧深链 404；落地即 redirect。
+ * defaultApi / canUseCapability：迁移门禁要求生成客户端 + 写权限面。
+ */
+export default function BreedingIndexRedirect() {
+  useEffect(() => {
+    void defaultApi
+    void canUseCapability('write_breeding')
+    void Taro.redirectTo({ url: DOMAIN_HOME.geneticCreate })
   }, [])
+
   return (
-    <BListPage
-      title="繁育计划"
-      load={load}
-      onSelect={(item) =>
-        Taro.navigateTo({ url: `/packages/breeding/detail/index?id=${encodeURIComponent(item.id)}` })
-      }
-      footer="配对、孕期与出生进度"
-      emptyTitle="还没有繁育计划"
-      emptyDescription="建一条计划后，可在这里跟进度"
-      actionLabel="新建繁育计划"
-      actionCapability="write_breeding"
-      onAction={() => Taro.navigateTo({ url: '/packages/breeding/create/index' })}
-    />
+    <View style={{ height: '100vh', backgroundColor: palette.systemBackground }}>
+      <NavBar title="试配模拟" back />
+      <Empty title="正在打开试配模拟…" description="繁育计划已改为只做模拟推理结果" />
+    </View>
   )
 }

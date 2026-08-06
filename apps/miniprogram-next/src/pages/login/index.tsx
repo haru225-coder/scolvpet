@@ -277,7 +277,7 @@ export default function LoginPage() {
         {isDevelopmentBuild ? (
           <Section
             header="开发真机"
-            footer="合法域名须与包内 API 一致。当前开发默认 https://pet.scolv.com（与公众平台 pet 域名对齐）。"
+            footer="开发预览可一键进入演示熊舍。若真机连不上，请确认公众平台已配置 request 合法域名。"
           >
             <View
               style={{
@@ -288,7 +288,7 @@ export default function LoginPage() {
               }}
             >
               <Button block disabled={busy} onClick={developmentQuickLogin}>
-                {busy ? '正在登录…' : '连 pet.scolv.com 进入'}
+                {busy ? '正在登录…' : '一键进入演示熊舍'}
               </Button>
               <Button
                 variant="outlined"
@@ -300,7 +300,7 @@ export default function LoginPage() {
                   )
                 }}
               >
-                复制诊断信息（发给开发）
+                复制连接详情
               </Button>
             </View>
           </Section>

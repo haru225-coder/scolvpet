@@ -46,4 +46,23 @@ describe('B 端前端能力门禁', () => {
     expect(canUseCapability('write_crm')).toBe(true)
     expect(getApiToken()).toBe('')
   })
+
+  it('演示号无 write_genetic 但有 write_breeding 时仍可开试配入口', () => {
+    recorded.storage.set('scolvpet_breeder_session', {
+      accessToken: 'token',
+      expiresAt: Date.now() + 60_000,
+      memberRole: 'staff',
+      capabilities: ['write_breeding', 'write_hamster']
+    })
+    expect(canUseCapability('write_genetic')).toBe(true)
+  })
+
+  it('capabilities 含 member_role:owner 视同 owner', () => {
+    recorded.storage.set('scolvpet_breeder_session', {
+      accessToken: 'token',
+      expiresAt: Date.now() + 60_000,
+      capabilities: ['member_role:owner', 'tenant_scope']
+    })
+    expect(canUseCapability('write_genetic')).toBe(true)
+  })
 })

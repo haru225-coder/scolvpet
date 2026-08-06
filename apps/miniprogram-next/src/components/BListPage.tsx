@@ -1,6 +1,7 @@
 import { ScrollView, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useEffect, useState } from 'react'
+import { formatUserError } from '../api/errors'
 import {
   Button,
   Cell,
@@ -65,7 +66,7 @@ export default function BListPage({
     }
     void load()
       .then(setItems)
-      .catch((cause) => setError(cause instanceof Error ? cause.message : '加载失败，请稍后重试'))
+      .catch(async (cause) => setError(await formatUserError(cause, '加载失败，请稍后重试')))
       .finally(() => setLoading(false))
   }, [load])
 

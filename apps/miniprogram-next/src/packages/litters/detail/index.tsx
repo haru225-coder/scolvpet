@@ -7,6 +7,7 @@ import { defaultApi, newIdempotencyKey } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import { litterScanSubtitle } from '../../../utils/scan-labels'
 import { humanShortLabel } from '../../../utils/tab-routes'
+import { formatUserError } from '../../../api/errors'
 
 type LitterData = {
   id: string
@@ -130,7 +131,7 @@ export default function LitterDetailPage() {
             : '暂无笼舍列表，请先建笼舍再分笼'
         )
       } catch (cause) {
-        setMessage(cause instanceof Error ? cause.message : '窝次读取失败')
+        setMessage(await formatUserError(cause, '窝次读取失败'))
       }
     },
     [syncDrafts]
@@ -171,7 +172,7 @@ export default function LitterDetailPage() {
       setMessage('数量变更已记录')
       await load(litterId)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '数量调整失败')
+      setMessage(await formatUserError(cause, '数量调整失败'))
     } finally {
       setBusy(false)
     }
@@ -210,7 +211,7 @@ export default function LitterDetailPage() {
       setMessage(`已提交 ${items.length} 只分笼`)
       await load(litterId)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '性别分笼失败')
+      setMessage(await formatUserError(cause, '性别分笼失败'))
     } finally {
       setBusy(false)
     }
@@ -244,7 +245,7 @@ export default function LitterDetailPage() {
       setMessage('性别分笼已提交')
       await load(litterId)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '性别分笼失败')
+      setMessage(await formatUserError(cause, '性别分笼失败'))
     } finally {
       setBusy(false)
     }
@@ -273,7 +274,7 @@ export default function LitterDetailPage() {
       setMessage('断奶已提交')
       await load(litterId)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '断奶失败')
+      setMessage(await formatUserError(cause, '断奶失败'))
     } finally {
       setBusy(false)
     }
@@ -315,7 +316,7 @@ export default function LitterDetailPage() {
       setMessage('窝仔已批量个体化')
       await load(litterId)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '个体化失败')
+      setMessage(await formatUserError(cause, '个体化失败'))
     } finally {
       setBusy(false)
     }
@@ -358,7 +359,7 @@ export default function LitterDetailPage() {
       setMessage('窝仔已批量个体化')
       await load(litterId)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '个体化失败')
+      setMessage(await formatUserError(cause, '个体化失败'))
     } finally {
       setBusy(false)
     }

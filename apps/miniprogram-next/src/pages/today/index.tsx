@@ -16,7 +16,7 @@ import {
 } from '@scolvpet/mp-ui'
 
 import { defaultApi, newIdempotencyKey } from '../../api/client'
-import { formatNetworkError } from '../../api/errors'
+import { formatNetworkError, formatUserError } from '../../api/errors'
 import {
   createDevelopmentBreederSession,
   formatDevelopmentLoginError,
@@ -167,6 +167,8 @@ export default function TodayPage() {
     diag(`loadTasks start api=${(config as { API_BASE?: string }).API_BASE || ''}`)
 
     // 开发：无会话 / 离线假会话 → 必须先在线登录
+    // 有本地会话时必须用 readBreederSession 灌内存 token：
+    // peek 只读 storage，不 setApiToken；页面重进/热重载后 listTasks 会 401，看起来像「突然报错」。
     if (shouldAutoEnterDevelopmentSession()) {
       const sess = peekBreederSession()
       if (!sess || isOfflineDevMode() || isOfflineDevSession(sess)) {
@@ -177,14 +179,23 @@ export default function TodayPage() {
           setRefreshing(false)
           setError(upgradeError)
           void Taro.showModal({
-            title: '连不上 pet.scolv.com',
+            title: '暂时连不上服务器',
             content: upgradeError.slice(0, 600),
-            confirmText: '复制诊断',
+            confirmText: '复制详情',
             cancelText: '关闭',
             success: (res) => {
               if (res.confirm) void copyDiag()
             }
           })
+          return
+        }
+      } else if (!readBreederSession()) {
+        const upgradeError = await tryOnlineLogin()
+        if (upgradeError) {
+          setTasks([])
+          setLoading(false)
+          setRefreshing(false)
+          setError(upgradeError)
           return
         }
       }
@@ -198,7 +209,7 @@ export default function TodayPage() {
       setTasks([])
       setLoading(false)
       setRefreshing(false)
-      setError('当前是离线假会话。请点「连 pet.scolv.com 进入」。')
+      setError('当前是离线会话。请到登录页重新连接服务器。')
       return
     }
 
@@ -219,6 +230,34 @@ export default function TodayPage() {
         setSubjects({})
       }
     } catch (cause) {
+      const raw = cause instanceof Error ? cause.message : String(cause || '')
+      const isUnauthorized =
+        /\b401\b/.test(raw) ||
+        /unauthorized/i.test(raw) ||
+        raw.includes('未授权') ||
+        raw.includes('鉴权')
+      // 开发：token 失效/未灌入 → 清会话并重登一次，避免突然弹一长串英文
+      if (isUnauthorized && shouldAutoEnterDevelopmentSession()) {
+        diag(`listTasks 401 → re-login once raw=${raw.slice(0, 120)}`)
+        clearBreederSession()
+        const upgradeError = await tryOnlineLogin()
+        if (!upgradeError) {
+          try {
+            const response = await defaultApi.listTasks({ limit: 100 })
+            const nextTasks = sortTasksForToday(response.data || [])
+            setTasks(nextTasks)
+            saveTodaySnapshot(nextTasks)
+            diag(`listTasks ok after re-login count=${nextTasks.length}`)
+            return
+          } catch (retryCause) {
+            const msg = formatNetworkError(retryCause, '今日任务加载失败')
+            setError(msg)
+            return
+          }
+        }
+        setError(upgradeError)
+        return
+      }
       const snapshot = readTodaySnapshot()
       const msg = formatNetworkError(cause, '今日任务加载失败')
       diag(`listTasks fail ${msg.slice(0, 200)}`)
@@ -271,7 +310,7 @@ export default function TodayPage() {
       setTasks((current) => current.map((item) => item.id === task.id ? response.data.task : item))
       toast('任务已完成')
     } catch (cause) {
-      toast(cause instanceof Error ? cause.message : '完成任务失败')
+      toast(await formatUserError(cause, '完成任务失败'))
     }
   }
 
@@ -287,7 +326,7 @@ export default function TodayPage() {
       setPanelFor(null)
       toast('任务已跳过')
     } catch (cause) {
-      toast(cause instanceof Error ? cause.message : '跳过任务失败')
+      toast(await formatUserError(cause, '跳过任务失败'))
     }
   }
 
@@ -302,7 +341,7 @@ export default function TodayPage() {
       setTasks((current) => current.map((item) => item.id === task.id ? response.data : item))
       toast('任务已恢复待办')
     } catch (cause) {
-      toast(cause instanceof Error ? cause.message : '恢复任务失败')
+      toast(await formatUserError(cause, '恢复任务失败'))
     }
   }
 
@@ -310,9 +349,9 @@ export default function TodayPage() {
   const isOnlineSession =
     Boolean(sessionNow) && !isOfflineDevSession(sessionNow) && !isOfflineDevMode()
   const statusLine = isOnlineSession
-    ? `● 已联网 ${sessionNow?.organizationName || sessionNow?.displayName || ''} · pet.scolv.com`
+    ? `● 已联网 ${sessionNow?.organizationName || sessionNow?.displayName || ''}`.trim()
     : error
-      ? '● 未联网（点下方复制诊断）'
+      ? '● 未联网（点此复制详情）'
       : loading
         ? '● 连接中…'
         : '● 未登录'
@@ -336,32 +375,34 @@ export default function TodayPage() {
         }}
         style={{ flex: 1 }}
       >
-        {/* 真机一眼能看懂：绿=在线，红=挂了。别再跟「空列表」搞混。 */}
-        <View
-          style={{
-            margin: `8px ${metrics.pagePadding}px 0`,
-            padding: '10px 12px',
-            borderRadius: '8px',
-            backgroundColor: isOnlineSession ? 'rgba(107,168,120,0.2)' : 'rgba(226,104,91,0.18)',
-            border: `1px solid ${isOnlineSession ? 'rgba(143,203,155,0.45)' : 'rgba(226,104,91,0.4)'}`
-          }}
-          onClick={() => {
-            void copyDiag().then((ok) =>
-              Taro.showToast({ title: ok ? '诊断已复制，发给开发' : '复制失败', icon: 'none' })
-            )
-          }}
-        >
-          <Text style={{ fontSize: '13px', fontWeight: 600, color: '#FFFFFF' }}>{statusLine}</Text>
-          <Text style={{ display: 'block', marginTop: '4px', fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>
-            点此复制诊断 · 空列表≠离线
-          </Text>
-        </View>
+        {/* 仅未联网时展示诊断条，避免主路径一打开就像工程 Demo */}
+        {!isOnlineSession ? (
+          <View
+            style={{
+              margin: `8px ${metrics.pagePadding}px 0`,
+              padding: '10px 12px',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(226,104,91,0.18)',
+              border: '1px solid rgba(226,104,91,0.4)'
+            }}
+            onClick={() => {
+              void copyDiag().then((ok) =>
+                Taro.showToast({ title: ok ? '诊断已复制，发给开发' : '复制失败', icon: 'none' })
+              )
+            }}
+          >
+            <Text style={{ fontSize: '13px', fontWeight: 600, color: '#FFFFFF' }}>{statusLine}</Text>
+            <Text style={{ display: 'block', marginTop: '4px', fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>
+              点此复制诊断
+            </Text>
+          </View>
+        ) : null}
         <Hero
           badge={
             isOnlineSession
-              ? sessionNow?.organizationName || sessionNow?.displayName || '已联网'
+              ? sessionNow?.organizationName || sessionNow?.displayName || '今日'
               : isOfflineDevMode() || isOfflineDevSession(sessionNow)
-                ? '离线假会话'
+                ? '离线'
                 : openCount > 0
                   ? '今日待办'
                   : '今日'
@@ -373,10 +414,10 @@ export default function TodayPage() {
           }
           subtitle={
             nextTask
-              ? `例如：${taskTitle(nextTask)} · ${taskTimeLabel(nextTask.scheduledAt)}`
+              ? `下一件：${taskTitle(nextTask)} · ${taskTimeLabel(nextTask.scheduledAt)}`
               : isOnlineSession
-                ? '已连 pet.scolv.com · 演示账号暂无任务（不是离线）'
-                : '新的照护安排会出现在这里'
+                ? '没有待办时，可以去种群里试配模拟'
+                : '登录后，照护安排会出现在这里'
           }
           primary={
             nextTask && canUseCapability('write_task')
@@ -405,7 +446,7 @@ export default function TodayPage() {
               />
               <Cell
                 title="重试连接服务器"
-                subtitle="合法域名须与 API 一致（当前包：https://pet.scolv.com）"
+                subtitle="确认已登录且网络可用"
                 chevron
                 onClick={() => {
                   setLoading(true)

@@ -27,9 +27,9 @@ export default function LittersPage() {
       onSelect={(item) => Taro.navigateTo({ url: `/packages/litters/detail/index?id=${encodeURIComponent(item.id)}` })}
       footer="分笼、个体化与断奶进度"
       emptyTitle="还没有窝次"
-      emptyDescription="先去建繁育计划或登记一窝，这里会显示进度"
-      actionLabel="去繁育计划"
-      onAction={() => Taro.navigateTo({ url: '/packages/breeding/index/index' })}
+      emptyDescription="窝次会在出生登记后出现；想先看配色可去试配模拟"
+      actionLabel="试配模拟"
+      onAction={() => Taro.navigateTo({ url: '/packages/genetic/create/index' })}
     />
   )
 }

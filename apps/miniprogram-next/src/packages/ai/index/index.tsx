@@ -7,6 +7,7 @@ import { newIdempotencyKey, p2Api } from '../../../api/client'
 import { readBreederSession } from '../../../auth/session'
 import type { ApiEnvelope } from '../../../api/types'
 import { humanShortLabel, openPage } from '../../../utils/tab-routes'
+import { formatUserError } from '../../../api/errors'
 
 type Turn = { role: 'user' | 'assistant'; text: string; facts?: string[]; actions?: any[] }
 const PRESETS = [
@@ -31,7 +32,7 @@ export default function AssistantPage() {
       setMessage('请先登录经营账号')
       return
     }
-    void p2Api.assistantCapabilities().then((response: ApiEnvelope) => setCapabilities(response.data)).catch((cause: unknown) => setMessage(cause instanceof Error ? cause.message : '助手能力加载失败'))
+    void p2Api.assistantCapabilities().then((response: ApiEnvelope) => setCapabilities(response.data)).catch(async (cause: unknown) => setMessage(await formatUserError(cause, '助手能力加载失败')))
   }, [])
 
   async function ask(input?: string) {
@@ -50,7 +51,7 @@ export default function AssistantPage() {
       setSessionId(data.sessionId)
       setTurns((current) => [...current, { role: 'assistant', text: data.answer, facts: (data.facts || []).map((fact: any) => `${fact.label}: ${fact.value}`), actions: data.actions || [] }])
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '助手响应失败')
+      setMessage(await formatUserError(cause, '助手响应失败'))
     } finally {
       setBusy(false)
     }
@@ -69,7 +70,7 @@ export default function AssistantPage() {
       else await p2Api.cancelAssistantAction({ actionId: action.actionId, idempotencyKey: newIdempotencyKey() })
       setTurns((current) => current.map((turn) => ({ ...turn, actions: turn.actions?.map((item) => item.actionId === action.actionId ? { ...item, status: confirm ? 'executed' : 'cancelled' } : item) })))
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '助手动作处理失败')
+      setMessage(await formatUserError(cause, '助手动作处理失败'))
     } finally {
       setBusy(false)
     }

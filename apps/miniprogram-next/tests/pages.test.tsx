@@ -37,7 +37,7 @@ describe('B 端未登录态', () => {
     render(<TodayPage />)
     await waitFor(() => expect(screen.getByText('今天没有待办')).toBeTruthy())
     // 已联网空态：副文案标明「不是离线」；不再叠第二层 Empty
-    expect(screen.getByText(/演示账号暂无任务|新的照护安排会出现在这里/)).toBeTruthy()
+    expect(screen.getByText(/试配模拟|登录后，照护安排会出现在这里/)).toBeTruthy()
     expect(screen.queryByText('暂无今日任务')).toBeNull()
     expect(screen.queryByText('经营入口')).toBeNull()
     listTasks.mockRestore()
@@ -122,7 +122,7 @@ describe('B 端登录表单', () => {
     } as never)
 
     render(<LoginPage />)
-    fireEvent.click(screen.getByText('连 pet.scolv.com 进入'))
+    fireEvent.click(screen.getByText('一键进入演示熊舍'))
 
     await waitFor(() => {
       expect(recorded.toasts).toContain('开发会话已就绪')

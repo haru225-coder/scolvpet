@@ -107,3 +107,8 @@ packages/mp-ui/             @scolvpet/mp-ui:tokens.ts(真源 ios_theme.dart)+ 11
 - 开发者工具已可导入本目录并编译；当前已复核 `pages/today/index` 模拟页、运行时错误 0、Problems 面板 0。正式构建门禁示例用 `https://pet.scolv.com`（非 staging `p.scolv.com`）；上传/提交审核前仍需完成微信后台正式配置和真实设备验收。
 
 本项目的微信开发者工具���入路径是 `/Users/snowchan27/Documents/scolvpet/apps/miniprogram-next`；仓库根目录的 `project.config.json` 是旧 C 端混写入口，不用于本轮 B 端全量验收。
+
+## 工作区脆点（临时 · 2026-08-05）
+
+`src/genetics/TrialPairingScreen.tsx` 与 `src/genetics/fallback-catalog.ts` 若未 tracked：  
+`git checkout .` / `git stash` **护不住**它们，`git clean` **会删**。commit 前务必 `git add`。

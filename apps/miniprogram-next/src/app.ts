@@ -17,6 +17,7 @@ import {
   setCustomerAccessToken,
   type CustomerPhoneAuthorizationCode
 } from './api/customer-client'
+import { readBreederSession } from './auth/session'
 
 import './app.css'
 
@@ -72,6 +73,12 @@ class App extends Component<PropsWithChildren> {
           wx.removeStorageSync('scolvpet_breeder_session')
         }
       }
+    } catch (_) {
+      // ignore
+    }
+    // B 端会话：storage 有 token 时灌入内存。否则今日页 peek 有会话、请求无 Bearer → 突然 401。
+    try {
+      readBreederSession()
     } catch (_) {
       // ignore
     }

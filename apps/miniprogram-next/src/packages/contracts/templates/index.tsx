@@ -4,6 +4,7 @@ import { Button, Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, pale
 
 import { newIdempotencyKey, p1Api } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
+import { formatUserError } from '../../../api/errors'
 
 export default function ContractTemplatesPage() {
   const [kind, setKind] = useState<'contract' | 'receipt'>('contract')
@@ -23,7 +24,7 @@ export default function ContractTemplatesPage() {
       setTemplates([...(contracts.data || []), ...(receipts.data || [])])
       setMessage(`已读取 ${(contracts.data?.length || 0) + (receipts.data?.length || 0)} 个模板`)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '模板读取失败')
+      setMessage(await formatUserError(cause, '模板读取失败'))
     } finally {
       setBusy(false)
     }
@@ -50,7 +51,7 @@ export default function ContractTemplatesPage() {
       setBodyText('')
       await load()
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '模板创建失败')
+      setMessage(await formatUserError(cause, '模板创建失败'))
     } finally {
       setBusy(false)
     }

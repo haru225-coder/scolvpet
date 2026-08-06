@@ -7,6 +7,7 @@ import { defaultApi } from '../../../api/client'
 import { readBreederSession } from '../../../auth/session'
 import { resolveSubscribeTemplateIds } from '../../../utils/subscribe-templates'
 import { humanShortLabel } from '../../../utils/tab-routes'
+import { formatUserError } from '../../../api/errors'
 
 type CalendarEntry = { id: string; dateKey: string; title: string; subtitle: string; state: string }
 
@@ -60,7 +61,7 @@ export default function CalendarPage() {
         )
         setMessage('')
       })
-      .catch((cause) => setMessage(cause instanceof Error ? cause.message : '日历加载失败'))
+      .catch(async (cause) => setMessage(await formatUserError(cause, '日历加载失败')))
       .finally(() => setLoading(false))
   }, [])
 

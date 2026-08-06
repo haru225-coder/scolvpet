@@ -5,6 +5,7 @@ import { Cell, Empty, NavBar, Section, SectionList, Tag, metrics, palette } from
 
 import { defaultApi, newIdempotencyKey } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
+import { formatUserError } from '../../../api/errors'
 import {
   parseTemplateIds,
   resolveSubscribeTemplateIds
@@ -123,7 +124,7 @@ export default function SubscriptionSettingsPage() {
       setTemplateStatuses(templates)
       setMessage('授权结果已同步。只有「已授权」的才会收到提醒。')
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '授权失败，请稍后再试')
+      setMessage(await formatUserError(cause, '授权失败，请稍后再试'))
     } finally {
       setBusy(false)
     }

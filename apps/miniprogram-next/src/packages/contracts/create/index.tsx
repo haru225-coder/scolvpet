@@ -6,6 +6,7 @@ import { Button, Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, pale
 import { newIdempotencyKey, p1Api, p1CrmApi } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import type { ApiEnvelope } from '../../../api/types'
+import { formatUserError } from '../../../api/errors'
 
 function yuanToCents(text: string) {
   const n = Number(String(text || '').trim())
@@ -43,9 +44,9 @@ export default function CreateContractPage() {
             : '还没有模板。请先到模板管理页建一个，再回来。'
         )
       })
-      .catch((cause: unknown) => {
+      .catch(async (cause: unknown) => {
         setTemplateFailed(true)
-        setMessage(cause instanceof Error ? cause.message : '模板读取失败，请重试')
+        setMessage(await formatUserError(cause, '模板读取失败，请重试'))
       })
   }
 
@@ -68,7 +69,7 @@ export default function CreateContractPage() {
         setReservations(nextReservations)
         if (!contactId && nextContacts[0]) setContactId(nextContacts[0].id)
       })
-      .catch(() => {
+      .catch(async () => {
         setMessage((prev) => (prev.includes('模板') ? prev : '客户列表暂时读不到，可先建客户再回来'))
       })
   }, [])

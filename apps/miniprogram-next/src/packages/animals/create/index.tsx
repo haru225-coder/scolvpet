@@ -7,6 +7,7 @@ import { defaultApi, geneticApi, newIdempotencyKey } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import { encodePhenotype, readPhenotypeSeries, type PhenotypeSeries } from '../../../utils/phenotype'
 import type { ApiEnvelope } from '../../../api/types'
+import { formatUserError } from '../../../api/errors'
 
 export default function CreateAnimalPage() {
   const [internalCode, setInternalCode] = useState('')
@@ -30,7 +31,7 @@ export default function CreateAnimalPage() {
         setRuleVersionId(first.id)
         setMessage(`已自动选用规则 v${first.version ?? 1}，一般不用改`)
       } else setMessage('暂时没有可用物种规则')
-    }).catch((cause: unknown) => setMessage(cause instanceof Error ? cause.message : '物种规则加载失败'))
+    }).catch(async (cause: unknown) => setMessage(await formatUserError(cause, '物种规则加载失败')))
     void geneticApi.listGeneticPhenotypeCatalog().then((response: ApiEnvelope) => {
       const options = readPhenotypeSeries(response)
       setSeriesOptions(options)
@@ -64,7 +65,7 @@ export default function CreateAnimalPage() {
       Taro.showToast({ title: '个体已创建', icon: 'success' })
       setTimeout(() => Taro.navigateBack(), 350)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '创建失败')
+      setMessage(await formatUserError(cause, '创建失败'))
     } finally {
       setBusy(false)
     }

@@ -7,6 +7,7 @@ import { defaultApi, newIdempotencyKey, p1CrmApi } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import type { ApiEnvelope } from '../../../api/types'
 import { humanShortLabel } from '../../../utils/tab-routes'
+import { formatUserError } from '../../../api/errors'
 
 export function loadCrmDetail(type: string, recordId: string) {
   switch (type) {
@@ -35,7 +36,7 @@ export default function CrmDetailPage() {
       setRecord(data || null)
       setMessage(data ? 'CRM 操作会直接进入客户、预订和交付状态机' : '记录暂时不存在')
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : 'CRM 记录读取失败')
+      setMessage(await formatUserError(cause, 'CRM 记录读取失败'))
     }
   }, [])
 
@@ -63,7 +64,7 @@ export default function CrmDetailPage() {
       await p1CrmApi.createCrmReservation({ idempotencyKey: newIdempotencyKey(), createCrmReservationRequest: { contactId: recordId, hamsterId: hamsterId.trim() || null, title: title.trim(), notes: notes.trim() || null } })
       Taro.showToast({ title: '预订已创建', icon: 'success' })
       await load(recordId, kind)
-    } catch (cause) { setMessage(cause instanceof Error ? cause.message : '创建预订失败') } finally { setBusy(false) }
+    } catch (cause) { setMessage(await formatUserError(cause, '创建预订失败')) } finally { setBusy(false) }
   }
 
   async function createHandover() {
@@ -73,7 +74,7 @@ export default function CrmDetailPage() {
       await p1CrmApi.createCrmHandover({ idempotencyKey: newIdempotencyKey(), createCrmHandoverRequest: { contactId: recordId, hamsterId: hamsterId.trim() || null, notes: notes.trim() || null, scheduledAt: new Date() } })
       Taro.showToast({ title: '交付已创建', icon: 'success' })
       await load(recordId, kind)
-    } catch (cause) { setMessage(cause instanceof Error ? cause.message : '创建交付失败') } finally { setBusy(false) }
+    } catch (cause) { setMessage(await formatUserError(cause, '创建交付失败')) } finally { setBusy(false) }
   }
 
   async function reservationAction(action: 'confirm' | 'cancel') {
@@ -83,7 +84,7 @@ export default function CrmDetailPage() {
       else await p1CrmApi.cancelCrmReservation({ reservationId: recordId, idempotencyKey: newIdempotencyKey() })
       setMessage(action === 'confirm' ? '预订已确认' : '预订已取消')
       await load(recordId, kind)
-    } catch (cause) { setMessage(cause instanceof Error ? cause.message : '预订状态更新失败') } finally { setBusy(false) }
+    } catch (cause) { setMessage(await formatUserError(cause, '预订状态更新失败')) } finally { setBusy(false) }
   }
 
   async function completeHandover() {
@@ -92,7 +93,7 @@ export default function CrmDetailPage() {
       await p1CrmApi.completeCrmHandover({ handoverId: recordId, idempotencyKey: newIdempotencyKey() })
       setMessage('交付已完成')
       await load(recordId, kind)
-    } catch (cause) { setMessage(cause instanceof Error ? cause.message : '交付完成失败') } finally { setBusy(false) }
+    } catch (cause) { setMessage(await formatUserError(cause, '交付完成失败')) } finally { setBusy(false) }
   }
 
   const hamsterLabels = hamsters.map((item) => `${item.name || item.internalCode || '个体'} · ${item.internalCode || item.id}`)

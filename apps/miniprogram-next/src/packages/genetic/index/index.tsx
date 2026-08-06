@@ -2,7 +2,9 @@ import { useCallback } from 'react'
 import Taro from '@tarojs/taro'
 import BListPage, { type BListItem } from '../../../components/BListPage'
 import { p1Api } from '../../../api/client'
+import { DOMAIN_HOME } from '../../../utils/tab-routes'
 
+/** 试配入口列表：主 CTA 直接进模拟器；列表仅作档案/位点参考。 */
 export default function GeneticPage() {
   const load = useCallback(async (): Promise<BListItem[]> => {
     const [profiles, loci] = await Promise.all([p1Api.listGeneticProfiles(), p1Api.listGeneticLoci()])
@@ -26,14 +28,14 @@ export default function GeneticPage() {
   }, [])
   return (
     <BListPage
-      title="这两只会生出什么"
+      title="试配模拟"
       load={load}
-      footer="结果先说人话，专业代码收在「专业信息」里"
-      emptyTitle="还没有试配记录"
-      emptyDescription="选好公母样子，点试配看宝宝可能长什么样"
-      actionLabel="试配一下"
+      footer="主路径：选公母样子 → 看宝宝概率。不走繁育计划。"
+      emptyTitle="直接开始试配"
+      emptyDescription="选好公母样子，立刻看可能长什么样"
+      actionLabel="开始试配"
       actionCapability="write_genetic"
-      onAction={() => Taro.navigateTo({ url: '/packages/genetic/create/index' })}
+      onAction={() => Taro.navigateTo({ url: DOMAIN_HOME.geneticCreate })}
     />
   )
 }

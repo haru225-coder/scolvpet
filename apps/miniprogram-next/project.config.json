@@ -4,7 +4,7 @@
   "description": "ScolvPet B 端小程序(Taro,docs/32)",
   "appid": "wx800bb867809615fd",
   "setting": {
-    "urlCheck": false,
+    "urlCheck": true,
     "es6": false,
     "enhance": false,
     "postcss": false,

@@ -12,14 +12,21 @@ const OWNER_ONLY_CAPABILITIES = ['write_accounting', 'write_import']
 export function canUseCapability(capability: string): boolean {
   const session = peekBreederSession()
   if (!session) return false
-  if (session.memberRole === 'owner') return true
-  if (session.memberRole === 'viewer') return false
+  // 兼容 capabilities 里带 member_role:owner、或 memberRole 字段
+  const role = String(session.memberRole || '').toLowerCase()
+  const caps = Array.isArray(session.capabilities) ? session.capabilities : []
+  if (role === 'owner' || caps.includes('member_role:owner')) return true
+  if (role === 'viewer') return false
   if (OWNER_ONLY_CAPABILITIES.includes(capability)) return false
-  if (session.capabilities.includes(capability)) return true
+  if (caps.includes(capability)) return true
+  // 试配模拟：服务端按成员可读；演示号常有 write_breeding 而无 write_genetic
+  if (capability === 'write_genetic' && (caps.includes('write_breeding') || caps.includes('write_hamster'))) {
+    return true
+  }
   const roleFallback: Record<string, string[]> = {
     breeder: ['read_data_center', 'write_breeding', 'write_litter', 'write_hamster', 'write_weight', 'write_health', 'write_task', 'write_genetic', 'manage_subscriptions'],
     caretaker: ['read_data_center', 'write_litter', 'write_hamster', 'write_weight', 'write_health', 'write_task', 'manage_subscriptions'],
     staff: ['read_data_center', 'write_crm', 'write_documents', 'manage_subscriptions']
   }
-  return roleFallback[session.memberRole || '']?.includes(capability) ?? false
+  return roleFallback[role]?.includes(capability) ?? false
 }

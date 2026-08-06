@@ -6,6 +6,7 @@ import { Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, palette } fr
 import { defaultApi, newIdempotencyKey } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import type { ApiEnvelope } from '../../../api/types'
+import { formatUserError } from '../../../api/errors'
 
 type RuleOption = { id: string; label: string }
 
@@ -41,7 +42,7 @@ export default function BatchCreateAnimalsPage() {
             : '还没有物种规则，请联系管理员配置'
         )
       })
-      .catch((cause: unknown) => setMessage(cause instanceof Error ? cause.message : '规则加载失败'))
+      .catch(async (cause: unknown) => setMessage(await formatUserError(cause, '规则加载失败')))
   })
 
   async function submit() {
@@ -75,7 +76,7 @@ export default function BatchCreateAnimalsPage() {
       Taro.showToast({ title: `已创建 ${items.length} 只`, icon: 'success' })
       setTimeout(() => Taro.navigateBack(), 350)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '批量创建失败')
+      setMessage(await formatUserError(cause, '批量创建失败'))
     } finally {
       setBusy(false)
     }

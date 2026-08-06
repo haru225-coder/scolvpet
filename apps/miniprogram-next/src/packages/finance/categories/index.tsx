@@ -4,6 +4,7 @@ import { Button, Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, pale
 
 import { newIdempotencyKey, p1Api } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
+import { formatUserError } from '../../../api/errors'
 
 export default function AccountingCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([])
@@ -14,14 +15,14 @@ export default function AccountingCategoriesPage() {
 
   async function load() {
     setBusy(true)
-    try { const response = await p1Api.listAccountingCategories({}); setCategories(response.data || []); setMessage(`已读取 ${response.data?.length || 0} 个分类`) } catch (cause) { setMessage(cause instanceof Error ? cause.message : '分类读取失败') } finally { setBusy(false) }
+    try { const response = await p1Api.listAccountingCategories({}); setCategories(response.data || []); setMessage(`已读取 ${response.data?.length || 0} 个分类`) } catch (cause) { setMessage(await formatUserError(cause, '分类读取失败')) } finally { setBusy(false) }
   }
   useEffect(() => { void load() }, [])
 
   async function create() {
     if (!name.trim()) { setMessage('请填写分类名称'); return }
     setBusy(true)
-    try { await p1Api.createAccountingCategory({ idempotencyKey: newIdempotencyKey(), createAccountingCategoryRequest: { name: name.trim(), entryType: entryType as any } }); setName(''); setMessage('分类已创建'); await load() } catch (cause) { setMessage(cause instanceof Error ? cause.message : '分类创建失败') } finally { setBusy(false) }
+    try { await p1Api.createAccountingCategory({ idempotencyKey: newIdempotencyKey(), createAccountingCategoryRequest: { name: name.trim(), entryType: entryType as any } }); setName(''); setMessage('分类已创建'); await load() } catch (cause) { setMessage(await formatUserError(cause, '分类创建失败')) } finally { setBusy(false) }
   }
 
   return <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}><NavBar title="记账分类" back /><ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}><SectionList>

@@ -5,6 +5,7 @@ import { Button, Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, pale
 
 import { defaultApi, newIdempotencyKey } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
+import { formatUserError } from '../../../api/errors'
 
 type Option = { id: string; label: string }
 
@@ -71,9 +72,9 @@ export default function CreateReminderPage() {
           setMessage('还没有可提醒的个体或窝次，请先建档')
         }
       })
-      .catch((cause) => {
+      .catch(async (cause) => {
         setLoadFailed(true)
-        setMessage(cause instanceof Error ? cause.message : '读取对象列表失败，请重试')
+        setMessage(await formatUserError(cause, '读取对象列表失败，请重试'))
       })
   }
 
@@ -128,7 +129,7 @@ export default function CreateReminderPage() {
       Taro.showToast({ title: '提醒已创建', icon: 'success' })
       setTimeout(() => Taro.navigateBack(), 350)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '提醒创建失败')
+      setMessage(await formatUserError(cause, '提醒创建失败'))
     } finally {
       setBusy(false)
     }

@@ -7,6 +7,7 @@ import { downloadDocumentPdf, p1Api } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import { createIdempotencyIntent } from '../../../api/idempotency'
 import { humanShortLabel } from '../../../utils/tab-routes'
+import { formatUserError } from '../../../api/errors'
 
 type DocumentItem = {
   id: string
@@ -44,7 +45,7 @@ export default function ContractDetailPage() {
       setItem(response.data as DocumentItem)
       setMessage('')
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '单据加载失败')
+      setMessage(await formatUserError(cause, '单据加载失败'))
     }
   }
 
@@ -64,7 +65,7 @@ export default function ContractDetailPage() {
       intent.complete()
       Taro.showToast({ title: action === 'issue' ? '已签发' : '已撤销', icon: 'success' })
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : '状态更新失败')
+      setMessage(await formatUserError(cause, '状态更新失败'))
       if (isDocumentVersionConflict(cause)) {
         await load()
         setMessage('单据已被其他成员更新，请确认最新状态后重试')
@@ -86,7 +87,7 @@ export default function ContractDetailPage() {
       const filePath = await downloadDocumentPdf(kind, item.id)
       await Taro.openDocument({ filePath, fileType: 'pdf', showMenu: true })
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : 'PDF 下载失败')
+      setMessage(await formatUserError(cause, 'PDF 下载失败'))
     } finally {
       setBusy(false)
     }

@@ -1,6 +1,7 @@
 import { Input, ScrollView, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { formatUserError } from '../../../api/errors'
 import {
   NavBar,
   LargeTitle,
@@ -47,7 +48,7 @@ export default function AnimalsPage() {
       const response = await defaultApi.listHamsters({ limit: 100, q: searchQuery.trim() || undefined })
       setAnimals(response.data || [])
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : '个体列表加载失败')
+      setError(await formatUserError(cause, '个体列表加载失败'))
     } finally {
       setLoading(false)
     }

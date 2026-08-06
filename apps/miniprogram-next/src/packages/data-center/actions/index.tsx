@@ -7,6 +7,7 @@ import { defaultApi, newIdempotencyKey } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import { humanShortLabel } from '../../../utils/tab-routes'
 import { sha256 } from '../../../utils/sha256'
+import { formatUserError } from '../../../api/errors'
 
 const TEMPLATE_OPTIONS = [
   { value: 'hamster', label: '个体档案' },
@@ -71,7 +72,7 @@ export default function DataCenterActionsPage() {
       setExportJobs(exportsResponse.data || [])
       setBackupJobs(backupsResponse.data || [])
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : '任务列表读取失败')
+      setStatus(await formatUserError(cause, '任务列表读取失败'))
     }
   }
 
@@ -93,7 +94,7 @@ export default function DataCenterActionsPage() {
         `导入进度 ${job.progressPercent ?? 0}% · ${jobStatusLabel(job.phase || job.status)}`
       )
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : '导入任务读取失败')
+      setStatus(await formatUserError(cause, '导入任务读取失败'))
     } finally {
       setBusy(false)
     }
@@ -130,7 +131,7 @@ export default function DataCenterActionsPage() {
       applyImportJob(response.data)
       setStatus(`字段对应已保存：${mappings.length} 列`)
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : '字段对应保存失败')
+      setStatus(await formatUserError(cause, '字段对应保存失败'))
     } finally {
       setBusy(false)
     }
@@ -147,7 +148,7 @@ export default function DataCenterActionsPage() {
       setImportRows(response.data || [])
       setStatus(`已读取 ${response.data?.length || 0} 行结果`)
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : '逐行结果读取失败')
+      setStatus(await formatUserError(cause, '逐行结果读取失败'))
     } finally {
       setBusy(false)
     }
@@ -186,7 +187,7 @@ export default function DataCenterActionsPage() {
       const response = await defaultApi.getImportErrorReport({ jobId: importJobId.trim() })
       await downloadRemoteFile(response.data.downloadUrl, response.data.fileName || 'import-error-report.csv')
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : '错误报告下载失败')
+      setStatus(await formatUserError(cause, '错误报告下载失败'))
     } finally {
       setBusy(false)
     }
@@ -208,7 +209,7 @@ export default function DataCenterActionsPage() {
       applyImportJob(response.data)
       setStatus('失败行已重新排队')
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : '重试失败')
+      setStatus(await formatUserError(cause, '重试失败'))
     } finally {
       setBusy(false)
     }
@@ -247,7 +248,7 @@ export default function DataCenterActionsPage() {
         setStatus(`${kind === 'export' ? '导出' : '备份'}当前：${jobStatusLabel(job.status)}`)
       }
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : '任务操作失败')
+      setStatus(await formatUserError(cause, '任务操作失败'))
     } finally {
       setBusy(false)
     }
@@ -290,7 +291,7 @@ export default function DataCenterActionsPage() {
       applyImportJob(job)
       setStatus(`已上传，正在准备导入 · ${jobStatusLabel(job.phase || 'detecting')}`)
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : 'CSV 上传失败')
+      setStatus(await formatUserError(cause, 'CSV 上传失败'))
     } finally {
       setBusy(false)
     }
@@ -321,7 +322,7 @@ export default function DataCenterActionsPage() {
         `预检完成：有效 ${job.validRows ?? 0} 行，警告 ${job.warningRows ?? 0} 行，错误 ${job.invalidRows ?? 0} 行`
       )
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : '预检失败')
+      setStatus(await formatUserError(cause, '预检失败'))
     } finally {
       setBusy(false)
     }
@@ -352,7 +353,7 @@ export default function DataCenterActionsPage() {
       applyImportJob(job)
       setStatus(`导入完成：已写入 ${job.importedRows ?? 0} 行`)
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : '提交导入失败')
+      setStatus(await formatUserError(cause, '提交导入失败'))
     } finally {
       setBusy(false)
     }
@@ -377,7 +378,7 @@ export default function DataCenterActionsPage() {
       void response
       await refreshJobs()
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : '导出创建失败')
+      setStatus(await formatUserError(cause, '导出创建失败'))
     } finally {
       setBusy(false)
     }
@@ -397,7 +398,7 @@ export default function DataCenterActionsPage() {
       setStatus('备份任务已创建，完成后点列表下载')
       await refreshJobs()
     } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : '备份创建失败')
+      setStatus(await formatUserError(cause, '备份创建失败'))
     } finally {
       setBusy(false)
     }
