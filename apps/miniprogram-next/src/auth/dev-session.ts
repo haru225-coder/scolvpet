@@ -3,13 +3,22 @@
 //
 // 真机登录走裸 Taro.request + snake_case（与 curl 成功路径一致），
 // 避免 OpenAPI 中间层吞掉微信 errMsg / 响应体。
+//
+// 2026-08：首屏改成「种群 / 试配」后，不能再只在今日页/登录页才自动登录；
+// 用 ensureDevelopmentBreederSession 做启动 + 首屏共用的单飞保证。
 import Taro from '@tarojs/taro'
 import { setApiToken } from '../api/client'
 import { formatNetworkError } from '../api/errors'
 import config from '../utils/config'
 import { diag } from '../utils/diag'
-import { clearOfflineDevMode } from './offline-dev'
-import { saveBreederSession, type BreederSession } from './session'
+import { clearOfflineDevMode, isOfflineDevMode, isOfflineDevSession } from './offline-dev'
+import {
+  clearBreederSession,
+  peekBreederSession,
+  readBreederSession,
+  saveBreederSession,
+  type BreederSession
+} from './session'
 
 const runtimeConfig = config as {
   APP_ENV?: string
@@ -36,6 +45,67 @@ export function isDevelopmentQuickLoginEnabled() {
 
 export function shouldAutoEnterDevelopmentSession() {
   return isDevelopmentQuickLoginEnabled() && !isUnitTestRuntime()
+}
+
+/** 单飞：多页面同时 await 只打一次 mock 登录。 */
+let ensureInflight: Promise<BreederSession | null> | null = null
+/** 最近一次 ensure 失败原因（成功时清空）；供 UI 展示，避免再二次 create 撞限流。 */
+let lastEnsureError = ''
+
+/** 读取最近一次 ensure 失败文案；无失败返回空串。 */
+export function getLastEnsureError(): string {
+  return lastEnsureError
+}
+
+/**
+ * 保证当前有可用 B 端会话（开发构建下自动 mock 登录）。
+ * - 生产 / 未注入 DEV_LOGIN / 单测：只 hydrate 本地会话，不抢跑。
+ * - 开发：无会话或离线假会话 → createDevelopmentBreederSession。
+ * - **永不抛**：失败返回 null，原因见 getLastEnsureError()。
+ *   调用方不要再立刻 createDevelopment / tryOnlineLogin 二次打码（易 RATE_LIMITED）。
+ */
+export async function ensureDevelopmentBreederSession(): Promise<BreederSession | null> {
+  const hydrated = readBreederSession()
+
+  if (!shouldAutoEnterDevelopmentSession()) {
+    lastEnsureError = ''
+    return hydrated
+  }
+
+  const peek = peekBreederSession()
+  if (hydrated && peek && !isOfflineDevSession(peek) && !isOfflineDevMode()) {
+    lastEnsureError = ''
+    return hydrated
+  }
+
+  if (ensureInflight) return ensureInflight
+
+  ensureInflight = (async () => {
+    try {
+      if (isOfflineDevMode() || isOfflineDevSession(peekBreederSession())) {
+        diag('ensureDevSession: clear sticky offline')
+        clearBreederSession()
+      }
+      const existing = readBreederSession()
+      if (existing && !isOfflineDevSession(existing) && !isOfflineDevMode()) {
+        lastEnsureError = ''
+        return existing
+      }
+      clearBreederSession()
+      diag('ensureDevSession: create development session')
+      const session = await createDevelopmentBreederSession()
+      lastEnsureError = ''
+      return session
+    } catch (cause) {
+      lastEnsureError = formatDevelopmentLoginError(cause)
+      diag(`ensureDevSession fail ${lastEnsureError.slice(0, 200)}`)
+      return null
+    } finally {
+      ensureInflight = null
+    }
+  })()
+
+  return ensureInflight
 }
 
 export function developmentLoginHints() {

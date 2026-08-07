@@ -17,6 +17,7 @@ import {
   setCustomerAccessToken,
   type CustomerPhoneAuthorizationCode
 } from './api/customer-client'
+import { ensureDevelopmentBreederSession } from './auth/dev-session'
 import { readBreederSession } from './auth/session'
 
 import './app.css'
@@ -82,6 +83,11 @@ class App extends Component<PropsWithChildren> {
     } catch (_) {
       // ignore
     }
+    // 开发构建：首屏已是种群/试配，不能再等进今日页才自动登录。
+    // 生产 fail-closed（ensure 内部不抢跑）。失败不挡启动，页面侧会再 await 一次。
+    void ensureDevelopmentBreederSession().catch(() => {
+      // ignore — 页面 load 会呈现错误
+    })
     try {
       const stored = wx.getStorageSync('scolvpet_customer') || {}
       if (stored.phone) this.globalData.phone = stored.phone
@@ -105,7 +111,8 @@ class App extends Component<PropsWithChildren> {
     }
     Object.assign(this.taroGlobalData._launchEntry, entry)
     // P2-3 静默微信登录:有缓存 token 维持现状;任何失败都无感降级到短信流程。
-    this._silentLoginPromise = this.silentWechatLogin()
+    // .catch：Node 冒烟/真机弱网时 fail 回调可能以裸 Object reject，避免 unhandledRejection。
+    this._silentLoginPromise = this.silentWechatLogin().catch(() => ({ state: 'fallback' }))
   }
 
   silentWechatLogin() {

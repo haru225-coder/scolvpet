@@ -19,9 +19,10 @@ describe('B 端未登录态', () => {
     expect(recorded.navigations).toContain('/pages/login/index')
   })
 
-  it('个体页不显示静态样例数据', () => {
+  it('个体页不显示静态样例数据', async () => {
     render(<AnimalsPage />)
-    expect(screen.getByText('请先登录经营账号')).toBeTruthy()
+    // ensureDevelopmentBreederSession 为 async，未登录文案在 await 之后才出现
+    await waitFor(() => expect(screen.getByText('请先登录经营账号')).toBeTruthy())
     expect(screen.queryByText('布丁 ♀')).toBeNull()
   })
 

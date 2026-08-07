@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defaultApi } from '../src/api/client'
 import {
   createDevelopmentBreederSession,
+  ensureDevelopmentBreederSession,
+  getLastEnsureError,
   isDevelopmentQuickLoginEnabled,
   shouldAutoEnterDevelopmentSession
 } from '../src/auth/dev-session'
@@ -42,5 +44,25 @@ describe('开发会话引导', () => {
       phoneCodeLoginRequest: expect.objectContaining({ phone: '+8613800138000', code: '123456' })
     }))
     vi.restoreAllMocks()
+  })
+
+  it('ensureDevelopmentBreederSession 在单测下不抢跑，只 hydrate 本地会话', async () => {
+    recorded.storage.set('scolvpet_breeder_session', {
+      accessToken: 'at_cached',
+      refreshToken: 'rt_cached',
+      expiresAt: Date.now() + 3600_000,
+      displayName: '缓存',
+      capabilities: ['write_task']
+    })
+    const session = await ensureDevelopmentBreederSession()
+    expect(session?.accessToken).toBe('at_cached')
+    expect(getLastEnsureError()).toBe('')
+  })
+
+  it('ensureDevelopmentBreederSession 无本地会话时在单测返回 null（不自动 mock）', async () => {
+    const session = await ensureDevelopmentBreederSession()
+    expect(session).toBeNull()
+    // 未抢跑时不写失败文案（区别于 create 真失败）
+    expect(getLastEnsureError()).toBe('')
   })
 })

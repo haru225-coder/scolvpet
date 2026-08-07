@@ -15,6 +15,7 @@ import {
   palette
 } from '@scolvpet/mp-ui'
 
+import { ensureDevelopmentBreederSession } from '../auth/dev-session'
 import { readBreederSession } from '../auth/session'
 import { canUseCapability } from '../auth/permissions'
 
@@ -59,15 +60,25 @@ export default function BListPage({
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!readBreederSession()) {
-      setError('请先登录经营账号')
-      setLoading(false)
-      return
-    }
-    void load()
-      .then(setItems)
-      .catch(async (cause) => setError(await formatUserError(cause, '加载失败，请稍后重试')))
-      .finally(() => setLoading(false))
+    void (async () => {
+      try {
+        await ensureDevelopmentBreederSession()
+      } catch (_) {
+        // 下面统一判空
+      }
+      if (!readBreederSession()) {
+        setError('请先登录经营账号')
+        setLoading(false)
+        return
+      }
+      try {
+        setItems(await load())
+      } catch (cause) {
+        setError(await formatUserError(cause, '加载失败，请稍后重试'))
+      } finally {
+        setLoading(false)
+      }
+    })()
   }, [load])
 
   const showPrimary = Boolean(actionLabel && onAction && (!actionCapability || canUseCapability(actionCapability)))

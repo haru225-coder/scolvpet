@@ -16,6 +16,7 @@ import {
 
 import { defaultApi } from '../../../api/client'
 import { canUseCapability } from '../../../auth/permissions'
+import { ensureDevelopmentBreederSession } from '../../../auth/dev-session'
 import { readBreederSession } from '../../../auth/session'
 import { animalScanSubtitle, animalScanTitle } from '../../../utils/scan-labels'
 import { humanShortLabel } from '../../../utils/tab-routes'
@@ -37,6 +38,11 @@ export default function AnimalsPage() {
 
   // 稳定引用：不依赖 query，初始加载和搜索共用此函数
   const fetchAnimals = useCallback(async (searchQuery: string) => {
+    try {
+      await ensureDevelopmentBreederSession()
+    } catch (_) {
+      // 下面统一判空
+    }
     if (!readBreederSession()) {
       setError('请先登录经营账号')
       setLoading(false)

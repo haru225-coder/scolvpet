@@ -19,7 +19,9 @@ import { defaultApi, newIdempotencyKey } from '../../api/client'
 import { formatNetworkError, formatUserError } from '../../api/errors'
 import {
   createDevelopmentBreederSession,
+  ensureDevelopmentBreederSession,
   formatDevelopmentLoginError,
+  getLastEnsureError,
   shouldAutoEnterDevelopmentSession
 } from '../../auth/dev-session'
 import { isOfflineDevMode, isOfflineDevSession } from '../../auth/offline-dev'
@@ -166,38 +168,28 @@ export default function TodayPage() {
     setOfflineMessage('')
     diag(`loadTasks start api=${(config as { API_BASE?: string }).API_BASE || ''}`)
 
-    // 开发：无会话 / 离线假会话 → 必须先在线登录
-    // 有本地会话时必须用 readBreederSession 灌内存 token：
-    // peek 只读 storage，不 setApiToken；页面重进/热重载后 listTasks 会 401，看起来像「突然报错」。
+    // 开发：无会话 / 离线假会话 → ensure 单飞 mock 登录（与种群/试配首屏共用）。
+    // 失败只展示 getLastEnsureError，禁止再 tryOnlineLogin（会二次发码撞限流）。
+    // 401 重登仍走下方 listTasks 分支的 tryOnlineLogin 一次。
     if (shouldAutoEnterDevelopmentSession()) {
-      const sess = peekBreederSession()
-      if (!sess || isOfflineDevMode() || isOfflineDevSession(sess)) {
-        const upgradeError = await tryOnlineLogin()
-        if (upgradeError) {
-          setTasks([])
-          setLoading(false)
-          setRefreshing(false)
-          setError(upgradeError)
-          void Taro.showModal({
-            title: '暂时连不上服务器',
-            content: upgradeError.slice(0, 600),
-            confirmText: '复制详情',
-            cancelText: '关闭',
-            success: (res) => {
-              if (res.confirm) void copyDiag()
-            }
-          })
-          return
-        }
-      } else if (!readBreederSession()) {
-        const upgradeError = await tryOnlineLogin()
-        if (upgradeError) {
-          setTasks([])
-          setLoading(false)
-          setRefreshing(false)
-          setError(upgradeError)
-          return
-        }
+      const sess = await ensureDevelopmentBreederSession()
+      if (!sess) {
+        const upgradeError =
+          getLastEnsureError() || formatDevelopmentLoginError(new Error('开发自动登录失败'))
+        setTasks([])
+        setLoading(false)
+        setRefreshing(false)
+        setError(upgradeError)
+        void Taro.showModal({
+          title: '暂时连不上服务器',
+          content: upgradeError.slice(0, 600),
+          confirmText: '复制详情',
+          cancelText: '关闭',
+          success: (res) => {
+            if (res.confirm) void copyDiag()
+          }
+        })
+        return
       }
     } else if (!readBreederSession()) {
       setLoading(false)

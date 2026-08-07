@@ -5,6 +5,7 @@ import { Button, Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, pale
 
 import { defaultApi, geneticApi, newIdempotencyKey, p1Api } from '../api/client'
 import { formatUserError, notifyUserError, presentUserMessage } from '../api/errors'
+import { ensureDevelopmentBreederSession } from '../auth/dev-session'
 import { readBreederSession } from '../auth/session'
 import { CapabilityButton } from '../components/CapabilityButton'
 import {
@@ -80,6 +81,13 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
   }
 
   async function loadReferenceData() {
+    // 开发：Tab 首屏可能先于登录页；先 ensure 演示会话再读目录。
+    // 生产：只 hydrate；无会话则内置目录预览 + 提示登录。
+    try {
+      await ensureDevelopmentBreederSession()
+    } catch (_) {
+      // 下面统一判空
+    }
     // 分包页冷启动：storage 有会话但内存 token 空 → 目录 401
     if (!readBreederSession()) {
       setMessage('请先登录经营账号')

@@ -1,9 +1,10 @@
 import { ScrollView, View } from '@tarojs/components'
-import { useDidShow } from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { useCallback, useEffect, useState } from 'react'
 import { Cell, Empty, Hero, PosterCard, Rail, Section, SectionList, palette } from '@scolvpet/mp-ui'
 
 import { defaultApi } from '../../api/client'
+import { ensureDevelopmentBreederSession, getLastEnsureError } from '../../auth/dev-session'
 import ProfileAvatar from '../../components/ProfileAvatar'
 import {
   animalScanSubtitle,
@@ -43,13 +44,24 @@ export default function PopulationPage() {
   const [animals, setAnimals] = useState<Row[]>([])
   const [litters, setLitters] = useState<Row[]>([])
   const [notice, setNotice] = useState('')
+  const [needLogin, setNeedLogin] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useDidShow(() => markTabActive('/pages/population/index'))
 
   const load = useCallback(async () => {
     setLoading(true)
+    setNeedLogin(false)
     try {
+      // 开发：首屏直接是本页，必须先保证演示会话再拉列表（否则像「又要登录 / 读不到」）
+      const session = await ensureDevelopmentBreederSession()
+      if (!session) {
+        setAnimals([])
+        setLitters([])
+        setNeedLogin(true)
+        setNotice(getLastEnsureError() || '请先登录经营账号')
+        return
+      }
       const [hamsters, litterList] = await Promise.all([
         defaultApi.listHamsters({ limit: 20 } as any),
         defaultApi.listLitters({ limit: 20 } as any)
@@ -58,6 +70,7 @@ export default function PopulationPage() {
       setLitters(((litterList as any)?.data || []).map(toLitterRow))
       setNotice('')
     } catch (_cause) {
+      setNeedLogin(false)
       setNotice('暂时读不到种群数据，可先从下方入口进去')
     } finally {
       setLoading(false)
@@ -69,7 +82,7 @@ export default function PopulationPage() {
   }, [load])
 
   const focus = litters.length ? litters[0] : null
-  const emptyBoth = !loading && !notice && animals.length === 0 && litters.length === 0
+  const emptyBoth = !loading && !notice && !needLogin && animals.length === 0 && litters.length === 0
 
   return (
     <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
@@ -107,7 +120,21 @@ export default function PopulationPage() {
             ))}
           </Rail>
         ) : null}
-        {notice ? <Empty title={notice} description="点下方入口也能直接进列表" /> : null}
+        {!loading && needLogin ? (
+          <SectionList>
+            <Section header="需要处理">
+              <Cell
+                title="请先登录经营账号"
+                subtitle="点这里去登录"
+                chevron
+                onClick={() => void Taro.navigateTo({ url: '/pages/login/index' })}
+              />
+            </Section>
+          </SectionList>
+        ) : null}
+        {!loading && notice && !needLogin ? (
+          <Empty title={notice} description="点下方入口也能直接进列表" />
+        ) : null}
         {emptyBoth ? (
           <Empty title="还没有个体和窝次" description="先建档几只，或直接去试配模拟看看结果" />
         ) : null}
