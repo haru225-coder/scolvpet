@@ -41,8 +41,9 @@ export default defineAppConfig({
       {
         pagePath: 'pages/trial/index',
         text: '试配',
-        iconPath: 'assets/tab/population.png',
-        selectedIconPath: 'assets/tab/population-active.png'
+        // 与 custom-tab-bar 一致：用 today 资产区分种群，避免两栏同图标
+        iconPath: 'assets/tab/today.png',
+        selectedIconPath: 'assets/tab/today-active.png'
       }
     ]
   },

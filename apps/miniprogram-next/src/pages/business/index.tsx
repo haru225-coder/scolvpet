@@ -1,9 +1,10 @@
 import { ScrollView, View } from '@tarojs/components'
-import { useDidShow } from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { useCallback, useEffect, useState } from 'react'
 import { Cell, Empty, Hero, MiniCard, Rail, Section, SectionList, palette } from '@scolvpet/mp-ui'
 
 import { defaultApi } from '../../api/client'
+import { getLastEnsureError, requireBreederSession } from '../../auth/dev-session'
 import ProfileAvatar from '../../components/ProfileAvatar'
 import {
   DOMAIN_HOME,
@@ -20,12 +21,23 @@ export default function BusinessPage() {
   const [headline, setHeadline] = useState<{ title: string; subtitle?: string } | null>(null)
   const [metrics_, setMetrics] = useState<Metric[]>([])
   const [notice, setNotice] = useState('')
+  const [needLogin, setNeedLogin] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useDidShow(() => markTabActive('/pages/business/index'))
 
   const load = useCallback(async () => {
     setLoading(true)
+    setNeedLogin(false)
+    const session = await requireBreederSession()
+    if (!session) {
+      setHeadline(null)
+      setMetrics([])
+      setNeedLogin(true)
+      setNotice(getLastEnsureError() || '请先登录经营账号')
+      setLoading(false)
+      return
+    }
     let hasHead = false
     try {
       const reminders = await defaultApi.listReminders({ limit: 10 } as any)
@@ -86,7 +98,19 @@ export default function BusinessPage() {
           right={<ProfileAvatar />}
         />
         {loading ? <Empty title="正在读取经营概况" /> : null}
-        {!loading && metrics_.length ? (
+        {!loading && needLogin ? (
+          <SectionList>
+            <Section header="需要处理">
+              <Cell
+                title="请先登录经营账号"
+                subtitle="点这里去登录"
+                chevron
+                onClick={() => void Taro.navigateTo({ url: '/pages/login/index' })}
+              />
+            </Section>
+          </SectionList>
+        ) : null}
+        {!loading && !needLogin && metrics_.length ? (
           <Rail title="一眼概况" action={{ text: '数据中心', onClick: () => openPage(DOMAIN_HOME.dataCenter) }}>
             {metrics_.map((metric) => (
               <MiniCard
@@ -99,7 +123,9 @@ export default function BusinessPage() {
             ))}
           </Rail>
         ) : null}
-        {notice ? <Empty title={notice} description="下面入口仍可直接进" /> : null}
+        {!loading && notice && !needLogin ? (
+          <Empty title={notice} description="下面入口仍可直接进" />
+        ) : null}
         <SectionList>
           <Section header="经营">
             <Cell title="客户" subtitle="预订、交付、跟进" chevron onClick={() => openPage(DOMAIN_HOME.crm)} />

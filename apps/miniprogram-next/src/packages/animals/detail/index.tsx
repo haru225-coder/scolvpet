@@ -19,8 +19,7 @@ import {
 import { defaultApi, geneticApi, newIdempotencyKey } from '../../../api/client'
 import { canUseCapability } from '../../../auth/permissions'
 import { CapabilityButton } from '../../../components/CapabilityButton'
-import { ensureDevelopmentBreederSession } from '../../../auth/dev-session'
-import { readBreederSession } from '../../../auth/session'
+import { requireBreederSession } from '../../../auth/dev-session'
 import { readAnimalSnapshot, saveAnimalSnapshot } from '../../../offline/snapshots'
 import config from '../../../utils/config'
 import { sha256 } from '../../../utils/sha256'
@@ -120,12 +119,8 @@ export default function AnimalDetailPage() {
 
   const load = useCallback(
     async (id: string) => {
-      try {
-        await ensureDevelopmentBreederSession()
-      } catch (_) {
-        // 下面统一判空
-      }
-      if (!readBreederSession()) {
+      const session = await requireBreederSession()
+      if (!session) {
         setMessage('请先登录经营账号')
         setLoading(false)
         return

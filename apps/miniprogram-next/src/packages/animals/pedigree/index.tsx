@@ -5,6 +5,7 @@ import { Cell, Empty, NavBar, Section, SectionList, Tag, metrics, palette } from
 
 import { defaultApi } from '../../../api/client'
 import { formatUserError } from '../../../api/errors'
+import { requireBreederSession } from '../../../auth/dev-session'
 import { buildPedigreeRows, type PedigreeRow } from '../../../utils/pedigree'
 import {
   litterMemberIds,
@@ -39,6 +40,13 @@ export default function AnimalPedigreePage() {
     setLoading(true)
     setError('')
     try {
+      // 验收路径：种群 → 个体 → 族谱；冷启分包须先 require 会话
+      const session = await requireBreederSession()
+      if (!session) {
+        setError('请先登录经营账号')
+        setRows([])
+        return
+      }
       const [hamsterResponse, hamstersResponse, littersResponse] = await Promise.all([
         defaultApi.getHamster({ hamsterId: id }),
         defaultApi.listHamsters({ limit: 100 } as any).catch(() => ({ data: [] as any[] })),
@@ -127,7 +135,20 @@ export default function AnimalPedigreePage() {
         {loading ? <Empty title="正在拼族谱…" description="从窝次记录里找父母" /> : null}
 
         {!loading && error ? (
-          <Empty title={error} description="返回上一页重试，或先检查网络" />
+          error.includes('登录') ? (
+            <SectionList>
+              <Section header="需要处理">
+                <Cell
+                  title={error}
+                  subtitle="点这里去登录"
+                  chevron
+                  onClick={() => void Taro.navigateTo({ url: '/pages/login/index' })}
+                />
+              </Section>
+            </SectionList>
+          ) : (
+            <Empty title={error} description="返回上一页重试，或先检查网络" />
+          )
         ) : null}
 
         {!loading && !error && !rows.length ? (

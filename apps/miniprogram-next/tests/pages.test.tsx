@@ -12,9 +12,10 @@ import AnimalsPage from '../src/packages/animals/index'
 beforeEach(() => recorded.reset())
 
 describe('B 端未登录态', () => {
-  it('今日页显示登录引导并可跳转', () => {
+  it('今日页显示登录引导并可跳转', async () => {
     render(<TodayPage />)
-    expect(screen.getByText('请先登录经营账号')).toBeTruthy()
+    // requireBreederSession 为 async，未登录文案在 await 之后才出现
+    await waitFor(() => expect(screen.getByText('请先登录经营账号')).toBeTruthy())
     fireEvent.click(screen.getByText('请先登录经营账号'))
     expect(recorded.navigations).toContain('/pages/login/index')
   })

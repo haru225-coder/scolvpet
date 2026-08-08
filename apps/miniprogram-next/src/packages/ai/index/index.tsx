@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Button, Cell, Empty, FormRow, LargeTitle, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
 import { newIdempotencyKey, p2Api } from '../../../api/client'
-import { readBreederSession } from '../../../auth/session'
+import { requireBreederSession } from '../../../auth/dev-session'
 import type { ApiEnvelope } from '../../../api/types'
 import { humanShortLabel, openPage } from '../../../utils/tab-routes'
 import { formatUserError } from '../../../api/errors'
@@ -28,11 +28,19 @@ export default function AssistantPage() {
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    if (!readBreederSession()) {
-      setMessage('请先登录经营账号')
-      return
-    }
-    void p2Api.assistantCapabilities().then((response: ApiEnvelope) => setCapabilities(response.data)).catch(async (cause: unknown) => setMessage(await formatUserError(cause, '助手能力加载失败')))
+    void (async () => {
+      const session = await requireBreederSession()
+      if (!session) {
+        setMessage('请先登录经营账号')
+        return
+      }
+      try {
+        const response = await p2Api.assistantCapabilities()
+        setCapabilities((response as ApiEnvelope).data)
+      } catch (cause: unknown) {
+        setMessage(await formatUserError(cause, '助手能力加载失败'))
+      }
+    })()
   }, [])
 
   async function ask(input?: string) {

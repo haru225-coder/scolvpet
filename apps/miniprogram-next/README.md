@@ -60,11 +60,11 @@ packages/mp-ui/             @scolvpet/mp-ui:tokens.ts(真源 ios_theme.dart)+ 11
 
 开发配置（`APP_ENV=development` + 已注入 `DEV_LOGIN_*`）下：
 
-1. **今日页无会话时自动换取** staging 演示账号会话（`13800138000` / Mock 码 `123456`），不再卡登录墙。
-2. **登录页**同样自动创建开发会话；仍保留“开发环境一键登录（免扫码）”按钮作手动重试。
-3. **开发 API 默认 `https://p.scolv.com`（443，无端口）**。LA1 用 HAProxy 按 SNI 把 `p.scolv.com:443` 转到 Caddy staging；`:8443` 仍可直连但不要写进小程序默认（真机微信会拦自定义端口）。
-4. **真机预览前**必须在微信公众平台 → 开发 → 开发管理 → 服务器域名，把 **request 合法域名** 配成 `https://pet.scolv.com`（**要 `https://`**，不要端口、不要路径）。必须配在**当前预览 AppID** 下（`apps/miniprogram-next/project.config.json` 里是 `wx800bb867809615fd`，不是仓库根目录另一个小程序号）。未配置或配错号时真机永远像离线；开发者工具里的「不校验合法域名」**对真机无效**。
-5. **`project.config.json` 默认 `urlCheck: false`** 方便开发者工具；生产构建由 `scripts/build-miniprogram-next.sh` **强制 `urlCheck: true`**。
+1. **启动 / 种群 / 试配 / 个体 / 族谱 / 经营等**通过 `requireBreederSession` 自动换取演示账号会话（`13800138000` / Mock 码 `123456`），首屏已是种群也不卡登录墙。
+2. **登录页**同样自动创建开发会话；仍保留「一键进入演示熊舍」按钮作手动重试。登录成功 `reLaunch` 到 **种群**（不是已离栏的今日页）。
+3. **开发 API 默认**见 `src/utils/config.js`（常为 `https://pet.scolv.com` 以对齐公众平台合法域名；staging 主机为 `p.scolv.com` 443）。`:8443` 不要写进小程序默认。
+4. **真机预览前**必须在微信公众平台 → 开发 → 开发管理 → 服务器域名，把 **request 合法域名** 配成 `https://pet.scolv.com`（**要 `https://`**，不要端口、不要路径）。必须配在**当前预览 AppID** 下（`apps/miniprogram-next/project.config.json` 里是 `wx800bb867809615fd`）。未配置或配错号时真机永远像离线；开发者工具里的「不校验合法域名」**对真机无效**。
+5. **`project.config.json` 默认 `urlCheck: false`** 方便开发者工具；生产构建由 `scripts/build-miniprogram-next.sh` **强制 `urlCheck: true`**，并清空 `DEV_LOGIN_*`。
 
 后续业务页仍请求真实 staging API，不是静态假数据。若登录页先填写其他 11 位测试手机号再点一键，会沿用该号。
 

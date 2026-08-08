@@ -21,3 +21,4 @@ apps/miniprogram-next.zip
 # local WeChat preview artifacts (never commit)
 apps/miniprogram-next/.preview/
 apps/miniprogram-next/scolvpet-mp-preview-qr*.png
+apps/miniprogram-next/scolvpet-mp-preview-qr*.jpg

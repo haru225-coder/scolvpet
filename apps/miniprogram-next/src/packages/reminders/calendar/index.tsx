@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Button, Cell, Empty, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
 import { defaultApi } from '../../../api/client'
-import { readBreederSession } from '../../../auth/session'
+import { requireBreederSession } from '../../../auth/dev-session'
 import { resolveSubscribeTemplateIds } from '../../../utils/subscribe-templates'
 import { humanShortLabel } from '../../../utils/tab-routes'
 import { formatUserError } from '../../../api/errors'
@@ -32,16 +32,21 @@ export default function CalendarPage() {
   const [showSubscribe, setShowSubscribe] = useState(false)
 
   useEffect(() => {
-    if (!readBreederSession()) {
-      setMessage('请先登录经营账号')
-      setLoading(false)
-      return
-    }
-    void resolveSubscribeTemplateIds()
-      .then((ids) => setShowSubscribe(ids.length > 0))
-      .catch(() => setShowSubscribe(false))
-    void Promise.all([defaultApi.listTasks({ limit: 100 }), defaultApi.listReminders({ limit: 100 })])
-      .then(([tasks, reminders]) => {
+    void (async () => {
+      const session = await requireBreederSession()
+      if (!session) {
+        setMessage('请先登录经营账号')
+        setLoading(false)
+        return
+      }
+      void resolveSubscribeTemplateIds()
+        .then((ids) => setShowSubscribe(ids.length > 0))
+        .catch(() => setShowSubscribe(false))
+      try {
+        const [tasks, reminders] = await Promise.all([
+          defaultApi.listTasks({ limit: 100 }),
+          defaultApi.listReminders({ limit: 100 })
+        ])
         const taskEntries = (tasks.data || []).map((item: any) => ({
           id: `task-${item.id}`,
           dateKey: dateKey(item.scheduledAt),
@@ -60,9 +65,12 @@ export default function CalendarPage() {
           [...taskEntries, ...reminderEntries].sort((a, b) => a.dateKey.localeCompare(b.dateKey))
         )
         setMessage('')
-      })
-      .catch(async (cause) => setMessage(await formatUserError(cause, '日历加载失败')))
-      .finally(() => setLoading(false))
+      } catch (cause) {
+        setMessage(await formatUserError(cause, '日历加载失败'))
+      } finally {
+        setLoading(false)
+      }
+    })()
   }, [])
 
   const groups = entries.reduce<Record<string, CalendarEntry[]>>((result, entry) => {

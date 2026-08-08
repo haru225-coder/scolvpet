@@ -15,8 +15,7 @@ import {
   palette
 } from '@scolvpet/mp-ui'
 
-import { ensureDevelopmentBreederSession } from '../auth/dev-session'
-import { readBreederSession } from '../auth/session'
+import { requireBreederSession } from '../auth/dev-session'
 import { canUseCapability } from '../auth/permissions'
 
 export type BListItem = {
@@ -61,12 +60,8 @@ export default function BListPage({
 
   useEffect(() => {
     void (async () => {
-      try {
-        await ensureDevelopmentBreederSession()
-      } catch (_) {
-        // 下面统一判空
-      }
-      if (!readBreederSession()) {
+      const session = await requireBreederSession()
+      if (!session) {
         setError('请先登录经营账号')
         setLoading(false)
         return

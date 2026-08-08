@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Cell, Empty, Hero, PosterCard, Rail, Section, SectionList, palette } from '@scolvpet/mp-ui'
 
 import { defaultApi } from '../../api/client'
-import { ensureDevelopmentBreederSession, getLastEnsureError } from '../../auth/dev-session'
+import { getLastEnsureError, requireBreederSession } from '../../auth/dev-session'
 import ProfileAvatar from '../../components/ProfileAvatar'
 import {
   animalScanSubtitle,
@@ -54,7 +54,7 @@ export default function PopulationPage() {
     setNeedLogin(false)
     try {
       // 开发：首屏直接是本页，必须先保证演示会话再拉列表（否则像「又要登录 / 读不到」）
-      const session = await ensureDevelopmentBreederSession()
+      const session = await requireBreederSession()
       if (!session) {
         setAnimals([])
         setLitters([])
@@ -136,7 +136,10 @@ export default function PopulationPage() {
           <Empty title={notice} description="点下方入口也能直接进列表" />
         ) : null}
         {emptyBoth ? (
-          <Empty title="还没有个体和窝次" description="先建档几只，或直接去试配模拟看看结果" />
+          <Empty
+            title="还没有个体和窝次"
+            description="演示号可在工程根执行 node scripts/seed-demo.mjs 塞哈豆/哈米；也可先去试配模拟"
+          />
         ) : null}
         <SectionList>
           <Section header="常用">

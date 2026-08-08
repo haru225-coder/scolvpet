@@ -5,7 +5,8 @@ import { metrics, palette } from '@scolvpet/mp-ui'
 
 import { TAB_ACTIVE_EVENT, TAB_PAGES } from '../utils/tab-routes'
 
-// 2026-08-04：两栏（种群 + 试配）。图标沍用现有 assets/tab/*，不新增二进制。
+// 2026-08：两栏（种群 + 试配）。复用 assets/tab/*：种群=population，试配=today（视觉区分）。
+// app.config tabBar.list 的 iconPath 须与此一致（原生降级路径）。
 const TABS = [
   {
     path: TAB_PAGES[0],

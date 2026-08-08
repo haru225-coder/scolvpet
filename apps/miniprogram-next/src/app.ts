@@ -17,7 +17,7 @@ import {
   setCustomerAccessToken,
   type CustomerPhoneAuthorizationCode
 } from './api/customer-client'
-import { ensureDevelopmentBreederSession } from './auth/dev-session'
+import { requireBreederSession } from './auth/dev-session'
 import { readBreederSession } from './auth/session'
 
 import './app.css'
@@ -85,7 +85,7 @@ class App extends Component<PropsWithChildren> {
     }
     // 开发构建：首屏已是种群/试配，不能再等进今日页才自动登录。
     // 生产 fail-closed（ensure 内部不抢跑）。失败不挡启动，页面侧会再 await 一次。
-    void ensureDevelopmentBreederSession().catch(() => {
+    void requireBreederSession().catch(() => {
       // ignore — 页面 load 会呈现错误
     })
     try {

@@ -6,11 +6,15 @@ import {
   ensureDevelopmentBreederSession,
   getLastEnsureError,
   isDevelopmentQuickLoginEnabled,
+  requireBreederSession,
   shouldAutoEnterDevelopmentSession
 } from '../src/auth/dev-session'
 import { recorded } from './stubs/taro'
 
-beforeEach(() => recorded.reset())
+beforeEach(() => {
+  recorded.reset()
+  delete process.env.SCOLV_ALLOW_DEV_AUTO_ENTER
+})
 
 describe('开发会话引导', () => {
   it('开发配置下允许快速登录，单测环境不自动进入', () => {
@@ -64,5 +68,48 @@ describe('开发会话引导', () => {
     expect(session).toBeNull()
     // 未抢跑时不写失败文案（区别于 create 真失败）
     expect(getLastEnsureError()).toBe('')
+  })
+
+  it('requireBreederSession 并发只 create 一次（单飞）', async () => {
+    process.env.SCOLV_ALLOW_DEV_AUTO_ENTER = '1'
+    expect(shouldAutoEnterDevelopmentSession()).toBe(true)
+
+    let resolveCreate!: (value: any) => void
+    const createGate = new Promise((resolve) => {
+      resolveCreate = resolve
+    })
+
+    const sendVerificationCode = vi.spyOn(defaultApi, 'sendVerificationCode').mockImplementation(
+      async () => {
+        await createGate
+        return {
+          data: { verificationId: 'vid-once', expiresInSeconds: 300, retryAfterSeconds: 60 }
+        } as never
+      }
+    )
+    const createSession = vi.spyOn(defaultApi, 'createSession').mockResolvedValue({
+      data: {
+        accessToken: 'at_once',
+        refreshToken: 'rt_once',
+        expiresInSeconds: 3600,
+        account: { displayName: '演示舍主一', phoneMasked: '+86138****8000' },
+        currentOrganization: { name: '龙之介' },
+        memberRole: 'owner',
+        capabilities: ['write_task']
+      }
+    } as never)
+
+    const p1 = requireBreederSession()
+    const p2 = requireBreederSession()
+    // 两路都已挂上同一 inflight 后再放行 create
+    await Promise.resolve()
+    resolveCreate(undefined)
+    const [a, b] = await Promise.all([p1, p2])
+    expect(a?.accessToken).toBe('at_once')
+    expect(b?.accessToken).toBe('at_once')
+    expect(sendVerificationCode).toHaveBeenCalledTimes(1)
+    expect(createSession).toHaveBeenCalledTimes(1)
+    vi.restoreAllMocks()
+    delete process.env.SCOLV_ALLOW_DEV_AUTO_ENTER
   })
 })

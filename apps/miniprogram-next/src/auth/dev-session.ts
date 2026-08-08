@@ -31,6 +31,7 @@ function apiBase(): string {
   return String(runtimeConfig.API_BASE || 'https://pet.scolv.com').replace(/\/$/, '')
 }
 
+/** Vitest 下 create 走 defaultApi mock（与自动登录开关无关）。 */
 function isUnitTestRuntime() {
   return typeof process !== 'undefined' && process.env.VITEST === 'true'
 }
@@ -43,14 +44,25 @@ export function isDevelopmentQuickLoginEnabled() {
   )
 }
 
+/**
+ * 是否在页面挂载时自动 ensure mock 会话。
+ * 单测默认关（避免污染表单）；设 SCOLV_ALLOW_DEV_AUTO_ENTER=1 可打开单飞等用例。
+ */
 export function shouldAutoEnterDevelopmentSession() {
-  return isDevelopmentQuickLoginEnabled() && !isUnitTestRuntime()
+  if (!isDevelopmentQuickLoginEnabled()) return false
+  if (isUnitTestRuntime() && process.env.SCOLV_ALLOW_DEV_AUTO_ENTER !== '1') return false
+  return true
 }
 
 /** 单飞：多页面同时 await 只打一次 mock 登录。 */
 let ensureInflight: Promise<BreederSession | null> | null = null
 /** 最近一次 ensure 失败原因（成功时清空）；供 UI 展示，避免再二次 create 撞限流。 */
 let lastEnsureError = ''
+
+export type EnsureSessionOptions = {
+  /** 清掉现有会话并强制重新 mock 登录（401 重登用）。仍走单飞，不与并发 ensure 叠两次发码。 */
+  force?: boolean
+}
 
 /** 读取最近一次 ensure 失败文案；无失败返回空串。 */
 export function getLastEnsureError(): string {
@@ -61,21 +73,38 @@ export function getLastEnsureError(): string {
  * 保证当前有可用 B 端会话（开发构建下自动 mock 登录）。
  * - 生产 / 未注入 DEV_LOGIN / 单测：只 hydrate 本地会话，不抢跑。
  * - 开发：无会话或离线假会话 → createDevelopmentBreederSession。
+ * - force：清会话后重登一次（listTasks 401 等）。
  * - **永不抛**：失败返回 null，原因见 getLastEnsureError()。
- *   调用方不要再立刻 createDevelopment / tryOnlineLogin 二次打码（易 RATE_LIMITED）。
+ *   调用方不要再立刻 createDevelopment 二次发码（易 RATE_LIMITED）。
  */
-export async function ensureDevelopmentBreederSession(): Promise<BreederSession | null> {
-  const hydrated = readBreederSession()
+export async function ensureDevelopmentBreederSession(
+  options?: EnsureSessionOptions
+): Promise<BreederSession | null> {
+  const force = Boolean(options?.force)
 
   if (!shouldAutoEnterDevelopmentSession()) {
     lastEnsureError = ''
-    return hydrated
+    return readBreederSession()
   }
 
-  const peek = peekBreederSession()
-  if (hydrated && peek && !isOfflineDevSession(peek) && !isOfflineDevMode()) {
-    lastEnsureError = ''
-    return hydrated
+  if (force) {
+    // 等掉在途 ensure，再清会话，避免与首屏 load 抢飞
+    if (ensureInflight) {
+      try {
+        await ensureInflight
+      } catch (_) {
+        // ignore
+      }
+    }
+    clearBreederSession()
+    diag('ensureDevSession: force re-login')
+  } else {
+    const hydrated = readBreederSession()
+    const peek = peekBreederSession()
+    if (hydrated && peek && !isOfflineDevSession(peek) && !isOfflineDevMode()) {
+      lastEnsureError = ''
+      return hydrated
+    }
   }
 
   if (ensureInflight) return ensureInflight
@@ -86,10 +115,12 @@ export async function ensureDevelopmentBreederSession(): Promise<BreederSession 
         diag('ensureDevSession: clear sticky offline')
         clearBreederSession()
       }
-      const existing = readBreederSession()
-      if (existing && !isOfflineDevSession(existing) && !isOfflineDevMode()) {
-        lastEnsureError = ''
-        return existing
+      if (!force) {
+        const existing = readBreederSession()
+        if (existing && !isOfflineDevSession(existing) && !isOfflineDevMode()) {
+          lastEnsureError = ''
+          return existing
+        }
       }
       clearBreederSession()
       diag('ensureDevSession: create development session')
@@ -106,6 +137,16 @@ export async function ensureDevelopmentBreederSession(): Promise<BreederSession 
   })()
 
   return ensureInflight
+}
+
+/**
+ * 页面加载统一入口：ensure 后返回会话。
+ * 无会话 → null（开发失败看 getLastEnsureError；生产提示去登录）。
+ */
+export async function requireBreederSession(
+  options?: EnsureSessionOptions
+): Promise<BreederSession | null> {
+  return ensureDevelopmentBreederSession(options)
 }
 
 export function developmentLoginHints() {

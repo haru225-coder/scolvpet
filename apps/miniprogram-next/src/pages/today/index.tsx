@@ -18,15 +18,14 @@ import {
 import { defaultApi, newIdempotencyKey } from '../../api/client'
 import { formatNetworkError, formatUserError } from '../../api/errors'
 import {
-  createDevelopmentBreederSession,
-  ensureDevelopmentBreederSession,
   formatDevelopmentLoginError,
   getLastEnsureError,
+  requireBreederSession,
   shouldAutoEnterDevelopmentSession
 } from '../../auth/dev-session'
 import { isOfflineDevMode, isOfflineDevSession } from '../../auth/offline-dev'
 import { canUseCapability } from '../../auth/permissions'
-import { clearBreederSession, peekBreederSession, readBreederSession } from '../../auth/session'
+import { peekBreederSession, readBreederSession } from '../../auth/session'
 import { readTodaySnapshot, saveTodaySnapshot } from '../../offline/snapshots'
 import ProfileAvatar from '../../components/ProfileAvatar'
 import { copyDiag, diag } from '../../utils/diag'
@@ -137,43 +136,16 @@ export default function TodayPage() {
 
   useDidShow(() => markTabActive('/pages/today/index'))
 
-  /**
-   * 开发：清掉离线假会话并连当前 API（pet.scolv.com）。
-   * 失败绝不重新 enterOffline。返回 error 文案；成功返回 ''。
-   */
-  const tryOnlineLogin = useCallback(async (): Promise<string> => {
-    if (!shouldAutoEnterDevelopmentSession()) return '开发自动登录未启用'
-    try {
-      if (isOfflineDevMode() || isOfflineDevSession(peekBreederSession())) {
-        diag('clear sticky offline session')
-        clearBreederSession()
-      }
-      // 开发构建：每次都强制重新登录 pet，避免半残会话
-      if (peekBreederSession() && !isOfflineDevSession(peekBreederSession())) {
-        // 已有真会话可复用；若想强制刷新可 clear 再登
-      } else {
-        clearBreederSession()
-      }
-      await createDevelopmentBreederSession()
-      return ''
-    } catch (cause) {
-      const msg = formatDevelopmentLoginError(cause)
-      diag(`tryOnlineLogin fail ${msg.slice(0, 200)}`)
-      return msg
-    }
-  }, [])
-
   const loadTasks = useCallback(async () => {
     setError('')
     setOfflineMessage('')
     diag(`loadTasks start api=${(config as { API_BASE?: string }).API_BASE || ''}`)
 
-    // 开发：无会话 / 离线假会话 → ensure 单飞 mock 登录（与种群/试配首屏共用）。
-    // 失败只展示 getLastEnsureError，禁止再 tryOnlineLogin（会二次发码撞限流）。
-    // 401 重登仍走下方 listTasks 分支的 tryOnlineLogin 一次。
-    if (shouldAutoEnterDevelopmentSession()) {
-      const sess = await ensureDevelopmentBreederSession()
-      if (!sess) {
+    // 统一 require：开发 mock 登录 / 生产 hydrate；失败不二次发码。
+    // 401 重登见下方 force: true。
+    const sess = await requireBreederSession()
+    if (!sess) {
+      if (shouldAutoEnterDevelopmentSession()) {
         const upgradeError =
           getLastEnsureError() || formatDevelopmentLoginError(new Error('开发自动登录失败'))
         setTasks([])
@@ -191,7 +163,6 @@ export default function TodayPage() {
         })
         return
       }
-    } else if (!readBreederSession()) {
       setLoading(false)
       setError('请先登录经营账号')
       return
@@ -228,12 +199,11 @@ export default function TodayPage() {
         /unauthorized/i.test(raw) ||
         raw.includes('未授权') ||
         raw.includes('鉴权')
-      // 开发：token 失效/未灌入 → 清会话并重登一次，避免突然弹一长串英文
+      // 开发：token 失效 → force ensure 重登一次（仍单飞，不叠二次发码）
       if (isUnauthorized && shouldAutoEnterDevelopmentSession()) {
-        diag(`listTasks 401 → re-login once raw=${raw.slice(0, 120)}`)
-        clearBreederSession()
-        const upgradeError = await tryOnlineLogin()
-        if (!upgradeError) {
+        diag(`listTasks 401 → force re-login once raw=${raw.slice(0, 120)}`)
+        const again = await requireBreederSession({ force: true })
+        if (again) {
           try {
             const response = await defaultApi.listTasks({ limit: 100 })
             const nextTasks = sortTasksForToday(response.data || [])
@@ -247,7 +217,9 @@ export default function TodayPage() {
             return
           }
         }
-        setError(upgradeError)
+        setError(
+          getLastEnsureError() || formatDevelopmentLoginError(new Error('开发自动登录失败'))
+        )
         return
       }
       const snapshot = readTodaySnapshot()
@@ -263,7 +235,7 @@ export default function TodayPage() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [tryOnlineLogin])
+  }, [])
 
   useEffect(() => {
     void loadTasks()

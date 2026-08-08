@@ -44,7 +44,8 @@ function apiPhone(value: string) {
 }
 
 function enterApp() {
-  return Taro.reLaunch({ url: '/pages/today/index' })
+  // 首屏已是种群 Tab；登录成功回到验收主路径，不要 reLaunch 到已离栏的今日页
+  return Taro.reLaunch({ url: '/pages/population/index' })
 }
 
 type SessionData = {
