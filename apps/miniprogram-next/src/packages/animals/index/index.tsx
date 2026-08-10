@@ -15,10 +15,17 @@ import {
 } from '@scolvpet/mp-ui'
 
 import { defaultApi } from '../../../api/default-api'
+import { p1Api } from '../../../api/p1-api'
 import { canUseCapability } from '../../../auth/permissions'
 import { requireBreederSession } from '../../../auth/dev-session'
 import { animalScanSubtitle, animalScanTitle } from '../../../utils/scan-labels'
 import { humanShortLabel } from '../../../utils/tab-routes'
+import {
+  buildTrialDeepLink,
+  findProfileByHamsterId,
+  profileListFromResponse,
+  trialSideFromAnimal
+} from '../../../genetics/trial-deeplink'
 
 type Hamster = any
 
@@ -77,6 +84,45 @@ export default function AnimalsPage() {
   // 卸载时清理定时器
   useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current) }, [])
 
+  function openAnimalDetail(id: string) {
+    void Taro.navigateTo({
+      url: `/packages/animals/detail/index?id=${encodeURIComponent(id)}`
+    })
+  }
+
+  /** 点行：打开档案 / 用这个体试配（拉一次档案列表补 genotype）。 */
+  function onAnimalRow(animal: Hamster) {
+    const id = String(animal?.id || '')
+    if (!id) return
+    void Taro.showActionSheet({
+      itemList: ['打开档案', '用这个体试配']
+    })
+      .then(async (res) => {
+        if (res.tapIndex === 0) {
+          openAnimalDetail(id)
+          return
+        }
+        if (res.tapIndex !== 1) return
+        let profile: any = null
+        try {
+          const profilesRes = await p1Api.listGeneticProfiles()
+          profile = findProfileByHamsterId(profileListFromResponse(profilesRes), id)
+        } catch {
+          // 无档案也可表型试配
+        }
+        const side = trialSideFromAnimal(animal, profile)
+        void Taro.navigateTo({
+          url: buildTrialDeepLink({
+            series: side.series,
+            side: side.side,
+            key: side.key,
+            phenotype: side.phenotype
+          })
+        })
+      })
+      .catch(() => undefined)
+  }
+
   return (
     <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
       <NavBar title="个体" back />
@@ -129,10 +175,10 @@ export default function AnimalsPage() {
                 <Cell
                   key={animal.id}
                   title={animalScanTitle(animal)}
-                  subtitle={animalScanSubtitle(animal)}
+                  subtitle={animalScanSubtitle(animal) || '点选：打开档案或试配'}
                   value={lifecycleTag(animal.lifecycleStatus)}
                   chevron
-                  onClick={() => Taro.navigateTo({ url: `/packages/animals/detail/index?id=${encodeURIComponent(animal.id)}` })}
+                  onClick={() => onAnimalRow(animal)}
                 />
               ))}
             </Section>

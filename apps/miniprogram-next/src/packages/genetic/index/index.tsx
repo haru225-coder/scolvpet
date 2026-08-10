@@ -4,6 +4,11 @@ import BListPage, { type BListItem } from '../../../components/BListPage'
 import { p1Api } from '../../../api/p1-api'
 import { notifyUserError } from '../../../api/errors'
 import { DOMAIN_HOME } from '../../../utils/tab-routes'
+import {
+  buildTrialDeepLink,
+  profileListFromResponse,
+  sideFromGeneticProfile
+} from '../../../genetics/trial-deeplink'
 
 function confidenceLabel(raw: unknown): string {
   const c = String(raw || '').trim().toLowerCase()
@@ -21,19 +26,15 @@ function confidenceTone(raw: unknown): BListItem['tone'] {
 }
 
 function phenotypeLabelOf(item: any): string {
-  const ph = item?.phenotype || {}
-  return String(ph.label || ph.summary || ph.Label || '').trim()
+  return sideFromGeneticProfile(item).phenotype || ''
 }
 
 function genotypeKeyOf(item: any): string {
-  const g = item?.genotype || {}
-  return String(g.key || g.Key || '').trim()
+  return sideFromGeneticProfile(item).key || ''
 }
 
 function seriesOf(item: any): string {
-  const ph = item?.phenotype || {}
-  const g = item?.genotype || {}
-  return String(ph.series || g.series || '').trim()
+  return sideFromGeneticProfile(item).series
 }
 
 function hamsterLabelOf(item: any): string {
@@ -41,27 +42,6 @@ function hamsterLabelOf(item: any): string {
   const code = String(item?.hamsterCode || item?.hamster_code || '').trim()
   if (name && code) return `${name}（${code}）`
   return name || code || ''
-}
-
-function buildTrialUrl(opts: {
-  series?: string
-  side: 'sire' | 'dam'
-  key?: string
-  phenotype?: string
-}): string {
-  const q: string[] = [`side=${opts.side}`]
-  if (opts.series) q.push(`series=${encodeURIComponent(opts.series)}`)
-  if (opts.key) q.push(`${opts.side}_key=${encodeURIComponent(opts.key)}`)
-  if (opts.phenotype) q.push(`${opts.side}_ph=${encodeURIComponent(opts.phenotype)}`)
-  return `${DOMAIN_HOME.geneticCreate}?${q.join('&')}`
-}
-
-function profileListFromResponse(profilesRes: any): any[] {
-  const profiles = profilesRes?.data ?? profilesRes
-  if (Array.isArray(profiles)) return profiles
-  if (Array.isArray(profiles?.items)) return profiles.items
-  if (Array.isArray(profiles?.data)) return profiles.data
-  return []
 }
 
 /** 试配入口：档案列表（绑定个体 / 试配 / 重命名 / 删除）+ 位点参考。 */
@@ -235,7 +215,12 @@ export default function GeneticPage() {
               if (idx === 0 || idx === 1) {
                 const side = idx === 0 ? 'sire' : 'dam'
                 void Taro.navigateTo({
-                  url: buildTrialUrl({ series, side, key: key || undefined, phenotype: ph || undefined })
+                  url: buildTrialDeepLink({
+                    series,
+                    side,
+                    key: key || undefined,
+                    phenotype: ph || undefined
+                  })
                 })
                 return
               }

@@ -1,13 +1,22 @@
 import { Input, Picker, ScrollView, Textarea, View } from '@tarojs/components'
-import { useLoad } from '@tarojs/taro'
+import Taro, { useLoad } from '@tarojs/taro'
 import { useCallback, useState } from 'react'
 import { Cell, Empty, FormRow, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
-import { defaultApi, newIdempotencyKey } from '../../../api/client'
+import { defaultApi } from '../../../api/default-api'
+import { p1Api } from '../../../api/p1-api'
+import { newIdempotencyKey } from '../../../api/runtime-config'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import { litterScanSubtitle } from '../../../utils/scan-labels'
 import { humanShortLabel } from '../../../utils/tab-routes'
 import { formatUserError } from '../../../api/errors'
+import {
+  buildTrialDeepLink,
+  findProfileByHamsterId,
+  phenotypeFromAnimal,
+  profileListFromResponse,
+  sideFromGeneticProfile
+} from '../../../genetics/trial-deeplink'
 
 type LitterData = {
   id: string
@@ -143,6 +152,54 @@ export default function LitterDetailPage() {
     if (id) void load(id)
     else setMessage('缺少窝次')
   })
+
+  /** 用窝次登记的公母带入试配（双侧；优先遗传档案基因型）。 */
+  async function openParentTrial() {
+    if (!litter) return
+    const sireId = String((litter as any).sireId || (litter as any).sire_id || '').trim()
+    const damId = String((litter as any).damId || (litter as any).dam_id || '').trim()
+    if (!sireId && !damId) {
+      setMessage('本窝未登记公母，无法带入试配')
+      void Taro.showToast({ title: '未登记公母', icon: 'none' })
+      return
+    }
+    setBusy(true)
+    try {
+      const [sireRes, damRes, profilesRes] = await Promise.all([
+        sireId ? defaultApi.getHamster({ hamsterId: sireId }).catch(() => null) : Promise.resolve(null),
+        damId ? defaultApi.getHamster({ hamsterId: damId }).catch(() => null) : Promise.resolve(null),
+        p1Api.listGeneticProfiles().catch(() => null)
+      ])
+      const profiles = profilesRes ? profileListFromResponse(profilesRes) : []
+      const sireAnimal = (sireRes as any)?.data ?? sireRes
+      const damAnimal = (damRes as any)?.data ?? damRes
+      const sireProfile = sireId ? findProfileByHamsterId(profiles, sireId) : null
+      const damProfile = damId ? findProfileByHamsterId(profiles, damId) : null
+      const sireSide = sideFromGeneticProfile(sireProfile)
+      const damSide = sideFromGeneticProfile(damProfile)
+      const sirePh = phenotypeFromAnimal(sireAnimal)
+      const damPh = phenotypeFromAnimal(damAnimal)
+      const series =
+        sireSide.series || damSide.series || sirePh.series || damPh.series || ''
+      void Taro.navigateTo({
+        url: buildTrialDeepLink({
+          series,
+          sire: {
+            key: sireSide.key,
+            phenotype: sireSide.phenotype || sirePh.label || undefined
+          },
+          dam: {
+            key: damSide.key,
+            phenotype: damSide.phenotype || damPh.label || undefined
+          }
+        })
+      })
+    } catch (cause) {
+      setMessage(await formatUserError(cause, '打开试配失败'))
+    } finally {
+      setBusy(false)
+    }
+  }
 
   function updateDraft(pupIdentityId: string, patch: Partial<MemberDraft>) {
     setDrafts((prev) =>
@@ -424,6 +481,19 @@ export default function LitterDetailPage() {
             </Section>
 
             <Section header="常用操作">
+              <Cell
+                title="用这对公母试配"
+                subtitle={
+                  String((litter as any).sireId || (litter as any).sire_id || '') ||
+                  String((litter as any).damId || (litter as any).dam_id || '')
+                    ? '带入已登记父母的样子/基因型'
+                    : '本窝未登记公母'
+                }
+                chevron
+                onClick={() => {
+                  if (!busy) void openParentTrial()
+                }}
+              />
               <FormRow label="数量变化">
                 <Input
                   type="number"

@@ -30,6 +30,12 @@ import { decodePhenotype, encodePhenotype, readPhenotypeSeries, type PhenotypeSe
 import { ageLabel, animalScanSubtitle, animalScanTitle, shortDate } from '../../../utils/scan-labels'
 import { DOMAIN_HOME, humanShortLabel } from '../../../utils/tab-routes'
 import type { ApiEnvelope } from '../../../api/types'
+import {
+  buildTrialDeepLink,
+  phenotypeFromAnimal,
+  sideFromGeneticProfile,
+  trialSideFromAnimal
+} from '../../../genetics/trial-deeplink'
 
 /** 产品分段：先看再改，对齐 Flutter 个体档案主路径。 */
 const SEGMENTS = ['概览', '成长', '健康', '编辑'] as const
@@ -401,31 +407,40 @@ export default function AnimalDetailPage() {
   }
 
   function resolveAnimalPhenotype(): { series: string; label: string } {
-    const label = String(phenotypeLabel || animal?.corePhenotypeLabel || '').trim()
-    const variety = String(animal?.varietyCode || animal?.variety_code || animalVarietyCode || '').trim()
-    const decoded = variety ? decodePhenotype(variety) : null
-    const series = String(decoded?.series || seriesCode || '').trim()
-    return { series, label: label || decoded?.label || '' }
+    const fromFields = phenotypeFromAnimal({
+      ...animal,
+      corePhenotypeLabel: phenotypeLabel || animal?.corePhenotypeLabel,
+      varietyCode: animalVarietyCode || animal?.varietyCode || animal?.variety_code
+    })
+    return {
+      series: fromFields.series || seriesCode || '',
+      label: fromFields.label
+    }
   }
 
   function openTrialPairing() {
-    const { series, label } = resolveAnimalPhenotype()
-    const sex = String(animal?.sex || '')
-    const side: 'sire' | 'dam' = sex === 'female' ? 'dam' : 'sire'
-    const match = boundGeneticProfile
-    const key = String(match?.genotype?.key || '').trim()
-    const phSeries = String(match?.phenotype?.series || match?.genotype?.series || series).trim()
-    const phLabel = String(match?.phenotype?.label || label).trim()
-    const q = [
-      `side=${side}`,
-      phSeries ? `series=${encodeURIComponent(phSeries)}` : '',
-      key ? `${side}_key=${encodeURIComponent(key)}` : '',
-      phLabel ? `${side}_ph=${encodeURIComponent(phLabel)}` : ''
-    ]
-      .filter(Boolean)
-      .join('&')
+    const sideOpts = trialSideFromAnimal(
+      {
+        ...animal,
+        sex: animal?.sex,
+        corePhenotypeLabel: phenotypeLabel || animal?.corePhenotypeLabel,
+        varietyCode: animalVarietyCode || animal?.varietyCode
+      },
+      boundGeneticProfile
+    )
+    // 档案侧系列优先，否则用当前编辑态 series
+    const series =
+      sideFromGeneticProfile(boundGeneticProfile).series ||
+      sideOpts.series ||
+      seriesCode ||
+      ''
     void Taro.navigateTo({
-      url: q ? `${DOMAIN_HOME.geneticCreate}?${q}` : DOMAIN_HOME.geneticCreate
+      url: buildTrialDeepLink({
+        series,
+        side: sideOpts.side,
+        key: sideOpts.key,
+        phenotype: sideOpts.phenotype
+      })
     })
   }
 
