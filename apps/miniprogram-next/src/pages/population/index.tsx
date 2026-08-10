@@ -11,6 +11,7 @@ import {
   buildTrialDeepLink,
   findProfileByHamsterId,
   profileListFromResponse,
+  resolveLitterParentTrialUrl,
   trialSideFromAnimal
 } from '../../genetics/trial-deeplink'
 import {
@@ -34,7 +35,7 @@ type AnimalRow = {
   raw: any
 }
 
-type LitterRow = { id: string; title: string; subtitle?: string }
+type LitterRow = { id: string; title: string; subtitle?: string; raw: any }
 
 function toAnimalRow(item: any, index: number): AnimalRow {
   return {
@@ -51,7 +52,8 @@ function toLitterRow(item: any, index: number): LitterRow {
   return {
     id: String(item?.id ?? index),
     title: name || `窝次 ${index + 1}`,
-    subtitle: litterScanSubtitle(item, stage) || stage || undefined
+    subtitle: litterScanSubtitle(item, stage) || stage || undefined,
+    raw: item
   }
 }
 
@@ -130,6 +132,37 @@ export default function PopulationPage() {
       .catch(() => undefined)
   }
 
+  async function openTrialForLitter(litter: any) {
+    try {
+      const resolved = await resolveLitterParentTrialUrl({
+        litter,
+        getHamster: (hamsterId) => defaultApi.getHamster({ hamsterId }),
+        listProfiles: () => p1Api.listGeneticProfiles()
+      })
+      if ('error' in resolved) {
+        void Taro.showToast({ title: resolved.error, icon: 'none' })
+        return
+      }
+      void Taro.navigateTo({ url: resolved.url })
+    } catch {
+      void Taro.showToast({ title: '打开试配失败', icon: 'none' })
+    }
+  }
+
+  function onLitterCard(row: LitterRow) {
+    void Taro.showActionSheet({
+      itemList: ['打开窝次', '用公母试配']
+    })
+      .then((res) => {
+        if (res.tapIndex === 0) {
+          openPage(`/packages/litters/detail/index?id=${encodeURIComponent(row.id)}`)
+          return
+        }
+        if (res.tapIndex === 1) void openTrialForLitter(row.raw)
+      })
+      .catch(() => undefined)
+  }
+
   const focus = litters.length ? litters[0] : null
   const emptyBoth = !loading && !notice && !needLogin && animals.length === 0 && litters.length === 0
 
@@ -165,7 +198,8 @@ export default function PopulationPage() {
                 key={row.id}
                 badge={row.subtitle}
                 title={row.title}
-                onClick={() => openPage(`/packages/litters/detail/index?id=${encodeURIComponent(row.id)}`)}
+                onClick={() => onLitterCard(row)}
+                onLongPress={() => void openTrialForLitter(row.raw)}
               />
             ))}
           </Rail>

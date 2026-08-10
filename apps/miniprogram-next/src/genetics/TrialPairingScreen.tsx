@@ -674,6 +674,25 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                     />
                   </Picker>
                 </FormRow>
+                {sirePhenotype || damPhenotype || sireGenotypeKey || damGenotypeKey ? (
+                  <Cell
+                    title="交换公母"
+                    subtitle="样子与精确基因型一起对调"
+                    value={<Tag>交换</Tag>}
+                    onClick={() => {
+                      const nextSirePh = damPhenotype
+                      const nextDamPh = sirePhenotype
+                      const nextSireKey = damGenotypeKey
+                      const nextDamKey = sireGenotypeKey
+                      setSirePhenotype(nextSirePh)
+                      setDamPhenotype(nextDamPh)
+                      setSireGenotypeKey(nextSireKey)
+                      setDamGenotypeKey(nextDamKey)
+                      setResult(null)
+                      setMessage('已交换公母，可重新试配')
+                    }}
+                  />
+                ) : null}
                 {sireGenotypeKey || damGenotypeKey ? (
                   <Cell
                     title="清除精确基因型"

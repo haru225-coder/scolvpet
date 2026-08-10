@@ -10,13 +10,7 @@ import { CapabilityButton } from '../../../components/CapabilityButton'
 import { litterScanSubtitle } from '../../../utils/scan-labels'
 import { humanShortLabel } from '../../../utils/tab-routes'
 import { formatUserError } from '../../../api/errors'
-import {
-  buildTrialDeepLink,
-  findProfileByHamsterId,
-  phenotypeFromAnimal,
-  profileListFromResponse,
-  sideFromGeneticProfile
-} from '../../../genetics/trial-deeplink'
+import { resolveLitterParentTrialUrl } from '../../../genetics/trial-deeplink'
 
 type LitterData = {
   id: string
@@ -156,44 +150,19 @@ export default function LitterDetailPage() {
   /** 用窝次登记的公母带入试配（双侧；优先遗传档案基因型）。 */
   async function openParentTrial() {
     if (!litter) return
-    const sireId = String((litter as any).sireId || (litter as any).sire_id || '').trim()
-    const damId = String((litter as any).damId || (litter as any).dam_id || '').trim()
-    if (!sireId && !damId) {
-      setMessage('本窝未登记公母，无法带入试配')
-      void Taro.showToast({ title: '未登记公母', icon: 'none' })
-      return
-    }
     setBusy(true)
     try {
-      const [sireRes, damRes, profilesRes] = await Promise.all([
-        sireId ? defaultApi.getHamster({ hamsterId: sireId }).catch(() => null) : Promise.resolve(null),
-        damId ? defaultApi.getHamster({ hamsterId: damId }).catch(() => null) : Promise.resolve(null),
-        p1Api.listGeneticProfiles().catch(() => null)
-      ])
-      const profiles = profilesRes ? profileListFromResponse(profilesRes) : []
-      const sireAnimal = (sireRes as any)?.data ?? sireRes
-      const damAnimal = (damRes as any)?.data ?? damRes
-      const sireProfile = sireId ? findProfileByHamsterId(profiles, sireId) : null
-      const damProfile = damId ? findProfileByHamsterId(profiles, damId) : null
-      const sireSide = sideFromGeneticProfile(sireProfile)
-      const damSide = sideFromGeneticProfile(damProfile)
-      const sirePh = phenotypeFromAnimal(sireAnimal)
-      const damPh = phenotypeFromAnimal(damAnimal)
-      const series =
-        sireSide.series || damSide.series || sirePh.series || damPh.series || ''
-      void Taro.navigateTo({
-        url: buildTrialDeepLink({
-          series,
-          sire: {
-            key: sireSide.key,
-            phenotype: sireSide.phenotype || sirePh.label || undefined
-          },
-          dam: {
-            key: damSide.key,
-            phenotype: damSide.phenotype || damPh.label || undefined
-          }
-        })
+      const resolved = await resolveLitterParentTrialUrl({
+        litter,
+        getHamster: (hamsterId) => defaultApi.getHamster({ hamsterId }),
+        listProfiles: () => p1Api.listGeneticProfiles()
       })
+      if ('error' in resolved) {
+        setMessage(resolved.error)
+        void Taro.showToast({ title: resolved.error, icon: 'none' })
+        return
+      }
+      void Taro.navigateTo({ url: resolved.url })
     } catch (cause) {
       setMessage(await formatUserError(cause, '打开试配失败'))
     } finally {

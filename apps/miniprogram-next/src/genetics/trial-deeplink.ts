@@ -114,6 +114,75 @@ export function trialSideFromAnimal(
  * 两只个体 → 双侧试配参数。
  * 能分清公母时按性别入座；否则按点选顺序：先点=公、后点=母。
  */
+/** 窝次对象上的公母 id（兼容 snake）。 */
+export function litterParentIds(litter: any): { sireId: string; damId: string } {
+  return {
+    sireId: String(litter?.sireId || litter?.sire_id || '').trim(),
+    damId: String(litter?.damId || litter?.dam_id || '').trim()
+  }
+}
+
+/**
+ * 窝次公母 → 试配深链参数（纯拼装；拉个体/档案由调用方完成）。
+ */
+export function dualTrialFromLitterParents(opts: {
+  sireAnimal?: any | null
+  damAnimal?: any | null
+  sireProfile?: any | null
+  damProfile?: any | null
+}): BuildTrialDeepLinkOpts {
+  const sireSide = sideFromGeneticProfile(opts.sireProfile)
+  const damSide = sideFromGeneticProfile(opts.damProfile)
+  const sirePh = phenotypeFromAnimal(opts.sireAnimal)
+  const damPh = phenotypeFromAnimal(opts.damAnimal)
+  return {
+    series: sireSide.series || damSide.series || sirePh.series || damPh.series || '',
+    sire: {
+      key: sireSide.key,
+      phenotype: sireSide.phenotype || sirePh.label || undefined
+    },
+    dam: {
+      key: damSide.key,
+      phenotype: damSide.phenotype || damPh.label || undefined
+    }
+  }
+}
+
+/**
+ * 拉窝次公母个体 + 遗传档案，拼好试配 URL。
+ * 无公母 id 时返回 error。
+ */
+export async function resolveLitterParentTrialUrl(opts: {
+  litter: any
+  getHamster: (hamsterId: string) => Promise<any>
+  listProfiles: () => Promise<any>
+}): Promise<{ url: string } | { error: string }> {
+  const { sireId, damId } = litterParentIds(opts.litter)
+  if (!sireId && !damId) {
+    return { error: '本窝未登记公母' }
+  }
+  const [sireRes, damRes, profilesRes] = await Promise.all([
+    sireId ? opts.getHamster(sireId).catch(() => null) : Promise.resolve(null),
+    damId ? opts.getHamster(damId).catch(() => null) : Promise.resolve(null),
+    opts.listProfiles().catch(() => null)
+  ])
+  const profiles = profilesRes ? profileListFromResponse(profilesRes) : []
+  const sireAnimal = (sireRes as any)?.data ?? sireRes
+  const damAnimal = (damRes as any)?.data ?? damRes
+  const pair = dualTrialFromLitterParents({
+    sireAnimal,
+    damAnimal,
+    sireProfile: sireId ? findProfileByHamsterId(profiles, sireId) : null,
+    damProfile: damId ? findProfileByHamsterId(profiles, damId) : null
+  })
+  const hasAny =
+    Boolean(pair.sire?.key || pair.sire?.phenotype || pair.dam?.key || pair.dam?.phenotype)
+  if (!hasAny) {
+    return { error: '公母档案暂无样子，可到试配页手选' }
+  }
+  return { url: buildTrialDeepLink(pair) }
+}
+
 export function dualTrialFromPair(
   animalA: any,
   animalB: any,
