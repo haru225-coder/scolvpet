@@ -14,20 +14,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { PageInfo } from './PageInfo';
-import {
-    PageInfoFromJSON,
-    PageInfoFromJSONTyped,
-    PageInfoToJSON,
-    PageInfoToJSONTyped,
-} from './PageInfo';
-import type { Litter } from './Litter';
-import {
-    LitterFromJSON,
-    LitterFromJSONTyped,
-    LitterToJSON,
-    LitterToJSONTyped,
-} from './Litter';
 import type { ResponseMeta } from './ResponseMeta';
 import {
     ResponseMetaFromJSON,
@@ -35,72 +21,70 @@ import {
     ResponseMetaToJSON,
     ResponseMetaToJSONTyped,
 } from './ResponseMeta';
+import type { GeneticProfile } from './GeneticProfile';
+import {
+    GeneticProfileFromJSON,
+    GeneticProfileFromJSONTyped,
+    GeneticProfileToJSON,
+    GeneticProfileToJSONTyped,
+} from './GeneticProfile';
 
 /**
  *
  * @export
- * @interface LitterListResponse
+ * @interface GeneticProfileResponse
  */
-export interface LitterListResponse {
+export interface GeneticProfileResponse {
     /**
      *
-     * @type {Array<Litter>}
-     * @memberof LitterListResponse
+     * @type {GeneticProfile}
+     * @memberof GeneticProfileResponse
      */
-    data: Array<Litter>;
-    /**
-     *
-     * @type {PageInfo}
-     * @memberof LitterListResponse
-     */
-    page: PageInfo;
+    data: GeneticProfile;
     /**
      *
      * @type {ResponseMeta}
-     * @memberof LitterListResponse
+     * @memberof GeneticProfileResponse
      */
     meta: ResponseMeta;
 }
 
 /**
- * Check if a given object implements the LitterListResponse interface.
+ * Check if a given object implements the GeneticProfileResponse interface.
  */
-export function instanceOfLitterListResponse(value: object): value is LitterListResponse {
+export function instanceOfGeneticProfileResponse(value: object): value is GeneticProfileResponse {
     if (!('data' in value) || value['data'] === undefined) return false;
-    if (!('page' in value) || value['page'] === undefined) return false;
     if (!('meta' in value) || value['meta'] === undefined) return false;
     return true;
 }
 
-export function LitterListResponseFromJSON(json: any): LitterListResponse {
-    return LitterListResponseFromJSONTyped(json, false);
+export function GeneticProfileResponseFromJSON(json: any): GeneticProfileResponse {
+    return GeneticProfileResponseFromJSONTyped(json, false);
 }
 
-export function LitterListResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): LitterListResponse {
+export function GeneticProfileResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): GeneticProfileResponse {
     if (json == null) {
         return json;
     }
     return {
 
-        'data': ((json['data'] as Array<any>).map(LitterFromJSON)),
-        'page': PageInfoFromJSON(json['page']),
+        'data': GeneticProfileFromJSON(json['data']),
         'meta': ResponseMetaFromJSON(json['meta']),
     };
 }
 
-export function LitterListResponseToJSON(json: any): LitterListResponse {
-    return LitterListResponseToJSONTyped(json, false);
+export function GeneticProfileResponseToJSON(json: any): GeneticProfileResponse {
+    return GeneticProfileResponseToJSONTyped(json, false);
 }
 
-export function LitterListResponseToJSONTyped(value?: LitterListResponse | null, ignoreDiscriminator: boolean = false): any {
+export function GeneticProfileResponseToJSONTyped(value?: GeneticProfileResponse | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
 
     return {
 
-        'data': ((value['data'] as Array<any>).map(LitterToJSON)),
-        'page': PageInfoToJSON(value['page']),
+        'data': GeneticProfileToJSON(value['data']),
         'meta': ResponseMetaToJSON(value['meta']),
     };
 }

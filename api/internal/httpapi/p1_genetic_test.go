@@ -143,6 +143,32 @@ func TestSimulatePhenotypeTableFallsBackToAuthorityWithoutFeedbackStore(t *testi
 	}
 }
 
+func TestCreateGeneticProfileAcceptsLocusModelKey(t *testing.T) {
+	got, err := normalizeLocusModelGenotypePayload(map[string]string{
+		"series": "chocolate",
+		"key":    "b=Bb|d=DD|s=--",
+		"b":      "Bb",
+		"d":      "DD",
+		"s":      "--",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got["key"] != "b=Bb|d=DD|s=--" || got["series"] != "chocolate" {
+		t.Fatalf("%+v", got)
+	}
+	if _, err := normalizeLocusModelGenotypePayload(map[string]string{
+		"series": "chocolate",
+		"key":    "not-a-key",
+	}); err == nil {
+		t.Fatal("expected invalid key error")
+	}
+	// Educational path still rejects unknown loci
+	if _, err := normalizeGenotypeMap(map[string]string{"Z": "Z/z"}); err == nil {
+		t.Fatal("expected unknown locus error")
+	}
+}
+
 func TestInferGeneticParentsHTTPReturnsPosterior(t *testing.T) {
 	authService := auth.New("test", "123456")
 	accountID := uuid.New()

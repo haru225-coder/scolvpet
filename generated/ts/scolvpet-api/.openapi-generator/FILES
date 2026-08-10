@@ -56,6 +56,7 @@ docs/CreateCrmHandoverRequest.md
 docs/CreateCrmReservationRequest.md
 docs/CreateCustomerWechatPhoneBindingRequest.md
 docs/CreateDocumentTemplateRequest.md
+docs/CreateGeneticProfileRequest.md
 docs/CreateReceiptRequest.md
 docs/CrmContact.md
 docs/CrmContactListResponse.md
@@ -100,6 +101,7 @@ docs/GeneticLocusListResponse.md
 docs/GeneticOutcome.md
 docs/GeneticProfile.md
 docs/GeneticProfileListResponse.md
+docs/GeneticProfileResponse.md
 docs/GeneticSimulationRequest.md
 docs/GeneticSimulationResponse.md
 docs/GeneticSimulationResult.md
@@ -284,6 +286,7 @@ src/models/CreateCrmHandoverRequest.ts
 src/models/CreateCrmReservationRequest.ts
 src/models/CreateCustomerWechatPhoneBindingRequest.ts
 src/models/CreateDocumentTemplateRequest.ts
+src/models/CreateGeneticProfileRequest.ts
 src/models/CreateReceiptRequest.ts
 src/models/CrmContact.ts
 src/models/CrmContactListResponse.ts
@@ -325,6 +328,7 @@ src/models/GeneticLocusListResponse.ts
 src/models/GeneticOutcome.ts
 src/models/GeneticProfile.ts
 src/models/GeneticProfileListResponse.ts
+src/models/GeneticProfileResponse.ts
 src/models/GeneticSimulationRequest.ts
 src/models/GeneticSimulationResponse.ts
 src/models/GeneticSimulationResult.ts

@@ -127,6 +127,89 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
       .catch(() => undefined)
   }
 
+  function genotypeMapFromInference(side: 'sire' | 'dam') {
+    const top = parentInference?.hypotheses?.[0]
+    if (!top) return null
+    const key = String(
+      side === 'sire'
+        ? top.sire_genotype_key || top.sireGenotypeKey || ''
+        : top.dam_genotype_key || top.damGenotypeKey || ''
+    ).trim()
+    const display = String(
+      side === 'sire' ? top.sire_display || top.sireDisplay || '' : top.dam_display || top.damDisplay || ''
+    ).trim()
+    if (!key) return null
+    const alleles: Record<string, string> = { series: seriesCode, key }
+    for (const part of key.split('|')) {
+      const [k, v] = part.split('=')
+      if (k && v) alleles[k.trim()] = v.trim()
+    }
+    const phenoRaw = display.includes('（') ? display.slice(0, display.indexOf('（')).trim() : display
+    return {
+      key,
+      display,
+      alleles,
+      phenotypeLabel: phenoRaw || canonicalPhenotypeLabel(seriesCode, display)
+    }
+  }
+
+  async function saveInferredParentsAsProfiles() {
+    if (!readBreederSession()) {
+      void presentUserMessage('请先登录经营账号')
+      return
+    }
+    if (!seriesCode || !parentInference?.hypotheses?.[0]) {
+      void presentUserMessage('还没有反推结果可保存')
+      return
+    }
+    const sire = genotypeMapFromInference('sire')
+    const dam = genotypeMapFromInference('dam')
+    if (!sire || !dam) {
+      void presentUserMessage('反推结果缺少基因型 key')
+      return
+    }
+    setBusy(true)
+    try {
+      const stamp = new Date().toISOString().slice(0, 16).replace('T', ' ')
+      const pct = Math.round(Number(parentInference.hypotheses[0].probability || 0) * 100)
+      const note = `试配窝次反推 · 联合后验约 ${pct}% · ${stamp}`
+      await p1Api.createGeneticProfile({
+        idempotencyKey: newIdempotencyKey(),
+        createGeneticProfileRequest: {
+          name: `反推·公·${sire.display || sire.phenotypeLabel}`,
+          confidence: 'inferred',
+          phenotype: {
+            series: seriesCode,
+            label: sire.phenotypeLabel,
+            source: 'parent_inference'
+          },
+          genotype: sire.alleles,
+          notes: note
+        } as any
+      })
+      await p1Api.createGeneticProfile({
+        idempotencyKey: newIdempotencyKey(),
+        createGeneticProfileRequest: {
+          name: `反推·母·${dam.display || dam.phenotypeLabel}`,
+          confidence: 'inferred',
+          phenotype: {
+            series: seriesCode,
+            label: dam.phenotypeLabel,
+            source: 'parent_inference'
+          },
+          genotype: dam.alleles,
+          notes: note
+        } as any
+      })
+      setMessage(`已保存两条 inferred 遗传档案（公/母）· 后验约 ${pct}%`)
+      void Taro.showToast({ title: '档案已保存', icon: 'success', duration: 1200 })
+    } catch (cause) {
+      setMessage(await notifyUserError(cause, '保存遗传档案失败'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   function applyInferredParentsAsPins() {
     const top = parentInference?.hypotheses?.[0]
     if (!top) {
@@ -712,6 +795,12 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                       subtitle="把反推的公/母基因型钉进试配，再点「试配一下」"
                       value={<Tag tone="success">填入</Tag>}
                       onClick={() => applyInferredParentsAsPins()}
+                    />
+                    <Cell
+                      title="保存为遗传档案"
+                      subtitle="confidence=inferred · 写入公/母两条档案"
+                      value={<Tag tone="warning">保存</Tag>}
+                      onClick={() => void saveInferredParentsAsProfiles()}
                     />
                   </>
                 ) : null}

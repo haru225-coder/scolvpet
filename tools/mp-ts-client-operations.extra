@@ -1,3 +1,4 @@
 # Extra OpenAPI operationIds to keep in the miniprogram TS client
 # even before the first source call lands (or for rarely-used tools).
 inferGeneticParents
+createGeneticProfile

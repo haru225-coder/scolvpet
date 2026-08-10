@@ -3,7 +3,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { useCallback, useEffect, useState } from 'react'
 import { Cell, Empty, Hero, PosterCard, Rail, Section, SectionList, palette } from '@scolvpet/mp-ui'
 
-import { defaultApi } from '../../api/client'
+import { defaultApi } from '../../api/default-api'
 import { getLastEnsureError, requireBreederSession } from '../../auth/dev-session'
 import ProfileAvatar from '../../components/ProfileAvatar'
 import {

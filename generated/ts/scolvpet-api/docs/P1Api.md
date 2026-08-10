@@ -8,6 +8,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**createAccountingRecord**](P1Api.md#createaccountingrecordoperation) | **POST** /v1/accounting/records | 创建记账流水 |
 | [**createContract**](P1Api.md#createcontractoperation) | **POST** /v1/contracts | 创建合同单据 |
 | [**createContractTemplate**](P1Api.md#createcontracttemplate) | **POST** /v1/contracts/templates | 创建合同模板 |
+| [**createGeneticProfile**](P1Api.md#creategeneticprofileoperation) | **POST** /v1/genetic/profiles | 创建遗传档案 |
 | [**createReceipt**](P1Api.md#createreceiptoperation) | **POST** /v1/receipts | 创建回执单据 |
 | [**createReceiptTemplate**](P1Api.md#createreceipttemplate) | **POST** /v1/receipts/templates | 创建回执模板 |
 | [**getAccountingSummary**](P1Api.md#getaccountingsummary) | **GET** /v1/accounting/summary | 读取记账汇总 |
@@ -331,6 +332,83 @@ example().catch(console.error);
 |-------------|-------------|------------------|
 | **201** | 创建合同模板成功 |  -  |
 | **401** | 访问令牌缺失、无效或过期 |  -  |
+| **422** | 字段格式或领域规则校验失败 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## createGeneticProfile
+
+> GeneticProfileResponse createGeneticProfile(createGeneticProfileRequest, idempotencyKey)
+
+创建遗传档案
+
+需要 Bearer 令牌；当前熊舍成员可创建遗传档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  P1Api,
+} from '@scolvpet/scolvpet-api';
+import type { CreateGeneticProfileOperationRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new P1Api(config);
+
+  const body = {
+    // CreateGeneticProfileRequest
+    createGeneticProfileRequest: ...,
+    // string | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 (optional)
+    idempotencyKey: idempotencyKey_example,
+  } satisfies CreateGeneticProfileOperationRequest;
+
+  try {
+    const data = await api.createGeneticProfile(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **createGeneticProfileRequest** | [CreateGeneticProfileRequest](CreateGeneticProfileRequest.md) |  | |
+| **idempotencyKey** | `string` | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**GeneticProfileResponse**](GeneticProfileResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** | 创建遗传档案成功 |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+| **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
 | **422** | 字段格式或领域规则校验失败 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

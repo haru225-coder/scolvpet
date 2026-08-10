@@ -469,11 +469,23 @@ func (s *Server) createGeneticProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	// If phenotype empty, derive labels from genotype.
 	if len(phenotype) == 0 && len(genotype) > 0 {
-		labels, summary := geneticcore.PhenotypeFor(genotype)
-		for k, v := range labels {
-			phenotype[k] = v
+		if series := strings.TrimSpace(genotype["series"]); series != "" {
+			if key := strings.TrimSpace(genotype["key"]); key != "" {
+				if ph, ok := geneticcore.PhenotypeFromGenotypeKey(series, key); ok {
+					phenotype["series"] = series
+					phenotype["label"] = ph
+					phenotype["source"] = "locus_model"
+					phenotype["summary"] = ph
+				}
+			}
 		}
-		phenotype["summary"] = summary
+		if len(phenotype) == 0 {
+			labels, summary := geneticcore.PhenotypeFor(genotype)
+			for k, v := range labels {
+				phenotype[k] = v
+			}
+			phenotype["summary"] = summary
+		}
 	}
 	var hamsterID *uuid.UUID
 	if request.HamsterID != nil && strings.TrimSpace(*request.HamsterID) != "" {
@@ -832,6 +844,11 @@ func normalizeGenotypeMap(in map[string]string) (map[string]string, error) {
 	if in == nil {
 		return out, nil
 	}
+	// Free-form locus-model payload (poly/chocolate keys) used by parent inference.
+	// Shape: { series, key, alleles… } — not educational DefaultLoci A/B/C.
+	if isLocusModelGenotypePayload(in) {
+		return normalizeLocusModelGenotypePayload(in)
+	}
 	for code, raw := range in {
 		code = strings.TrimSpace(code)
 		if code == "" || strings.TrimSpace(raw) == "" {
@@ -846,6 +863,55 @@ func normalizeGenotypeMap(in map[string]string) (map[string]string, error) {
 			return nil, err
 		}
 		out[code] = norm
+	}
+	return out, nil
+}
+
+func isLocusModelGenotypePayload(in map[string]string) bool {
+	if k := strings.TrimSpace(in["key"]); k != "" {
+		if strings.HasPrefix(k, "b=") || strings.HasPrefix(k, "c=") {
+			return true
+		}
+	}
+	series := strings.TrimSpace(in["series"])
+	return series == "poly" || series == "chocolate"
+}
+
+func normalizeLocusModelGenotypePayload(in map[string]string) (map[string]string, error) {
+	out := map[string]string{}
+	for code, raw := range in {
+		code = strings.TrimSpace(code)
+		raw = strings.TrimSpace(raw)
+		if code == "" || raw == "" {
+			continue
+		}
+		// Reject control characters / oversized values
+		if len(code) > 64 || len(raw) > 256 {
+			return nil, errors.New("基因型字段过长")
+		}
+		out[code] = raw
+	}
+	key := strings.TrimSpace(out["key"])
+	series := strings.TrimSpace(out["series"])
+	if key != "" {
+		if series == "" {
+			if strings.HasPrefix(key, "b=") {
+				series = "chocolate"
+			} else if strings.HasPrefix(key, "c=") {
+				series = "poly"
+			}
+			if series != "" {
+				out["series"] = series
+			}
+		}
+		if series != "" {
+			if _, ok := geneticcore.PhenotypeFromGenotypeKey(series, key); !ok {
+				return nil, errors.New("基因型 key 无法解析")
+			}
+		}
+	}
+	if len(out) == 0 {
+		return nil, errors.New("基因型为空")
 	}
 	return out, nil
 }

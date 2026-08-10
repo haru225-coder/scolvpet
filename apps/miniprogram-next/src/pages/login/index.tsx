@@ -10,7 +10,8 @@ import {
   palette,
   metrics
 } from '@scolvpet/mp-ui'
-import { defaultApi, newIdempotencyKey } from '../../api/client'
+import { defaultApi } from '../../api/default-api'
+import { newIdempotencyKey } from '../../api/runtime-config'
 import { formatNetworkError } from '../../api/errors'
 import {
   createDevelopmentBreederSession,

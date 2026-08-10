@@ -17,133 +17,103 @@ import { mapValues } from '../runtime';
 /**
  *
  * @export
- * @interface GeneticProfile
+ * @interface CreateGeneticProfileRequest
  */
-export interface GeneticProfile {
+export interface CreateGeneticProfileRequest {
     /**
      *
      * @type {string}
-     * @memberof GeneticProfile
-     */
-    id: string;
-    /**
-     *
-     * @type {string}
-     * @memberof GeneticProfile
+     * @memberof CreateGeneticProfileRequest
      */
     hamsterId?: string | null;
     /**
      *
      * @type {string}
-     * @memberof GeneticProfile
+     * @memberof CreateGeneticProfileRequest
      */
     name: string;
     /**
      *
      * @type {{ [key: string]: any; }}
-     * @memberof GeneticProfile
+     * @memberof CreateGeneticProfileRequest
      */
-    phenotype: { [key: string]: any; };
+    phenotype?: { [key: string]: any; };
     /**
      *
      * @type {{ [key: string]: string; }}
-     * @memberof GeneticProfile
+     * @memberof CreateGeneticProfileRequest
      */
-    genotype: { [key: string]: string; };
+    genotype?: { [key: string]: string; };
     /**
      *
-     * @type {GeneticProfileConfidenceEnum}
-     * @memberof GeneticProfile
+     * @type {CreateGeneticProfileRequestConfidenceEnum}
+     * @memberof CreateGeneticProfileRequest
      */
-    confidence: GeneticProfileConfidenceEnum;
+    confidence?: CreateGeneticProfileRequestConfidenceEnum;
     /**
      *
      * @type {string}
-     * @memberof GeneticProfile
+     * @memberof CreateGeneticProfileRequest
      */
     notes?: string | null;
-    /**
-     *
-     * @type {number}
-     * @memberof GeneticProfile
-     */
-    version: number;
-    /**
-     *
-     * @type {Date}
-     * @memberof GeneticProfile
-     */
-    updatedAt: Date;
 }
 
 
 /**
  * @export
  */
-export const GeneticProfileConfidenceEnum = {
+export const CreateGeneticProfileRequestConfidenceEnum = {
     Observed: 'observed',
     Inferred: 'inferred',
     Unknown: 'unknown'
 } as const;
-export type GeneticProfileConfidenceEnum = typeof GeneticProfileConfidenceEnum[keyof typeof GeneticProfileConfidenceEnum];
+export type CreateGeneticProfileRequestConfidenceEnum = typeof CreateGeneticProfileRequestConfidenceEnum[keyof typeof CreateGeneticProfileRequestConfidenceEnum];
 
 
 /**
- * Check if a given object implements the GeneticProfile interface.
+ * Check if a given object implements the CreateGeneticProfileRequest interface.
  */
-export function instanceOfGeneticProfile(value: object): value is GeneticProfile {
-    if (!('id' in value) || value['id'] === undefined) return false;
+export function instanceOfCreateGeneticProfileRequest(value: object): value is CreateGeneticProfileRequest {
     if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('phenotype' in value) || value['phenotype'] === undefined) return false;
-    if (!('genotype' in value) || value['genotype'] === undefined) return false;
-    if (!('confidence' in value) || value['confidence'] === undefined) return false;
-    if (!('version' in value) || value['version'] === undefined) return false;
-    if ((!('updatedAt' in value) && !('updated_at' in value)) || (value['updatedAt'] === undefined && value['updated_at'] === undefined)) return false;
     return true;
 }
 
-export function GeneticProfileFromJSON(json: any): GeneticProfile {
-    return GeneticProfileFromJSONTyped(json, false);
+export function CreateGeneticProfileRequestFromJSON(json: any): CreateGeneticProfileRequest {
+    return CreateGeneticProfileRequestFromJSONTyped(json, false);
 }
 
-export function GeneticProfileFromJSONTyped(json: any, ignoreDiscriminator: boolean): GeneticProfile {
+export function CreateGeneticProfileRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): CreateGeneticProfileRequest {
     if (json == null) {
         return json;
     }
     return {
 
-        'id': json['id'],
         'hamsterId': json['hamster_id'] == null ? undefined : json['hamster_id'],
         'name': json['name'],
-        'phenotype': json['phenotype'],
-        'genotype': json['genotype'],
-        'confidence': json['confidence'],
+        'phenotype': json['phenotype'] == null ? undefined : json['phenotype'],
+        'genotype': json['genotype'] == null ? undefined : json['genotype'],
+        'confidence': json['confidence'] == null ? undefined : json['confidence'],
         'notes': json['notes'] == null ? undefined : json['notes'],
-        'version': json['version'],
-        'updatedAt': (new Date(json['updated_at'])),
     };
 }
 
-export function GeneticProfileToJSON(json: any): GeneticProfile {
-    return GeneticProfileToJSONTyped(json, false);
+export function CreateGeneticProfileRequestToJSON(json: any): CreateGeneticProfileRequest {
+    return CreateGeneticProfileRequestToJSONTyped(json, false);
 }
 
-export function GeneticProfileToJSONTyped(value?: GeneticProfile | null, ignoreDiscriminator: boolean = false): any {
+export function CreateGeneticProfileRequestToJSONTyped(value?: CreateGeneticProfileRequest | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
 
     return {
 
-        'id': value['id'],
         'hamster_id': value['hamsterId'],
         'name': value['name'],
         'phenotype': value['phenotype'],
         'genotype': value['genotype'],
         'confidence': value['confidence'],
         'notes': value['notes'],
-        'version': value['version'],
-        'updated_at': value['updatedAt'].toISOString(),
     };
 }
 

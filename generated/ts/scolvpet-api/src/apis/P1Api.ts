@@ -3,7 +3,7 @@
 /* eslint-disable */
 /**
  * 熊舍管家 MVP API (miniprogram TS client subset)
- * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。  NOTE: Filtered subset for apps/miniprogram-next typescript-fetch generation only. Authoritative full contract: specs/api/openapi.yaml Kept operationIds: 98
+ * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。  NOTE: Filtered subset for apps/miniprogram-next typescript-fetch generation only. Authoritative full contract: specs/api/openapi.yaml Kept operationIds: 99
  *
  * The version of the OpenAPI document: 1.0.1
  *
@@ -60,6 +60,11 @@ import {
     CreateDocumentTemplateRequestToJSON,
 } from '../models/CreateDocumentTemplateRequest';
 import {
+    type CreateGeneticProfileRequest,
+    CreateGeneticProfileRequestFromJSON,
+    CreateGeneticProfileRequestToJSON,
+} from '../models/CreateGeneticProfileRequest';
+import {
     type CreateReceiptRequest,
     CreateReceiptRequestFromJSON,
     CreateReceiptRequestToJSON,
@@ -100,6 +105,11 @@ import {
     GeneticProfileListResponseToJSON,
 } from '../models/GeneticProfileListResponse';
 import {
+    type GeneticProfileResponse,
+    GeneticProfileResponseFromJSON,
+    GeneticProfileResponseToJSON,
+} from '../models/GeneticProfileResponse';
+import {
     type GeneticSimulationRequest,
     GeneticSimulationRequestFromJSON,
     GeneticSimulationRequestToJSON,
@@ -127,6 +137,11 @@ export interface CreateContractOperationRequest {
 
 export interface CreateContractTemplateRequest {
     createDocumentTemplateRequest: CreateDocumentTemplateRequest;
+    idempotencyKey?: string;
+}
+
+export interface CreateGeneticProfileOperationRequest {
+    createGeneticProfileRequest: CreateGeneticProfileRequest;
     idempotencyKey?: string;
 }
 
@@ -439,6 +454,67 @@ export class P1Api extends runtime.BaseAPI {
      */
     async createContractTemplate(requestParameters: CreateContractTemplateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentTemplateResponse> {
         const response = await this.createContractTemplateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for createGeneticProfile without sending the request
+     */
+    async createGeneticProfileRequestOpts(requestParameters: CreateGeneticProfileOperationRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['createGeneticProfileRequest'] == null) {
+            throw new runtime.RequiredError(
+                'createGeneticProfileRequest',
+                'Required parameter "createGeneticProfileRequest" was null or undefined when calling createGeneticProfile().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['idempotencyKey'] != null) {
+            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/v1/genetic/profiles`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CreateGeneticProfileRequestToJSON(requestParameters['createGeneticProfileRequest']),
+        };
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可创建遗传档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 创建遗传档案
+     */
+    async createGeneticProfileRaw(requestParameters: CreateGeneticProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GeneticProfileResponse>> {
+        const requestOptions = await this.createGeneticProfileRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GeneticProfileResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 需要 Bearer 令牌；当前熊舍成员可创建遗传档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
+     * 创建遗传档案
+     */
+    async createGeneticProfile(requestParameters: CreateGeneticProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GeneticProfileResponse> {
+        const response = await this.createGeneticProfileRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -125,6 +125,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *P1Api* | [**createAccountingRecord**](docs/P1Api.md#createaccountingrecordoperation) | **POST** /v1/accounting/records | 创建记账流水
 *P1Api* | [**createContract**](docs/P1Api.md#createcontractoperation) | **POST** /v1/contracts | 创建合同单据
 *P1Api* | [**createContractTemplate**](docs/P1Api.md#createcontracttemplate) | **POST** /v1/contracts/templates | 创建合同模板
+*P1Api* | [**createGeneticProfile**](docs/P1Api.md#creategeneticprofileoperation) | **POST** /v1/genetic/profiles | 创建遗传档案
 *P1Api* | [**createReceipt**](docs/P1Api.md#createreceiptoperation) | **POST** /v1/receipts | 创建回执单据
 *P1Api* | [**createReceiptTemplate**](docs/P1Api.md#createreceipttemplate) | **POST** /v1/receipts/templates | 创建回执模板
 *P1Api* | [**getAccountingSummary**](docs/P1Api.md#getaccountingsummary) | **GET** /v1/accounting/summary | 读取记账汇总
@@ -217,6 +218,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [CreateCrmReservationRequest](docs/CreateCrmReservationRequest.md)
 - [CreateCustomerWechatPhoneBindingRequest](docs/CreateCustomerWechatPhoneBindingRequest.md)
 - [CreateDocumentTemplateRequest](docs/CreateDocumentTemplateRequest.md)
+- [CreateGeneticProfileRequest](docs/CreateGeneticProfileRequest.md)
 - [CreateReceiptRequest](docs/CreateReceiptRequest.md)
 - [CrmContact](docs/CrmContact.md)
 - [CrmContactListResponse](docs/CrmContactListResponse.md)
@@ -258,6 +260,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [GeneticOutcome](docs/GeneticOutcome.md)
 - [GeneticProfile](docs/GeneticProfile.md)
 - [GeneticProfileListResponse](docs/GeneticProfileListResponse.md)
+- [GeneticProfileResponse](docs/GeneticProfileResponse.md)
 - [GeneticSimulationRequest](docs/GeneticSimulationRequest.md)
 - [GeneticSimulationResponse](docs/GeneticSimulationResponse.md)
 - [GeneticSimulationResult](docs/GeneticSimulationResult.md)
