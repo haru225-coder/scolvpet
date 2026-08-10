@@ -33,6 +33,18 @@ export interface GeneticProfile {
      */
     hamsterId?: string | null;
     /**
+     * 关联个体昵称（列表/详情 join）
+     * @type {string}
+     * @memberof GeneticProfile
+     */
+    hamsterName?: string | null;
+    /**
+     * 关联个体 internal_code
+     * @type {string}
+     * @memberof GeneticProfile
+     */
+    hamsterCode?: string | null;
+    /**
      *
      * @type {string}
      * @memberof GeneticProfile
@@ -114,6 +126,8 @@ export function GeneticProfileFromJSONTyped(json: any, ignoreDiscriminator: bool
 
         'id': json['id'],
         'hamsterId': json['hamster_id'] == null ? undefined : json['hamster_id'],
+        'hamsterName': json['hamster_name'] == null ? undefined : json['hamster_name'],
+        'hamsterCode': json['hamster_code'] == null ? undefined : json['hamster_code'],
         'name': json['name'],
         'phenotype': json['phenotype'],
         'genotype': json['genotype'],
@@ -137,6 +151,8 @@ export function GeneticProfileToJSONTyped(value?: GeneticProfile | null, ignoreD
 
         'id': value['id'],
         'hamster_id': value['hamsterId'],
+        'hamster_name': value['hamsterName'],
+        'hamster_code': value['hamsterCode'],
         'name': value['name'],
         'phenotype': value['phenotype'],
         'genotype': value['genotype'],

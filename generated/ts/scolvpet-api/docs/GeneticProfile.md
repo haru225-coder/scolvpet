@@ -8,6 +8,8 @@ Name | Type
 ------------ | -------------
 `id` | string
 `hamsterId` | string
+`hamsterName` | string
+`hamsterCode` | string
 `name` | string
 `phenotype` | { [key: string]: any; }
 `genotype` | { [key: string]: string; }
@@ -25,6 +27,8 @@ import type { GeneticProfile } from '@scolvpet/scolvpet-api'
 const example = {
   "id": null,
   "hamsterId": null,
+  "hamsterName": null,
+  "hamsterCode": null,
   "name": null,
   "phenotype": null,
   "genotype": null,

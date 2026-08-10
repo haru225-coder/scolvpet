@@ -12,6 +12,7 @@ Name | Type
 `phenotype` | { [key: string]: any; }
 `genotype` | { [key: string]: string; }
 `version` | number
+`hamsterId` | string
 
 ## Example
 
@@ -26,6 +27,7 @@ const example = {
   "phenotype": null,
   "genotype": null,
   "version": null,
+  "hamsterId": null,
 } satisfies UpdateGeneticProfileRequest
 
 console.log(example)

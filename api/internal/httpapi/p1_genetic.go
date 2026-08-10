@@ -32,15 +32,17 @@ func (s *Server) registerP1GeneticRoutes(mux *http.ServeMux) {
 }
 
 type geneticProfile struct {
-	ID         uuid.UUID         `json:"id"`
-	HamsterID  *uuid.UUID        `json:"hamster_id,omitempty"`
-	Name       string            `json:"name"`
-	Phenotype  map[string]any    `json:"phenotype"`
-	Genotype   map[string]string `json:"genotype"`
-	Confidence string            `json:"confidence"`
-	Notes      *string           `json:"notes,omitempty"`
-	Version    int               `json:"version"`
-	UpdatedAt  time.Time         `json:"updated_at"`
+	ID           uuid.UUID         `json:"id"`
+	HamsterID    *uuid.UUID        `json:"hamster_id,omitempty"`
+	HamsterName  *string           `json:"hamster_name,omitempty"`
+	HamsterCode  *string           `json:"hamster_code,omitempty"`
+	Name         string            `json:"name"`
+	Phenotype    map[string]any    `json:"phenotype"`
+	Genotype     map[string]string `json:"genotype"`
+	Confidence   string            `json:"confidence"`
+	Notes        *string           `json:"notes,omitempty"`
+	Version      int               `json:"version"`
+	UpdatedAt    time.Time         `json:"updated_at"`
 }
 
 type createGeneticProfileRequest struct {
@@ -58,6 +60,8 @@ type updateGeneticProfileRequest struct {
 	Genotype   map[string]string `json:"genotype"`
 	Confidence *string           `json:"confidence"`
 	Notes      *string           `json:"notes"`
+	// HamsterID: omit = unchanged; "" = unbind; uuid = bind after ownership check.
+	HamsterID *string `json:"hamster_id"`
 	// Version is required for optimistic concurrency (current profile.version).
 	Version int `json:"version"`
 }
@@ -424,10 +428,13 @@ func (s *Server) listGeneticProfiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rows, err := s.Store.Pool.Query(r.Context(), `
-		SELECT id, hamster_id, name, phenotype, genotype, confidence::text, notes, version, updated_at
-		FROM genetic_profile
-		WHERE owner_id=$1
-		ORDER BY updated_at DESC, id DESC
+		SELECT gp.id, gp.hamster_id, gp.name, gp.phenotype, gp.genotype, gp.confidence::text,
+		       gp.notes, gp.version, gp.updated_at,
+		       h.name AS hamster_name, h.internal_code AS hamster_code
+		FROM genetic_profile gp
+		LEFT JOIN hamster h ON h.owner_id = gp.owner_id AND h.id = gp.hamster_id
+		WHERE gp.owner_id=$1
+		ORDER BY gp.updated_at DESC, gp.id DESC
 		LIMIT 200
 	`, ownerID)
 	if err != nil {
@@ -601,14 +608,40 @@ func (s *Server) updateGeneticProfile(w http.ResponseWriter, r *http.Request) {
 		notes = current.Notes
 	}
 
+	hamsterID := current.HamsterID
+	if request.HamsterID != nil {
+		raw := strings.TrimSpace(*request.HamsterID)
+		if raw == "" {
+			hamsterID = nil
+		} else {
+			id, parseErr := uuid.Parse(raw)
+			if parseErr != nil {
+				writeAPIError(w, r, validationError("hamster_id", "仓鼠 ID 无效"))
+				return
+			}
+			var exists bool
+			if err := s.Store.Pool.QueryRow(r.Context(), `
+				SELECT EXISTS(SELECT 1 FROM hamster WHERE owner_id=$1 AND id=$2)
+			`, ownerID, id).Scan(&exists); err != nil {
+				writeAPIError(w, r, err)
+				return
+			}
+			if !exists {
+				writeAPIError(w, r, validationError("hamster_id", "仓鼠不存在或不属于当前账号"))
+				return
+			}
+			hamsterID = &id
+		}
+	}
+
 	phenotypeJSON, _ := json.Marshal(phenotype)
 	genotypeJSON, _ := json.Marshal(genotype)
 	tag, err := s.Store.Pool.Exec(r.Context(), `
 		UPDATE genetic_profile
 		SET name=$3, phenotype=$4::jsonb, genotype=$5::jsonb, confidence=$6::genetic_confidence,
-		    notes=$7, version=version+1, updated_at=now()
-		WHERE owner_id=$1 AND id=$2 AND version=$8
-	`, ownerID, profileID, name, phenotypeJSON, genotypeJSON, confidence, emptyToNil(notes), request.Version)
+		    notes=$7, hamster_id=$8, version=version+1, updated_at=now()
+		WHERE owner_id=$1 AND id=$2 AND version=$9
+	`, ownerID, profileID, name, phenotypeJSON, genotypeJSON, confidence, emptyToNil(notes), hamsterID, request.Version)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
@@ -933,9 +966,12 @@ func phenotypeFeedbackPairKey(parentA, parentB string) string {
 
 func (s *Server) getGeneticProfile(ctx context.Context, ownerID, id uuid.UUID) (geneticProfile, error) {
 	row := s.Store.Pool.QueryRow(ctx, `
-		SELECT id, hamster_id, name, phenotype, genotype, confidence::text, notes, version, updated_at
-		FROM genetic_profile
-		WHERE owner_id=$1 AND id=$2
+		SELECT gp.id, gp.hamster_id, gp.name, gp.phenotype, gp.genotype, gp.confidence::text,
+		       gp.notes, gp.version, gp.updated_at,
+		       h.name AS hamster_name, h.internal_code AS hamster_code
+		FROM genetic_profile gp
+		LEFT JOIN hamster h ON h.owner_id = gp.owner_id AND h.id = gp.hamster_id
+		WHERE gp.owner_id=$1 AND gp.id=$2
 	`, ownerID, id)
 	return scanGeneticProfile(row)
 }
@@ -950,6 +986,7 @@ func scanGeneticProfile(row geneticScanner) (geneticProfile, error) {
 	err := row.Scan(
 		&item.ID, &item.HamsterID, &item.Name, &phenotypeRaw, &genotypeRaw,
 		&item.Confidence, &item.Notes, &item.Version, &item.UpdatedAt,
+		&item.HamsterName, &item.HamsterCode,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return geneticProfile{}, store.ErrNotFound

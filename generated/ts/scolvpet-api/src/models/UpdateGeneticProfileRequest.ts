@@ -56,6 +56,12 @@ export interface UpdateGeneticProfileRequest {
      * @memberof UpdateGeneticProfileRequest
      */
     version: number;
+    /**
+     * 绑定个体 uuid；空字符串解除绑定；省略则不变
+     * @type {string}
+     * @memberof UpdateGeneticProfileRequest
+     */
+    hamsterId?: string;
 }
 
 
@@ -94,6 +100,7 @@ export function UpdateGeneticProfileRequestFromJSONTyped(json: any, ignoreDiscri
         'phenotype': json['phenotype'] == null ? undefined : json['phenotype'],
         'genotype': json['genotype'] == null ? undefined : json['genotype'],
         'version': json['version'],
+        'hamsterId': json['hamster_id'] == null ? undefined : json['hamster_id'],
     };
 }
 
@@ -114,6 +121,7 @@ export function UpdateGeneticProfileRequestToJSONTyped(value?: UpdateGeneticProf
         'phenotype': value['phenotype'],
         'genotype': value['genotype'],
         'version': value['version'],
+        'hamster_id': value['hamsterId'],
     };
 }
 

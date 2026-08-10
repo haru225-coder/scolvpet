@@ -5498,6 +5498,10 @@ paths:
                   type: integer
                   minimum: 1
                   description: 当前档案 version，不匹配则 422
+                hamster_id:
+                  type: string
+                  nullable: true
+                  description: 绑定个体 uuid；空字符串解除绑定；省略则不变
       responses:
         '200':
           description: 更新成功
@@ -13898,6 +13902,16 @@ components:
           - string
           - 'null'
           format: uuid
+        hamster_name:
+          type:
+          - string
+          - 'null'
+          description: 关联个体昵称（列表/详情 join）
+        hamster_code:
+          type:
+          - string
+          - 'null'
+          description: 关联个体 internal_code
         name:
           type: string
         phenotype:

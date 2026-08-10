@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import Taro from '@tarojs/taro'
 import BListPage, { type BListItem } from '../../../components/BListPage'
+import { defaultApi } from '../../../api/default-api'
 import { p1Api } from '../../../api/p1-api'
 import { notifyUserError } from '../../../api/errors'
 import { DOMAIN_HOME } from '../../../utils/tab-routes'
@@ -36,6 +37,13 @@ function seriesOf(item: any): string {
   return String(ph.series || g.series || '').trim()
 }
 
+function hamsterLabelOf(item: any): string {
+  const name = String(item?.hamsterName || item?.hamster_name || '').trim()
+  const code = String(item?.hamsterCode || item?.hamster_code || '').trim()
+  if (name && code) return `${name}（${code}）`
+  return name || code || ''
+}
+
 function buildTrialUrl(opts: {
   series?: string
   side: 'sire' | 'dam'
@@ -57,7 +65,22 @@ function profileListFromResponse(profilesRes: any): any[] {
   return []
 }
 
-/** 试配入口：档案列表（置信度/编辑/删除/带入试配）+ 位点参考。 */
+type HamsterPick = { id: string; label: string }
+
+async function loadHamsterPicks(limit = 20): Promise<HamsterPick[]> {
+  const res = await defaultApi.listHamsters({ limit } as any)
+  const data = (res as any)?.data ?? res
+  const list = Array.isArray(data) ? data : data?.items || []
+  return list.map((h: any) => {
+    const id = String(h.id || '')
+    const name = String(h.name || '').trim()
+    const code = String(h.internalCode || h.internal_code || '').trim()
+    const label = name || code || id.slice(0, 8)
+    return { id, label: code && name ? `${name} · ${code}` : label }
+  }).filter((h: HamsterPick) => h.id)
+}
+
+/** 试配入口：档案列表（绑定个体 / 试配 / 重命名 / 删除）+ 位点参考。 */
 export default function GeneticPage() {
   const [reloadToken, setReloadToken] = useState(0)
 
@@ -81,11 +104,12 @@ export default function GeneticPage() {
       const conf = item.confidence
       const label = phenotypeLabelOf(item)
       const key = genotypeKeyOf(item)
-      const bound = String(item.hamsterName || item.hamsterCode || item.hamsterId || '').trim()
+      const hamster = hamsterLabelOf(item)
+      const hamsterId = String(item.hamsterId || item.hamster_id || '').trim()
       const parts = [
         label ? `样子 ${label}` : '',
         key ? `key ${key}` : '',
-        bound ? `个体 ${bound}` : '未绑定个体',
+        hamster ? `个体 ${hamster}` : '未绑定个体',
         item.notes ? String(item.notes).slice(0, 40) : ''
       ].filter(Boolean)
       return {
@@ -93,7 +117,7 @@ export default function GeneticPage() {
         title: item.name || '遗传档案',
         subtitle: parts.join(' · '),
         value: confidenceLabel(conf),
-        tone: confidenceTone(conf),
+        tone: hamsterId ? 'success' : confidenceTone(conf),
         data: {
           kind: 'profile',
           id: String(item.id || ''),
@@ -103,6 +127,8 @@ export default function GeneticPage() {
           phenotypeLabel: label,
           genotypeKey: key,
           version: Number(item.version || 1),
+          hamsterId,
+          hamsterLabel: hamster,
           genotype: item.genotype || {},
           phenotype: item.phenotype || {},
           notes: item.notes ?? null
@@ -136,10 +162,7 @@ export default function GeneticPage() {
     try {
       await p1Api.updateGeneticProfile({
         profileId: id,
-        updateGeneticProfileRequest: {
-          name,
-          version
-        } as any
+        updateGeneticProfileRequest: { name, version } as any
       } as any)
       void Taro.showToast({ title: '已重命名', icon: 'success' })
       setReloadToken((n) => n + 1)
@@ -168,12 +191,68 @@ export default function GeneticPage() {
     }
   }
 
+  async function bindHamster(data: Record<string, unknown>) {
+    const id = String(data.id || '')
+    const version = Number(data.version || 0)
+    if (!id || version <= 0) {
+      void Taro.showToast({ title: '档案数据不完整', icon: 'none' })
+      return
+    }
+    let picks: HamsterPick[] = []
+    try {
+      picks = await loadHamsterPicks(20)
+    } catch (cause) {
+      await notifyUserError(cause, '读取种群失败')
+      return
+    }
+    if (!picks.length) {
+      void Taro.showToast({ title: '还没有个体，先去建档', icon: 'none' })
+      return
+    }
+
+    // ActionSheet 最多约 6 项：前 5 只 + 解除绑定（若已绑定）
+    const bound = Boolean(String(data.hamsterId || '').trim())
+    const slice = picks.slice(0, bound ? 4 : 5)
+    const itemList = [
+      ...slice.map((h) => h.label),
+      ...(bound ? ['解除绑定'] : []),
+      ...(picks.length > slice.length ? ['（仅显示前几只，更多请去种群）'] : [])
+    ]
+
+    try {
+      const res = await Taro.showActionSheet({ itemList })
+      const idx = res.tapIndex
+      if (bound && idx === slice.length) {
+        await p1Api.updateGeneticProfile({
+          profileId: id,
+          updateGeneticProfileRequest: { version, hamsterId: '' } as any
+        } as any)
+        void Taro.showToast({ title: '已解除绑定', icon: 'success' })
+        setReloadToken((n) => n + 1)
+        return
+      }
+      if (idx >= 0 && idx < slice.length) {
+        const pick = slice[idx]
+        await p1Api.updateGeneticProfile({
+          profileId: id,
+          updateGeneticProfileRequest: { version, hamsterId: pick.id } as any
+        } as any)
+        void Taro.showToast({ title: `已绑定 ${pick.label}`, icon: 'success' })
+        setReloadToken((n) => n + 1)
+      }
+    } catch (cause: any) {
+      // 用户取消 ActionSheet 不报错
+      if (cause?.errMsg && String(cause.errMsg).includes('cancel')) return
+      await notifyUserError(cause, '绑定失败')
+    }
+  }
+
   return (
     <BListPage
       key={reloadToken}
       title="试配模拟"
       load={load}
-      footer="点档案：试配 / 重命名 / 删除。主路径也可直接开始试配。"
+      footer="点档案：试配 / 绑定个体 / 重命名 / 删除。"
       emptyTitle="直接开始试配"
       emptyDescription="选好公母样子，立刻看可能长什么样"
       actionLabel="开始试配"
@@ -189,8 +268,8 @@ export default function GeneticPage() {
         const series = String(data.series || '')
         const ph = String(data.phenotypeLabel || '')
         const itemList = key
-          ? ['设为公本并去试配', '设为母本并去试配', '重命名', '删除档案']
-          : ['重命名', '删除档案']
+          ? ['设为公本并去试配', '设为母本并去试配', '绑定/更换个体', '重命名', '删除档案']
+          : ['绑定/更换个体', '重命名', '删除档案']
         void Taro.showActionSheet({ itemList })
           .then((res) => {
             const idx = res.tapIndex
@@ -203,16 +282,21 @@ export default function GeneticPage() {
                 return
               }
               if (idx === 2) {
-                void renameProfile(data)
+                void bindHamster(data)
                 return
               }
               if (idx === 3) {
+                void renameProfile(data)
+                return
+              }
+              if (idx === 4) {
                 void deleteProfile(data)
               }
               return
             }
-            if (idx === 0) void renameProfile(data)
-            if (idx === 1) void deleteProfile(data)
+            if (idx === 0) void bindHamster(data)
+            if (idx === 1) void renameProfile(data)
+            if (idx === 2) void deleteProfile(data)
           })
           .catch(() => undefined)
       }}
