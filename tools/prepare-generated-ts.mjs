@@ -227,3 +227,67 @@ const normalizeTextFiles = (dir) => {
 };
 normalizeTextFiles(root);
 console.log(`prepare-generated-ts: normalized trailing whitespace in ${normalized} files`);
+
+// openapi-generator 7.23 + OAS 3.1 在部分 Linux runner 上会把 createBackupJob 的 202
+// body 收成 void（同 jar / 同 filtered 输入在 macOS 仍生成 BackupJobResponse）。
+// 契约与本仓库已提交客户端以 BackupJobResponse 为准；此处幂等纠正，消 CI drift。
+const defaultApiPath = path.join(srcDir, 'apis', 'DefaultApi.ts');
+if (fs.existsSync(defaultApiPath) && fs.existsSync(path.join(modelsDir, 'BackupJobResponse.ts'))) {
+  let apiSrc = fs.readFileSync(defaultApiPath, 'utf8');
+  const before = apiSrc;
+  if (!apiSrc.includes('BackupJobResponseFromJSON')) {
+    apiSrc = apiSrc.replace(
+      /(import type \{[\s\S]*?)(\} from '\.\.\/models';)/,
+      (m, imports, closer) => {
+        if (imports.includes('BackupJobResponse')) return m;
+        return `${imports}    BackupJobResponse,\n    BackupJobResponseFromJSON,\n    BackupJobResponseToJSON,\n${closer}`;
+      }
+    );
+    // value-import block (typescript-fetch emits separate type/value imports sometimes)
+    if (!apiSrc.includes('BackupJobResponseFromJSON')) {
+      apiSrc = apiSrc.replace(
+        /(from '\.\.\/models\/BackupJobCreateRequest';'\n)/,
+        `$1import type { BackupJobResponse } from '../models/BackupJobResponse';\nimport {\n    BackupJobResponseFromJSON,\n    BackupJobResponseToJSON,\n} from '../models/BackupJobResponse';\n`
+      );
+    }
+  }
+  apiSrc = apiSrc.replace(
+    /async createBackupJobRaw\(requestParameters: CreateBackupJobRequest, initOverrides\?: RequestInit \| runtime\.InitOverrideFunction\): Promise<runtime\.ApiResponse<void>> \{\s*const requestOptions = await this\.createBackupJobRequestOpts\(requestParameters\);\s*const response = await this\.request\(requestOptions, initOverrides\);\s*return new runtime\.VoidApiResponse\(response\);\s*\}/,
+    `async createBackupJobRaw(requestParameters: CreateBackupJobRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BackupJobResponse>> {
+        const requestOptions = await this.createBackupJobRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BackupJobResponseFromJSON(jsonValue));
+    }`
+  );
+  apiSrc = apiSrc.replace(
+    /async createBackupJob\(requestParameters: CreateBackupJobRequest, initOverrides\?: RequestInit \| runtime\.InitOverrideFunction\): Promise<void> \{\s*await this\.createBackupJobRaw\(requestParameters, initOverrides\);\s*\}/,
+    `async createBackupJob(requestParameters: CreateBackupJobRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BackupJobResponse> {
+        const response = await this.createBackupJobRaw(requestParameters, initOverrides);
+        return await response.value();
+    }`
+  );
+  // docs/DefaultApi.md 同步（drift 会 diff docs）
+  const defaultApiMd = path.join(root, 'docs', 'DefaultApi.md');
+  if (fs.existsSync(defaultApiMd)) {
+    let md = fs.readFileSync(defaultApiMd, 'utf8');
+    const mdBefore = md;
+    md = md.replace(
+      /> createBackupJob\(idempotencyKey, backupJobCreateRequest\)/,
+      '> BackupJobResponse createBackupJob(idempotencyKey, backupJobCreateRequest)'
+    );
+    md = md.replace(
+      /(## createBackupJob[\s\S]*?### Return type\n\n)`void` \(Empty response body\)/,
+      '$1[**BackupJobResponse**](BackupJobResponse.md)'
+    );
+    md = md.replace(
+      /\| \*\*202\*\* \|  \|  -  \|/,
+      '| **202** | 备份任务已创建 |  * Location -  <br>  * ETag -  <br>  * Idempotency-Key -  <br>  * Idempotency-Replayed -  <br>  |'
+    );
+    if (md !== mdBefore) fs.writeFileSync(defaultApiMd, md);
+  }
+  if (apiSrc !== before) {
+    fs.writeFileSync(defaultApiPath, apiSrc);
+    console.log('prepare-generated-ts: restored createBackupJob → BackupJobResponse (OAS3.1 CI quirk)');
+  }
+}

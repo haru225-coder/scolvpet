@@ -5475,32 +5475,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-              - version
-              properties:
-                name:
-                  type: string
-                notes:
-                  # OAS 3.1：可空用 type 数组，不用 nullable
-                  type: [string, 'null']
-                confidence:
-                  type: string
-                  enum: [observed, inferred, unknown]
-                phenotype:
-                  type: object
-                  additionalProperties: true
-                genotype:
-                  type: object
-                  additionalProperties:
-                    type: string
-                version:
-                  type: integer
-                  minimum: 1
-                  description: 当前档案 version，不匹配则 422
-                hamster_id:
-                  type: [string, 'null']
-                  description: 绑定个体 uuid；空字符串或 null 解除绑定；省略则不变
+              $ref: '#/components/schemas/UpdateGeneticProfileRequest'
       responses:
         '200':
           description: 更新成功
@@ -13979,6 +13954,40 @@ components:
           maxLength: 4000
       required:
       - name
+      additionalProperties: false
+    UpdateGeneticProfileRequest:
+      type: object
+      description: |
+        更新遗传档案。省略字段表示不变；hamster_id 传空字符串解除绑定。
+        乐观并发：body.version 必须等于当前档案 version。
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        notes:
+          type: string
+          maxLength: 4000
+          description: 备注；可传空串清空
+        confidence:
+          type: string
+          enum: [observed, inferred, unknown]
+        phenotype:
+          type: object
+          additionalProperties: true
+        genotype:
+          type: object
+          additionalProperties:
+            type: string
+        version:
+          type: integer
+          minimum: 1
+          description: 当前档案 version，不匹配则 422
+        hamster_id:
+          type: string
+          description: 绑定个体 uuid；空字符串解除绑定；省略则不变
+      required:
+      - version
       additionalProperties: false
     GeneticSimulationRequest:
       type: object

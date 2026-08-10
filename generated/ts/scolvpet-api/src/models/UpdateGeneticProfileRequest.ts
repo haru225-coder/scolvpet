@@ -15,6 +15,8 @@
 
 import { mapValues } from '../runtime';
 /**
+ * 更新遗传档案。省略字段表示不变；hamster_id 传空字符串解除绑定。
+ * 乐观并发：body.version 必须等于当前档案 version。
  *
  * @export
  * @interface UpdateGeneticProfileRequest
@@ -27,11 +29,11 @@ export interface UpdateGeneticProfileRequest {
      */
     name?: string;
     /**
-     *
+     * 备注；可传空串清空
      * @type {string}
      * @memberof UpdateGeneticProfileRequest
      */
-    notes?: string | null;
+    notes?: string;
     /**
      *
      * @type {UpdateGeneticProfileRequestConfidenceEnum}
@@ -57,11 +59,11 @@ export interface UpdateGeneticProfileRequest {
      */
     version: number;
     /**
-     * 绑定个体 uuid；空字符串或 null 解除绑定；省略则不变
+     * 绑定个体 uuid；空字符串解除绑定；省略则不变
      * @type {string}
      * @memberof UpdateGeneticProfileRequest
      */
-    hamsterId?: string | null;
+    hamsterId?: string;
 }
 
 

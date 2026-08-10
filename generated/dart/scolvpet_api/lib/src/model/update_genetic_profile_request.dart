@@ -47,6 +47,7 @@ class UpdateGeneticProfileRequest {
 
 
 
+      /// 备注；可传空串清空
   @JsonKey(
 
     name: r'notes',
@@ -109,7 +110,7 @@ class UpdateGeneticProfileRequest {
 
 
 
-      /// 绑定个体 uuid；空字符串或 null 解除绑定；省略则不变
+      /// 绑定个体 uuid；空字符串解除绑定；省略则不变
   @JsonKey(
 
     name: r'hamster_id',
@@ -137,12 +138,12 @@ class UpdateGeneticProfileRequest {
     @override
     int get hashCode =>
         name.hashCode +
-        (notes == null ? 0 : notes.hashCode) +
+        notes.hashCode +
         confidence.hashCode +
         phenotype.hashCode +
         genotype.hashCode +
         version.hashCode +
-        (hamsterId == null ? 0 : hamsterId.hashCode);
+        hamsterId.hashCode;
 
   factory UpdateGeneticProfileRequest.fromJson(Map<String, dynamic> json) => _$UpdateGeneticProfileRequestFromJson(json);
 

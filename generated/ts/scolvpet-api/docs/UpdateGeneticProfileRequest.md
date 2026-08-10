@@ -1,6 +1,7 @@
 
 # UpdateGeneticProfileRequest
 
+更新遗传档案。省略字段表示不变；hamster_id 传空字符串解除绑定。 乐观并发：body.version 必须等于当前档案 version。
 
 ## Properties
 
