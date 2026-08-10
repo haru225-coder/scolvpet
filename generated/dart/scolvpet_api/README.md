@@ -215,6 +215,7 @@ Class | Method | HTTP request | Description
 [*CustomerApi*](doc/CustomerApi.md) | [**listCustomerReservations**](doc/CustomerApi.md#listcustomerreservations) | **GET** /v1/customer/reservations | 列出当前客户预订
 [*CustomerApi*](doc/CustomerApi.md) | [**sendCustomerVerificationCode**](doc/CustomerApi.md#sendcustomerverificationcode) | **POST** /v1/public/customer/verification-codes | 客户侧发送登录验证码
 [*GeneticApi*](doc/GeneticApi.md) | [**compareGeneticActual**](doc/GeneticApi.md#comparegeneticactual) | **POST** /v1/genetic/compare-actual | Compare actual litter phenotype counts to core table expectation
+[*GeneticApi*](doc/GeneticApi.md) | [**inferGeneticParents**](doc/GeneticApi.md#infergeneticparents) | **POST** /v1/genetic/infer-parents | Infer parent genotypes from litter phenotype counts
 [*GeneticApi*](doc/GeneticApi.md) | [**listGeneticFeedbackSummary**](doc/GeneticApi.md#listgeneticfeedbacksummary) | **GET** /v1/genetic/feedback-summary | Summarize historical phenotype prediction feedback
 [*GeneticApi*](doc/GeneticApi.md) | [**listGeneticPhenotypeCatalog**](doc/GeneticApi.md#listgeneticphenotypecatalog) | **GET** /v1/genetic/phenotype-catalog | List phenotype series catalog from authority table
 [*GeneticApi*](doc/GeneticApi.md) | [**listGeneticTargetCrosses**](doc/GeneticApi.md#listgenetictargetcrosses) | **GET** /v1/genetic/target-crosses | Rank parent pairs that can produce a target phenotype
@@ -236,6 +237,7 @@ Class | Method | HTTP request | Description
 [*P1Api*](doc/P1Api.md) | [**createPushMessage**](doc/P1Api.md#createpushmessage) | **POST** /v1/push/messages | 创建推送消息
 [*P1Api*](doc/P1Api.md) | [**createReceipt**](doc/P1Api.md#createreceipt) | **POST** /v1/receipts | 创建回执单据
 [*P1Api*](doc/P1Api.md) | [**createReceiptTemplate**](doc/P1Api.md#createreceipttemplate) | **POST** /v1/receipts/templates | 创建回执模板
+[*P1Api*](doc/P1Api.md) | [**deleteGeneticProfile**](doc/P1Api.md#deletegeneticprofile) | **DELETE** /v1/genetic/profiles/{profile_id} | 删除遗传档案
 [*P1Api*](doc/P1Api.md) | [**disablePushDevice**](doc/P1Api.md#disablepushdevice) | **DELETE** /v1/push/devices/{device_id} | 停用推送设备
 [*P1Api*](doc/P1Api.md) | [**downloadContractPdf**](doc/P1Api.md#downloadcontractpdf) | **GET** /v1/contracts/{document_id}/pdf | 下载已签发合同 PDF
 [*P1Api*](doc/P1Api.md) | [**downloadReceiptPdf**](doc/P1Api.md#downloadreceiptpdf) | **GET** /v1/receipts/{document_id}/pdf | 下载已签发回执 PDF
@@ -263,6 +265,7 @@ Class | Method | HTTP request | Description
 [*P1Api*](doc/P1Api.md) | [**revokeReceipt**](doc/P1Api.md#revokereceipt) | **POST** /v1/receipts/{document_id}/revoke | 撤销回执
 [*P1Api*](doc/P1Api.md) | [**sandboxActivatePlan**](doc/P1Api.md#sandboxactivateplan) | **POST** /v1/entitlements/sandbox/activate | 沙箱激活权益套餐
 [*P1Api*](doc/P1Api.md) | [**simulateGeneticBreeding**](doc/P1Api.md#simulategeneticbreeding) | **POST** /v1/genetic/simulate | 模拟遗传配对
+[*P1Api*](doc/P1Api.md) | [**updateGeneticProfile**](doc/P1Api.md#updategeneticprofile) | **PATCH** /v1/genetic/profiles/{profile_id} | 更新遗传档案
 [*P1Api*](doc/P1Api.md) | [**updateOrganizationMember**](doc/P1Api.md#updateorganizationmember) | **PATCH** /v1/organization-members/{member_id} | 更新熊舍成员
 [*P1Api*](doc/P1Api.md) | [**upsertPushDevice**](doc/P1Api.md#upsertpushdevice) | **PUT** /v1/push/devices | 登记推送设备
 [*P1CRMApi*](doc/P1CRMApi.md) | [**cancelCrmReservation**](doc/P1CRMApi.md#cancelcrmreservation) | **POST** /v1/crm/reservations/{reservation_id}/cancel | 取消客户预订
@@ -703,6 +706,7 @@ Class | Method | HTTP request | Description
  - [TaskCorrectionRequest](doc/TaskCorrectionRequest.md)
  - [TaskPriority](doc/TaskPriority.md)
  - [TaskState](doc/TaskState.md)
+ - [UpdateGeneticProfileRequest](doc/UpdateGeneticProfileRequest.md)
  - [UpdateOrganizationMemberRequest](doc/UpdateOrganizationMemberRequest.md)
  - [UploadSession](doc/UploadSession.md)
  - [UpsertMiniprogramConfigRequest](doc/UpsertMiniprogramConfigRequest.md)

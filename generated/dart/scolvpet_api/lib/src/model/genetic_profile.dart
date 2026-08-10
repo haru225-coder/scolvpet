@@ -24,6 +24,10 @@ class GeneticProfile {
 
      this.hamsterId,
 
+     this.hamsterName,
+
+     this.hamsterCode,
+
     required  this.name,
 
     required  this.phenotype,
@@ -60,6 +64,32 @@ class GeneticProfile {
 
 
   final String? hamsterId;
+
+
+
+      /// 关联个体昵称（列表/详情 join）
+  @JsonKey(
+
+    name: r'hamster_name',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? hamsterName;
+
+
+
+      /// 关联个体 internal_code
+  @JsonKey(
+
+    name: r'hamster_code',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? hamsterCode;
 
 
 
@@ -154,6 +184,8 @@ class GeneticProfile {
     bool operator ==(Object other) => identical(this, other) || other is GeneticProfile &&
       other.id == id &&
       other.hamsterId == hamsterId &&
+      other.hamsterName == hamsterName &&
+      other.hamsterCode == hamsterCode &&
       other.name == name &&
       other.phenotype == phenotype &&
       other.genotype == genotype &&
@@ -166,6 +198,8 @@ class GeneticProfile {
     int get hashCode =>
         id.hashCode +
         (hamsterId == null ? 0 : hamsterId.hashCode) +
+        (hamsterName == null ? 0 : hamsterName.hashCode) +
+        (hamsterCode == null ? 0 : hamsterCode.hashCode) +
         name.hashCode +
         phenotype.hashCode +
         genotype.hashCode +

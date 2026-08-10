@@ -11,6 +11,10 @@ abstract class _$GeneticProfileCWProxy {
 
   GeneticProfile hamsterId(String? hamsterId);
 
+  GeneticProfile hamsterName(String? hamsterName);
+
+  GeneticProfile hamsterCode(String? hamsterCode);
+
   GeneticProfile name(String name);
 
   GeneticProfile phenotype(Map<String, Object> phenotype);
@@ -34,6 +38,8 @@ abstract class _$GeneticProfileCWProxy {
   GeneticProfile call({
     String id,
     String? hamsterId,
+    String? hamsterName,
+    String? hamsterCode,
     String name,
     Map<String, Object> phenotype,
     Map<String, String> genotype,
@@ -55,6 +61,14 @@ class _$GeneticProfileCWProxyImpl implements _$GeneticProfileCWProxy {
 
   @override
   GeneticProfile hamsterId(String? hamsterId) => this(hamsterId: hamsterId);
+
+  @override
+  GeneticProfile hamsterName(String? hamsterName) =>
+      this(hamsterName: hamsterName);
+
+  @override
+  GeneticProfile hamsterCode(String? hamsterCode) =>
+      this(hamsterCode: hamsterCode);
 
   @override
   GeneticProfile name(String name) => this(name: name);
@@ -90,6 +104,8 @@ class _$GeneticProfileCWProxyImpl implements _$GeneticProfileCWProxy {
   GeneticProfile call({
     Object? id = const $CopyWithPlaceholder(),
     Object? hamsterId = const $CopyWithPlaceholder(),
+    Object? hamsterName = const $CopyWithPlaceholder(),
+    Object? hamsterCode = const $CopyWithPlaceholder(),
     Object? name = const $CopyWithPlaceholder(),
     Object? phenotype = const $CopyWithPlaceholder(),
     Object? genotype = const $CopyWithPlaceholder(),
@@ -107,6 +123,14 @@ class _$GeneticProfileCWProxyImpl implements _$GeneticProfileCWProxy {
           ? _value.hamsterId
           // ignore: cast_nullable_to_non_nullable
           : hamsterId as String?,
+      hamsterName: hamsterName == const $CopyWithPlaceholder()
+          ? _value.hamsterName
+          // ignore: cast_nullable_to_non_nullable
+          : hamsterName as String?,
+      hamsterCode: hamsterCode == const $CopyWithPlaceholder()
+          ? _value.hamsterCode
+          // ignore: cast_nullable_to_non_nullable
+          : hamsterCode as String?,
       name: name == const $CopyWithPlaceholder()
           ? _value.name
           // ignore: cast_nullable_to_non_nullable
@@ -169,6 +193,8 @@ GeneticProfile _$GeneticProfileFromJson(Map<String, dynamic> json) =>
         final val = GeneticProfile(
           id: $checkedConvert('id', (v) => v as String),
           hamsterId: $checkedConvert('hamster_id', (v) => v as String?),
+          hamsterName: $checkedConvert('hamster_name', (v) => v as String?),
+          hamsterCode: $checkedConvert('hamster_code', (v) => v as String?),
           name: $checkedConvert('name', (v) => v as String),
           phenotype: $checkedConvert(
             'phenotype',
@@ -193,13 +219,20 @@ GeneticProfile _$GeneticProfileFromJson(Map<String, dynamic> json) =>
         );
         return val;
       },
-      fieldKeyMap: const {'hamsterId': 'hamster_id', 'updatedAt': 'updated_at'},
+      fieldKeyMap: const {
+        'hamsterId': 'hamster_id',
+        'hamsterName': 'hamster_name',
+        'hamsterCode': 'hamster_code',
+        'updatedAt': 'updated_at',
+      },
     );
 
 Map<String, dynamic> _$GeneticProfileToJson(GeneticProfile instance) =>
     <String, dynamic>{
       'id': instance.id,
       'hamster_id': ?instance.hamsterId,
+      'hamster_name': ?instance.hamsterName,
+      'hamster_code': ?instance.hamsterCode,
       'name': instance.name,
       'phenotype': instance.phenotype,
       'genotype': instance.genotype,

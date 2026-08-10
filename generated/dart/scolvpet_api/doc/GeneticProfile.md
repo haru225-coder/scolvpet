@@ -10,6 +10,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** |  |
 **hamsterId** | **String** |  | [optional]
+**hamsterName** | **String** | 关联个体昵称（列表/详情 join） | [optional]
+**hamsterCode** | **String** | 关联个体 internal_code | [optional]
 **name** | **String** |  |
 **phenotype** | **Map&lt;String, Object&gt;** |  |
 **genotype** | **Map&lt;String, String&gt;** |  |

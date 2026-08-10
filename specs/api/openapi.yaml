@@ -5482,8 +5482,8 @@ paths:
                 name:
                   type: string
                 notes:
-                  type: string
-                  nullable: true
+                  # OAS 3.1：可空用 type 数组，不用 nullable
+                  type: [string, 'null']
                 confidence:
                   type: string
                   enum: [observed, inferred, unknown]
@@ -5499,9 +5499,8 @@ paths:
                   minimum: 1
                   description: 当前档案 version，不匹配则 422
                 hamster_id:
-                  type: string
-                  nullable: true
-                  description: 绑定个体 uuid；空字符串解除绑定；省略则不变
+                  type: [string, 'null']
+                  description: 绑定个体 uuid；空字符串或 null 解除绑定；省略则不变
       responses:
         '200':
           description: 更新成功

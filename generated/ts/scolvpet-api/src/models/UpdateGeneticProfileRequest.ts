@@ -31,7 +31,7 @@ export interface UpdateGeneticProfileRequest {
      * @type {string}
      * @memberof UpdateGeneticProfileRequest
      */
-    notes?: string;
+    notes?: string | null;
     /**
      *
      * @type {UpdateGeneticProfileRequestConfidenceEnum}
@@ -57,11 +57,11 @@ export interface UpdateGeneticProfileRequest {
      */
     version: number;
     /**
-     * 绑定个体 uuid；空字符串解除绑定；省略则不变
+     * 绑定个体 uuid；空字符串或 null 解除绑定；省略则不变
      * @type {string}
      * @memberof UpdateGeneticProfileRequest
      */
-    hamsterId?: string;
+    hamsterId?: string | null;
 }
 
 

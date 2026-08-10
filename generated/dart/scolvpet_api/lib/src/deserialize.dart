@@ -356,6 +356,7 @@ import 'package:scolvpet_api/src/model/stud_listing.dart';
 import 'package:scolvpet_api/src/model/stud_listing_list_response.dart';
 import 'package:scolvpet_api/src/model/stud_listing_response.dart';
 import 'package:scolvpet_api/src/model/task_correction_request.dart';
+import 'package:scolvpet_api/src/model/update_genetic_profile_request.dart';
 import 'package:scolvpet_api/src/model/update_organization_member_request.dart';
 import 'package:scolvpet_api/src/model/upload_session.dart';
 import 'package:scolvpet_api/src/model/upsert_miniprogram_config_request.dart';
@@ -1203,6 +1204,8 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
         case 'TaskState':
 
 
+        case 'UpdateGeneticProfileRequest':
+          return UpdateGeneticProfileRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'UpdateOrganizationMemberRequest':
           return UpdateOrganizationMemberRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'UploadSession':

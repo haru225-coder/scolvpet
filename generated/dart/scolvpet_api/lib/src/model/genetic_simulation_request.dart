@@ -28,6 +28,10 @@ class GeneticSimulationRequest {
 
      this.damPhenotype,
 
+     this.sireGenotypeKey,
+
+     this.damGenotypeKey,
+
      this.sireHamsterId,
 
      this.damHamsterId,
@@ -88,6 +92,32 @@ class GeneticSimulationRequest {
 
 
   final String? damPhenotype;
+
+
+
+      /// 可选父本精确基因型 key（多代续推；来自 genotype_breakdown[].key）
+  @JsonKey(
+
+    name: r'sire_genotype_key',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? sireGenotypeKey;
+
+
+
+      /// 可选母本精确基因型 key（多代续推；来自 genotype_breakdown[].key）
+  @JsonKey(
+
+    name: r'dam_genotype_key',
+    required: false,
+    includeIfNull: false,
+  )
+
+
+  final String? damGenotypeKey;
 
 
 
@@ -164,6 +194,8 @@ class GeneticSimulationRequest {
       other.series == series &&
       other.sirePhenotype == sirePhenotype &&
       other.damPhenotype == damPhenotype &&
+      other.sireGenotypeKey == sireGenotypeKey &&
+      other.damGenotypeKey == damGenotypeKey &&
       other.sireHamsterId == sireHamsterId &&
       other.damHamsterId == damHamsterId &&
       other.targetPhenotype == targetPhenotype &&
@@ -176,6 +208,8 @@ class GeneticSimulationRequest {
         series.hashCode +
         sirePhenotype.hashCode +
         damPhenotype.hashCode +
+        sireGenotypeKey.hashCode +
+        damGenotypeKey.hashCode +
         sireHamsterId.hashCode +
         damHamsterId.hashCode +
         targetPhenotype.hashCode +

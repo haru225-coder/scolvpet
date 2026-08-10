@@ -15,6 +15,10 @@ abstract class _$GeneticSimulationRequestCWProxy {
 
   GeneticSimulationRequest damPhenotype(String? damPhenotype);
 
+  GeneticSimulationRequest sireGenotypeKey(String? sireGenotypeKey);
+
+  GeneticSimulationRequest damGenotypeKey(String? damGenotypeKey);
+
   GeneticSimulationRequest sireHamsterId(String? sireHamsterId);
 
   GeneticSimulationRequest damHamsterId(String? damHamsterId);
@@ -36,6 +40,8 @@ abstract class _$GeneticSimulationRequestCWProxy {
     String? series,
     String? sirePhenotype,
     String? damPhenotype,
+    String? sireGenotypeKey,
+    String? damGenotypeKey,
     String? sireHamsterId,
     String? damHamsterId,
     String? targetPhenotype,
@@ -67,6 +73,14 @@ class _$GeneticSimulationRequestCWProxyImpl
       this(damPhenotype: damPhenotype);
 
   @override
+  GeneticSimulationRequest sireGenotypeKey(String? sireGenotypeKey) =>
+      this(sireGenotypeKey: sireGenotypeKey);
+
+  @override
+  GeneticSimulationRequest damGenotypeKey(String? damGenotypeKey) =>
+      this(damGenotypeKey: damGenotypeKey);
+
+  @override
   GeneticSimulationRequest sireHamsterId(String? sireHamsterId) =>
       this(sireHamsterId: sireHamsterId);
 
@@ -96,6 +110,8 @@ class _$GeneticSimulationRequestCWProxyImpl
     Object? series = const $CopyWithPlaceholder(),
     Object? sirePhenotype = const $CopyWithPlaceholder(),
     Object? damPhenotype = const $CopyWithPlaceholder(),
+    Object? sireGenotypeKey = const $CopyWithPlaceholder(),
+    Object? damGenotypeKey = const $CopyWithPlaceholder(),
     Object? sireHamsterId = const $CopyWithPlaceholder(),
     Object? damHamsterId = const $CopyWithPlaceholder(),
     Object? targetPhenotype = const $CopyWithPlaceholder(),
@@ -119,6 +135,14 @@ class _$GeneticSimulationRequestCWProxyImpl
           ? _value.damPhenotype
           // ignore: cast_nullable_to_non_nullable
           : damPhenotype as String?,
+      sireGenotypeKey: sireGenotypeKey == const $CopyWithPlaceholder()
+          ? _value.sireGenotypeKey
+          // ignore: cast_nullable_to_non_nullable
+          : sireGenotypeKey as String?,
+      damGenotypeKey: damGenotypeKey == const $CopyWithPlaceholder()
+          ? _value.damGenotypeKey
+          // ignore: cast_nullable_to_non_nullable
+          : damGenotypeKey as String?,
       sireHamsterId: sireHamsterId == const $CopyWithPlaceholder()
           ? _value.sireHamsterId
           // ignore: cast_nullable_to_non_nullable
@@ -169,6 +193,11 @@ GeneticSimulationRequest _$GeneticSimulationRequestFromJson(
       series: $checkedConvert('series', (v) => v as String?),
       sirePhenotype: $checkedConvert('sire_phenotype', (v) => v as String?),
       damPhenotype: $checkedConvert('dam_phenotype', (v) => v as String?),
+      sireGenotypeKey: $checkedConvert(
+        'sire_genotype_key',
+        (v) => v as String?,
+      ),
+      damGenotypeKey: $checkedConvert('dam_genotype_key', (v) => v as String?),
       sireHamsterId: $checkedConvert('sire_hamster_id', (v) => v as String?),
       damHamsterId: $checkedConvert('dam_hamster_id', (v) => v as String?),
       targetPhenotype: $checkedConvert('target_phenotype', (v) => v as String?),
@@ -190,6 +219,8 @@ GeneticSimulationRequest _$GeneticSimulationRequestFromJson(
   fieldKeyMap: const {
     'sirePhenotype': 'sire_phenotype',
     'damPhenotype': 'dam_phenotype',
+    'sireGenotypeKey': 'sire_genotype_key',
+    'damGenotypeKey': 'dam_genotype_key',
     'sireHamsterId': 'sire_hamster_id',
     'damHamsterId': 'dam_hamster_id',
     'targetPhenotype': 'target_phenotype',
@@ -203,6 +234,8 @@ Map<String, dynamic> _$GeneticSimulationRequestToJson(
   'series': ?instance.series,
   'sire_phenotype': ?instance.sirePhenotype,
   'dam_phenotype': ?instance.damPhenotype,
+  'sire_genotype_key': ?instance.sireGenotypeKey,
+  'dam_genotype_key': ?instance.damGenotypeKey,
   'sire_hamster_id': ?instance.sireHamsterId,
   'dam_hamster_id': ?instance.damHamsterId,
   'target_phenotype': ?instance.targetPhenotype,

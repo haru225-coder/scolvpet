@@ -18,6 +18,7 @@ Method | HTTP request | Description
 [**createPushMessage**](P1Api.md#createpushmessage) | **POST** /v1/push/messages | 创建推送消息
 [**createReceipt**](P1Api.md#createreceipt) | **POST** /v1/receipts | 创建回执单据
 [**createReceiptTemplate**](P1Api.md#createreceipttemplate) | **POST** /v1/receipts/templates | 创建回执模板
+[**deleteGeneticProfile**](P1Api.md#deletegeneticprofile) | **DELETE** /v1/genetic/profiles/{profile_id} | 删除遗传档案
 [**disablePushDevice**](P1Api.md#disablepushdevice) | **DELETE** /v1/push/devices/{device_id} | 停用推送设备
 [**downloadContractPdf**](P1Api.md#downloadcontractpdf) | **GET** /v1/contracts/{document_id}/pdf | 下载已签发合同 PDF
 [**downloadReceiptPdf**](P1Api.md#downloadreceiptpdf) | **GET** /v1/receipts/{document_id}/pdf | 下载已签发回执 PDF
@@ -45,6 +46,7 @@ Method | HTTP request | Description
 [**revokeReceipt**](P1Api.md#revokereceipt) | **POST** /v1/receipts/{document_id}/revoke | 撤销回执
 [**sandboxActivatePlan**](P1Api.md#sandboxactivateplan) | **POST** /v1/entitlements/sandbox/activate | 沙箱激活权益套餐
 [**simulateGeneticBreeding**](P1Api.md#simulategeneticbreeding) | **POST** /v1/genetic/simulate | 模拟遗传配对
+[**updateGeneticProfile**](P1Api.md#updategeneticprofile) | **PATCH** /v1/genetic/profiles/{profile_id} | 更新遗传档案
 [**updateOrganizationMember**](P1Api.md#updateorganizationmember) | **PATCH** /v1/organization-members/{member_id} | 更新熊舍成员
 [**upsertPushDevice**](P1Api.md#upsertpushdevice) | **PUT** /v1/push/devices | 登记推送设备
 
@@ -450,6 +452,47 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **deleteGeneticProfile**
+> Map<String, Object> deleteGeneticProfile(profileId)
+
+删除遗传档案
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP1Api();
+final String profileId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+
+try {
+    final response = api.deleteGeneticProfile(profileId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P1Api->deleteGeneticProfile: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **profileId** | **String**|  |
+
+### Return type
+
+**Map&lt;String, Object&gt;**
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -1595,6 +1638,53 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**GeneticSimulationResponse**](GeneticSimulationResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **updateGeneticProfile**
+> GeneticProfileResponse updateGeneticProfile(profileId, updateGeneticProfileRequest, idempotencyKey)
+
+更新遗传档案
+
+需要 Bearer 令牌；乐观并发依赖 body.version（当前档案版本）。
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getP1Api();
+final String profileId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
+final UpdateGeneticProfileRequest updateGeneticProfileRequest = ; // UpdateGeneticProfileRequest |
+final String idempotencyKey = idempotencyKey_example; // String | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。
+
+try {
+    final response = api.updateGeneticProfile(profileId, updateGeneticProfileRequest, idempotencyKey);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling P1Api->updateGeneticProfile: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **profileId** | **String**|  |
+ **updateGeneticProfileRequest** | [**UpdateGeneticProfileRequest**](UpdateGeneticProfileRequest.md)|  |
+ **idempotencyKey** | **String**| P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [optional]
+
+### Return type
+
+[**GeneticProfileResponse**](GeneticProfileResponse.md)
 
 ### Authorization
 

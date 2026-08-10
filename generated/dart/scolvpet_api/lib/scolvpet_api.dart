@@ -403,6 +403,7 @@ export 'package:scolvpet_api/src/model/stud_listing_response.dart';
 export 'package:scolvpet_api/src/model/task_correction_request.dart';
 export 'package:scolvpet_api/src/model/task_priority.dart';
 export 'package:scolvpet_api/src/model/task_state.dart';
+export 'package:scolvpet_api/src/model/update_genetic_profile_request.dart';
 export 'package:scolvpet_api/src/model/update_organization_member_request.dart';
 export 'package:scolvpet_api/src/model/upload_session.dart';
 export 'package:scolvpet_api/src/model/upsert_miniprogram_config_request.dart';

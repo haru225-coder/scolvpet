@@ -395,6 +395,7 @@ doc/StudListingResponse.md
 doc/TaskCorrectionRequest.md
 doc/TaskPriority.md
 doc/TaskState.md
+doc/UpdateGeneticProfileRequest.md
 doc/UpdateOrganizationMemberRequest.md
 doc/UploadSession.md
 doc/UpsertMiniprogramConfigRequest.md
@@ -830,6 +831,7 @@ lib/src/model/stud_listing_response.dart
 lib/src/model/task_correction_request.dart
 lib/src/model/task_priority.dart
 lib/src/model/task_state.dart
+lib/src/model/update_genetic_profile_request.dart
 lib/src/model/update_organization_member_request.dart
 lib/src/model/upload_session.dart
 lib/src/model/upsert_miniprogram_config_request.dart
@@ -1258,6 +1260,7 @@ test/stud_listing_test.dart
 test/task_correction_request_test.dart
 test/task_priority_test.dart
 test/task_state_test.dart
+test/update_genetic_profile_request_test.dart
 test/update_organization_member_request_test.dart
 test/upload_session_test.dart
 test/upsert_miniprogram_config_request_test.dart

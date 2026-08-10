@@ -12,6 +12,8 @@ Name | Type | Description | Notes
 **series** | **String** | 系列代码或中文名，如 poly / 波利系列 / chocolate / 巧克力色系 | [optional]
 **sirePhenotype** | **String** | 父本表型（phenotype_table 模式） | [optional]
 **damPhenotype** | **String** | 母本表型（phenotype_table 模式） | [optional]
+**sireGenotypeKey** | **String** | 可选父本精确基因型 key（多代续推；来自 genotype_breakdown[].key） | [optional]
+**damGenotypeKey** | **String** | 可选母本精确基因型 key（多代续推；来自 genotype_breakdown[].key） | [optional]
 **sireHamsterId** | **String** | 可选父本档案 ID；父母双方都提供时启用具体亲本历史校准 | [optional]
 **damHamsterId** | **String** | 可选母本档案 ID；父母双方都提供时启用具体亲本历史校准 | [optional]
 **targetPhenotype** | **String** | 可选重点表型；客户端可据最终概率计算本窝至少出现一只的机会 | [optional]

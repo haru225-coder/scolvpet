@@ -26,7 +26,7 @@ import {
 } from '../../auth/dev-session'
 import { isOfflineDevMode, isOfflineDevSession } from '../../auth/offline-dev'
 import { canUseCapability } from '../../auth/permissions'
-import { peekBreederSession, readBreederSession } from '../../auth/session'
+import { peekBreederSession } from '../../auth/session'
 import { readTodaySnapshot, saveTodaySnapshot } from '../../offline/snapshots'
 import ProfileAvatar from '../../components/ProfileAvatar'
 import { copyDiag, diag } from '../../utils/diag'

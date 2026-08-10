@@ -10,6 +10,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**compareGeneticActual**](GeneticApi.md#comparegeneticactual) | **POST** /v1/genetic/compare-actual | Compare actual litter phenotype counts to core table expectation
+[**inferGeneticParents**](GeneticApi.md#infergeneticparents) | **POST** /v1/genetic/infer-parents | Infer parent genotypes from litter phenotype counts
 [**listGeneticFeedbackSummary**](GeneticApi.md#listgeneticfeedbacksummary) | **GET** /v1/genetic/feedback-summary | Summarize historical phenotype prediction feedback
 [**listGeneticPhenotypeCatalog**](GeneticApi.md#listgeneticphenotypecatalog) | **GET** /v1/genetic/phenotype-catalog | List phenotype series catalog from authority table
 [**listGeneticTargetCrosses**](GeneticApi.md#listgenetictargetcrosses) | **GET** /v1/genetic/target-crosses | Rank parent pairs that can produce a target phenotype
@@ -32,6 +33,49 @@ try {
     print(response);
 } on DioException catch (e) {
     print('Exception when calling GeneticApi->compareGeneticActual: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **requestBody** | [**Map&lt;String, Object&gt;**](Object.md)|  |
+
+### Return type
+
+**Map&lt;String, Object&gt;**
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **inferGeneticParents**
+> Map<String, Object> inferGeneticParents(requestBody)
+
+Infer parent genotypes from litter phenotype counts
+
+Bayesian reverse inference over locus-model genotype pairs given offspring phenotype tallies. Optional sire_genotype_key / dam_genotype_key fix one side.
+
+### Example
+```dart
+import 'package:scolvpet_api/api.dart';
+
+final api = ScolvpetApi().getGeneticApi();
+final Map<String, Object> requestBody = Object; // Map<String, Object> |
+
+try {
+    final response = api.inferGeneticParents(requestBody);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling GeneticApi->inferGeneticParents: $e\n');
 }
 ```
 
