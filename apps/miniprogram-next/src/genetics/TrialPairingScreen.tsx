@@ -19,6 +19,12 @@ import {
   humanizePredictionBasis
 } from './genetics-copy'
 import { getFallbackPhenotypeCatalog } from './fallback-catalog'
+import {
+  canonicalPhenotypeLabel,
+  dedupePhenotypeOptions,
+  phenotypeAliasHint,
+  phenotypeModeAssumptionNote
+} from './phenotype-options'
 
 function field(value: any, camel: string, snake: string, fallback: any = '') {
   return value?.[camel] ?? value?.[snake] ?? fallback
@@ -81,7 +87,8 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
     }
     const label = String(displayLabel || '').trim()
     // 尽量把表型也同步成展示名（去掉携带括号）
-    const pheno = label.includes('（') ? label.slice(0, label.indexOf('（')).trim() : label
+    const phenoRaw = label.includes('（') ? label.slice(0, label.indexOf('（')).trim() : label
+    const pheno = phenoRaw ? canonicalPhenotypeLabel(seriesCode, phenoRaw) : ''
     if (side === 'sire') {
       setSireGenotypeKey(k)
       if (pheno) setSirePhenotype(pheno)
@@ -95,6 +102,29 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
         : `已把「${label || k}」设为母本基因型，可再点试配`
     )
     void Taro.showToast({ title: side === 'sire' ? '已设为公' : '已设为母', icon: 'success', duration: 900 })
+  }
+
+  function offerPinGenotype(key: string, displayLabel?: string) {
+    const k = String(key || '').trim()
+    if (!k || k === '—') {
+      void presentUserMessage('没有可用的基因型 key')
+      return
+    }
+    const label = String(displayLabel || k).trim()
+    void Taro.showActionSheet({
+      itemList: ['设为公本（下一配）', '设为母本（下一配）', '公母都设成这个（自交）']
+    })
+      .then((res) => {
+        const idx = Number(res.tapIndex)
+        if (idx === 0) pinGenotype('sire', k, label)
+        else if (idx === 1) pinGenotype('dam', k, label)
+        else if (idx === 2) {
+          pinGenotype('sire', k, label)
+          pinGenotype('dam', k, label)
+          setMessage(`公母都钉成「${label}」，可点试配看自交`)
+        }
+      })
+      .catch(() => undefined)
   }
 
   function applyInferredParentsAsPins() {
@@ -131,13 +161,15 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
     setCatalog(nextCatalog)
     const seriesList = Array.isArray(nextCatalog?.series) ? nextCatalog.series : []
     if ((!series || !seriesList.some((s) => String(s.code || s.Code) === series)) && seriesList[0]) {
-      setSeries(String(seriesList[0].code || seriesList[0].Code || ''))
-      const phenos = seriesList[0].phenotypes || seriesList[0].Phenotypes || []
+      const code = String(seriesList[0].code || seriesList[0].Code || '')
+      setSeries(code)
+      clearGenotypePins()
+      const phenos = dedupePhenotypeOptions(code, seriesList[0].phenotypes || seriesList[0].Phenotypes || [])
       const firstPheno = phenos[0]
       if (firstPheno) {
-        setSirePhenotype(String(firstPheno))
-        setDamPhenotype(String(firstPheno))
-        setTargetPhenotype(String(firstPheno))
+        setSirePhenotype(firstPheno)
+        setDamPhenotype(firstPheno)
+        setTargetPhenotype(firstPheno)
       }
     }
     if (!seriesList.length) {
@@ -184,15 +216,27 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
   const seriesLabels = catalogSeries.map((item: any) => item.name || item.code || '系列')
   const seriesIndex = Math.max(0, catalogSeries.findIndex((item: any) => item.code === series))
   const selectedSeries = catalogSeries[seriesIndex]
-  const phenotypeOptions: string[] = selectedSeries?.phenotypes || []
-  const sireIndex = Math.max(0, phenotypeOptions.indexOf(sirePhenotype))
-  const damIndex = Math.max(0, phenotypeOptions.indexOf(damPhenotype))
-  const targetIndex = Math.max(0, phenotypeOptions.indexOf(targetPhenotype))
-
   const seriesCode = useMemo(
     () => String(selectedSeries?.code || series || '').trim(),
     [selectedSeries, series]
   )
+  const phenotypeOptions: string[] = useMemo(
+    () => dedupePhenotypeOptions(seriesCode, selectedSeries?.phenotypes || selectedSeries?.Phenotypes || []),
+    [seriesCode, selectedSeries]
+  )
+  const sireIndex = Math.max(0, phenotypeOptions.indexOf(canonicalPhenotypeLabel(seriesCode, sirePhenotype)))
+  const damIndex = Math.max(0, phenotypeOptions.indexOf(canonicalPhenotypeLabel(seriesCode, damPhenotype)))
+  const targetIndex = Math.max(
+    0,
+    phenotypeOptions.indexOf(canonicalPhenotypeLabel(seriesCode, targetPhenotype))
+  )
+  const hasExactGenotype = Boolean(sireGenotypeKey || damGenotypeKey)
+  const formFooter = [
+    message,
+    phenotypeModeAssumptionNote(seriesCode, hasExactGenotype)
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   async function simulate() {
     if (!readBreederSession()) {
@@ -394,7 +438,8 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
     const code = String(selected?.code || '')
     setSeries(code)
     clearGenotypePins()
-    const first = selected?.phenotypes?.[0] ? String(selected.phenotypes[0]) : ''
+    const phenos = dedupePhenotypeOptions(code, selected?.phenotypes || selected?.Phenotypes || [])
+    const first = phenos[0] || ''
     if (first) {
       setSirePhenotype(first)
       setDamPhenotype(first)
@@ -424,7 +469,7 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
       <NavBar title="试配模拟" back={!hideBack} />
       <ScrollView scrollY type="list" bounces enhanced showScrollbar={false} style={{ flex: 1 }}>
         <SectionList>
-          <Section header="选父母样子" footer={message}>
+          <Section header="选父母样子" footer={formFooter}>
             {catalogSeries.length ? (
               <>
                 <FormRow label="系列">
@@ -444,14 +489,20 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                     value={sireIndex}
                     onChange={(event) => {
                       if (!requireLogin('试配')) return
-                      setSirePhenotype(phenotypeOptions[Number(event.detail.value)] || '')
+                      const next = phenotypeOptions[Number(event.detail.value)] || ''
+                      setSirePhenotype(next)
                       setSireGenotypeKey('')
                       setResult(null)
                     }}
                   >
                     <Cell
-                      title={sirePhenotype || '选择样子'}
-                      subtitle={sireGenotypeKey ? `基因型已钉：${sireGenotypeKey}` : undefined}
+                      title={canonicalPhenotypeLabel(seriesCode, sirePhenotype) || '选择样子'}
+                      subtitle={
+                        sireGenotypeKey
+                          ? `基因型已钉：${sireGenotypeKey}`
+                          : phenotypeAliasHint(seriesCode, canonicalPhenotypeLabel(seriesCode, sirePhenotype)) ||
+                            undefined
+                      }
                       value={sireGenotypeKey ? <Tag tone="warning">精确</Tag> : <Tag>选择</Tag>}
                     />
                   </Picker>
@@ -463,14 +514,20 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                     value={damIndex}
                     onChange={(event) => {
                       if (!requireLogin('试配')) return
-                      setDamPhenotype(phenotypeOptions[Number(event.detail.value)] || '')
+                      const next = phenotypeOptions[Number(event.detail.value)] || ''
+                      setDamPhenotype(next)
                       setDamGenotypeKey('')
                       setResult(null)
                     }}
                   >
                     <Cell
-                      title={damPhenotype || '选择样子'}
-                      subtitle={damGenotypeKey ? `基因型已钉：${damGenotypeKey}` : undefined}
+                      title={canonicalPhenotypeLabel(seriesCode, damPhenotype) || '选择样子'}
+                      subtitle={
+                        damGenotypeKey
+                          ? `基因型已钉：${damGenotypeKey}`
+                          : phenotypeAliasHint(seriesCode, canonicalPhenotypeLabel(seriesCode, damPhenotype)) ||
+                            undefined
+                      }
                       value={damGenotypeKey ? <Tag tone="warning">精确</Tag> : <Tag>选择</Tag>}
                     />
                   </Picker>
@@ -533,7 +590,7 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                 )}
                 <Cell
                   title={showPro ? '收起专业信息' : GeneticsUiCopy.professionalSectionTitle}
-                  subtitle={showPro ? '点某一行可钉到公/母，再试配做多代' : '展开后可点选基因型续推'}
+                  subtitle={showPro ? '点某一基因型 → 选公/母/自交' : '展开后点选基因型做多代续推'}
                   value={<Tag>{showPro ? '已展开' : '折叠'}</Tag>}
                   onClick={() => setShowPro((v) => !v)}
                 />
@@ -549,31 +606,18 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                               carrierTags: []
                             }
                           ]
-                      return rows.flatMap((g: any, idx: number) => {
+                      return rows.map((g: any, idx: number) => {
                         const key = g.key || item.professionalKey || '—'
                         const label = g.displayLabel || g.key || item.displayName || '—'
-                        return [
+                        return (
                           <Cell
                             key={`pro-${item.displayName}-${key}-${idx}`}
                             title={label}
-                            subtitle={[key, ...(g.carrierTags || [])].filter(Boolean).join(' · ')}
+                            subtitle={[key, ...(g.carrierTags || []), '点选设为亲本'].filter(Boolean).join(' · ')}
                             value={<Tag tone="warning">{g.percentLabel || item.percentLabel}</Tag>}
-                          />,
-                          <Cell
-                            key={`pin-s-${item.displayName}-${key}-${idx}`}
-                            title="设为公本（下一配）"
-                            subtitle={label}
-                            value={<Tag>公</Tag>}
-                            onClick={() => pinGenotype('sire', key, label)}
-                          />,
-                          <Cell
-                            key={`pin-d-${item.displayName}-${key}-${idx}`}
-                            title="设为母本（下一配）"
-                            subtitle={label}
-                            value={<Tag>母</Tag>}
-                            onClick={() => pinGenotype('dam', key, label)}
+                            onClick={() => offerPinGenotype(key, label)}
                           />
-                        ]
+                        )
                       })
                     })
                   : null}
@@ -604,7 +648,9 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                       range={phenotypeOptions}
                       value={targetIndex}
                       onChange={(event) =>
-                        setTargetPhenotype(phenotypeOptions[Number(event.detail.value)] || '')
+                        setTargetPhenotype(
+                          phenotypeOptions[Number(event.detail.value)] || ''
+                        )
                       }
                     >
                       <Cell title={targetPhenotype || '选择样子'} value={<Tag>选择</Tag>} />

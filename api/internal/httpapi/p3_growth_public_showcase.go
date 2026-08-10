@@ -185,12 +185,28 @@ func (s *Server) postPublicPhenotypeSimulate(w http.ResponseWriter, r *http.Requ
 
 	outcomes := make([]map[string]any, 0, len(result.Outcomes))
 	for _, o := range result.Outcomes {
-		outcomes = append(outcomes, map[string]any{
+		row := map[string]any{
 			"phenotype":   o.Phenotype,
 			"probability": o.Probability,
 			"fraction":    o.Fraction,
 			"percent":     o.Probability * 100,
-		})
+		}
+		if o.CarrierSummary != "" {
+			row["carrier_summary"] = o.CarrierSummary
+		}
+		if len(o.GenotypeBreakdown) > 0 {
+			parts := make([]map[string]any, 0, len(o.GenotypeBreakdown))
+			for _, g := range o.GenotypeBreakdown {
+				parts = append(parts, map[string]any{
+					"key":           g.Key,
+					"display_label": g.DisplayLabel,
+					"probability":   g.Probability,
+					"carrier_tags":  g.CarrierTags,
+				})
+			}
+			row["genotype_breakdown"] = parts
+		}
+		outcomes = append(outcomes, row)
 	}
 
 	// Short “为什么？” copy for customer showcase (presentation only).
