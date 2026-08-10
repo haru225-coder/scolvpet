@@ -45,11 +45,14 @@ function readResolvedSource(sourcePath: string): string {
 }
 
 function isRouteRegistered(route: string) {
-  if (route.startsWith('pages/')) return appConfig.includes(`'${route}'`)
+  // 主包：'pages/population/index'
+  if (appConfig.includes(`'${route}'`)) return true
+  // 分包：root: 'pages/today' + 'index' 或 root: 'packages/animals' + 'index/index'
   const parts = route.split('/')
+  if (parts.length < 2) return false
   const root = parts.slice(0, 2).join('/')
   const page = parts.slice(2).join('/')
-  return appConfig.includes(`root: '${root}'`) && appConfig.includes(`'${page}'`)
+  return Boolean(page) && appConfig.includes(`root: '${root}'`) && appConfig.includes(`'${page}'`)
 }
 
 const surfaces: Record<string, Surface[]> = {

@@ -1,4 +1,5 @@
-import { clearApiToken, defaultApi, getApiToken, newIdempotencyKey, setApiToken } from '../api/client'
+// 只拉 runtime，不静态 import defaultApi——否则几乎所有页经 auth 都会钉死 DefaultApi。
+import { clearApiToken, getApiToken, newIdempotencyKey, setApiToken } from '../api/runtime-config'
 import { clearAllSnapshots } from '../offline/snapshots'
 import { storageGet, storageRemove, storageSet } from '../utils/storage'
 export const BREEDER_SESSION_KEY = 'scolvpet_breeder_session'
@@ -127,6 +128,7 @@ export async function restoreBreederSession(): Promise<BreederSession | null> {
   }
 
   try {
+    const { defaultApi } = await import('../api/default-api')
     const response = await defaultApi.refreshSession({
       idempotencyKey: newIdempotencyKey(),
       refreshSessionRequest: { refreshToken },

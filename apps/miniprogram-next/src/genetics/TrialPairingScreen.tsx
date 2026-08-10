@@ -3,7 +3,9 @@ import Taro from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import { Button, Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
-import { defaultApi, geneticApi, newIdempotencyKey, p1Api } from '../api/client'
+import { newIdempotencyKey } from '../api/runtime-config'
+import { geneticApi } from '../api/genetic-api'
+import { p1Api } from '../api/p1-api'
 import { formatUserError, notifyUserError, presentUserMessage } from '../api/errors'
 import { requireBreederSession } from '../auth/dev-session'
 import { readBreederSession } from '../auth/session'
@@ -94,7 +96,6 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
         geneticApi.listGeneticPhenotypeCatalog(),
         geneticApi.listGeneticFeedbackSummary().catch(() => ({ data: { pairs: [] } }))
       ])
-      void defaultApi
       const nextCatalog = normalizeCatalog(catalogResponse)
       const seriesList = Array.isArray(nextCatalog?.series) ? nextCatalog.series : []
       if (seriesList.length) {

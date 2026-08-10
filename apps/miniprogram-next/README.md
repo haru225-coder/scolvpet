@@ -72,7 +72,8 @@ packages/mp-ui/             @scolvpet/mp-ui:tokens.ts(真源 ios_theme.dart)+ 11
 
 ## 硬约定
 
-1. **接口只走 `@scolvpet/api-client`(generated)+ `src/api` adapter**;禁止手写 fetch/request 封装。契约改动:先改 `specs/api/openapi.yaml` → `make generate-ts-client`。
+1. **接口只走 `@scolvpet/api-client`(generated)+ `src/api` adapter**;禁止手写 fetch/request 封装。契约改动:先改 `specs/api/openapi.yaml` → `make generate-ts-client`。TS 客户端默认按本仓库 **实际调用的 operationId** 收窄生成（`tools/filter-openapi-for-ts-client.mjs`），权威全量契约仍是 OpenAPI；新增调用后务必重新 `make generate-ts-client`，否则漂移检查会失败。全量对照生成：`OPENAPI_TS_FULL=1 make generate-ts-client`。
+1b. **主包只留 Tab + 登录**（`pages/population` / `pages/trial` / `pages/login`）。今日、经营、C 端 7 页路径不变，但挂在独立分包（见 `src/app.config.ts`）；跳转 URL / 小程序码 scene 不用改。
 2. **视觉只走 tokens/mp-ui**,业务页不散落硬编码颜色/圆角/间距;改视觉先改 `ios_theme.dart` → 同步 `tokens.ts` → docs/34。
 3. Skyline 按页 `renderer: 'skyline'`;不达标页删该行即回退 WebView,组件不感知引擎。
 4. 提交必须显式 pathspec(仓库并行窗口纪律);`dist/`、`node_modules/` 不入库。

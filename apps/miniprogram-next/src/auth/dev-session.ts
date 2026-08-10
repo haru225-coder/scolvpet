@@ -7,7 +7,7 @@
 // 2026-08：首屏改成「种群 / 试配」后，不能再只在今日页/登录页才自动登录；
 // 用 ensureDevelopmentBreederSession 做启动 + 首屏共用的单飞保证。
 import Taro from '@tarojs/taro'
-import { setApiToken } from '../api/client'
+import { newIdempotencyKey, setApiToken } from '../api/runtime-config'
 import { formatNetworkError } from '../api/errors'
 import config from '../utils/config'
 import { diag } from '../utils/diag'
@@ -239,7 +239,7 @@ export async function createDevelopmentBreederSession(phone?: string): Promise<B
 
   // 单测：没有真实 Taro.request，走 mock 不了裸请求；测试里仍 spy defaultApi 的路径见下方 fallback
   if (isUnitTestRuntime()) {
-    const { defaultApi, newIdempotencyKey } = await import('../api/client')
+    const { defaultApi } = await import('../api/default-api')
     const codeResponse = await defaultApi.sendVerificationCode({
       idempotencyKey: `mp-dev-login-code-${Date.now()}`,
       sendVerificationCodeRequest: { phone: phoneE164, purpose: 'login' } as any,

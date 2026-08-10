@@ -9,7 +9,7 @@ Name | Type
 `sourceColumn` | string
 `targetField` | string
 `emptyValuePolicy` | string
-`defaultValue` | [ImportTemplateResponseDataColumnsInnerExample](ImportTemplateResponseDataColumnsInnerExample.md)
+`defaultValue` | [ImportMappingRequestMappingsInnerDefaultValue](ImportMappingRequestMappingsInnerDefaultValue.md)
 `formatHint` | string
 
 ## Example

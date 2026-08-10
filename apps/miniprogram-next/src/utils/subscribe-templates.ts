@@ -1,4 +1,3 @@
-import { defaultApi } from '../api/client'
 import config from './config'
 
 /** 逗号 / 中文逗号 / 空白分隔的 tmpl_ 列表。 */
@@ -20,6 +19,7 @@ export function localConfiguredTemplateIds() {
 export async function resolveSubscribeTemplateIds(): Promise<string[]> {
   const fromConfig = localConfiguredTemplateIds()
   try {
+    const { defaultApi } = await import('../api/default-api')
     const response = await defaultApi.listWechatSubscriptions()
     const records = Array.isArray(response.data) ? response.data : []
     const serverIds = records

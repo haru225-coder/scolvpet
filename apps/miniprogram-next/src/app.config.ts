@@ -1,25 +1,15 @@
-// 分包地图（docs/32 §1 / docs/33 M0-1 / UI 重组 v3）：
-//   主包 = 登录 + 三个 Tab（今日/种群/经营）+ mp-ui + C 端 7 页原生混写（路径保持 pages/... 兼容既有小程序码深链）
-//   「我的」不占 Tab，收进主视窗右上角头像 → packages/profile 分包
-//   B 端各域分包路径一律不改，入口改为三栏 + 主视窗按钮（src/utils/tab-routes.ts）
+// 分包地图（docs/32 §1 / docs/33 M0-1 / UI 重组 v3 · 轻量化 ④）：
+//   主包 = 登录 + 两栏 Tab（种群 / 试配）+ 共享依赖
+//   今日 / 经营：已下 tabBar，路径不变，迁入独立分包（旧深链 / 主视窗入口仍 navigateTo）
+//   C 端 7 页原生混写：路径保持 pages/...（兼容小程序码 scene），各自独立分包，B 端冷启动不背
+//   「我的」→ packages/profile；其余 B 域分包路径不变
 // 体积门禁：单分包 <2MB，预警 1.6MB（scripts/check-mp-bundle-size.mjs）
 export default defineAppConfig({
   pages: [
     // 首屏 = 种群（管理）；trial = 试配推理器（tabBar 只能指主包页）
     'pages/population/index',
     'pages/trial/index',
-    // 今日 / 经营：2026-08-04 从 tabBar 下掉，路径保留，旧深链不 404
-    'pages/today/index',
-    'pages/business/index',
-    'pages/login/index',
-    // —— C 端原生混写页（原样并入，勿改路径）——
-    'pages/index/index',
-    'pages/catalog/catalog',
-    'pages/detail/detail',
-    'pages/pedigree/pedigree',
-    'pages/simulate/simulate',
-    'pages/my-reservations/my-reservations',
-    'pages/contract/contract'
+    'pages/login/index'
   ],
   // 三栏底部导航。custom: true = 自绘 TabBar（src/custom-tab-bar）；
   // iconPath 给基础库不支持自绘时的原生降级。
@@ -48,6 +38,18 @@ export default defineAppConfig({
     ]
   },
   subPackages: [
+    // —— 离栏 B 端页（路径不变）——
+    { root: 'pages/today', pages: ['index'] },
+    { root: 'pages/business', pages: ['index'] },
+    // —— C 端原生混写（路径 pages/... 不变，兼容既有小程序码）——
+    { root: 'pages/index', pages: ['index'] },
+    { root: 'pages/catalog', pages: ['catalog'] },
+    { root: 'pages/detail', pages: ['detail'] },
+    { root: 'pages/pedigree', pages: ['pedigree'] },
+    { root: 'pages/simulate', pages: ['simulate'] },
+    { root: 'pages/my-reservations', pages: ['my-reservations'] },
+    { root: 'pages/contract', pages: ['contract'] },
+    // —— B 端业务域 ——
     { root: 'packages/animals', pages: ['index/index', 'detail/index', 'create/index', 'batch-create/index', 'pedigree/index'] },
     { root: 'packages/litters', pages: ['index/index', 'detail/index'] },
     { root: 'packages/reminders', pages: ['index/index', 'create/index', 'calendar/index', 'subscriptions/index'] },

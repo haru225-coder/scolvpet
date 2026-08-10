@@ -60,7 +60,7 @@ export default defineConfig<'webpack5'>(async (merge) => {
     defineConstants: {},
     // C 端 7 页原生混写(docs/32 §1):Taro 对 app.config 中声明的原生页
     // 走混写编译管线(utils require 一并打包),无需手工 copy;
-    // 页面路径保持 pages/... 不变以兼容既有小程序码 scene 深链。
+    // 页面路径保持 pages/... 不变（现挂独立分包，兼容既有小程序码 scene 深链）。
     copy: {
       patterns: [
         { from: 'src/sitemap.json', to: 'dist/sitemap.json' },

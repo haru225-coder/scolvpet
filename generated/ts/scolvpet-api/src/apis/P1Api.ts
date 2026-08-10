@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * 熊舍管家 MVP API
- * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。
+ * 熊舍管家 MVP API (miniprogram TS client subset)
+ * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。  NOTE: Filtered subset for apps/miniprogram-next typescript-fetch generation only. Authoritative full contract: specs/api/openapi.yaml Kept operationIds: 97
  *
  * The version of the OpenAPI document: 1.0.1
  *
@@ -60,16 +60,6 @@ import {
     CreateDocumentTemplateRequestToJSON,
 } from '../models/CreateDocumentTemplateRequest';
 import {
-    type CreateGeneticProfileRequest,
-    CreateGeneticProfileRequestFromJSON,
-    CreateGeneticProfileRequestToJSON,
-} from '../models/CreateGeneticProfileRequest';
-import {
-    type CreatePushMessageRequest,
-    CreatePushMessageRequestFromJSON,
-    CreatePushMessageRequestToJSON,
-} from '../models/CreatePushMessageRequest';
-import {
     type CreateReceiptRequest,
     CreateReceiptRequestFromJSON,
     CreateReceiptRequestToJSON,
@@ -95,26 +85,6 @@ import {
     DocumentTemplateResponseToJSON,
 } from '../models/DocumentTemplateResponse';
 import {
-    type EntitlementCatalogResponse,
-    EntitlementCatalogResponseFromJSON,
-    EntitlementCatalogResponseToJSON,
-} from '../models/EntitlementCatalogResponse';
-import {
-    type EntitlementCheckRequest,
-    EntitlementCheckRequestFromJSON,
-    EntitlementCheckRequestToJSON,
-} from '../models/EntitlementCheckRequest';
-import {
-    type EntitlementCheckResponse,
-    EntitlementCheckResponseFromJSON,
-    EntitlementCheckResponseToJSON,
-} from '../models/EntitlementCheckResponse';
-import {
-    type EntitlementSnapshotResponse,
-    EntitlementSnapshotResponseFromJSON,
-    EntitlementSnapshotResponseToJSON,
-} from '../models/EntitlementSnapshotResponse';
-import {
     type ErrorResponse,
     ErrorResponseFromJSON,
     ErrorResponseToJSON,
@@ -130,11 +100,6 @@ import {
     GeneticProfileListResponseToJSON,
 } from '../models/GeneticProfileListResponse';
 import {
-    type GeneticProfileResponse,
-    GeneticProfileResponseFromJSON,
-    GeneticProfileResponseToJSON,
-} from '../models/GeneticProfileResponse';
-import {
     type GeneticSimulationRequest,
     GeneticSimulationRequestFromJSON,
     GeneticSimulationRequestToJSON,
@@ -144,61 +109,6 @@ import {
     GeneticSimulationResponseFromJSON,
     GeneticSimulationResponseToJSON,
 } from '../models/GeneticSimulationResponse';
-import {
-    type InviteOrganizationMemberRequest,
-    InviteOrganizationMemberRequestFromJSON,
-    InviteOrganizationMemberRequestToJSON,
-} from '../models/InviteOrganizationMemberRequest';
-import {
-    type OrganizationMemberListResponse,
-    OrganizationMemberListResponseFromJSON,
-    OrganizationMemberListResponseToJSON,
-} from '../models/OrganizationMemberListResponse';
-import {
-    type OrganizationMemberResponse,
-    OrganizationMemberResponseFromJSON,
-    OrganizationMemberResponseToJSON,
-} from '../models/OrganizationMemberResponse';
-import {
-    type PushDeviceListResponse,
-    PushDeviceListResponseFromJSON,
-    PushDeviceListResponseToJSON,
-} from '../models/PushDeviceListResponse';
-import {
-    type PushDeviceResponse,
-    PushDeviceResponseFromJSON,
-    PushDeviceResponseToJSON,
-} from '../models/PushDeviceResponse';
-import {
-    type PushMessageListResponse,
-    PushMessageListResponseFromJSON,
-    PushMessageListResponseToJSON,
-} from '../models/PushMessageListResponse';
-import {
-    type PushMessageResponse,
-    PushMessageResponseFromJSON,
-    PushMessageResponseToJSON,
-} from '../models/PushMessageResponse';
-import {
-    type SandboxActivatePlanRequest,
-    SandboxActivatePlanRequestFromJSON,
-    SandboxActivatePlanRequestToJSON,
-} from '../models/SandboxActivatePlanRequest';
-import {
-    type UpdateOrganizationMemberRequest,
-    UpdateOrganizationMemberRequestFromJSON,
-    UpdateOrganizationMemberRequestToJSON,
-} from '../models/UpdateOrganizationMemberRequest';
-import {
-    type UpsertPushDeviceRequest,
-    UpsertPushDeviceRequestFromJSON,
-    UpsertPushDeviceRequestToJSON,
-} from '../models/UpsertPushDeviceRequest';
-
-export interface CheckEntitlementRequest {
-    entitlementCheckRequest: EntitlementCheckRequest;
-    idempotencyKey?: string;
-}
 
 export interface CreateAccountingCategoryOperationRequest {
     createAccountingCategoryRequest: CreateAccountingCategoryRequest;
@@ -220,16 +130,6 @@ export interface CreateContractTemplateRequest {
     idempotencyKey?: string;
 }
 
-export interface CreateGeneticProfileOperationRequest {
-    createGeneticProfileRequest: CreateGeneticProfileRequest;
-    idempotencyKey?: string;
-}
-
-export interface CreatePushMessageOperationRequest {
-    createPushMessageRequest: CreatePushMessageRequest;
-    idempotencyKey?: string;
-}
-
 export interface CreateReceiptOperationRequest {
     createReceiptRequest: CreateReceiptRequest;
     idempotencyKey?: string;
@@ -238,19 +138,6 @@ export interface CreateReceiptOperationRequest {
 export interface CreateReceiptTemplateRequest {
     createDocumentTemplateRequest: CreateDocumentTemplateRequest;
     idempotencyKey?: string;
-}
-
-export interface DisablePushDeviceRequest {
-    deviceId: string;
-    idempotencyKey?: string;
-}
-
-export interface DownloadContractPdfRequest {
-    documentId: string;
-}
-
-export interface DownloadReceiptPdfRequest {
-    documentId: string;
 }
 
 export interface GetAccountingSummaryRequest {
@@ -265,11 +152,6 @@ export interface GetContractRequest {
 
 export interface GetReceiptRequest {
     documentId: string;
-}
-
-export interface InviteOrganizationMemberOperationRequest {
-    inviteOrganizationMemberRequest: InviteOrganizationMemberRequest;
-    idempotencyKey?: string;
 }
 
 export interface IssueContractRequest {
@@ -300,21 +182,10 @@ export interface RevokeContractRequest {
     idempotencyKey: string;
 }
 
-export interface RevokeOrganizationMemberRequest {
-    memberId: string;
-    ifMatch?: string;
-    idempotencyKey?: string;
-}
-
 export interface RevokeReceiptRequest {
     documentId: string;
     ifMatch: string;
     idempotencyKey: string;
-}
-
-export interface SandboxActivatePlanOperationRequest {
-    sandboxActivatePlanRequest: SandboxActivatePlanRequest;
-    idempotencyKey?: string;
 }
 
 export interface SimulateGeneticBreedingRequest {
@@ -322,83 +193,10 @@ export interface SimulateGeneticBreedingRequest {
     idempotencyKey?: string;
 }
 
-export interface UpdateOrganizationMemberOperationRequest {
-    memberId: string;
-    updateOrganizationMemberRequest: UpdateOrganizationMemberRequest;
-    ifMatch?: string;
-    idempotencyKey?: string;
-}
-
-export interface UpsertPushDeviceOperationRequest {
-    upsertPushDeviceRequest: UpsertPushDeviceRequest;
-    idempotencyKey?: string;
-}
-
 /**
  *
  */
 export class P1Api extends runtime.BaseAPI {
-
-    /**
-     * Creates request options for checkEntitlement without sending the request
-     */
-    async checkEntitlementRequestOpts(requestParameters: CheckEntitlementRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['entitlementCheckRequest'] == null) {
-            throw new runtime.RequiredError(
-                'entitlementCheckRequest',
-                'Required parameter "entitlementCheckRequest" was null or undefined when calling checkEntitlement().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/entitlements/check`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: EntitlementCheckRequestToJSON(requestParameters['entitlementCheckRequest']),
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可检查本舍功能与指标门限。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 检查功能或指标权益
-     */
-    async checkEntitlementRaw(requestParameters: CheckEntitlementRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EntitlementCheckResponse>> {
-        const requestOptions = await this.checkEntitlementRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => EntitlementCheckResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可检查本舍功能与指标门限。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 检查功能或指标权益
-     */
-    async checkEntitlement(requestParameters: CheckEntitlementRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EntitlementCheckResponse> {
-        const response = await this.checkEntitlementRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
 
     /**
      * Creates request options for createAccountingCategory without sending the request
@@ -645,128 +443,6 @@ export class P1Api extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for createGeneticProfile without sending the request
-     */
-    async createGeneticProfileRequestOpts(requestParameters: CreateGeneticProfileOperationRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['createGeneticProfileRequest'] == null) {
-            throw new runtime.RequiredError(
-                'createGeneticProfileRequest',
-                'Required parameter "createGeneticProfileRequest" was null or undefined when calling createGeneticProfile().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/genetic/profiles`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: CreateGeneticProfileRequestToJSON(requestParameters['createGeneticProfileRequest']),
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可创建遗传档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 创建遗传档案
-     */
-    async createGeneticProfileRaw(requestParameters: CreateGeneticProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GeneticProfileResponse>> {
-        const requestOptions = await this.createGeneticProfileRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => GeneticProfileResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可创建遗传档案。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 创建遗传档案
-     */
-    async createGeneticProfile(requestParameters: CreateGeneticProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GeneticProfileResponse> {
-        const response = await this.createGeneticProfileRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for createPushMessage without sending the request
-     */
-    async createPushMessageRequestOpts(requestParameters: CreatePushMessageOperationRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['createPushMessageRequest'] == null) {
-            throw new runtime.RequiredError(
-                'createPushMessageRequest',
-                'Required parameter "createPushMessageRequest" was null or undefined when calling createPushMessage().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/push/messages`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: CreatePushMessageRequestToJSON(requestParameters['createPushMessageRequest']),
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可发送测试或业务推送。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 创建推送消息
-     */
-    async createPushMessageRaw(requestParameters: CreatePushMessageOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PushMessageResponse>> {
-        const requestOptions = await this.createPushMessageRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => PushMessageResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可发送测试或业务推送。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 创建推送消息
-     */
-    async createPushMessage(requestParameters: CreatePushMessageOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PushMessageResponse> {
-        const response = await this.createPushMessageRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Creates request options for createReceipt without sending the request
      */
     async createReceiptRequestOpts(requestParameters: CreateReceiptOperationRequest): Promise<runtime.RequestOpts> {
@@ -889,175 +565,6 @@ export class P1Api extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for disablePushDevice without sending the request
-     */
-    async disablePushDeviceRequestOpts(requestParameters: DisablePushDeviceRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['deviceId'] == null) {
-            throw new runtime.RequiredError(
-                'deviceId',
-                'Required parameter "deviceId" was null or undefined when calling disablePushDevice().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/push/devices/{device_id}`;
-        urlPath = urlPath.replace('{device_id}', encodeURIComponent(String(requestParameters['deviceId'])));
-
-        return {
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可停用自己的推送设备。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 停用推送设备
-     */
-    async disablePushDeviceRaw(requestParameters: DisablePushDeviceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PushDeviceResponse>> {
-        const requestOptions = await this.disablePushDeviceRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => PushDeviceResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可停用自己的推送设备。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 停用推送设备
-     */
-    async disablePushDevice(requestParameters: DisablePushDeviceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PushDeviceResponse> {
-        const response = await this.disablePushDeviceRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for downloadContractPdf without sending the request
-     */
-    async downloadContractPdfRequestOpts(requestParameters: DownloadContractPdfRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['documentId'] == null) {
-            throw new runtime.RequiredError(
-                'documentId',
-                'Required parameter "documentId" was null or undefined when calling downloadContractPdf().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/contracts/{document_id}/pdf`;
-        urlPath = urlPath.replace('{document_id}', encodeURIComponent(String(requestParameters['documentId'])));
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅当前经营账号下已签发合同可下载，服务端统一渲染 PDF。
-     * 下载已签发合同 PDF
-     */
-    async downloadContractPdfRaw(requestParameters: DownloadContractPdfRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Blob>> {
-        const requestOptions = await this.downloadContractPdfRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.BlobApiResponse(response);
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅当前经营账号下已签发合同可下载，服务端统一渲染 PDF。
-     * 下载已签发合同 PDF
-     */
-    async downloadContractPdf(requestParameters: DownloadContractPdfRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Blob> {
-        const response = await this.downloadContractPdfRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for downloadReceiptPdf without sending the request
-     */
-    async downloadReceiptPdfRequestOpts(requestParameters: DownloadReceiptPdfRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['documentId'] == null) {
-            throw new runtime.RequiredError(
-                'documentId',
-                'Required parameter "documentId" was null or undefined when calling downloadReceiptPdf().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/receipts/{document_id}/pdf`;
-        urlPath = urlPath.replace('{document_id}', encodeURIComponent(String(requestParameters['documentId'])));
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅当前经营账号下已签发回执可下载，服务端统一渲染 PDF。
-     * 下载已签发回执 PDF
-     */
-    async downloadReceiptPdfRaw(requestParameters: DownloadReceiptPdfRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Blob>> {
-        const requestOptions = await this.downloadReceiptPdfRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.BlobApiResponse(response);
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅当前经营账号下已签发回执可下载，服务端统一渲染 PDF。
-     * 下载已签发回执 PDF
-     */
-    async downloadReceiptPdf(requestParameters: DownloadReceiptPdfRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Blob> {
-        const response = await this.downloadReceiptPdfRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Creates request options for getAccountingSummary without sending the request
      */
     async getAccountingSummaryRequestOpts(requestParameters: GetAccountingSummaryRequest): Promise<runtime.RequestOpts> {
@@ -1172,100 +679,6 @@ export class P1Api extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for getCurrentEntitlement without sending the request
-     */
-    async getCurrentEntitlementRequestOpts(): Promise<runtime.RequestOpts> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/entitlements/current`;
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可读本舍权益与用量门限。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 读取当前权益快照
-     */
-    async getCurrentEntitlementRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EntitlementSnapshotResponse>> {
-        const requestOptions = await this.getCurrentEntitlementRequestOpts();
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => EntitlementSnapshotResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可读本舍权益与用量门限。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 读取当前权益快照
-     */
-    async getCurrentEntitlement(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EntitlementSnapshotResponse> {
-        const response = await this.getCurrentEntitlementRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for getEntitlementCatalog without sending the request
-     */
-    async getEntitlementCatalogRequestOpts(): Promise<runtime.RequestOpts> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/entitlements/catalog`;
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可读公开套餐与功能目录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 读取权益套餐目录
-     */
-    async getEntitlementCatalogRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EntitlementCatalogResponse>> {
-        const requestOptions = await this.getEntitlementCatalogRequestOpts();
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => EntitlementCatalogResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可读公开套餐与功能目录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 读取权益套餐目录
-     */
-    async getEntitlementCatalog(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EntitlementCatalogResponse> {
-        const response = await this.getEntitlementCatalogRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Creates request options for getReceipt without sending the request
      */
     async getReceiptRequestOpts(requestParameters: GetReceiptRequest): Promise<runtime.RequestOpts> {
@@ -1317,67 +730,6 @@ export class P1Api extends runtime.BaseAPI {
      */
     async getReceipt(requestParameters: GetReceiptRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentResponse> {
         const response = await this.getReceiptRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for inviteOrganizationMember without sending the request
-     */
-    async inviteOrganizationMemberRequestOpts(requestParameters: InviteOrganizationMemberOperationRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['inviteOrganizationMemberRequest'] == null) {
-            throw new runtime.RequiredError(
-                'inviteOrganizationMemberRequest',
-                'Required parameter "inviteOrganizationMemberRequest" was null or undefined when calling inviteOrganizationMember().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/organization-members`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: InviteOrganizationMemberRequestToJSON(requestParameters['inviteOrganizationMemberRequest']),
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅舍主可邀请成员。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 邀请熊舍成员
-     */
-    async inviteOrganizationMemberRaw(requestParameters: InviteOrganizationMemberOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OrganizationMemberResponse>> {
-        const requestOptions = await this.inviteOrganizationMemberRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => OrganizationMemberResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅舍主可邀请成员。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 邀请熊舍成员
-     */
-    async inviteOrganizationMember(requestParameters: InviteOrganizationMemberOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OrganizationMemberResponse> {
-        const response = await this.inviteOrganizationMemberRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1834,147 +1186,6 @@ export class P1Api extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for listOrganizationMembers without sending the request
-     */
-    async listOrganizationMembersRequestOpts(): Promise<runtime.RequestOpts> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/organization-members`;
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅舍主和具备成员管理权限的成员可读。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 列出熊舍成员
-     */
-    async listOrganizationMembersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OrganizationMemberListResponse>> {
-        const requestOptions = await this.listOrganizationMembersRequestOpts();
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => OrganizationMemberListResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅舍主和具备成员管理权限的成员可读。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 列出熊舍成员
-     */
-    async listOrganizationMembers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OrganizationMemberListResponse> {
-        const response = await this.listOrganizationMembersRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for listPushDevices without sending the request
-     */
-    async listPushDevicesRequestOpts(): Promise<runtime.RequestOpts> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/push/devices`;
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可读自己的推送设备。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 列出推送设备
-     */
-    async listPushDevicesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PushDeviceListResponse>> {
-        const requestOptions = await this.listPushDevicesRequestOpts();
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => PushDeviceListResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可读自己的推送设备。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 列出推送设备
-     */
-    async listPushDevices(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PushDeviceListResponse> {
-        const response = await this.listPushDevicesRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for listPushMessages without sending the request
-     */
-    async listPushMessagesRequestOpts(): Promise<runtime.RequestOpts> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/push/messages`;
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可读推送审计记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 列出推送消息
-     */
-    async listPushMessagesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PushMessageListResponse>> {
-        const requestOptions = await this.listPushMessagesRequestOpts();
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => PushMessageListResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可读推送审计记录。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 列出推送消息
-     */
-    async listPushMessages(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PushMessageListResponse> {
-        const response = await this.listPushMessagesRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Creates request options for listReceiptTemplates without sending the request
      */
     async listReceiptTemplatesRequestOpts(): Promise<runtime.RequestOpts> {
@@ -2146,69 +1357,6 @@ export class P1Api extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for revokeOrganizationMember without sending the request
-     */
-    async revokeOrganizationMemberRequestOpts(requestParameters: RevokeOrganizationMemberRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['memberId'] == null) {
-            throw new runtime.RequiredError(
-                'memberId',
-                'Required parameter "memberId" was null or undefined when calling revokeOrganizationMember().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (requestParameters['ifMatch'] != null) {
-            headerParameters['If-Match'] = String(requestParameters['ifMatch']);
-        }
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/organization-members/{member_id}/revoke`;
-        urlPath = urlPath.replace('{member_id}', encodeURIComponent(String(requestParameters['memberId'])));
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅舍主可撤销成员。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 撤销熊舍成员
-     */
-    async revokeOrganizationMemberRaw(requestParameters: RevokeOrganizationMemberRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OrganizationMemberResponse>> {
-        const requestOptions = await this.revokeOrganizationMemberRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => OrganizationMemberResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅舍主可撤销成员。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 撤销熊舍成员
-     */
-    async revokeOrganizationMember(requestParameters: RevokeOrganizationMemberRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OrganizationMemberResponse> {
-        const response = await this.revokeOrganizationMemberRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Creates request options for revokeReceipt without sending the request
      */
     async revokeReceiptRequestOpts(requestParameters: RevokeReceiptRequest): Promise<runtime.RequestOpts> {
@@ -2286,67 +1434,6 @@ export class P1Api extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for sandboxActivatePlan without sending the request
-     */
-    async sandboxActivatePlanRequestOpts(requestParameters: SandboxActivatePlanOperationRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['sandboxActivatePlanRequest'] == null) {
-            throw new runtime.RequiredError(
-                'sandboxActivatePlanRequest',
-                'Required parameter "sandboxActivatePlanRequest" was null or undefined when calling sandboxActivatePlan().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/entitlements/sandbox/activate`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: SandboxActivatePlanRequestToJSON(requestParameters['sandboxActivatePlanRequest']),
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅写入 sandbox 来源的权益记录，不代表正式支付或生产订阅。
-     * 沙箱激活权益套餐
-     */
-    async sandboxActivatePlanRaw(requestParameters: SandboxActivatePlanOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EntitlementSnapshotResponse>> {
-        const requestOptions = await this.sandboxActivatePlanRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => EntitlementSnapshotResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅写入 sandbox 来源的权益记录，不代表正式支付或生产订阅。
-     * 沙箱激活权益套餐
-     */
-    async sandboxActivatePlan(requestParameters: SandboxActivatePlanOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EntitlementSnapshotResponse> {
-        const response = await this.sandboxActivatePlanRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Creates request options for simulateGeneticBreeding without sending the request
      */
     async simulateGeneticBreedingRequestOpts(requestParameters: SimulateGeneticBreedingRequest): Promise<runtime.RequestOpts> {
@@ -2404,140 +1491,6 @@ export class P1Api extends runtime.BaseAPI {
      */
     async simulateGeneticBreeding(requestParameters: SimulateGeneticBreedingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GeneticSimulationResponse> {
         const response = await this.simulateGeneticBreedingRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for updateOrganizationMember without sending the request
-     */
-    async updateOrganizationMemberRequestOpts(requestParameters: UpdateOrganizationMemberOperationRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['memberId'] == null) {
-            throw new runtime.RequiredError(
-                'memberId',
-                'Required parameter "memberId" was null or undefined when calling updateOrganizationMember().'
-            );
-        }
-
-        if (requestParameters['updateOrganizationMemberRequest'] == null) {
-            throw new runtime.RequiredError(
-                'updateOrganizationMemberRequest',
-                'Required parameter "updateOrganizationMemberRequest" was null or undefined when calling updateOrganizationMember().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['ifMatch'] != null) {
-            headerParameters['If-Match'] = String(requestParameters['ifMatch']);
-        }
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/organization-members/{member_id}`;
-        urlPath = urlPath.replace('{member_id}', encodeURIComponent(String(requestParameters['memberId'])));
-
-        return {
-            path: urlPath,
-            method: 'PATCH',
-            headers: headerParameters,
-            query: queryParameters,
-            body: UpdateOrganizationMemberRequestToJSON(requestParameters['updateOrganizationMemberRequest']),
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅舍主可修改成员角色或显示名。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 更新熊舍成员
-     */
-    async updateOrganizationMemberRaw(requestParameters: UpdateOrganizationMemberOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OrganizationMemberResponse>> {
-        const requestOptions = await this.updateOrganizationMemberRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => OrganizationMemberResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；仅舍主可修改成员角色或显示名。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 更新熊舍成员
-     */
-    async updateOrganizationMember(requestParameters: UpdateOrganizationMemberOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OrganizationMemberResponse> {
-        const response = await this.updateOrganizationMemberRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for upsertPushDevice without sending the request
-     */
-    async upsertPushDeviceRequestOpts(requestParameters: UpsertPushDeviceOperationRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['upsertPushDeviceRequest'] == null) {
-            throw new runtime.RequiredError(
-                'upsertPushDeviceRequest',
-                'Required parameter "upsertPushDeviceRequest" was null or undefined when calling upsertPushDevice().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/v1/push/devices`;
-
-        return {
-            path: urlPath,
-            method: 'PUT',
-            headers: headerParameters,
-            query: queryParameters,
-            body: UpsertPushDeviceRequestToJSON(requestParameters['upsertPushDeviceRequest']),
-        };
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可登记或恢复推送设备。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 登记推送设备
-     */
-    async upsertPushDeviceRaw(requestParameters: UpsertPushDeviceOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PushDeviceResponse>> {
-        const requestOptions = await this.upsertPushDeviceRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => PushDeviceResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 需要 Bearer 令牌；当前熊舍成员可登记或恢复推送设备。所有资源按当前 owner_id 隔离，跨舍或不存在资源统一返回 404。
-     * 登记推送设备
-     */
-    async upsertPushDevice(requestParameters: UpsertPushDeviceOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PushDeviceResponse> {
-        const response = await this.upsertPushDeviceRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

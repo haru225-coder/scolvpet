@@ -11,7 +11,7 @@ Name | Type
 `code` | string
 `message` | string
 `severity` | string
-`originalValue` | [ImportTemplateResponseDataColumnsInnerExample](ImportTemplateResponseDataColumnsInnerExample.md)
+`originalValue` | [ImportMappingRequestMappingsInnerDefaultValue](ImportMappingRequestMappingsInnerDefaultValue.md)
 `suggestion` | string
 
 ## Example

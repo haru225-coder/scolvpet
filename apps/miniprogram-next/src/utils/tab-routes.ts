@@ -5,7 +5,7 @@ import { metrics } from '@scolvpet/mp-ui'
 // 2026-08-04：两栏 Tab。顺序与 app.config.ts tabBar.list 必须一致。
 export const TAB_PAGES = ['/pages/population/index', '/pages/trial/index'] as const
 
-/** 不占 Tab 但仍可进的页（旧深链 / 主视窗入口）。 */
+/** 不占 Tab 但仍可进的页（旧深链 / 主视窗入口；已迁独立分包，路径不变）。 */
 export const OFF_TAB_PAGES = {
   today: '/pages/today/index',
   business: '/pages/business/index'
