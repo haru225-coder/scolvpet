@@ -1,5 +1,5 @@
 import { Picker, ScrollView, Textarea, View } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useRouter } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
 import { Button, Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
@@ -54,6 +54,7 @@ export type TrialPairingScreenProps = {
  * Tab 与 packages/genetic/create 共用；hideBack 仅 Tab 传 true。
  */
 export default function TrialPairingScreen({ hideBack = false }: TrialPairingScreenProps) {
+  const router = useRouter()
   const [series, setSeries] = useState('')
   const [sirePhenotype, setSirePhenotype] = useState('')
   const [damPhenotype, setDamPhenotype] = useState('')
@@ -72,6 +73,45 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
   const [busy, setBusy] = useState(false)
   const [showPro, setShowPro] = useState(false)
   const [showMore, setShowMore] = useState(false)
+  const [queryApplied, setQueryApplied] = useState(false)
+
+  // 从档案列表 / 深链带入：series、sire_key、dam_key、sire_ph、dam_ph
+  useEffect(() => {
+    if (queryApplied) return
+    const p = router?.params || {}
+    const seriesQ = String(p.series || '').trim()
+    const sireKey = String(p.sire_key || '').trim()
+    const damKey = String(p.dam_key || '').trim()
+    const sirePh = String(p.sire_ph || '').trim()
+    const damPh = String(p.dam_ph || '').trim()
+    const side = String(p.side || '').trim()
+    // 兼容 side=sire|dam 单侧带 key
+    const sideKey = String(p[`${side}_key`] || p.key || '').trim()
+    const sidePh = String(p[`${side}_ph`] || p.ph || '').trim()
+
+    let applied = false
+    if (seriesQ) {
+      setSeries(seriesQ)
+      applied = true
+    }
+    if (sireKey || (side === 'sire' && sideKey)) {
+      const k = sireKey || sideKey
+      setSireGenotypeKey(k)
+      if (sirePh || (side === 'sire' && sidePh)) setSirePhenotype(sirePh || sidePh)
+      applied = true
+    }
+    if (damKey || (side === 'dam' && sideKey)) {
+      const k = damKey || sideKey
+      setDamGenotypeKey(k)
+      if (damPh || (side === 'dam' && sidePh)) setDamPhenotype(damPh || sidePh)
+      applied = true
+    }
+    if (applied) {
+      setMessage('已从档案/深链带入基因型，可补全另一侧后试配')
+      setShowPro(true)
+    }
+    setQueryApplied(true)
+  }, [router?.params, queryApplied])
 
   function clearGenotypePins() {
     setSireGenotypeKey('')

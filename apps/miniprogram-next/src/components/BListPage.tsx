@@ -24,6 +24,8 @@ export type BListItem = {
   subtitle?: string
   value?: string
   tone?: 'success' | 'warning' | 'danger' | 'accent'
+  /** Optional payload for onSelect consumers (e.g. genetic profile). */
+  data?: Record<string, unknown>
 }
 
 type Props = {
