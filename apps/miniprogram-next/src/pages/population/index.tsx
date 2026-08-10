@@ -4,8 +4,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { Cell, Empty, Hero, PosterCard, Rail, Section, SectionList, palette } from '@scolvpet/mp-ui'
 
 import { defaultApi } from '../../api/default-api'
+import { p1Api } from '../../api/p1-api'
 import { getLastEnsureError, requireBreederSession } from '../../auth/dev-session'
 import ProfileAvatar from '../../components/ProfileAvatar'
+import {
+  buildTrialDeepLink,
+  findProfileByHamsterId,
+  profileListFromResponse,
+  trialSideFromAnimal
+} from '../../genetics/trial-deeplink'
 import {
   animalScanSubtitle,
   animalScanTitle,
@@ -20,17 +27,25 @@ import {
   tabPageBottomPad
 } from '../../utils/tab-routes'
 
-type Row = { id: string; title: string; subtitle?: string }
+type AnimalRow = {
+  id: string
+  title: string
+  subtitle?: string
+  raw: any
+}
 
-function toAnimalRow(item: any, index: number): Row {
+type LitterRow = { id: string; title: string; subtitle?: string }
+
+function toAnimalRow(item: any, index: number): AnimalRow {
   return {
     id: String(item?.id ?? index),
     title: animalScanTitle(item),
-    subtitle: animalScanSubtitle(item) || undefined
+    subtitle: animalScanSubtitle(item) || undefined,
+    raw: item
   }
 }
 
-function toLitterRow(item: any, index: number): Row {
+function toLitterRow(item: any, index: number): LitterRow {
   const name = String(item?.name ?? item?.code ?? item?.title ?? '').trim()
   const stage = humanShortLabel(item?.stage ?? item?.state ?? item?.status)
   return {
@@ -41,8 +56,8 @@ function toLitterRow(item: any, index: number): Row {
 }
 
 export default function PopulationPage() {
-  const [animals, setAnimals] = useState<Row[]>([])
-  const [litters, setLitters] = useState<Row[]>([])
+  const [animals, setAnimals] = useState<AnimalRow[]>([])
+  const [litters, setLitters] = useState<LitterRow[]>([])
   const [notice, setNotice] = useState('')
   const [needLogin, setNeedLogin] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -81,6 +96,40 @@ export default function PopulationPage() {
     void load()
   }, [load])
 
+  async function openTrialForAnimal(animal: any) {
+    const id = String(animal?.id || '')
+    let profile: any = null
+    try {
+      const profilesRes = await p1Api.listGeneticProfiles()
+      profile = findProfileByHamsterId(profileListFromResponse(profilesRes), id)
+    } catch {
+      // 表型试配仍可用
+    }
+    const side = trialSideFromAnimal(animal, profile)
+    void Taro.navigateTo({
+      url: buildTrialDeepLink({
+        series: side.series,
+        side: side.side,
+        key: side.key,
+        phenotype: side.phenotype
+      })
+    })
+  }
+
+  function onAnimalCard(row: AnimalRow) {
+    void Taro.showActionSheet({
+      itemList: ['打开档案', '用这个体试配']
+    })
+      .then((res) => {
+        if (res.tapIndex === 0) {
+          openPage(`/packages/animals/detail/index?id=${encodeURIComponent(row.id)}`)
+          return
+        }
+        if (res.tapIndex === 1) void openTrialForAnimal(row.raw)
+      })
+      .catch(() => undefined)
+  }
+
   const focus = litters.length ? litters[0] : null
   const emptyBoth = !loading && !notice && !needLogin && animals.length === 0 && litters.length === 0
 
@@ -103,7 +152,8 @@ export default function PopulationPage() {
                 key={row.id}
                 title={row.title}
                 subtitle={row.subtitle}
-                onClick={() => openPage(`/packages/animals/detail/index?id=${encodeURIComponent(row.id)}`)}
+                onClick={() => onAnimalCard(row)}
+                onLongPress={() => void openTrialForAnimal(row.raw)}
               />
             ))}
           </Rail>
@@ -143,7 +193,12 @@ export default function PopulationPage() {
         ) : null}
         <SectionList>
           <Section header="常用">
-            {/* 试配已升为底标 Tab，页脚不再重复入口 */}
+            <Cell
+              title="选两只试配"
+              subtitle="在个体列表里点两只，自动带公母"
+              chevron
+              onClick={() => openPage(`${DOMAIN_HOME.animals}?pair_trial=1`)}
+            />
             <Cell title="今日待办" chevron onClick={() => openPage(OFF_TAB_PAGES.today)} />
             <Cell title="经营（客户 / 合同 / 账目）" chevron onClick={() => openPage(OFF_TAB_PAGES.business)} />
             <Cell title="提醒与日历" chevron onClick={() => openPage(DOMAIN_HOME.reminders)} />

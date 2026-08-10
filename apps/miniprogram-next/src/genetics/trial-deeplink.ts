@@ -109,3 +109,60 @@ export function trialSideFromAnimal(
     phenotype: fromProfile.phenotype || fromAnimal.label || undefined
   }
 }
+
+/**
+ * 两只个体 → 双侧试配参数。
+ * 能分清公母时按性别入座；否则按点选顺序：先点=公、后点=母。
+ */
+export function dualTrialFromPair(
+  animalA: any,
+  animalB: any,
+  profileA?: any | null,
+  profileB?: any | null
+): BuildTrialDeepLinkOpts & { assignedBySex: boolean } {
+  const sexA = String(animalA?.sex || '').trim().toLowerCase()
+  const sexB = String(animalB?.sex || '').trim().toLowerCase()
+
+  let sire = animalA
+  let dam = animalB
+  let sireProfile = profileA
+  let damProfile = profileB
+  let assignedBySex = false
+
+  if (sexA === 'male' && sexB === 'female') {
+    assignedBySex = true
+  } else if (sexA === 'female' && sexB === 'male') {
+    sire = animalB
+    dam = animalA
+    sireProfile = profileB
+    damProfile = profileA
+    assignedBySex = true
+  } else if (sexA === 'female' && sexB !== 'male') {
+    // A 明确是母 → A 坐母位
+    sire = animalB
+    dam = animalA
+    sireProfile = profileB
+    damProfile = profileA
+    assignedBySex = sexA === 'female'
+  } else if (sexB === 'female' && sexA !== 'male') {
+    // B 明确是母、A 非公 → B 坐母
+    assignedBySex = true
+  }
+
+  const sireSide = sideFromGeneticProfile(sireProfile)
+  const damSide = sideFromGeneticProfile(damProfile)
+  const sirePh = phenotypeFromAnimal(sire)
+  const damPh = phenotypeFromAnimal(dam)
+  return {
+    series: sireSide.series || damSide.series || sirePh.series || damPh.series || '',
+    sire: {
+      key: sireSide.key,
+      phenotype: sireSide.phenotype || sirePh.label || undefined
+    },
+    dam: {
+      key: damSide.key,
+      phenotype: damSide.phenotype || damPh.label || undefined
+    },
+    assignedBySex
+  }
+}

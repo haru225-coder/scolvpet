@@ -85,6 +85,8 @@ export interface PosterCardProps {
   badge?: string
   photoUrl?: string
   onClick?: () => void
+  /** 长按（如种群卡片试配菜单） */
+  onLongPress?: () => void
 }
 
 export function PosterCard({
@@ -93,7 +95,8 @@ export function PosterCard({
   swatch,
   badge,
   photoUrl,
-  onClick
+  onClick,
+  onLongPress
 }: PosterCardProps) {
   const [pressed, setPressed] = useState(false)
   const fill = swatch || PLACEHOLDER_SURFACE
@@ -103,6 +106,7 @@ export function PosterCard({
   return (
     <View
       onClick={onClick}
+      onLongPress={onLongPress}
       onTouchStart={() => setPressed(true)}
       onTouchEnd={() => setPressed(false)}
       onTouchCancel={() => setPressed(false)}

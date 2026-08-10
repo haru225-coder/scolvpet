@@ -115,7 +115,18 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
     }
     if (applied) {
       const hasKey = Boolean(sireKey || damKey || sideKey)
-      setMessage(hasKey ? '已从档案/深链带入基因型，可补全另一侧后试配' : '已从个体带入样子，可补全另一侧后试配')
+      const bothSides =
+        Boolean(sireKey || sirePh || (side === 'sire' && (sideKey || sidePh))) &&
+        Boolean(damKey || damPh || (side === 'dam' && (sideKey || sidePh)))
+      if (bothSides) {
+        setMessage(hasKey ? '已带入公母（含基因型），可直接试配' : '已带入公母样子，可直接试配')
+      } else {
+        setMessage(
+          hasKey
+            ? '已从档案/深链带入基因型，可补全另一侧后试配'
+            : '已从个体带入样子，可补全另一侧后试配'
+        )
+      }
       if (hasKey) setShowPro(true)
     }
     setQueryApplied(true)

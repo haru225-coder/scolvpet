@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildTrialDeepLink,
+  dualTrialFromPair,
   findProfileByHamsterId,
   phenotypeFromAnimal,
   profileListFromResponse,
@@ -69,5 +70,30 @@ describe('trial-deeplink', () => {
 
   it('sideFromGeneticProfile 空档案', () => {
     expect(sideFromGeneticProfile(null)).toEqual({ series: '' })
+  })
+
+  it('dualTrialFromPair 按公母性别入座', () => {
+    const pair = dualTrialFromPair(
+      { sex: 'female', varietyCode: 'syrian|母样' },
+      { sex: 'male', corePhenotypeLabel: '公样' },
+      { genotype: { key: 'DAM1', series: 'syrian' }, phenotype: { label: '母样', series: 'syrian' } },
+      { genotype: { key: 'SIRE1', series: 'syrian' }, phenotype: { label: '公样', series: 'syrian' } }
+    )
+    expect(pair.assignedBySex).toBe(true)
+    expect(pair.sire?.key).toBe('SIRE1')
+    expect(pair.dam?.key).toBe('DAM1')
+    expect(pair.series).toBe('syrian')
+  })
+
+  it('dualTrialFromPair 性别不明时按点选顺序', () => {
+    const pair = dualTrialFromPair(
+      { sex: 'unknown', corePhenotypeLabel: '先点' },
+      { sex: 'unknown', corePhenotypeLabel: '后点' },
+      null,
+      null
+    )
+    expect(pair.assignedBySex).toBe(false)
+    expect(pair.sire?.phenotype).toBe('先点')
+    expect(pair.dam?.phenotype).toBe('后点')
   })
 })
