@@ -396,37 +396,32 @@ export default function AnimalDetailPage() {
     return { series, label: label || decoded?.label || '' }
   }
 
+  async function findBoundGeneticProfile(): Promise<any | null> {
+    if (!animalId) return null
+    try {
+      const profilesRes = await p1Api.listGeneticProfiles()
+      const raw = (profilesRes as any)?.data ?? profilesRes
+      const list = Array.isArray(raw) ? raw : raw?.items || raw?.data || []
+      return list.find((p: any) => String(p.hamsterId || p.hamster_id || '') === animalId) || null
+    } catch {
+      return null
+    }
+  }
+
   function openTrialPairing() {
     void (async () => {
       const { series, label } = resolveAnimalPhenotype()
       const sex = String(animal?.sex || '')
       const side: 'sire' | 'dam' = sex === 'female' ? 'dam' : 'sire'
-      let key = ''
-      try {
-        const profilesRes = await p1Api.listGeneticProfiles()
-        const raw = (profilesRes as any)?.data ?? profilesRes
-        const list = Array.isArray(raw) ? raw : raw?.items || raw?.data || []
-        const match = list.find((p: any) => String(p.hamsterId || p.hamster_id || '') === animalId)
-        key = String(match?.genotype?.key || '').trim()
-        const phSeries = String(match?.phenotype?.series || match?.genotype?.series || series).trim()
-        const phLabel = String(match?.phenotype?.label || label).trim()
-        const q = [
-          `side=${side}`,
-          phSeries ? `series=${encodeURIComponent(phSeries)}` : '',
-          key ? `${side}_key=${encodeURIComponent(key)}` : '',
-          phLabel ? `${side}_ph=${encodeURIComponent(phLabel)}` : ''
-        ]
-          .filter(Boolean)
-          .join('&')
-        void Taro.navigateTo({ url: `${DOMAIN_HOME.geneticCreate}?${q}` })
-        return
-      } catch {
-        // fall through
-      }
+      const match = await findBoundGeneticProfile()
+      const key = String(match?.genotype?.key || '').trim()
+      const phSeries = String(match?.phenotype?.series || match?.genotype?.series || series).trim()
+      const phLabel = String(match?.phenotype?.label || label).trim()
       const q = [
         `side=${side}`,
-        series ? `series=${encodeURIComponent(series)}` : '',
-        label ? `${side}_ph=${encodeURIComponent(label)}` : ''
+        phSeries ? `series=${encodeURIComponent(phSeries)}` : '',
+        key ? `${side}_key=${encodeURIComponent(key)}` : '',
+        phLabel ? `${side}_ph=${encodeURIComponent(phLabel)}` : ''
       ]
         .filter(Boolean)
         .join('&')
@@ -438,6 +433,12 @@ export default function AnimalDetailPage() {
 
   async function createGeneticProfileForAnimal() {
     if (!animalId) return
+    const existing = await findBoundGeneticProfile()
+    if (existing) {
+      setMessage('本个体已绑定遗传档案，可到档案列表查看')
+      void Taro.showToast({ title: '已有绑定档案', icon: 'none' })
+      return
+    }
     const { series, label } = resolveAnimalPhenotype()
     if (!series || !label) {
       setMessage('请先在档案里填好系列和样子，再创建遗传档案')
@@ -463,15 +464,25 @@ export default function AnimalDetailPage() {
   }
 
   function manageGeneticProfile() {
-    void Taro.showActionSheet({
-      itemList: ['用这个体去试配', '创建并绑定遗传档案', '打开遗传档案列表']
-    })
-      .then((res) => {
+    void (async () => {
+      const existing = await findBoundGeneticProfile()
+      const itemList = existing
+        ? ['用这个体去试配', '打开遗传档案列表']
+        : ['用这个体去试配', '创建并绑定遗传档案', '打开遗传档案列表']
+      try {
+        const res = await Taro.showActionSheet({ itemList })
+        if (existing) {
+          if (res.tapIndex === 0) openTrialPairing()
+          else if (res.tapIndex === 1) void Taro.navigateTo({ url: DOMAIN_HOME.genetic })
+          return
+        }
         if (res.tapIndex === 0) openTrialPairing()
         else if (res.tapIndex === 1) void createGeneticProfileForAnimal()
         else if (res.tapIndex === 2) void Taro.navigateTo({ url: DOMAIN_HOME.genetic })
-      })
-      .catch(() => undefined)
+      } catch {
+        // 用户取消 ActionSheet
+      }
+    })()
   }
 
   /** 族谱：经营端从窝次反推父母（个体档案不带 sireId/damId）。 */
@@ -647,7 +658,7 @@ export default function AnimalDetailPage() {
                     />
                     <Cell
                       title="遗传档案"
-                      subtitle="创建绑定 / 打开档案列表"
+                      subtitle="已绑则试配/列表；未绑可创建并绑定"
                       chevron
                       onClick={manageGeneticProfile}
                     />

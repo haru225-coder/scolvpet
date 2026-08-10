@@ -46,7 +46,7 @@ function hamsterLabelOf(item: any): string {
 function buildTrialUrl(opts: {
   series?: string
   side: 'sire' | 'dam'
-  key: string
+  key?: string
   phenotype?: string
 }): string {
   const q: string[] = [`side=${opts.side}`]
@@ -223,17 +223,19 @@ export default function GeneticPage() {
         const key = String(data.genotypeKey || '').trim()
         const series = String(data.series || '')
         const ph = String(data.phenotypeLabel || '')
-        const itemList = key
+        // 有 key 或有样子都可带入试配；无两者则只剩绑定/改名/删
+        const canTrial = Boolean(key || ph)
+        const itemList = canTrial
           ? ['设为公本并去试配', '设为母本并去试配', '绑定/更换个体', '重命名', '删除档案']
           : ['绑定/更换个体', '重命名', '删除档案']
         void Taro.showActionSheet({ itemList })
           .then((res) => {
             const idx = res.tapIndex
-            if (key) {
+            if (canTrial) {
               if (idx === 0 || idx === 1) {
                 const side = idx === 0 ? 'sire' : 'dam'
                 void Taro.navigateTo({
-                  url: buildTrialUrl({ series, side, key, phenotype: ph })
+                  url: buildTrialUrl({ series, side, key: key || undefined, phenotype: ph || undefined })
                 })
                 return
               }
