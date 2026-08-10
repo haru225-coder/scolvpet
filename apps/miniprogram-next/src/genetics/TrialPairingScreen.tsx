@@ -99,16 +99,24 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
       setSireGenotypeKey(k)
       if (sirePh || (side === 'sire' && sidePh)) setSirePhenotype(sirePh || sidePh)
       applied = true
+    } else if (sirePh || (side === 'sire' && sidePh)) {
+      // 无基因型 key 时仍带表型（个体档案试配入口）
+      setSirePhenotype(sirePh || sidePh)
+      applied = true
     }
     if (damKey || (side === 'dam' && sideKey)) {
       const k = damKey || sideKey
       setDamGenotypeKey(k)
       if (damPh || (side === 'dam' && sidePh)) setDamPhenotype(damPh || sidePh)
       applied = true
+    } else if (damPh || (side === 'dam' && sidePh)) {
+      setDamPhenotype(damPh || sidePh)
+      applied = true
     }
     if (applied) {
-      setMessage('已从档案/深链带入基因型，可补全另一侧后试配')
-      setShowPro(true)
+      const hasKey = Boolean(sireKey || damKey || sideKey)
+      setMessage(hasKey ? '已从档案/深链带入基因型，可补全另一侧后试配' : '已从个体带入样子，可补全另一侧后试配')
+      if (hasKey) setShowPro(true)
     }
     setQueryApplied(true)
   }, [router?.params, queryApplied])

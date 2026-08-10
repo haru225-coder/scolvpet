@@ -53,6 +53,7 @@ const featureIterationRows: FeatureIterationRow[] = [
   { route: 'packages/finance/categories/index', domain: '财务', criticalFlow: '分类创建与刷新', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/genetic/index/index', domain: '遗传', criticalFlow: '试配模拟入口列表', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/genetic/create/index', domain: '遗传', criticalFlow: '表型试配与结果展示', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
+  { route: 'packages/genetic/bind-hamster/index', domain: '遗传', criticalFlow: '档案绑定全量种群个体', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/data-center/index/index', domain: '数据中心', criticalFlow: '汇总与操作入口', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/data-center/actions/index', domain: '数据中心', criticalFlow: '导入、导出、备份与重试', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/ai/index/index', domain: 'AI', criticalFlow: '问答、动作确认与业务深链', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
@@ -66,8 +67,8 @@ describe('小程序全功能迭代覆盖矩阵', () => {
     const declaredRoutes = readDeclaredRoutes(path.join(projectRoot, 'src/app.config.ts'))
     const matrixRoutes = featureIterationRows.map((row) => row.route)
 
-    expect(declaredRoutes).toHaveLength(42)
-    expect(new Set(matrixRoutes).size).toBe(42)
+    expect(declaredRoutes).toHaveLength(43)
+    expect(new Set(matrixRoutes).size).toBe(43)
     expect([...matrixRoutes].sort()).toEqual([...declaredRoutes].sort())
 
     for (const row of featureIterationRows) {

@@ -16,7 +16,10 @@ import {
   typeStyle
 } from '@scolvpet/mp-ui'
 
-import { defaultApi, geneticApi, newIdempotencyKey } from '../../../api/client'
+import { defaultApi } from '../../../api/default-api'
+import { geneticApi } from '../../../api/genetic-api'
+import { p1Api } from '../../../api/p1-api'
+import { newIdempotencyKey } from '../../../api/runtime-config'
 import { canUseCapability } from '../../../auth/permissions'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import { requireBreederSession } from '../../../auth/dev-session'
@@ -385,8 +388,90 @@ export default function AnimalDetailPage() {
     }
   }
 
+  function resolveAnimalPhenotype(): { series: string; label: string } {
+    const label = String(phenotypeLabel || animal?.corePhenotypeLabel || '').trim()
+    const variety = String(animal?.varietyCode || animal?.variety_code || animalVarietyCode || '').trim()
+    const decoded = variety ? decodePhenotype(variety) : null
+    const series = String(decoded?.series || seriesCode || '').trim()
+    return { series, label: label || decoded?.label || '' }
+  }
+
   function openTrialPairing() {
-    void Taro.navigateTo({ url: DOMAIN_HOME.geneticCreate })
+    void (async () => {
+      const { series, label } = resolveAnimalPhenotype()
+      const sex = String(animal?.sex || '')
+      const side: 'sire' | 'dam' = sex === 'female' ? 'dam' : 'sire'
+      let key = ''
+      try {
+        const profilesRes = await p1Api.listGeneticProfiles()
+        const raw = (profilesRes as any)?.data ?? profilesRes
+        const list = Array.isArray(raw) ? raw : raw?.items || raw?.data || []
+        const match = list.find((p: any) => String(p.hamsterId || p.hamster_id || '') === animalId)
+        key = String(match?.genotype?.key || '').trim()
+        const phSeries = String(match?.phenotype?.series || match?.genotype?.series || series).trim()
+        const phLabel = String(match?.phenotype?.label || label).trim()
+        const q = [
+          `side=${side}`,
+          phSeries ? `series=${encodeURIComponent(phSeries)}` : '',
+          key ? `${side}_key=${encodeURIComponent(key)}` : '',
+          phLabel ? `${side}_ph=${encodeURIComponent(phLabel)}` : ''
+        ]
+          .filter(Boolean)
+          .join('&')
+        void Taro.navigateTo({ url: `${DOMAIN_HOME.geneticCreate}?${q}` })
+        return
+      } catch {
+        // fall through
+      }
+      const q = [
+        `side=${side}`,
+        series ? `series=${encodeURIComponent(series)}` : '',
+        label ? `${side}_ph=${encodeURIComponent(label)}` : ''
+      ]
+        .filter(Boolean)
+        .join('&')
+      void Taro.navigateTo({
+        url: q ? `${DOMAIN_HOME.geneticCreate}?${q}` : DOMAIN_HOME.geneticCreate
+      })
+    })()
+  }
+
+  async function createGeneticProfileForAnimal() {
+    if (!animalId) return
+    const { series, label } = resolveAnimalPhenotype()
+    if (!series || !label) {
+      setMessage('请先在档案里填好系列和样子，再创建遗传档案')
+      return
+    }
+    try {
+      await p1Api.createGeneticProfile({
+        idempotencyKey: newIdempotencyKey(),
+        createGeneticProfileRequest: {
+          name: `${animal?.name || animal?.internalCode || '个体'} · ${label}`,
+          confidence: 'unknown',
+          hamsterId: animalId,
+          phenotype: { series, label, source: 'animal_profile' },
+          genotype: { series },
+          notes: '从个体档案创建'
+        } as any
+      } as any)
+      setMessage('已创建遗传档案并绑定本个体')
+      void Taro.showToast({ title: '遗传档案已建', icon: 'success' })
+    } catch (cause) {
+      setMessage(await formatUserError(cause, '创建遗传档案失败'))
+    }
+  }
+
+  function manageGeneticProfile() {
+    void Taro.showActionSheet({
+      itemList: ['用这个体去试配', '创建并绑定遗传档案', '打开遗传档案列表']
+    })
+      .then((res) => {
+        if (res.tapIndex === 0) openTrialPairing()
+        else if (res.tapIndex === 1) void createGeneticProfileForAnimal()
+        else if (res.tapIndex === 2) void Taro.navigateTo({ url: DOMAIN_HOME.genetic })
+      })
+      .catch(() => undefined)
   }
 
   /** 族谱：经营端从窝次反推父母（个体档案不带 sireId/damId）。 */
@@ -554,7 +639,18 @@ export default function AnimalDetailPage() {
                     ) : null}
                   </Section>
                   <Section header="快捷动作">
-                    <Cell title="试配模拟" subtitle="用这个体的样子试配" chevron onClick={openTrialPairing} />
+                    <Cell
+                      title="试配模拟"
+                      subtitle="带入样子；若已绑遗传档案则带基因型"
+                      chevron
+                      onClick={openTrialPairing}
+                    />
+                    <Cell
+                      title="遗传档案"
+                      subtitle="创建绑定 / 打开档案列表"
+                      chevron
+                      onClick={manageGeneticProfile}
+                    />
                     <Cell
                       title="看族谱"
                       subtitle="父母与祖代（来自窝次记录）"

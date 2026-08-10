@@ -92,7 +92,8 @@ const surfaces: Record<string, Surface[]> = {
   M4: [
     { route: 'packages/ai/index/index', source: 'src/packages/ai/index/index.tsx', needsWriteGate: true },
     { route: 'packages/genetic/index/index', source: 'src/packages/genetic/index/index.tsx' },
-    { route: 'packages/genetic/create/index', source: 'src/packages/genetic/create/index.tsx', needsWriteGate: true }
+    { route: 'packages/genetic/create/index', source: 'src/packages/genetic/create/index.tsx', needsWriteGate: true },
+    { route: 'packages/genetic/bind-hamster/index', source: 'src/packages/genetic/bind-hamster/index.tsx', needsWriteGate: true }
   ]
 }
 
