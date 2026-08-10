@@ -95,6 +95,8 @@ export default function AnimalDetailPage() {
   const [message, setMessage] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [segment, setSegment] = useState(0)
+  /** 本个体已绑定的遗传档案（load 时并行拉） */
+  const [boundGeneticProfile, setBoundGeneticProfile] = useState<any | null>(null)
 
   useEffect(() => {
     void geneticApi
@@ -129,10 +131,11 @@ export default function AnimalDetailPage() {
         return
       }
       try {
-        const [animalResponse, weightResponse, healthResponse] = await Promise.all([
+        const [animalResponse, weightResponse, healthResponse, profilesRes] = await Promise.all([
           defaultApi.getHamster({ hamsterId: id }),
           defaultApi.listWeightRecords({ hamsterId: id, limit: 20 }),
-          defaultApi.listHealthRecords({ hamsterId: id, limit: 20 })
+          defaultApi.listHealthRecords({ hamsterId: id, limit: 20 }),
+          p1Api.listGeneticProfiles().catch(() => null)
         ])
         const loadedAnimal: any = animalResponse.data
         applyAnimalFields(loadedAnimal)
@@ -142,6 +145,15 @@ export default function AnimalDetailPage() {
         }
         setWeights(weightResponse.data || [])
         setHealth(healthResponse.data || [])
+        if (profilesRes) {
+          const raw = (profilesRes as any)?.data ?? profilesRes
+          const list = Array.isArray(raw) ? raw : raw?.items || raw?.data || []
+          const match =
+            list.find((p: any) => String(p.hamsterId || p.hamster_id || '') === id) || null
+          setBoundGeneticProfile(match)
+        } else {
+          setBoundGeneticProfile(null)
+        }
         saveAnimalSnapshot(id, {
           animal: animalResponse.data,
           weights: weightResponse.data || [],
@@ -396,45 +408,30 @@ export default function AnimalDetailPage() {
     return { series, label: label || decoded?.label || '' }
   }
 
-  async function findBoundGeneticProfile(): Promise<any | null> {
-    if (!animalId) return null
-    try {
-      const profilesRes = await p1Api.listGeneticProfiles()
-      const raw = (profilesRes as any)?.data ?? profilesRes
-      const list = Array.isArray(raw) ? raw : raw?.items || raw?.data || []
-      return list.find((p: any) => String(p.hamsterId || p.hamster_id || '') === animalId) || null
-    } catch {
-      return null
-    }
-  }
-
   function openTrialPairing() {
-    void (async () => {
-      const { series, label } = resolveAnimalPhenotype()
-      const sex = String(animal?.sex || '')
-      const side: 'sire' | 'dam' = sex === 'female' ? 'dam' : 'sire'
-      const match = await findBoundGeneticProfile()
-      const key = String(match?.genotype?.key || '').trim()
-      const phSeries = String(match?.phenotype?.series || match?.genotype?.series || series).trim()
-      const phLabel = String(match?.phenotype?.label || label).trim()
-      const q = [
-        `side=${side}`,
-        phSeries ? `series=${encodeURIComponent(phSeries)}` : '',
-        key ? `${side}_key=${encodeURIComponent(key)}` : '',
-        phLabel ? `${side}_ph=${encodeURIComponent(phLabel)}` : ''
-      ]
-        .filter(Boolean)
-        .join('&')
-      void Taro.navigateTo({
-        url: q ? `${DOMAIN_HOME.geneticCreate}?${q}` : DOMAIN_HOME.geneticCreate
-      })
-    })()
+    const { series, label } = resolveAnimalPhenotype()
+    const sex = String(animal?.sex || '')
+    const side: 'sire' | 'dam' = sex === 'female' ? 'dam' : 'sire'
+    const match = boundGeneticProfile
+    const key = String(match?.genotype?.key || '').trim()
+    const phSeries = String(match?.phenotype?.series || match?.genotype?.series || series).trim()
+    const phLabel = String(match?.phenotype?.label || label).trim()
+    const q = [
+      `side=${side}`,
+      phSeries ? `series=${encodeURIComponent(phSeries)}` : '',
+      key ? `${side}_key=${encodeURIComponent(key)}` : '',
+      phLabel ? `${side}_ph=${encodeURIComponent(phLabel)}` : ''
+    ]
+      .filter(Boolean)
+      .join('&')
+    void Taro.navigateTo({
+      url: q ? `${DOMAIN_HOME.geneticCreate}?${q}` : DOMAIN_HOME.geneticCreate
+    })
   }
 
   async function createGeneticProfileForAnimal() {
     if (!animalId) return
-    const existing = await findBoundGeneticProfile()
-    if (existing) {
+    if (boundGeneticProfile) {
       setMessage('本个体已绑定遗传档案，可到档案列表查看')
       void Taro.showToast({ title: '已有绑定档案', icon: 'none' })
       return
@@ -445,7 +442,7 @@ export default function AnimalDetailPage() {
       return
     }
     try {
-      await p1Api.createGeneticProfile({
+      const created = await p1Api.createGeneticProfile({
         idempotencyKey: newIdempotencyKey(),
         createGeneticProfileRequest: {
           name: `${animal?.name || animal?.internalCode || '个体'} · ${label}`,
@@ -456,6 +453,8 @@ export default function AnimalDetailPage() {
           notes: '从个体档案创建'
         } as any
       } as any)
+      const body = (created as any)?.data ?? created
+      setBoundGeneticProfile(body && typeof body === 'object' ? body : { hamsterId: animalId, phenotype: { series, label }, genotype: { series } })
       setMessage('已创建遗传档案并绑定本个体')
       void Taro.showToast({ title: '遗传档案已建', icon: 'success' })
     } catch (cause) {
@@ -464,13 +463,12 @@ export default function AnimalDetailPage() {
   }
 
   function manageGeneticProfile() {
-    void (async () => {
-      const existing = await findBoundGeneticProfile()
-      const itemList = existing
-        ? ['用这个体去试配', '打开遗传档案列表']
-        : ['用这个体去试配', '创建并绑定遗传档案', '打开遗传档案列表']
-      try {
-        const res = await Taro.showActionSheet({ itemList })
+    const existing = boundGeneticProfile
+    const itemList = existing
+      ? ['用这个体去试配', '打开遗传档案列表']
+      : ['用这个体去试配', '创建并绑定遗传档案', '打开遗传档案列表']
+    void Taro.showActionSheet({ itemList })
+      .then((res) => {
         if (existing) {
           if (res.tapIndex === 0) openTrialPairing()
           else if (res.tapIndex === 1) void Taro.navigateTo({ url: DOMAIN_HOME.genetic })
@@ -479,10 +477,8 @@ export default function AnimalDetailPage() {
         if (res.tapIndex === 0) openTrialPairing()
         else if (res.tapIndex === 1) void createGeneticProfileForAnimal()
         else if (res.tapIndex === 2) void Taro.navigateTo({ url: DOMAIN_HOME.genetic })
-      } catch {
-        // 用户取消 ActionSheet
-      }
-    })()
+      })
+      .catch(() => undefined)
   }
 
   /** 族谱：经营端从窝次反推父母（个体档案不带 sireId/damId）。 */
@@ -645,6 +641,27 @@ export default function AnimalDetailPage() {
                         value={String(phenotypeLabel || animal.corePhenotypeLabel)}
                       />
                     ) : null}
+                    <Cell
+                      title="遗传档案"
+                      value={
+                        boundGeneticProfile
+                          ? String(
+                              boundGeneticProfile.name ||
+                                boundGeneticProfile.phenotype?.label ||
+                                '已绑定'
+                            )
+                          : '未绑定'
+                      }
+                      subtitle={
+                        boundGeneticProfile?.genotype?.key
+                          ? `key ${boundGeneticProfile.genotype.key}`
+                          : boundGeneticProfile
+                            ? '已绑定 · 点快捷动作试配或打开列表'
+                            : '可创建并绑定'
+                      }
+                      chevron
+                      onClick={manageGeneticProfile}
+                    />
                     {animalNotes || animal.notes ? (
                       <Cell title="备注" subtitle={String(animalNotes || animal.notes)} />
                     ) : null}
@@ -652,13 +669,17 @@ export default function AnimalDetailPage() {
                   <Section header="快捷动作">
                     <Cell
                       title="试配模拟"
-                      subtitle="带入样子；若已绑遗传档案则带基因型"
+                      subtitle={
+                        boundGeneticProfile?.genotype?.key
+                          ? '将带入已绑基因型'
+                          : '带入样子；有档案则带基因型'
+                      }
                       chevron
                       onClick={openTrialPairing}
                     />
                     <Cell
-                      title="遗传档案"
-                      subtitle="已绑则试配/列表；未绑可创建并绑定"
+                      title="管理遗传档案"
+                      subtitle={boundGeneticProfile ? '试配 / 打开列表' : '创建绑定 / 打开列表'}
                       chevron
                       onClick={manageGeneticProfile}
                     />
