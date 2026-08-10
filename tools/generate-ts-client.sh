@@ -46,11 +46,15 @@ rm -rf "$CLEAN_DIR"
 mkdir -p "$CLEAN_DIR"
 
 GENERATOR_JAR="$ROOT/.cache/openapi-generator/$VERSION.jar"
-if [[ -f "$GENERATOR_JAR" ]]; then
-  GENERATOR=(java -jar "$GENERATOR_JAR")
-else
-  GENERATOR=(npx --yes @openapitools/openapi-generator-cli@2.25.0)
+# CI 无本机 .cache jar 时也必须固定 7.23.0，禁止 npx 默认拉「最新」造成 drift 假红。
+if [[ ! -f "$GENERATOR_JAR" ]]; then
+  mkdir -p "$(dirname "$GENERATOR_JAR")"
+  printf 'downloading openapi-generator-cli %s ...\n' "$VERSION" >&2
+  curl -fsSL \
+    "https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/${VERSION}/openapi-generator-cli-${VERSION}.jar" \
+    -o "$GENERATOR_JAR"
 fi
+GENERATOR=(java -jar "$GENERATOR_JAR")
 "$TIMEOUT_SCRIPT" "$COMMAND_TIMEOUT_SECONDS" "${GENERATOR[@]}" generate \
   -i "$INPUT_SPEC" \
   -g typescript-fetch \

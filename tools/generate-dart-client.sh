@@ -24,11 +24,15 @@ fi
 cd "$ROOT"
 rm -rf "$OUTPUT_DIR/test"
 GENERATOR_JAR="$ROOT/.cache/openapi-generator/$VERSION.jar"
-if [[ -f "$GENERATOR_JAR" ]]; then
-  GENERATOR=(java -jar "$GENERATOR_JAR")
-else
-  GENERATOR=(npx --yes @openapitools/openapi-generator-cli@2.25.0)
+# 与 generate-ts-client 一致：无 jar 时下载固定版本，避免 CI drift 与本机不一致。
+if [[ ! -f "$GENERATOR_JAR" ]]; then
+  mkdir -p "$(dirname "$GENERATOR_JAR")"
+  printf 'downloading openapi-generator-cli %s ...\n' "$VERSION" >&2
+  curl -fsSL \
+    "https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/${VERSION}/openapi-generator-cli-${VERSION}.jar" \
+    -o "$GENERATOR_JAR"
 fi
+GENERATOR=(java -jar "$GENERATOR_JAR")
 "$TIMEOUT_SCRIPT" "$COMMAND_TIMEOUT_SECONDS" "${GENERATOR[@]}" generate \
   -i specs/api/openapi.yaml \
   -g dart-dio \

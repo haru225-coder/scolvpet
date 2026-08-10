@@ -16,6 +16,16 @@ const appJson = JSON.parse(fs.readFileSync(path.join(dist, 'app.json'), 'utf8'))
 const registered = { pages: [], components: 0, appConfig: null };
 const failures = [];
 
+// 冒烟故意让 request/login fail；业务里若有未 catch 的 Promise，Node 会 UnhandledRejection 直接崩。
+// 只吞掉桩错误，其它拒绝仍记入 failures，避免把真回归藏掉。
+process.on('unhandledRejection', (reason) => {
+  const msg =
+    (reason && typeof reason === 'object' && (reason.errMsg || reason.message)) ||
+    String(reason || '')
+  if (String(msg).includes('smoke:')) return
+  failures.push(`unhandledRejection: ${msg}`)
+})
+
 // wx 桩:未覆写的 API 一律记录并返回 no-op;同步取值类给出合理返回。
 const wxCalls = [];
 const wxOverrides = {
