@@ -5361,6 +5361,36 @@ paths:
                 additionalProperties: true
         "401":
           "$ref": "#/components/responses/Unauthorized"
+  "/v1/genetic/infer-parents":
+    post:
+      tags:
+      - genetic
+      summary: Infer parent genotypes from litter phenotype counts
+      description: |
+        Bayesian reverse inference over locus-model genotype pairs given offspring
+        phenotype tallies. Optional sire_genotype_key / dam_genotype_key fix one side.
+      operationId: inferGeneticParents
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Ranked parent genotype hypotheses and marginals
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "422":
+          "$ref": "#/components/responses/ValidationError"
   "/v1/genetic/feedback-summary":
     get:
       tags:

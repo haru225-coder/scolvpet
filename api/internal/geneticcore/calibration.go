@@ -74,6 +74,9 @@ func CalibratePhenotypeTable(
 		result.HistoryPupCount = pairPups
 	}
 
+	// Phenotype margins may have moved; keep genotype splits proportional and refresh flat list.
+	rescaleGenotypeBreakdowns(result.Outcomes)
+	result.GenotypeOutcomes = flattenGenotypeOutcomes(result.Outcomes)
 	return result
 }
 
@@ -188,6 +191,11 @@ func subtractPhenotypeHistory(all, subset PhenotypeCalibrationHistory) Phenotype
 func clonePhenotypeOutcomes(in []PhenotypeOutcome) []PhenotypeOutcome {
 	out := make([]PhenotypeOutcome, len(in))
 	copy(out, in)
+	for i := range out {
+		if len(in[i].GenotypeBreakdown) > 0 {
+			out[i].GenotypeBreakdown = append([]GenotypeSlice(nil), in[i].GenotypeBreakdown...)
+		}
+	}
 	return out
 }
 

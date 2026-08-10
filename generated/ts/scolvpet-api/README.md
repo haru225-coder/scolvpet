@@ -117,6 +117,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *DefaultApi* | [**weanLitter**](docs/DefaultApi.md#weanlitteroperation) | **POST** /litters/{litter_id}/wean | 完成断奶
 *CustomerApi* | [**createCustomerWechatPhoneBinding**](docs/CustomerApi.md#createcustomerwechatphonebindingoperation) | **POST** /v1/public/customer/wechat-phone-bindings | 微信授权手机号并创建客户会话
 *GeneticApi* | [**compareGeneticActual**](docs/GeneticApi.md#comparegeneticactual) | **POST** /v1/genetic/compare-actual | Compare actual litter phenotype counts to core table expectation
+*GeneticApi* | [**inferGeneticParents**](docs/GeneticApi.md#infergeneticparents) | **POST** /v1/genetic/infer-parents | Infer parent genotypes from litter phenotype counts
 *GeneticApi* | [**listGeneticFeedbackSummary**](docs/GeneticApi.md#listgeneticfeedbacksummary) | **GET** /v1/genetic/feedback-summary | Summarize historical phenotype prediction feedback
 *GeneticApi* | [**listGeneticPhenotypeCatalog**](docs/GeneticApi.md#listgeneticphenotypecatalog) | **GET** /v1/genetic/phenotype-catalog | List phenotype series catalog from authority table
 *GeneticApi* | [**listGeneticTargetCrosses**](docs/GeneticApi.md#listgenetictargetcrosses) | **GET** /v1/genetic/target-crosses | Rank parent pairs that can produce a target phenotype

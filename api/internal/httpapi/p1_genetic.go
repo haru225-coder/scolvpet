@@ -22,6 +22,7 @@ func (s *Server) registerP1GeneticRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v1/genetic/phenotype-catalog", s.listGeneticPhenotypeCatalog)
 	mux.HandleFunc("GET /v1/genetic/target-crosses", s.listGeneticTargetCrosses)
 	mux.HandleFunc("POST /v1/genetic/compare-actual", s.compareGeneticActual)
+	mux.HandleFunc("POST /v1/genetic/infer-parents", s.inferGeneticParents)
 	mux.HandleFunc("GET /v1/genetic/feedback-summary", s.listGeneticFeedbackSummary)
 	mux.HandleFunc("GET /v1/genetic/profiles", s.listGeneticProfiles)
 	mux.HandleFunc("POST /v1/genetic/profiles", s.createGeneticProfile)
@@ -57,6 +58,44 @@ type compareGeneticActualRequest struct {
 	Save           bool           `json:"save"`
 	BreedingPlanID *string        `json:"breeding_plan_id"`
 	LitterID       *string        `json:"litter_id"`
+}
+
+type inferGeneticParentsRequest struct {
+	Series          string         `json:"series"`
+	SirePhenotype   string         `json:"sire_phenotype"`
+	DamPhenotype    string         `json:"dam_phenotype"`
+	SireGenotypeKey string         `json:"sire_genotype_key"`
+	DamGenotypeKey  string         `json:"dam_genotype_key"`
+	ActualCounts    map[string]int `json:"actual_counts"`
+	MaxHypotheses   int            `json:"max_hypotheses"`
+}
+
+func (s *Server) inferGeneticParents(w http.ResponseWriter, r *http.Request) {
+	if _, ok := s.authenticateMemberOwner(w, r); !ok {
+		return
+	}
+	var request inferGeneticParentsRequest
+	if _, err := decodeBody(r, &request); err != nil {
+		writeAPIError(w, r, validationError("body", "亲本反推请求体格式不正确"))
+		return
+	}
+	result, err := geneticcore.InferParentGenotypes(geneticcore.InferParentGenotypesRequest{
+		Series:          request.Series,
+		SirePhenotype:   request.SirePhenotype,
+		DamPhenotype:    request.DamPhenotype,
+		SireGenotypeKey: request.SireGenotypeKey,
+		DamGenotypeKey:  request.DamGenotypeKey,
+		OffspringCounts: request.ActualCounts,
+		MaxHypotheses:   request.MaxHypotheses,
+	})
+	if err != nil {
+		writeAPIError(w, r, validationError("actual_counts", err.Error()))
+		return
+	}
+	writeJSON(w, r, http.StatusOK, map[string]any{
+		"data": result,
+		"meta": responseMeta(r),
+	})
 }
 
 func (s *Server) compareGeneticActual(w http.ResponseWriter, r *http.Request) {
@@ -230,6 +269,9 @@ type simulateGeneticRequest struct {
 	Series          string            `json:"series"`
 	SirePhenotype   string            `json:"sire_phenotype"`
 	DamPhenotype    string            `json:"dam_phenotype"`
+	// Optional exact genotype keys from a previous genotype_breakdown[].key (multi-gen).
+	SireGenotypeKey string            `json:"sire_genotype_key"`
+	DamGenotypeKey  string            `json:"dam_genotype_key"`
 	SireHamsterID   string            `json:"sire_hamster_id"`
 	DamHamsterID    string            `json:"dam_hamster_id"`
 	TargetPhenotype string            `json:"target_phenotype"` // optional: only used with list-style planning later
@@ -489,7 +531,13 @@ func (s *Server) simulateGeneticBreeding(w http.ResponseWriter, r *http.Request)
 	}
 	switch mode {
 	case "phenotype_table", "table", "phenotype":
-		tableResult, err := geneticcore.SimulatePhenotypeTable(request.Series, request.SirePhenotype, request.DamPhenotype)
+		tableResult, err := geneticcore.SimulatePhenotypeTableExt(
+			request.Series,
+			request.SirePhenotype,
+			request.DamPhenotype,
+			request.SireGenotypeKey,
+			request.DamGenotypeKey,
+		)
 		if err != nil {
 			writeAPIError(w, r, validationError("phenotype", err.Error()))
 			return
@@ -536,10 +584,13 @@ func phenotypeSimulationResponse(result geneticcore.PhenotypeTableResult) map[st
 		"series_name":          result.SeriesName,
 		"sire_phenotype":       result.Sire,
 		"dam_phenotype":        result.Dam,
+		"sire_genotype_key":    result.SireGenotypeKey,
+		"dam_genotype_key":     result.DamGenotypeKey,
 		"sire":                 simulation.Sire,
 		"dam":                  simulation.Dam,
 		"outcomes":             simulation.Outcomes,
 		"table_outcomes":       result.Outcomes,
+		"genotype_outcomes":    result.GenotypeOutcomes,
 		"prediction_basis":     result.PredictionBasis,
 		"history_litter_count": result.HistoryLitterCount,
 		"history_pup_count":    result.HistoryPupCount,

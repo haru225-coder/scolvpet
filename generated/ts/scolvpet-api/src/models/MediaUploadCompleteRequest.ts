@@ -3,7 +3,7 @@
 /* eslint-disable */
 /**
  * 熊舍管家 MVP API (miniprogram TS client subset)
- * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。  NOTE: Filtered subset for apps/miniprogram-next typescript-fetch generation only. Authoritative full contract: specs/api/openapi.yaml Kept operationIds: 97
+ * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。  NOTE: Filtered subset for apps/miniprogram-next typescript-fetch generation only. Authoritative full contract: specs/api/openapi.yaml Kept operationIds: 98
  *
  * The version of the OpenAPI document: 1.0.1
  *

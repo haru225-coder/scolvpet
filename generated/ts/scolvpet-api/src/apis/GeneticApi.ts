@@ -3,7 +3,7 @@
 /* eslint-disable */
 /**
  * 熊舍管家 MVP API (miniprogram TS client subset)
- * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。  NOTE: Filtered subset for apps/miniprogram-next typescript-fetch generation only. Authoritative full contract: specs/api/openapi.yaml Kept operationIds: 97
+ * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。  NOTE: Filtered subset for apps/miniprogram-next typescript-fetch generation only. Authoritative full contract: specs/api/openapi.yaml Kept operationIds: 98
  *
  * The version of the OpenAPI document: 1.0.1
  *
@@ -21,6 +21,10 @@ import {
 } from '../models/ErrorResponse';
 
 export interface CompareGeneticActualRequest {
+    requestBody: { [key: string]: any; };
+}
+
+export interface InferGeneticParentsRequest {
     requestBody: { [key: string]: any; };
 }
 
@@ -86,6 +90,63 @@ export class GeneticApi extends runtime.BaseAPI {
      */
     async compareGeneticActual(requestParameters: CompareGeneticActualRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
         const response = await this.compareGeneticActualRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for inferGeneticParents without sending the request
+     */
+    async inferGeneticParentsRequestOpts(requestParameters: InferGeneticParentsRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['requestBody'] == null) {
+            throw new runtime.RequiredError(
+                'requestBody',
+                'Required parameter "requestBody" was null or undefined when calling inferGeneticParents().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/v1/genetic/infer-parents`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: requestParameters['requestBody'],
+        };
+    }
+
+    /**
+     * Bayesian reverse inference over locus-model genotype pairs given offspring phenotype tallies. Optional sire_genotype_key / dam_genotype_key fix one side.
+     * Infer parent genotypes from litter phenotype counts
+     */
+    async inferGeneticParentsRaw(requestParameters: InferGeneticParentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
+        const requestOptions = await this.inferGeneticParentsRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Bayesian reverse inference over locus-model genotype pairs given offspring phenotype tallies. Optional sire_genotype_key / dam_genotype_key fix one side.
+     * Infer parent genotypes from litter phenotype counts
+     */
+    async inferGeneticParents(requestParameters: InferGeneticParentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
+        const response = await this.inferGeneticParentsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

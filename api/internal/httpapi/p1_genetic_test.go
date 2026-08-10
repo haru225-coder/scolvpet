@@ -28,6 +28,7 @@ func TestP1GeneticRoutesRequireAuth(t *testing.T) {
 		{http.MethodGet, "/v1/genetic/phenotype-catalog"},
 		{http.MethodGet, "/v1/genetic/target-crosses"},
 		{http.MethodPost, "/v1/genetic/compare-actual"},
+		{http.MethodPost, "/v1/genetic/infer-parents"},
 		{http.MethodGet, "/v1/genetic/feedback-summary"},
 		{http.MethodGet, "/v1/genetic/profiles"},
 		{http.MethodPost, "/v1/genetic/profiles"},

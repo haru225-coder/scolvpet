@@ -6,6 +6,41 @@ import (
 	"testing"
 )
 
+func TestCalibrateRescalesGenotypeBreakdown(t *testing.T) {
+	base, err := SimulatePhenotypeTable("chocolate", "携巧黑熊", "携巧黑熊")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := CalibratePhenotypeTable(
+		base,
+		PhenotypeCalibrationHistory{
+			LitterCount: 2,
+			Counts:      map[string]int{"黑熊": 2, "巧克力": 6},
+		},
+		PhenotypeCalibrationHistory{},
+	)
+	var black *PhenotypeOutcome
+	for i := range got.Outcomes {
+		if got.Outcomes[i].Phenotype == "黑熊" {
+			black = &got.Outcomes[i]
+			break
+		}
+	}
+	if black == nil || len(black.GenotypeBreakdown) == 0 {
+		t.Fatalf("expected 黑熊 genotype breakdown: %+v", got.Outcomes)
+	}
+	var sum float64
+	for _, g := range black.GenotypeBreakdown {
+		sum += g.Probability
+	}
+	if absFloat(sum-black.Probability) > 1e-9 {
+		t.Fatalf("breakdown sum=%v phenotype p=%v", sum, black.Probability)
+	}
+	if len(got.GenotypeOutcomes) == 0 {
+		t.Fatal("expected flat genotype_outcomes after calibrate")
+	}
+}
+
 func TestCalibratePhenotypeTableNoHistoryPreservesAuthorityExactly(t *testing.T) {
 	base, err := SimulatePhenotypeTable("poly", "蜜波利", "蜜波利")
 	if err != nil {

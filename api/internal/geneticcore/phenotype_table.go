@@ -26,12 +26,28 @@ type PhenotypeSeries struct {
 	Phenotypes []string `json:"phenotypes"`
 }
 
+// GenotypeSlice is one Mendelian genotype class under a phenotype bucket.
+// Used for carrier labels and multi-generation continuation (pass Key as parent).
+type GenotypeSlice struct {
+	Key          string            `json:"key"`
+	Alleles      map[string]string `json:"alleles,omitempty"`
+	Probability  float64           `json:"probability"`
+	Fraction     string            `json:"fraction,omitempty"`
+	Phenotype    string            `json:"phenotype"`
+	DisplayLabel string            `json:"display_label"`
+	CarrierTags  []string          `json:"carrier_tags,omitempty"`
+}
+
 // PhenotypeOutcome is one offspring class from the authority table.
 type PhenotypeOutcome struct {
 	Phenotype   string  `json:"phenotype"`
 	Probability float64 `json:"probability"`
 	Fraction    string  `json:"fraction,omitempty"`
 	Note        string  `json:"note,omitempty"`
+	// CarrierSummary is a short Chinese line, e.g. "其中约 2/3 为携巧（Bb）".
+	CarrierSummary string `json:"carrier_summary,omitempty"`
+	// GenotypeBreakdown splits this phenotype into underlying genotypes (model-derived).
+	GenotypeBreakdown []GenotypeSlice `json:"genotype_breakdown,omitempty"`
 }
 
 // PhenotypeCross is one unordered parent pair with outcomes.
@@ -62,7 +78,11 @@ type PhenotypeTableResult struct {
 	SeriesName         string             `json:"series_name"`
 	Sire               string             `json:"sire_phenotype"`
 	Dam                string             `json:"dam_phenotype"`
+	SireGenotypeKey    string             `json:"sire_genotype_key,omitempty"`
+	DamGenotypeKey     string             `json:"dam_genotype_key,omitempty"`
 	Outcomes           []PhenotypeOutcome `json:"outcomes"`
+	// GenotypeOutcomes is a flat, probability-sorted list for multi-gen pickers.
+	GenotypeOutcomes   []GenotypeSlice    `json:"genotype_outcomes,omitempty"`
 	Notes              string             `json:"notes"`
 	TableID            string             `json:"table_id"`
 	Version            string             `json:"table_version"`
@@ -180,9 +200,17 @@ func ListPhenotypeSeries() ([]PhenotypeSeries, error) {
 	return out, nil
 }
 
-// SimulatePhenotypeTable looks up offspring probabilities from the authority table.
-// Parent order is commutative (A×B == B×A).
+// SimulatePhenotypeTable looks up offspring probabilities from the authority table,
+// then falls back to the golden-tested locus model for catalog gaps.
+// Parent order is commutative (A×B == B×A). Table rows always win over the model.
 func SimulatePhenotypeTable(seriesRaw, sirePhenotype, damPhenotype string) (PhenotypeTableResult, error) {
+	return SimulatePhenotypeTableExt(seriesRaw, sirePhenotype, damPhenotype, "", "")
+}
+
+// SimulatePhenotypeTableExt is SimulatePhenotypeTable plus optional exact parent genotype keys
+// (from a previous result's genotype_breakdown[].key) for multi-generation continuation.
+// When a genotype key is set, phenotype is optional for that parent (used only for display).
+func SimulatePhenotypeTableExt(seriesRaw, sirePhenotype, damPhenotype, sireGenoKey, damGenoKey string) (PhenotypeTableResult, error) {
 	doc, err := loadPhenotypeTable()
 	if err != nil {
 		return PhenotypeTableResult{}, err
@@ -193,54 +221,129 @@ func SimulatePhenotypeTable(seriesRaw, sirePhenotype, damPhenotype string) (Phen
 	}
 	sirePhenotype = strings.TrimSpace(sirePhenotype)
 	damPhenotype = strings.TrimSpace(damPhenotype)
-	if sirePhenotype == "" || damPhenotype == "" {
-		return PhenotypeTableResult{}, fmt.Errorf("父母双方都需要表型")
+	sireGenoKey = strings.TrimSpace(sireGenoKey)
+	damGenoKey = strings.TrimSpace(damGenoKey)
+
+	// Resolve display phenotypes from genotype keys when omitted.
+	if sirePhenotype == "" && sireGenoKey != "" {
+		if ph, ok := PhenotypeFromGenotypeKey(series, sireGenoKey); ok {
+			sirePhenotype = ph
+		}
 	}
-	// Validate phenotypes belong to series (allow any listed in series catalog).
+	if damPhenotype == "" && damGenoKey != "" {
+		if ph, ok := PhenotypeFromGenotypeKey(series, damGenoKey); ok {
+			damPhenotype = ph
+		}
+	}
+	if sirePhenotype == "" || damPhenotype == "" {
+		return PhenotypeTableResult{}, fmt.Errorf("父母双方都需要表型（或可解析的基因型 key）")
+	}
 	ser, ok := seriesByCode[series]
 	if !ok {
 		return PhenotypeTableResult{}, fmt.Errorf("未知系列代码 %s", series)
 	}
-	if !phenotypeInSeries(ser, sirePhenotype) {
+	if sireGenoKey == "" && !phenotypeInSeriesOrAlias(ser, sirePhenotype) {
 		return PhenotypeTableResult{}, fmt.Errorf("表型 %q 不在系列 %s 中", sirePhenotype, ser.Name)
 	}
-	if !phenotypeInSeries(ser, damPhenotype) {
+	if damGenoKey == "" && !phenotypeInSeriesOrAlias(ser, damPhenotype) {
 		return PhenotypeTableResult{}, fmt.Errorf("表型 %q 不在系列 %s 中", damPhenotype, ser.Name)
 	}
 
-	a, b := normalizeParentPair(sirePhenotype, damPhenotype)
-	cross, ok := phenotypeCrossIndex[crossKey(series, a, b)]
+	notes := strings.Join(doc.Notes, " ")
+	notes = notes + " 数据源：" + doc.Title + "（" + doc.Version + "）。"
+
+	// Exact genotype parents → always locus model (table has no genotype rows).
+	if sireGenoKey != "" || damGenoKey != "" {
+		outcomes, flat, ok := SimulateLocusModelDetailed(series, sirePhenotype, damPhenotype, sireGenoKey, damGenoKey)
+		if !ok {
+			return PhenotypeTableResult{}, fmt.Errorf("无法用给定基因型推算：sire=%q dam=%q", sireGenoKey, damGenoKey)
+		}
+		sortPhenotypeOutcomes(outcomes)
+		notes = notes + " 亲本使用精确基因型续推（多代）；表型概率由位点模型给出。"
+		return PhenotypeTableResult{
+			Mode:             "phenotype_table",
+			Series:           series,
+			SeriesName:       ser.Name,
+			Sire:             sirePhenotype,
+			Dam:              damPhenotype,
+			SireGenotypeKey:  sireGenoKey,
+			DamGenotypeKey:   damGenoKey,
+			Outcomes:         outcomes,
+			GenotypeOutcomes: flat,
+			Notes:            notes,
+			TableID:          doc.ID,
+			Version:          doc.Version,
+			PredictionBasis:  PredictionBasisLocusModel,
+		}, nil
+	}
+
+	// 1) Authority table (exact + synonym keys). Never override phenotype probs with the model.
+	if cross, hit := lookupPhenotypeCross(series, sirePhenotype, damPhenotype); hit {
+		outcomes := make([]PhenotypeOutcome, len(cross.Outcomes))
+		copy(outcomes, cross.Outcomes)
+		sortPhenotypeOutcomes(outcomes)
+		// Attach genotype / carrier detail from model (probs scaled to table phenotype margins).
+		outcomes, flat := enrichOutcomesWithGenotypes(series, sirePhenotype, damPhenotype, "", "", outcomes)
+		return PhenotypeTableResult{
+			Mode:             "phenotype_table",
+			Series:           series,
+			SeriesName:       ser.Name,
+			Sire:             sirePhenotype,
+			Dam:              damPhenotype,
+			Outcomes:         outcomes,
+			GenotypeOutcomes: flat,
+			Notes:            notes,
+			TableID:          doc.ID,
+			Version:          doc.Version,
+			PredictionBasis:  PredictionBasisAuthorityTable,
+		}, nil
+	}
+
+	// 2) Locus model fill (golden-tested against all table rows).
+	outcomes, flat, ok := SimulateLocusModelDetailed(series, sirePhenotype, damPhenotype, "", "")
 	if !ok {
 		return PhenotypeTableResult{}, fmt.Errorf(
-			"核心表中无此配对：%s × %s（系列 %s）。空白表示原资料未收录，非生物学上不可能",
+			"核心表中无此配对：%s × %s（系列 %s），且位点模型无法推算",
 			sirePhenotype, damPhenotype, ser.Name,
 		)
 	}
+	sortPhenotypeOutcomes(outcomes)
+	notes = notes + " 本配对不在权威表收录范围内，由位点模型推算（与表内 49 组 golden 一致）；表内已收录配对仍以表为准。"
+	return PhenotypeTableResult{
+		Mode:             "phenotype_table",
+		Series:           series,
+		SeriesName:       ser.Name,
+		Sire:             sirePhenotype,
+		Dam:              damPhenotype,
+		Outcomes:         outcomes,
+		GenotypeOutcomes: flat,
+		Notes:            notes,
+		TableID:          doc.ID,
+		Version:          doc.Version,
+		PredictionBasis:  PredictionBasisLocusModel,
+	}, nil
+}
 
-	outcomes := make([]PhenotypeOutcome, len(cross.Outcomes))
-	copy(outcomes, cross.Outcomes)
+func sortPhenotypeOutcomes(outcomes []PhenotypeOutcome) {
 	sort.SliceStable(outcomes, func(i, j int) bool {
 		if outcomes[i].Probability == outcomes[j].Probability {
 			return outcomes[i].Phenotype < outcomes[j].Phenotype
 		}
 		return outcomes[i].Probability > outcomes[j].Probability
 	})
+}
 
-	notes := strings.Join(doc.Notes, " ")
-	notes = notes + " 数据源：" + doc.Title + "（" + doc.Version + "）。"
-
-	return PhenotypeTableResult{
-		Mode:            "phenotype_table",
-		Series:          series,
-		SeriesName:      ser.Name,
-		Sire:            sirePhenotype,
-		Dam:             damPhenotype,
-		Outcomes:        outcomes,
-		Notes:           notes,
-		TableID:         doc.ID,
-		Version:         doc.Version,
-		PredictionBasis: PredictionBasisAuthorityTable,
-	}, nil
+// lookupPhenotypeCross finds an authority row, trying synonym labels for both parents.
+func lookupPhenotypeCross(series, sire, dam string) (PhenotypeCross, bool) {
+	for _, a := range PhenotypeLabelAliases(series, sire) {
+		for _, b := range PhenotypeLabelAliases(series, dam) {
+			pa, pb := normalizeParentPair(a, b)
+			if cross, ok := phenotypeCrossIndex[crossKey(series, pa, pb)]; ok {
+				return cross, true
+			}
+		}
+	}
+	return PhenotypeCross{}, false
 }
 
 func phenotypeInSeries(ser PhenotypeSeries, name string) bool {
@@ -266,10 +369,21 @@ func (r PhenotypeTableResult) ToSimulationResult() SimulationResult {
 	outcomes := make([]Outcome, 0, len(r.Outcomes))
 	for _, o := range r.Outcomes {
 		weight := fractionToWeight(o.Fraction, o.Probability)
+		gmap := map[string]string{"phenotype": o.Phenotype, "fraction": o.Fraction}
+		if o.CarrierSummary != "" {
+			gmap["carrier_summary"] = o.CarrierSummary
+		}
+		// Prefer top genotype class key for professional row / multi-gen handoff.
+		gkey := "phenotype=" + o.Phenotype
+		if len(o.GenotypeBreakdown) > 0 {
+			gkey = o.GenotypeBreakdown[0].Key
+			gmap["top_genotype_key"] = o.GenotypeBreakdown[0].Key
+			gmap["top_display_label"] = o.GenotypeBreakdown[0].DisplayLabel
+		}
 		outcomes = append(outcomes, Outcome{
-			GenotypeKey:    "phenotype=" + o.Phenotype,
-			Genotype:       map[string]string{"phenotype": o.Phenotype, "fraction": o.Fraction},
-			PhenotypeLabel: o.Phenotype,
+			GenotypeKey:    gkey,
+			Genotype:       gmap,
+			PhenotypeLabel: o.Phenotype, // keep pure label for calibration / client keys
 			Phenotype:      map[string]string{"label": o.Phenotype, "series": r.Series},
 			Probability:    o.Probability,
 			CountWeight:    weight,
@@ -391,7 +505,7 @@ func ValidateCorePhenotype(seriesRaw, label string) (seriesCode, phenotype strin
 	if !ok {
 		return "", "", fmt.Errorf("未知系列")
 	}
-	if !phenotypeInSeries(ser, label) {
+	if !phenotypeInSeriesOrAlias(ser, label) {
 		return "", "", fmt.Errorf("表型 %q 不在系列 %s 中", label, ser.Name)
 	}
 	return seriesCode, label, nil
@@ -408,6 +522,7 @@ func PhenotypeMapFromCore(series, label string) map[string]any {
 
 // FindCrossesForTarget lists crosses in a series that can produce the target phenotype,
 // sorted by probability descending. Used for breeding planning.
+// Authority-table rows are preferred; locus-model pairs fill catalog gaps (e.g. chocolate 105).
 func FindCrossesForTarget(seriesRaw, targetPhenotype string) ([]PhenotypeCross, error) {
 	doc, err := loadPhenotypeTable()
 	if err != nil {
@@ -421,31 +536,71 @@ func FindCrossesForTarget(seriesRaw, targetPhenotype string) ([]PhenotypeCross, 
 	if targetPhenotype == "" {
 		return nil, fmt.Errorf("目标表型必填")
 	}
+	targetAliases := map[string]struct{}{}
+	for _, a := range PhenotypeLabelAliases(series, targetPhenotype) {
+		targetAliases[a] = struct{}{}
+	}
+	targetCanon := NormalizePhenotypeLabel(series, targetPhenotype)
+	targetAliases[targetCanon] = struct{}{}
+
 	type ranked struct {
 		cross PhenotypeCross
 		p     float64
 	}
+	seen := map[string]struct{}{}
 	var list []ranked
+	addCross := func(c PhenotypeCross) {
+		a, b := normalizeParentPair(c.ParentA, c.ParentB)
+		key := crossKey(series, NormalizePhenotypeLabel(series, a), NormalizePhenotypeLabel(series, b))
+		if _, ok := seen[key]; ok {
+			return
+		}
+		var p float64
+		for _, o := range c.Outcomes {
+			if _, hit := targetAliases[o.Phenotype]; hit {
+				if o.Probability > p {
+					p = o.Probability
+				}
+			}
+			// model offspring may use canonical labels (黑熊) while target is 普通黑熊
+			if NormalizePhenotypeLabel(series, o.Phenotype) == targetCanon || o.Phenotype == targetPhenotype {
+				if o.Probability > p {
+					p = o.Probability
+				}
+			}
+		}
+		if p <= 0 {
+			return
+		}
+		seen[key] = struct{}{}
+		cc := c
+		cc.ParentA, cc.ParentB = a, b
+		cc.Series = series
+		list = append(list, ranked{cross: cc, p: p})
+	}
+
 	for _, c := range doc.Crosses {
 		if c.Series != series {
 			continue
 		}
-		for _, o := range c.Outcomes {
-			if o.Phenotype == targetPhenotype && o.Probability > 0 {
-				list = append(list, ranked{cross: c, p: o.Probability})
-				break
-			}
-		}
+		addCross(c)
 	}
-	sort.Slice(list, func(i, j int) bool {
+	for _, c := range EnumerateModelCrosses(series) {
+		addCross(c)
+	}
+
+	sort.SliceStable(list, func(i, j int) bool {
 		if list[i].p == list[j].p {
-			return list[i].cross.ParentA+list[i].cross.ParentB < list[j].cross.ParentA+list[j].cross.ParentB
+			if list[i].cross.ParentA == list[j].cross.ParentA {
+				return list[i].cross.ParentB < list[j].cross.ParentB
+			}
+			return list[i].cross.ParentA < list[j].cross.ParentA
 		}
 		return list[i].p > list[j].p
 	})
-	out := make([]PhenotypeCross, 0, len(list))
-	for _, r := range list {
-		out = append(out, r.cross)
+	out := make([]PhenotypeCross, len(list))
+	for i := range list {
+		out[i] = list[i].cross
 	}
 	return out, nil
 }

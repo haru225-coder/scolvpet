@@ -122,6 +122,24 @@ type OutcomeLike = {
   probability?: number
   genotypeKey?: string
   genotype?: Record<string, string>
+  carrierSummary?: string
+  carrier_summary?: string
+  genotypeBreakdown?: Array<{
+    key?: string
+    displayLabel?: string
+    display_label?: string
+    probability?: number
+    carrierTags?: string[]
+    carrier_tags?: string[]
+  }>
+  genotype_breakdown?: Array<{
+    key?: string
+    displayLabel?: string
+    display_label?: string
+    probability?: number
+    carrierTags?: string[]
+    carrier_tags?: string[]
+  }>
 }
 
 type ResultLike = {
@@ -167,12 +185,33 @@ export function buildGeneticsConclusion(result: ResultLike, kinshipLabel?: strin
 export function decorateOutcomes(outcomes: OutcomeLike[]) {
   return (outcomes || []).map((o) => {
     const p = Number(o.probability || 0)
+    const carrier = String(o.carrierSummary || o.carrier_summary || o.genotype?.carrier_summary || '').trim()
+    const baseName = displayPhenotypeLabel(o.phenotypeLabel || o.phenotype)
+    // Strip backend-appended carrier clause from phenotypeLabel for clean title
+    const cleanName = baseName.includes(' · ') ? baseName.split(' · ')[0] : baseName
+    const breakdown = o.genotypeBreakdown || o.genotype_breakdown || []
+    const top = breakdown[0]
+    const proKey =
+      o.genotypeKey ||
+      o.genotype?.top_genotype_key ||
+      top?.key ||
+      ''
+    const aboutParts = [formatAboutNInM(p)]
+    if (carrier) aboutParts.push(carrier)
     return {
       ...o,
-      displayName: displayPhenotypeLabel(o.phenotypeLabel || o.phenotype),
+      displayName: cleanName,
       percentLabel: formatGeneticsPercent(p),
-      aboutLabel: formatAboutNInM(p),
-      professionalKey: o.genotypeKey || ''
+      aboutLabel: aboutParts.join(' · '),
+      carrierSummary: carrier,
+      professionalKey: proKey,
+      genotypeBreakdown: breakdown.map((g) => ({
+        key: g.key || '',
+        displayLabel: g.displayLabel || g.display_label || '',
+        probability: Number(g.probability || 0),
+        percentLabel: formatGeneticsPercent(Number(g.probability || 0)),
+        carrierTags: g.carrierTags || g.carrier_tags || []
+      }))
     }
   })
 }

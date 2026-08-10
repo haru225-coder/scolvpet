@@ -57,6 +57,7 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
   const [catalog, setCatalog] = useState<any>(null)
   const [feedbackPairs, setFeedbackPairs] = useState<any[]>([])
   const [actualComparison, setActualComparison] = useState<any>(null)
+  const [parentInference, setParentInference] = useState<any>(null)
   const [message, setMessage] = useState<string>(GeneticsUiCopy.emptyHint)
   const [busy, setBusy] = useState(false)
   const [showPro, setShowPro] = useState(false)
@@ -157,7 +158,12 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
       })
       // 生成客户端可能返回 envelope 或已解包 data
       const data = ((response as any)?.data ?? response) as any
-      const rawOutcomes = data?.outcomes || data?.tableOutcomes || data?.table_outcomes || []
+      // Prefer table_outcomes: carries carrier_summary + genotype_breakdown for ③
+      const rawOutcomes =
+        data?.tableOutcomes ||
+        data?.table_outcomes ||
+        data?.outcomes ||
+        []
       const outcomes = decorateOutcomes(rawOutcomes)
       const conclusion = buildGeneticsConclusion({
         notes: data?.notes,
@@ -255,7 +261,30 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
         }
       })
       setActualComparison(response?.data?.comparison || response?.comparison || response)
-      setMessage('对照已保存')
+
+      // ④ 家系反推：用同一窝计数估公/母基因型后验
+      let inferNote = ''
+      try {
+        const inferred = await geneticApi.inferGeneticParents({
+          requestBody: {
+            series: seriesCode,
+            sire_phenotype: sirePhenotype.trim(),
+            dam_phenotype: damPhenotype.trim(),
+            actual_counts: actualCounts
+          } as any
+        })
+        const data = (inferred as any)?.data ?? inferred
+        setParentInference(data)
+        const top = data?.hypotheses?.[0]
+        if (top) {
+          const pct = Math.round(Number(top.probability || 0) * 100)
+          inferNote = ` · 最可能亲本 ${top.sire_display || top.sireDisplay} × ${top.dam_display || top.damDisplay}（${pct}%）`
+        }
+      } catch {
+        setParentInference(null)
+      }
+
+      setMessage(`对照已保存${inferNote}`)
       await loadReferenceData()
     } catch (cause) {
       setMessage(await notifyUserError(cause, '对照保存失败'))
@@ -392,14 +421,26 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                   onClick={() => setShowPro((v) => !v)}
                 />
                 {showPro
-                  ? (result.outcomes || []).map((item: any) => (
-                      <Cell
-                        key={`pro-${item.genotypeKey || item.displayName}`}
-                        title={item.professionalKey || item.genotypeKey || '—'}
-                        subtitle={item.displayName}
-                        value={<Tag tone="warning">{item.percentLabel}</Tag>}
-                      />
-                    ))
+                  ? (result.outcomes || []).flatMap((item: any) => {
+                      const rows = (item.genotypeBreakdown || []).length
+                        ? item.genotypeBreakdown
+                        : [
+                            {
+                              key: item.professionalKey || item.genotypeKey || '—',
+                              displayLabel: item.displayName,
+                              percentLabel: item.percentLabel,
+                              carrierTags: []
+                            }
+                          ]
+                      return rows.map((g: any, idx: number) => (
+                        <Cell
+                          key={`pro-${item.displayName}-${g.key || idx}`}
+                          title={g.displayLabel || g.key || '—'}
+                          subtitle={[g.key, ...(g.carrierTags || [])].filter(Boolean).join(' · ')}
+                          value={<Tag tone="warning">{g.percentLabel || item.percentLabel}</Tag>}
+                        />
+                      ))
+                    })
                   : null}
               </Section>
             ) : (
@@ -476,6 +517,15 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                 >
                   对照并保存
                 </CapabilityButton>
+                {parentInference?.hypotheses?.[0] ? (
+                  <Cell
+                    title={`亲本反推：${parentInference.hypotheses[0].sire_display || parentInference.hypotheses[0].sireDisplay || '公'} × ${parentInference.hypotheses[0].dam_display || parentInference.hypotheses[0].damDisplay || '母'}`}
+                    subtitle={`联合后验 ${Math.round(Number(parentInference.hypotheses[0].probability || 0) * 100)}% · 公 ${parentInference.sire_marginal?.[0]?.display_label || parentInference.sireMarginal?.[0]?.displayLabel || '—'} / 母 ${parentInference.dam_marginal?.[0]?.display_label || parentInference.damMarginal?.[0]?.displayLabel || '—'}`}
+                    value={
+                      <Tag tone="warning">{`${Math.round(Number(parentInference.hypotheses[0].probability || 0) * 100)}%`}</Tag>
+                    }
+                  />
+                ) : null}
                 {actualComparison ? (
                   <Cell
                     title={`总数 ${field(actualComparison, 'totalActual', 'total_actual', 0)}`}
