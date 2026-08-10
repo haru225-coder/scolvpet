@@ -11,6 +11,8 @@ Name | Type
 `series` | string
 `sirePhenotype` | string
 `damPhenotype` | string
+`sireGenotypeKey` | string
+`damGenotypeKey` | string
 `sireHamsterId` | string
 `damHamsterId` | string
 `targetPhenotype` | string
@@ -28,6 +30,8 @@ const example = {
   "series": null,
   "sirePhenotype": null,
   "damPhenotype": null,
+  "sireGenotypeKey": null,
+  "damGenotypeKey": null,
   "sireHamsterId": null,
   "damHamsterId": null,
   "targetPhenotype": null,

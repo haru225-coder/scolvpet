@@ -13908,6 +13908,12 @@ components:
         dam_phenotype:
           type: string
           description: 母本表型（phenotype_table 模式）
+        sire_genotype_key:
+          type: string
+          description: 可选父本精确基因型 key（多代续推；来自 genotype_breakdown[].key）
+        dam_genotype_key:
+          type: string
+          description: 可选母本精确基因型 key（多代续推；来自 genotype_breakdown[].key）
         sire_hamster_id:
           type: string
           format: uuid

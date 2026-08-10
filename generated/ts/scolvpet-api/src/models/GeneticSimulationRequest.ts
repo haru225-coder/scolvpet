@@ -47,6 +47,18 @@ export interface GeneticSimulationRequest {
      */
     damPhenotype?: string;
     /**
+     * 可选父本精确基因型 key（多代续推；来自 genotype_breakdown[].key）
+     * @type {string}
+     * @memberof GeneticSimulationRequest
+     */
+    sireGenotypeKey?: string;
+    /**
+     * 可选母本精确基因型 key（多代续推；来自 genotype_breakdown[].key）
+     * @type {string}
+     * @memberof GeneticSimulationRequest
+     */
+    damGenotypeKey?: string;
+    /**
      * 可选父本档案 ID；父母双方都提供时启用具体亲本历史校准
      * @type {string}
      * @memberof GeneticSimulationRequest
@@ -110,6 +122,8 @@ export function GeneticSimulationRequestFromJSONTyped(json: any, ignoreDiscrimin
         'series': json['series'] == null ? undefined : json['series'],
         'sirePhenotype': json['sire_phenotype'] == null ? undefined : json['sire_phenotype'],
         'damPhenotype': json['dam_phenotype'] == null ? undefined : json['dam_phenotype'],
+        'sireGenotypeKey': json['sire_genotype_key'] == null ? undefined : json['sire_genotype_key'],
+        'damGenotypeKey': json['dam_genotype_key'] == null ? undefined : json['dam_genotype_key'],
         'sireHamsterId': json['sire_hamster_id'] == null ? undefined : json['sire_hamster_id'],
         'damHamsterId': json['dam_hamster_id'] == null ? undefined : json['dam_hamster_id'],
         'targetPhenotype': json['target_phenotype'] == null ? undefined : json['target_phenotype'],
@@ -133,6 +147,8 @@ export function GeneticSimulationRequestToJSONTyped(value?: GeneticSimulationReq
         'series': value['series'],
         'sire_phenotype': value['sirePhenotype'],
         'dam_phenotype': value['damPhenotype'],
+        'sire_genotype_key': value['sireGenotypeKey'],
+        'dam_genotype_key': value['damGenotypeKey'],
         'sire_hamster_id': value['sireHamsterId'],
         'dam_hamster_id': value['damHamsterId'],
         'target_phenotype': value['targetPhenotype'],

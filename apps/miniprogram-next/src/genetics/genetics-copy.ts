@@ -182,6 +182,23 @@ export function buildGeneticsConclusion(result: ResultLike, kinshipLabel?: strin
   return { tone: 'blue', line: `这一配能配，会出 ${kinds} 种毛色` }
 }
 
+/** 后端 prediction_basis → 用户可读依据。 */
+export function humanizePredictionBasis(raw: unknown): string {
+  const b = String(raw || '').trim()
+  switch (b) {
+    case 'authority_table':
+      return '依据：权威表'
+    case 'authority_table_plus_history':
+      return '依据：权威表 + 历史窝次校准'
+    case 'locus_model':
+      return '依据：位点模型（表外补算）'
+    case 'parent_genotype_posterior':
+      return '依据：窝次反推亲本基因型'
+    default:
+      return b ? `依据：${b}` : '依据：未标明'
+  }
+}
+
 export function decorateOutcomes(outcomes: OutcomeLike[]) {
   return (outcomes || []).map((o) => {
     const p = Number(o.probability || 0)

@@ -143,6 +143,74 @@ func TestSimulatePhenotypeTableFallsBackToAuthorityWithoutFeedbackStore(t *testi
 	}
 }
 
+func TestInferGeneticParentsHTTPReturnsPosterior(t *testing.T) {
+	authService := auth.New("test", "123456")
+	accountID := uuid.New()
+	token, _, err := authService.CreateSession(context.Background(), accountID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	server := NewServer(nil, authService, slog.Default())
+	mux := http.NewServeMux()
+	server.registerP1GeneticRoutes(mux)
+	body := []byte(`{
+		"series":"chocolate",
+		"sire_phenotype":"普通黑熊",
+		"dam_phenotype":"普通黑熊",
+		"actual_counts":{"黑熊":6,"巧克力":2}
+	}`)
+	request := httptest.NewRequest(http.MethodPost, "/v1/genetic/infer-parents", bytes.NewReader(body))
+	request.Header.Set("Authorization", "Bearer "+token)
+	request.Header.Set("Content-Type", "application/json")
+	request = request.WithContext(context.WithValue(
+		request.Context(),
+		requestPrincipalContextKey{},
+		store.Principal{
+			AccountID: accountID,
+			OwnerID:   accountID,
+			Role:      "owner",
+		},
+	))
+	recorder := httptest.NewRecorder()
+	mux.ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status=%d body=%s", recorder.Code, recorder.Body.String())
+	}
+	var response struct {
+		Data struct {
+			PredictionBasis string `json:"prediction_basis"`
+			PupCount        int    `json:"pup_count"`
+			Hypotheses      []struct {
+				SireKey     string  `json:"sire_genotype_key"`
+				DamKey      string  `json:"dam_genotype_key"`
+				Probability float64 `json:"probability"`
+			} `json:"hypotheses"`
+			SireMarginal []struct {
+				Key string `json:"key"`
+			} `json:"sire_marginal"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(recorder.Body.Bytes(), &response); err != nil {
+		t.Fatal(err)
+	}
+	if response.Data.PredictionBasis != geneticcore.PredictionBasisParentPosterior {
+		t.Fatalf("basis=%s", response.Data.PredictionBasis)
+	}
+	if response.Data.PupCount != 8 {
+		t.Fatalf("pup_count=%d", response.Data.PupCount)
+	}
+	if len(response.Data.Hypotheses) == 0 {
+		t.Fatal("expected hypotheses")
+	}
+	top := response.Data.Hypotheses[0]
+	if top.SireKey != "b=Bb|d=DD|s=--" || top.DamKey != "b=Bb|d=DD|s=--" {
+		t.Fatalf("top=%s × %s p=%v", top.SireKey, top.DamKey, top.Probability)
+	}
+	if top.Probability < 0.5 {
+		t.Fatalf("top probability too low: %v", top.Probability)
+	}
+}
+
 func TestDecodePhenotypeActualCountsSkipsInvalidValues(t *testing.T) {
 	got := decodePhenotypeActualCounts([]byte(`{
 		"蜜波利": 4,

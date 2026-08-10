@@ -15,7 +15,8 @@ import {
   buildGeneticsConclusion,
   decorateOutcomes,
   formatGeneticsPercent,
-  humanMissing
+  humanMissing,
+  humanizePredictionBasis
 } from './genetics-copy'
 import { getFallbackPhenotypeCatalog } from './fallback-catalog'
 
@@ -50,6 +51,9 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
   const [series, setSeries] = useState('')
   const [sirePhenotype, setSirePhenotype] = useState('')
   const [damPhenotype, setDamPhenotype] = useState('')
+  /** 精确基因型 key（多代续推）；有值时 simulate 走 locus model */
+  const [sireGenotypeKey, setSireGenotypeKey] = useState('')
+  const [damGenotypeKey, setDamGenotypeKey] = useState('')
   const [targetPhenotype, setTargetPhenotype] = useState('')
   const [actualCountsText, setActualCountsText] = useState('')
   const [result, setResult] = useState<any>(null)
@@ -62,6 +66,66 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
   const [busy, setBusy] = useState(false)
   const [showPro, setShowPro] = useState(false)
   const [showMore, setShowMore] = useState(false)
+
+  function clearGenotypePins() {
+    setSireGenotypeKey('')
+    setDamGenotypeKey('')
+  }
+
+  /** 把某基因型钉到公/母，供下一轮试配（③ 多代）。 */
+  function pinGenotype(side: 'sire' | 'dam', key: string, displayLabel?: string) {
+    const k = String(key || '').trim()
+    if (!k || k === '—') {
+      void presentUserMessage('没有可用的基因型 key')
+      return
+    }
+    const label = String(displayLabel || '').trim()
+    // 尽量把表型也同步成展示名（去掉携带括号）
+    const pheno = label.includes('（') ? label.slice(0, label.indexOf('（')).trim() : label
+    if (side === 'sire') {
+      setSireGenotypeKey(k)
+      if (pheno) setSirePhenotype(pheno)
+    } else {
+      setDamGenotypeKey(k)
+      if (pheno) setDamPhenotype(pheno)
+    }
+    setMessage(
+      side === 'sire'
+        ? `已把「${label || k}」设为公本基因型，可再点试配`
+        : `已把「${label || k}」设为母本基因型，可再点试配`
+    )
+    void Taro.showToast({ title: side === 'sire' ? '已设为公' : '已设为母', icon: 'success', duration: 900 })
+  }
+
+  function applyInferredParentsAsPins() {
+    const top = parentInference?.hypotheses?.[0]
+    if (!top) {
+      void presentUserMessage('还没有反推结果')
+      return
+    }
+    const sk = String(top.sire_genotype_key || top.sireGenotypeKey || '').trim()
+    const dk = String(top.dam_genotype_key || top.damGenotypeKey || '').trim()
+    const sd = String(top.sire_display || top.sireDisplay || '').trim()
+    const dd = String(top.dam_display || top.damDisplay || '').trim()
+    if (sk) {
+      setSireGenotypeKey(sk)
+      if (sd) setSirePhenotype(sd.includes('（') ? sd.slice(0, sd.indexOf('（')).trim() : sd)
+    }
+    if (dk) {
+      setDamGenotypeKey(dk)
+      if (dd) setDamPhenotype(dd.includes('（') ? dd.slice(0, dd.indexOf('（')).trim() : dd)
+    }
+    setShowMore(false)
+    setMessage(`已用反推亲本：${sd || sk} × ${dd || dk}，点试配看下一代`)
+    void Taro.showToast({ title: '已填入亲本', icon: 'success', duration: 1000 })
+    try {
+      setTimeout(() => {
+        void Taro.pageScrollTo({ selector: '#genetic-result', duration: 280 }).catch(() => undefined)
+      }, 80)
+    } catch {
+      // ignore
+    }
+  }
 
   function applyCatalog(nextCatalog: { series: any[] }, note?: string) {
     setCatalog(nextCatalog)
@@ -137,8 +201,21 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
       void presentUserMessage(msg)
       return
     }
-    if (!seriesCode || !sirePhenotype.trim() || !damPhenotype.trim()) {
-      const msg = '请选择系列、公的样子和母的样子'
+    // 有 genotype key 时可只靠 key；否则必须有表型
+    if (!seriesCode) {
+      const msg = '请选择系列'
+      setMessage(msg)
+      void presentUserMessage(msg)
+      return
+    }
+    if (!sireGenotypeKey && !sirePhenotype.trim()) {
+      const msg = '请选择公的样子，或从专业结果里钉一个基因型'
+      setMessage(msg)
+      void presentUserMessage(msg)
+      return
+    }
+    if (!damGenotypeKey && !damPhenotype.trim()) {
+      const msg = '请选择母的样子，或从专业结果里钉一个基因型'
       setMessage(msg)
       void presentUserMessage(msg)
       return
@@ -152,8 +229,10 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
         geneticSimulationRequest: {
           mode: 'phenotype_table',
           series: seriesCode,
-          sirePhenotype: sirePhenotype.trim(),
-          damPhenotype: damPhenotype.trim()
+          sirePhenotype: sirePhenotype.trim() || undefined,
+          damPhenotype: damPhenotype.trim() || undefined,
+          sireGenotypeKey: sireGenotypeKey.trim() || undefined,
+          damGenotypeKey: damGenotypeKey.trim() || undefined
         } as any
       })
       // 生成客户端可能返回 envelope 或已解包 data
@@ -165,17 +244,24 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
         data?.outcomes ||
         []
       const outcomes = decorateOutcomes(rawOutcomes)
+      const predictionBasis = data?.predictionBasis || data?.prediction_basis
       const conclusion = buildGeneticsConclusion({
         notes: data?.notes,
-        predictionBasis: data?.predictionBasis || data?.prediction_basis,
+        predictionBasis,
         sirePhenotype: data?.sirePhenotype || data?.sire_phenotype || sirePhenotype,
         damPhenotype: data?.damPhenotype || data?.dam_phenotype || damPhenotype,
         sire: data?.sire,
         dam: data?.dam,
         outcomes: rawOutcomes
       })
-      setResult({ ...data, outcomes, conclusion })
-      setMessage(conclusion.line)
+      setResult({
+        ...data,
+        outcomes,
+        conclusion,
+        predictionBasis,
+        basisLabel: humanizePredictionBasis(predictionBasis)
+      })
+      setMessage(`${conclusion.line} · ${humanizePredictionBasis(predictionBasis)}`)
       void Taro.showToast({ title: '模拟完成', icon: 'success', duration: 1200 })
       // 滚到结果区（小程序 pageScrollTo；失败静默）
       try {
@@ -307,6 +393,7 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
     const selected = catalogSeries[index]
     const code = String(selected?.code || '')
     setSeries(code)
+    clearGenotypePins()
     const first = selected?.phenotypes?.[0] ? String(selected.phenotypes[0]) : ''
     if (first) {
       setSirePhenotype(first)
@@ -358,10 +445,15 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                     onChange={(event) => {
                       if (!requireLogin('试配')) return
                       setSirePhenotype(phenotypeOptions[Number(event.detail.value)] || '')
+                      setSireGenotypeKey('')
                       setResult(null)
                     }}
                   >
-                    <Cell title={sirePhenotype || '选择样子'} value={<Tag>选择</Tag>} />
+                    <Cell
+                      title={sirePhenotype || '选择样子'}
+                      subtitle={sireGenotypeKey ? `基因型已钉：${sireGenotypeKey}` : undefined}
+                      value={sireGenotypeKey ? <Tag tone="warning">精确</Tag> : <Tag>选择</Tag>}
+                    />
                   </Picker>
                 </FormRow>
                 <FormRow label="母的样子" divider>
@@ -372,12 +464,28 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                     onChange={(event) => {
                       if (!requireLogin('试配')) return
                       setDamPhenotype(phenotypeOptions[Number(event.detail.value)] || '')
+                      setDamGenotypeKey('')
                       setResult(null)
                     }}
                   >
-                    <Cell title={damPhenotype || '选择样子'} value={<Tag>选择</Tag>} />
+                    <Cell
+                      title={damPhenotype || '选择样子'}
+                      subtitle={damGenotypeKey ? `基因型已钉：${damGenotypeKey}` : undefined}
+                      value={damGenotypeKey ? <Tag tone="warning">精确</Tag> : <Tag>选择</Tag>}
+                    />
                   </Picker>
                 </FormRow>
+                {sireGenotypeKey || damGenotypeKey ? (
+                  <Cell
+                    title="清除精确基因型"
+                    subtitle="回到只按样子（表型）试配"
+                    value={<Tag>清除</Tag>}
+                    onClick={() => {
+                      clearGenotypePins()
+                      setMessage('已清除精确基因型，下次按样子试配')
+                    }}
+                  />
+                ) : null}
               </>
             ) : (
               <Cell title="还没有样子目录" subtitle="点下方刷新，或先配置物种规则" />
@@ -399,8 +507,17 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
               >
                 <Cell
                   title={result.conclusion?.line || GeneticsUiCopy.resultHeading}
-                  subtitle="以下为模拟概率，不是保证"
+                  subtitle={`${result.basisLabel || humanizePredictionBasis(result.predictionBasis)} · 概率不是保证`}
                   value={<Tag tone={conclusionTone as any}>{result.conclusion?.tone === 'red' ? '风险' : '结论'}</Tag>}
+                />
+                <Cell
+                  title={result.basisLabel || humanizePredictionBasis(result.predictionBasis)}
+                  subtitle={
+                    sireGenotypeKey || damGenotypeKey
+                      ? `本轮使用了精确基因型${sireGenotypeKey ? ' · 公' : ''}${damGenotypeKey ? ' · 母' : ''}`
+                      : '表内配对走权威表；表外由位点模型补算'
+                  }
+                  value={<Tag tone="warning">依据</Tag>}
                 />
                 {(result.outcomes || []).length ? (
                   (result.outcomes || []).map((item: any) => (
@@ -415,8 +532,8 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                   <Cell title="没有算出结果" subtitle={GeneticsUiCopy.missingData} />
                 )}
                 <Cell
-                  title={showPro ? '收起专业代码' : GeneticsUiCopy.professionalSectionTitle}
-                  subtitle="需要时再看"
+                  title={showPro ? '收起专业信息' : GeneticsUiCopy.professionalSectionTitle}
+                  subtitle={showPro ? '点某一行可钉到公/母，再试配做多代' : '展开后可点选基因型续推'}
                   value={<Tag>{showPro ? '已展开' : '折叠'}</Tag>}
                   onClick={() => setShowPro((v) => !v)}
                 />
@@ -432,14 +549,32 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                               carrierTags: []
                             }
                           ]
-                      return rows.map((g: any, idx: number) => (
-                        <Cell
-                          key={`pro-${item.displayName}-${g.key || idx}`}
-                          title={g.displayLabel || g.key || '—'}
-                          subtitle={[g.key, ...(g.carrierTags || [])].filter(Boolean).join(' · ')}
-                          value={<Tag tone="warning">{g.percentLabel || item.percentLabel}</Tag>}
-                        />
-                      ))
+                      return rows.flatMap((g: any, idx: number) => {
+                        const key = g.key || item.professionalKey || '—'
+                        const label = g.displayLabel || g.key || item.displayName || '—'
+                        return [
+                          <Cell
+                            key={`pro-${item.displayName}-${key}-${idx}`}
+                            title={label}
+                            subtitle={[key, ...(g.carrierTags || [])].filter(Boolean).join(' · ')}
+                            value={<Tag tone="warning">{g.percentLabel || item.percentLabel}</Tag>}
+                          />,
+                          <Cell
+                            key={`pin-s-${item.displayName}-${key}-${idx}`}
+                            title="设为公本（下一配）"
+                            subtitle={label}
+                            value={<Tag>公</Tag>}
+                            onClick={() => pinGenotype('sire', key, label)}
+                          />,
+                          <Cell
+                            key={`pin-d-${item.displayName}-${key}-${idx}`}
+                            title="设为母本（下一配）"
+                            subtitle={label}
+                            value={<Tag>母</Tag>}
+                            onClick={() => pinGenotype('dam', key, label)}
+                          />
+                        ]
+                      })
                     })
                   : null}
               </Section>
@@ -518,13 +653,21 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                   对照并保存
                 </CapabilityButton>
                 {parentInference?.hypotheses?.[0] ? (
-                  <Cell
-                    title={`亲本反推：${parentInference.hypotheses[0].sire_display || parentInference.hypotheses[0].sireDisplay || '公'} × ${parentInference.hypotheses[0].dam_display || parentInference.hypotheses[0].damDisplay || '母'}`}
-                    subtitle={`联合后验 ${Math.round(Number(parentInference.hypotheses[0].probability || 0) * 100)}% · 公 ${parentInference.sire_marginal?.[0]?.display_label || parentInference.sireMarginal?.[0]?.displayLabel || '—'} / 母 ${parentInference.dam_marginal?.[0]?.display_label || parentInference.damMarginal?.[0]?.displayLabel || '—'}`}
-                    value={
-                      <Tag tone="warning">{`${Math.round(Number(parentInference.hypotheses[0].probability || 0) * 100)}%`}</Tag>
-                    }
-                  />
+                  <>
+                    <Cell
+                      title={`亲本反推：${parentInference.hypotheses[0].sire_display || parentInference.hypotheses[0].sireDisplay || '公'} × ${parentInference.hypotheses[0].dam_display || parentInference.hypotheses[0].damDisplay || '母'}`}
+                      subtitle={`联合后验 ${Math.round(Number(parentInference.hypotheses[0].probability || 0) * 100)}% · 公 ${parentInference.sire_marginal?.[0]?.display_label || parentInference.sireMarginal?.[0]?.displayLabel || '—'} / 母 ${parentInference.dam_marginal?.[0]?.display_label || parentInference.damMarginal?.[0]?.displayLabel || '—'}`}
+                      value={
+                        <Tag tone="warning">{`${Math.round(Number(parentInference.hypotheses[0].probability || 0) * 100)}%`}</Tag>
+                      }
+                    />
+                    <Cell
+                      title="用这对亲本再试配"
+                      subtitle="把反推的公/母基因型钉进试配，再点「试配一下」"
+                      value={<Tag tone="success">填入</Tag>}
+                      onClick={() => applyInferredParentsAsPins()}
+                    />
+                  </>
                 ) : null}
                 {actualComparison ? (
                   <Cell
