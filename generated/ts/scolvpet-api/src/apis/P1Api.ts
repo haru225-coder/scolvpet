@@ -3,7 +3,7 @@
 /* eslint-disable */
 /**
  * 熊舍管家 MVP API (miniprogram TS client subset)
- * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。  NOTE: Filtered subset for apps/miniprogram-next typescript-fetch generation only. Authoritative full contract: specs/api/openapi.yaml Kept operationIds: 99
+ * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。  NOTE: Filtered subset for apps/miniprogram-next typescript-fetch generation only. Authoritative full contract: specs/api/openapi.yaml Kept operationIds: 101
  *
  * The version of the OpenAPI document: 1.0.1
  *
@@ -119,6 +119,11 @@ import {
     GeneticSimulationResponseFromJSON,
     GeneticSimulationResponseToJSON,
 } from '../models/GeneticSimulationResponse';
+import {
+    type UpdateGeneticProfileRequest,
+    UpdateGeneticProfileRequestFromJSON,
+    UpdateGeneticProfileRequestToJSON,
+} from '../models/UpdateGeneticProfileRequest';
 
 export interface CreateAccountingCategoryOperationRequest {
     createAccountingCategoryRequest: CreateAccountingCategoryRequest;
@@ -153,6 +158,10 @@ export interface CreateReceiptOperationRequest {
 export interface CreateReceiptTemplateRequest {
     createDocumentTemplateRequest: CreateDocumentTemplateRequest;
     idempotencyKey?: string;
+}
+
+export interface DeleteGeneticProfileRequest {
+    profileId: string;
 }
 
 export interface GetAccountingSummaryRequest {
@@ -205,6 +214,12 @@ export interface RevokeReceiptRequest {
 
 export interface SimulateGeneticBreedingRequest {
     geneticSimulationRequest: GeneticSimulationRequest;
+    idempotencyKey?: string;
+}
+
+export interface UpdateGeneticProfileOperationRequest {
+    profileId: string;
+    updateGeneticProfileRequest: UpdateGeneticProfileRequest;
     idempotencyKey?: string;
 }
 
@@ -637,6 +652,59 @@ export class P1Api extends runtime.BaseAPI {
      */
     async createReceiptTemplate(requestParameters: CreateReceiptTemplateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentTemplateResponse> {
         const response = await this.createReceiptTemplateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for deleteGeneticProfile without sending the request
+     */
+    async deleteGeneticProfileRequestOpts(requestParameters: DeleteGeneticProfileRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['profileId'] == null) {
+            throw new runtime.RequiredError(
+                'profileId',
+                'Required parameter "profileId" was null or undefined when calling deleteGeneticProfile().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/v1/genetic/profiles/{profile_id}`;
+        urlPath = urlPath.replace('{profile_id}', encodeURIComponent(String(requestParameters['profileId'])));
+
+        return {
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * 删除遗传档案
+     */
+    async deleteGeneticProfileRaw(requestParameters: DeleteGeneticProfileRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
+        const requestOptions = await this.deleteGeneticProfileRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * 删除遗传档案
+     */
+    async deleteGeneticProfile(requestParameters: DeleteGeneticProfileRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
+        const response = await this.deleteGeneticProfileRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1567,6 +1635,75 @@ export class P1Api extends runtime.BaseAPI {
      */
     async simulateGeneticBreeding(requestParameters: SimulateGeneticBreedingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GeneticSimulationResponse> {
         const response = await this.simulateGeneticBreedingRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for updateGeneticProfile without sending the request
+     */
+    async updateGeneticProfileRequestOpts(requestParameters: UpdateGeneticProfileOperationRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['profileId'] == null) {
+            throw new runtime.RequiredError(
+                'profileId',
+                'Required parameter "profileId" was null or undefined when calling updateGeneticProfile().'
+            );
+        }
+
+        if (requestParameters['updateGeneticProfileRequest'] == null) {
+            throw new runtime.RequiredError(
+                'updateGeneticProfileRequest',
+                'Required parameter "updateGeneticProfileRequest" was null or undefined when calling updateGeneticProfile().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['idempotencyKey'] != null) {
+            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/v1/genetic/profiles/{profile_id}`;
+        urlPath = urlPath.replace('{profile_id}', encodeURIComponent(String(requestParameters['profileId'])));
+
+        return {
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateGeneticProfileRequestToJSON(requestParameters['updateGeneticProfileRequest']),
+        };
+    }
+
+    /**
+     * 需要 Bearer 令牌；乐观并发依赖 body.version（当前档案版本）。
+     * 更新遗传档案
+     */
+    async updateGeneticProfileRaw(requestParameters: UpdateGeneticProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GeneticProfileResponse>> {
+        const requestOptions = await this.updateGeneticProfileRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GeneticProfileResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 需要 Bearer 令牌；乐观并发依赖 body.version（当前档案版本）。
+     * 更新遗传档案
+     */
+    async updateGeneticProfile(requestParameters: UpdateGeneticProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GeneticProfileResponse> {
+        const response = await this.updateGeneticProfileRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

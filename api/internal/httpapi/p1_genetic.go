@@ -26,6 +26,8 @@ func (s *Server) registerP1GeneticRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v1/genetic/feedback-summary", s.listGeneticFeedbackSummary)
 	mux.HandleFunc("GET /v1/genetic/profiles", s.listGeneticProfiles)
 	mux.HandleFunc("POST /v1/genetic/profiles", s.createGeneticProfile)
+	mux.HandleFunc("PATCH /v1/genetic/profiles/{profile_id}", s.updateGeneticProfile)
+	mux.HandleFunc("DELETE /v1/genetic/profiles/{profile_id}", s.deleteGeneticProfile)
 	mux.HandleFunc("POST /v1/genetic/simulate", s.simulateGeneticBreeding)
 }
 
@@ -48,6 +50,16 @@ type createGeneticProfileRequest struct {
 	Genotype   map[string]string `json:"genotype"`
 	Confidence string            `json:"confidence"`
 	Notes      *string           `json:"notes"`
+}
+
+type updateGeneticProfileRequest struct {
+	Name       *string           `json:"name"`
+	Phenotype  map[string]any    `json:"phenotype"`
+	Genotype   map[string]string `json:"genotype"`
+	Confidence *string           `json:"confidence"`
+	Notes      *string           `json:"notes"`
+	// Version is required for optimistic concurrency (current profile.version).
+	Version int `json:"version"`
 }
 
 type compareGeneticActualRequest struct {
@@ -520,6 +532,124 @@ func (s *Server) createGeneticProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, r, http.StatusCreated, map[string]any{"data": item, "meta": responseMeta(r)})
+}
+
+func (s *Server) updateGeneticProfile(w http.ResponseWriter, r *http.Request) {
+	ownerID, ok := s.authenticateMemberOwner(w, r)
+	if !ok {
+		return
+	}
+	profileID, err := uuid.Parse(strings.TrimSpace(r.PathValue("profile_id")))
+	if err != nil {
+		writeAPIError(w, r, validationError("profile_id", "档案 ID 无效"))
+		return
+	}
+	var request updateGeneticProfileRequest
+	if _, err := decodeBody(r, &request); err != nil {
+		writeAPIError(w, r, validationError("body", "更新遗传档案请求体格式不正确"))
+		return
+	}
+	if request.Version <= 0 {
+		writeAPIError(w, r, validationError("version", "version 必填且须为正整数（当前档案版本）"))
+		return
+	}
+	current, err := s.getGeneticProfile(r.Context(), ownerID, profileID)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	if current.Version != request.Version {
+		writeAPIError(w, r, validationError("version", "档案版本已变更，请刷新后重试"))
+		return
+	}
+
+	name := current.Name
+	if request.Name != nil {
+		name = strings.TrimSpace(*request.Name)
+		if name == "" {
+			writeAPIError(w, r, validationError("name", "档案名称不能为空"))
+			return
+		}
+	}
+	confidence := current.Confidence
+	if request.Confidence != nil {
+		confidence = strings.TrimSpace(*request.Confidence)
+		if confidence == "" {
+			confidence = "unknown"
+		}
+		if confidence != "observed" && confidence != "inferred" && confidence != "unknown" {
+			writeAPIError(w, r, validationError("confidence", "置信度无效"))
+			return
+		}
+	}
+	phenotype := current.Phenotype
+	if request.Phenotype != nil {
+		phenotype = request.Phenotype
+	}
+	genotype := current.Genotype
+	if request.Genotype != nil {
+		genotype, err = normalizeGenotypeMap(request.Genotype)
+		if err != nil {
+			writeAPIError(w, r, validationError("genotype", err.Error()))
+			return
+		}
+	}
+	var notes *string
+	if request.Notes != nil {
+		notes = request.Notes
+	} else {
+		notes = current.Notes
+	}
+
+	phenotypeJSON, _ := json.Marshal(phenotype)
+	genotypeJSON, _ := json.Marshal(genotype)
+	tag, err := s.Store.Pool.Exec(r.Context(), `
+		UPDATE genetic_profile
+		SET name=$3, phenotype=$4::jsonb, genotype=$5::jsonb, confidence=$6::genetic_confidence,
+		    notes=$7, version=version+1, updated_at=now()
+		WHERE owner_id=$1 AND id=$2 AND version=$8
+	`, ownerID, profileID, name, phenotypeJSON, genotypeJSON, confidence, emptyToNil(notes), request.Version)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		writeAPIError(w, r, validationError("version", "档案版本已变更，请刷新后重试"))
+		return
+	}
+	item, err := s.getGeneticProfile(r.Context(), ownerID, profileID)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	writeJSON(w, r, http.StatusOK, map[string]any{"data": item, "meta": responseMeta(r)})
+}
+
+func (s *Server) deleteGeneticProfile(w http.ResponseWriter, r *http.Request) {
+	ownerID, ok := s.authenticateMemberOwner(w, r)
+	if !ok {
+		return
+	}
+	profileID, err := uuid.Parse(strings.TrimSpace(r.PathValue("profile_id")))
+	if err != nil {
+		writeAPIError(w, r, validationError("profile_id", "档案 ID 无效"))
+		return
+	}
+	tag, err := s.Store.Pool.Exec(r.Context(), `
+		DELETE FROM genetic_profile WHERE owner_id=$1 AND id=$2
+	`, ownerID, profileID)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		writeAPIError(w, r, store.ErrNotFound)
+		return
+	}
+	writeJSON(w, r, http.StatusOK, map[string]any{
+		"data": map[string]any{"id": profileID, "deleted": true},
+		"meta": responseMeta(r),
+	})
 }
 
 func (s *Server) simulateGeneticBreeding(w http.ResponseWriter, r *http.Request) {

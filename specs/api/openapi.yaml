@@ -5455,6 +5455,86 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/CreateGeneticProfileRequest"
+  "/v1/genetic/profiles/{profile_id}":
+    patch:
+      tags:
+      - P1 遗传
+      operationId: updateGeneticProfile
+      summary: 更新遗传档案
+      description: 需要 Bearer 令牌；乐观并发依赖 body.version（当前档案版本）。
+      parameters:
+      - name: profile_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - *1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - version
+              properties:
+                name:
+                  type: string
+                notes:
+                  type: string
+                  nullable: true
+                confidence:
+                  type: string
+                  enum: [observed, inferred, unknown]
+                phenotype:
+                  type: object
+                  additionalProperties: true
+                genotype:
+                  type: object
+                  additionalProperties:
+                    type: string
+                version:
+                  type: integer
+                  minimum: 1
+                  description: 当前档案 version，不匹配则 422
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GeneticProfileResponse"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    delete:
+      tags:
+      - P1 遗传
+      operationId: deleteGeneticProfile
+      summary: 删除遗传档案
+      parameters:
+      - name: profile_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/NotFound"
   "/v1/genetic/simulate":
     post:
       tags:

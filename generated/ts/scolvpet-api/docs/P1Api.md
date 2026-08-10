@@ -11,6 +11,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**createGeneticProfile**](P1Api.md#creategeneticprofileoperation) | **POST** /v1/genetic/profiles | 创建遗传档案 |
 | [**createReceipt**](P1Api.md#createreceiptoperation) | **POST** /v1/receipts | 创建回执单据 |
 | [**createReceiptTemplate**](P1Api.md#createreceipttemplate) | **POST** /v1/receipts/templates | 创建回执模板 |
+| [**deleteGeneticProfile**](P1Api.md#deletegeneticprofile) | **DELETE** /v1/genetic/profiles/{profile_id} | 删除遗传档案 |
 | [**getAccountingSummary**](P1Api.md#getaccountingsummary) | **GET** /v1/accounting/summary | 读取记账汇总 |
 | [**getContract**](P1Api.md#getcontract) | **GET** /v1/contracts/{document_id} | 获取合同单据详情 |
 | [**getReceipt**](P1Api.md#getreceipt) | **GET** /v1/receipts/{document_id} | 获取回执单据详情 |
@@ -27,6 +28,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**revokeContract**](P1Api.md#revokecontract) | **POST** /v1/contracts/{document_id}/revoke | 撤销合同 |
 | [**revokeReceipt**](P1Api.md#revokereceipt) | **POST** /v1/receipts/{document_id}/revoke | 撤销回执 |
 | [**simulateGeneticBreeding**](P1Api.md#simulategeneticbreeding) | **POST** /v1/genetic/simulate | 模拟遗传配对 |
+| [**updateGeneticProfile**](P1Api.md#updategeneticprofileoperation) | **PATCH** /v1/genetic/profiles/{profile_id} | 更新遗传档案 |
 
 
 
@@ -563,6 +565,77 @@ example().catch(console.error);
 | **201** | 创建回执模板成功 |  -  |
 | **401** | 访问令牌缺失、无效或过期 |  -  |
 | **422** | 字段格式或领域规则校验失败 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## deleteGeneticProfile
+
+> { [key: string]: any; } deleteGeneticProfile(profileId)
+
+删除遗传档案
+
+### Example
+
+```ts
+import {
+  Configuration,
+  P1Api,
+} from '@scolvpet/scolvpet-api';
+import type { DeleteGeneticProfileRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new P1Api(config);
+
+  const body = {
+    // string
+    profileId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
+  } satisfies DeleteGeneticProfileRequest;
+
+  try {
+    const data = await api.deleteGeneticProfile(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **profileId** | `string` |  | [Defaults to `undefined`] |
+
+### Return type
+
+**{ [key: string]: any; }**
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | 删除成功 |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+| **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -1731,6 +1804,86 @@ example().catch(console.error);
 |-------------|-------------|------------------|
 | **200** | 模拟遗传配对成功 |  -  |
 | **401** | 访问令牌缺失、无效或过期 |  -  |
+| **422** | 字段格式或领域规则校验失败 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## updateGeneticProfile
+
+> GeneticProfileResponse updateGeneticProfile(profileId, updateGeneticProfileRequest, idempotencyKey)
+
+更新遗传档案
+
+需要 Bearer 令牌；乐观并发依赖 body.version（当前档案版本）。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  P1Api,
+} from '@scolvpet/scolvpet-api';
+import type { UpdateGeneticProfileOperationRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new P1Api(config);
+
+  const body = {
+    // string
+    profileId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
+    // UpdateGeneticProfileRequest
+    updateGeneticProfileRequest: ...,
+    // string | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 (optional)
+    idempotencyKey: idempotencyKey_example,
+  } satisfies UpdateGeneticProfileOperationRequest;
+
+  try {
+    const data = await api.updateGeneticProfile(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **profileId** | `string` |  | [Defaults to `undefined`] |
+| **updateGeneticProfileRequest** | [UpdateGeneticProfileRequest](UpdateGeneticProfileRequest.md) |  | |
+| **idempotencyKey** | `string` | P1/P2 写请求建议使用的幂等键；服务端以 owner、方法、路径和规范化载荷记录审计上下文。 | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**GeneticProfileResponse**](GeneticProfileResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | 更新成功 |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+| **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
 | **422** | 字段格式或领域规则校验失败 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

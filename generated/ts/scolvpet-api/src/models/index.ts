@@ -198,6 +198,7 @@ export * from './SpeciesRuleVersionListResponse';
 export * from './TaskCorrectionRequest';
 export * from './TaskPriority';
 export * from './TaskState';
+export * from './UpdateGeneticProfileRequest';
 export * from './UploadSession';
 export * from './UpsertWechatSubscriptionsRequest';
 export * from './UsageMetric';

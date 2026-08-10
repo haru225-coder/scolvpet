@@ -2,3 +2,5 @@
 # even before the first source call lands (or for rarely-used tools).
 inferGeneticParents
 createGeneticProfile
+updateGeneticProfile
+deleteGeneticProfile

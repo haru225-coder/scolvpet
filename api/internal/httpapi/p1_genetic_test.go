@@ -32,6 +32,8 @@ func TestP1GeneticRoutesRequireAuth(t *testing.T) {
 		{http.MethodGet, "/v1/genetic/feedback-summary"},
 		{http.MethodGet, "/v1/genetic/profiles"},
 		{http.MethodPost, "/v1/genetic/profiles"},
+		{http.MethodPatch, "/v1/genetic/profiles/00000000-0000-0000-0000-000000000001"},
+		{http.MethodDelete, "/v1/genetic/profiles/00000000-0000-0000-0000-000000000001"},
 		{http.MethodPost, "/v1/genetic/simulate"},
 	}
 	for _, test := range paths {

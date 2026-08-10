@@ -128,6 +128,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *P1Api* | [**createGeneticProfile**](docs/P1Api.md#creategeneticprofileoperation) | **POST** /v1/genetic/profiles | 创建遗传档案
 *P1Api* | [**createReceipt**](docs/P1Api.md#createreceiptoperation) | **POST** /v1/receipts | 创建回执单据
 *P1Api* | [**createReceiptTemplate**](docs/P1Api.md#createreceipttemplate) | **POST** /v1/receipts/templates | 创建回执模板
+*P1Api* | [**deleteGeneticProfile**](docs/P1Api.md#deletegeneticprofile) | **DELETE** /v1/genetic/profiles/{profile_id} | 删除遗传档案
 *P1Api* | [**getAccountingSummary**](docs/P1Api.md#getaccountingsummary) | **GET** /v1/accounting/summary | 读取记账汇总
 *P1Api* | [**getContract**](docs/P1Api.md#getcontract) | **GET** /v1/contracts/{document_id} | 获取合同单据详情
 *P1Api* | [**getReceipt**](docs/P1Api.md#getreceipt) | **GET** /v1/receipts/{document_id} | 获取回执单据详情
@@ -144,6 +145,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *P1Api* | [**revokeContract**](docs/P1Api.md#revokecontract) | **POST** /v1/contracts/{document_id}/revoke | 撤销合同
 *P1Api* | [**revokeReceipt**](docs/P1Api.md#revokereceipt) | **POST** /v1/receipts/{document_id}/revoke | 撤销回执
 *P1Api* | [**simulateGeneticBreeding**](docs/P1Api.md#simulategeneticbreeding) | **POST** /v1/genetic/simulate | 模拟遗传配对
+*P1Api* | [**updateGeneticProfile**](docs/P1Api.md#updategeneticprofileoperation) | **PATCH** /v1/genetic/profiles/{profile_id} | 更新遗传档案
 *P1CRMApi* | [**cancelCrmReservation**](docs/P1CRMApi.md#cancelcrmreservation) | **POST** /v1/crm/reservations/{reservation_id}/cancel | 取消客户预订
 *P1CRMApi* | [**completeCrmHandover**](docs/P1CRMApi.md#completecrmhandover) | **POST** /v1/crm/handovers/{handover_id}/complete | 完成客户交付
 *P1CRMApi* | [**confirmCrmReservation**](docs/P1CRMApi.md#confirmcrmreservation) | **POST** /v1/crm/reservations/{reservation_id}/confirm | 确认客户预订
@@ -361,6 +363,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [TaskCorrectionRequest](docs/TaskCorrectionRequest.md)
 - [TaskPriority](docs/TaskPriority.md)
 - [TaskState](docs/TaskState.md)
+- [UpdateGeneticProfileRequest](docs/UpdateGeneticProfileRequest.md)
 - [UploadSession](docs/UploadSession.md)
 - [UpsertWechatSubscriptionsRequest](docs/UpsertWechatSubscriptionsRequest.md)
 - [UsageMetric](docs/UsageMetric.md)

@@ -205,6 +205,7 @@ docs/SpeciesRuleVersionListResponse.md
 docs/TaskCorrectionRequest.md
 docs/TaskPriority.md
 docs/TaskState.md
+docs/UpdateGeneticProfileRequest.md
 docs/UploadSession.md
 docs/UpsertWechatSubscriptionsRequest.md
 docs/UsageMetric.md
@@ -429,6 +430,7 @@ src/models/SpeciesRuleVersionListResponse.ts
 src/models/TaskCorrectionRequest.ts
 src/models/TaskPriority.ts
 src/models/TaskState.ts
+src/models/UpdateGeneticProfileRequest.ts
 src/models/UploadSession.ts
 src/models/UpsertWechatSubscriptionsRequest.ts
 src/models/UsageMetric.ts

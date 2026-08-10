@@ -15,7 +15,8 @@ import {
   palette
 } from '@scolvpet/mp-ui'
 
-import { defaultApi, newIdempotencyKey } from '../../api/client'
+import { defaultApi } from '../../api/default-api'
+import { newIdempotencyKey } from '../../api/runtime-config'
 import { formatNetworkError, formatUserError } from '../../api/errors'
 import {
   formatDevelopmentLoginError,
