@@ -34,6 +34,8 @@ export const DOMAIN_HOME = {
   /** 试配已升为 Tab（主包） */
   trial: '/pages/trial/index',
   geneticCreate: '/packages/genetic/create/index',
+  /** 遗传档案绑定个体（全量种群选择） */
+  geneticBindHamster: '/packages/genetic/bind-hamster/index',
   /** 经营端族谱（需 ?id=） */
   pedigree: '/packages/animals/pedigree/index',
   dataCenter: '/packages/data-center/index/index',

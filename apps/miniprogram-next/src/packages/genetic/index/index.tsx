@@ -1,7 +1,6 @@
-import { useCallback, useState } from 'react'
-import Taro from '@tarojs/taro'
+import { useCallback, useRef, useState } from 'react'
+import Taro, { useDidShow } from '@tarojs/taro'
 import BListPage, { type BListItem } from '../../../components/BListPage'
-import { defaultApi } from '../../../api/default-api'
 import { p1Api } from '../../../api/p1-api'
 import { notifyUserError } from '../../../api/errors'
 import { DOMAIN_HOME } from '../../../utils/tab-routes'
@@ -65,24 +64,19 @@ function profileListFromResponse(profilesRes: any): any[] {
   return []
 }
 
-type HamsterPick = { id: string; label: string }
-
-async function loadHamsterPicks(limit = 20): Promise<HamsterPick[]> {
-  const res = await defaultApi.listHamsters({ limit } as any)
-  const data = (res as any)?.data ?? res
-  const list = Array.isArray(data) ? data : data?.items || []
-  return list.map((h: any) => {
-    const id = String(h.id || '')
-    const name = String(h.name || '').trim()
-    const code = String(h.internalCode || h.internal_code || '').trim()
-    const label = name || code || id.slice(0, 8)
-    return { id, label: code && name ? `${name} · ${code}` : label }
-  }).filter((h: HamsterPick) => h.id)
-}
-
 /** 试配入口：档案列表（绑定个体 / 试配 / 重命名 / 删除）+ 位点参考。 */
 export default function GeneticPage() {
   const [reloadToken, setReloadToken] = useState(0)
+  const firstShow = useRef(true)
+
+  // 从绑定页返回时刷新列表（首屏交给 BListPage 自己 load，避免双请求）
+  useDidShow(() => {
+    if (firstShow.current) {
+      firstShow.current = false
+      return
+    }
+    setReloadToken((n) => n + 1)
+  })
 
   const load = useCallback(async (): Promise<BListItem[]> => {
     void reloadToken
@@ -191,60 +185,22 @@ export default function GeneticPage() {
     }
   }
 
-  async function bindHamster(data: Record<string, unknown>) {
+  function bindHamster(data: Record<string, unknown>) {
     const id = String(data.id || '')
     const version = Number(data.version || 0)
+    const current = String(data.hamsterId || '').trim()
     if (!id || version <= 0) {
       void Taro.showToast({ title: '档案数据不完整', icon: 'none' })
       return
     }
-    let picks: HamsterPick[] = []
-    try {
-      picks = await loadHamsterPicks(20)
-    } catch (cause) {
-      await notifyUserError(cause, '读取种群失败')
-      return
-    }
-    if (!picks.length) {
-      void Taro.showToast({ title: '还没有个体，先去建档', icon: 'none' })
-      return
-    }
-
-    // ActionSheet 最多约 6 项：前 5 只 + 解除绑定（若已绑定）
-    const bound = Boolean(String(data.hamsterId || '').trim())
-    const slice = picks.slice(0, bound ? 4 : 5)
-    const itemList = [
-      ...slice.map((h) => h.label),
-      ...(bound ? ['解除绑定'] : []),
-      ...(picks.length > slice.length ? ['（仅显示前几只，更多请去种群）'] : [])
+    const q = [
+      `profile_id=${encodeURIComponent(id)}`,
+      `version=${encodeURIComponent(String(version))}`,
+      current ? `current_hamster_id=${encodeURIComponent(current)}` : ''
     ]
-
-    try {
-      const res = await Taro.showActionSheet({ itemList })
-      const idx = res.tapIndex
-      if (bound && idx === slice.length) {
-        await p1Api.updateGeneticProfile({
-          profileId: id,
-          updateGeneticProfileRequest: { version, hamsterId: '' } as any
-        } as any)
-        void Taro.showToast({ title: '已解除绑定', icon: 'success' })
-        setReloadToken((n) => n + 1)
-        return
-      }
-      if (idx >= 0 && idx < slice.length) {
-        const pick = slice[idx]
-        await p1Api.updateGeneticProfile({
-          profileId: id,
-          updateGeneticProfileRequest: { version, hamsterId: pick.id } as any
-        } as any)
-        void Taro.showToast({ title: `已绑定 ${pick.label}`, icon: 'success' })
-        setReloadToken((n) => n + 1)
-      }
-    } catch (cause: any) {
-      // 用户取消 ActionSheet 不报错
-      if (cause?.errMsg && String(cause.errMsg).includes('cancel')) return
-      await notifyUserError(cause, '绑定失败')
-    }
+      .filter(Boolean)
+      .join('&')
+    void Taro.navigateTo({ url: `${DOMAIN_HOME.geneticBindHamster}?${q}` })
   }
 
   return (

@@ -14,7 +14,7 @@ import {
   palette
 } from '@scolvpet/mp-ui'
 
-import { defaultApi } from '../../../api/client'
+import { defaultApi } from '../../../api/default-api'
 import { canUseCapability } from '../../../auth/permissions'
 import { requireBreederSession } from '../../../auth/dev-session'
 import { animalScanSubtitle, animalScanTitle } from '../../../utils/scan-labels'

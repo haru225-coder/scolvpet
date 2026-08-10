@@ -57,7 +57,7 @@ export default defineAppConfig({
     { root: 'packages/crm', pages: ['index/index', 'detail/index', 'create/index'] },
     { root: 'packages/contracts', pages: ['index/index', 'create/index', 'detail/index', 'templates/index'] },
     { root: 'packages/finance', pages: ['index/index', 'create/index', 'categories/index'] },
-    { root: 'packages/genetic', pages: ['index/index', 'create/index'] },
+    { root: 'packages/genetic', pages: ['index/index', 'create/index', 'bind-hamster/index'] },
     { root: 'packages/data-center', pages: ['index/index', 'actions/index'] },
     { root: 'packages/ai', pages: ['index/index'] },
     { root: 'packages/profile', pages: ['index/index'] }
