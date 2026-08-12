@@ -1,5 +1,5 @@
-import { render } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { act, fireEvent, render } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 import { Input } from '@tarojs/components'
 
 import {
@@ -100,6 +100,47 @@ describe('mp-ui snapshots', () => {
       </Sheet>
     )
     expect(container.innerHTML).toBe('')
+  })
+
+  it('Sheet 关闭先播退场动画，动画结束才卸载', () => {
+    const { container, rerender } = render(
+      <Sheet open>
+        <Cell title="内容" />
+      </Sheet>
+    )
+    expect(container.innerHTML).not.toBe('')
+    // open true→false：不退场动画播完不卸载，仍在 DOM
+    rerender(
+      <Sheet open={false}>
+        <Cell title="内容" />
+      </Sheet>
+    )
+    expect(container.innerHTML).not.toBe('')
+    // 触发面板退场动画结束 → 真正卸载
+    const panel = container.firstElementChild!.lastElementChild as Element
+    fireEvent.animationEnd(panel)
+    expect(container.innerHTML).toBe('')
+  })
+
+  it('Sheet 退场定时器兜底卸载', () => {
+    vi.useFakeTimers()
+    try {
+      const { container, rerender } = render(
+        <Sheet open>
+          <Cell title="内容" />
+        </Sheet>
+      )
+      rerender(
+        <Sheet open={false}>
+          <Cell title="内容" />
+        </Sheet>
+      )
+      expect(container.innerHTML).not.toBe('')
+      act(() => vi.advanceTimersByTime(400))
+      expect(container.innerHTML).toBe('')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('ActionPanel', () => {

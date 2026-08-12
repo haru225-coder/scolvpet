@@ -1,7 +1,7 @@
 import { ScrollView, View, Text } from '@tarojs/components'
 import { useState, type ReactNode } from 'react'
 import { metrics, motion } from './tokens'
-
+import { palette } from './theme'
 export interface RailProps {
   title: string
   action?: { text: string; onClick?: () => void }
@@ -12,6 +12,7 @@ const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
 /** 横滑信息行（读信息，不是选片货架） */
 export function Rail({ title, action, children }: RailProps) {
+  const [actionPressed, setActionPressed] = useState(false)
   return (
     <View style={{ marginTop: '26px' }}>
       <View
@@ -36,11 +37,15 @@ export function Rail({ title, action, children }: RailProps) {
         {action ? (
           <Text
             onClick={action.onClick}
+            onTouchStart={() => setActionPressed(true)}
+            onTouchEnd={() => setActionPressed(false)}
+            onTouchCancel={() => setActionPressed(false)}
             style={{
               fontSize: '13px',
               fontWeight: 600,
-              color: 'rgba(255,255,255,0.5)',
-              padding: '6px 0 6px 12px'
+              color: actionPressed ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.5)',
+              padding: '6px 0 6px 12px',
+              transition: `color ${motion.press}ms ease`
             }}
           >
             {action.text} ›
@@ -114,7 +119,8 @@ export function PosterCard({
         width: w + 'px',
         marginRight: '8px',
         transform: pressed ? 'scale(0.97)' : 'scale(1)',
-        transition: `transform ${motion.spring}ms ${EASE}`
+        // 按压用 press(90ms)快速到位，回弹才用 spring(§5)
+        transition: `transform ${pressed ? motion.press : motion.spring}ms ${EASE}`
       }}
     >
       <View
@@ -239,11 +245,11 @@ export function MiniCard({ title, value, subtitle, onClick }: MiniCardProps) {
         marginRight: '8px',
         padding: '16px 14px 18px',
         borderRadius: '8px',
-        backgroundColor: pressed ? '#241F1B' : '#181716',
+        backgroundColor: pressed ? 'rgba(255,255,255,0.06)' : palette.surfaceCard,
         border: '1px solid rgba(255,255,255,0.09)',
         boxSizing: 'border-box',
         transform: pressed ? 'scale(0.97)' : 'scale(1)',
-        transition: `transform ${motion.spring}ms ${EASE}, background-color ${motion.press}ms ease`
+        transition: `transform ${pressed ? motion.press : motion.spring}ms ${EASE}, background-color ${motion.press}ms ease`
       }}
     >
       <Text style={{ display: 'block', fontSize: '12px', color: 'rgba(255,255,255,0.48)', fontWeight: 600 }}>

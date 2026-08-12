@@ -15,19 +15,42 @@
   to { opacity: 1; }
 }
 
+/* Sheet 退场：与弹入对称的 spring 曲线(2026-08-12,§5 状态转换) */
+@keyframes mp-sheet-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0.85;
+  }
+}
+
+@keyframes mp-mask-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .mp-mask-in {
   animation: mp-mask-in 220ms ease-out;
 }
 
+.mp-mask-out {
+  animation: mp-mask-out 220ms ease-in;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .mp-mask-in {
+  .mp-mask-in,
+  .mp-mask-out {
     animation: none;
   }
 }
 
-/* 列表行按压提亮 */
+/* 列表行按压提亮：快速到位 + ≈90ms 平滑消退(§10.3) */
 .mp-press {
   background-color: rgba(255, 255, 255, 0.06);
+  transition: background-color 90ms ease;
 }
 
 /* —— C 端混写页共享样式:原样迁自 apps/miniprogram/app.wxss,勿改动 ——

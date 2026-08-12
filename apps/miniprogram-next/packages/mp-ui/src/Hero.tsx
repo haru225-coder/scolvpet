@@ -1,4 +1,5 @@
 import { View, Text } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { useState, type ReactNode } from 'react'
 import { metrics, motion } from './tokens'
 import { palette } from './theme'
@@ -28,6 +29,12 @@ export interface HeroProps {
   primary?: HeroAction
   secondary?: HeroAction
   right?: ReactNode
+  /**
+   * 显示返回箭头(离栏页从 navigateTo 推入时必须有返回路径，§10.4)。
+   * 默认 Taro.navigateBack。
+   */
+  back?: boolean
+  onBack?: () => void
 }
 
 function HeaderButton({
@@ -80,8 +87,9 @@ function HeaderButton({
   )
 }
 
-export function Hero({ badge, title, subtitle, primary, secondary, right }: HeroProps) {
+export function Hero({ badge, title, subtitle, primary, secondary, right, back = false, onBack }: HeroProps) {
   const inset = statusBarHeight()
+  const [backPressed, setBackPressed] = useState(false)
   return (
     <View
       style={{
@@ -90,7 +98,32 @@ export function Hero({ badge, title, subtitle, primary, secondary, right }: Hero
       }}
     >
       {/* 微信胶囊按钮占位:标题从胶囊下方开始 */}
-      <View style={{ height: metrics.navBarHeight + 'px' }} />
+      <View style={{ height: metrics.navBarHeight + 'px' }}>
+        {/* 离栏页返回入口(§10.4)：60px 整槽可点，与 NavBar 返回槽同宽 */}
+        {back ? (
+          <View
+            style={{
+              position: 'absolute',
+              left: 0,
+              width: '60px',
+              height: metrics.navBarHeight + 'px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              paddingLeft: metrics.pagePadding + 'px',
+              boxSizing: 'border-box',
+              opacity: backPressed ? 0.5 : 1,
+              transition: `opacity ${motion.press}ms ease`
+            }}
+            onTouchStart={() => setBackPressed(true)}
+            onTouchEnd={() => setBackPressed(false)}
+            onTouchCancel={() => setBackPressed(false)}
+            onClick={onBack || (() => Taro.navigateBack())}
+          >
+            <Text style={{ fontSize: '22px', color: '#FFFFFF', fontWeight: 300, lineHeight: 1 }}>‹</Text>
+          </View>
+        ) : null}
+      </View>
 
       <View
         style={{

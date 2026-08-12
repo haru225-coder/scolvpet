@@ -1,7 +1,7 @@
 import { View, Text } from '@tarojs/components'
 import { Children, cloneElement, isValidElement, type ReactNode } from 'react'
 import { metrics } from './tokens'
-import { typeStyle } from './theme'
+import { palette, typeStyle } from './theme'
 
 export interface SectionProps {
   header?: string
@@ -33,7 +33,7 @@ export function Section({ header, footer, children, seed: _seed = 0 }: SectionPr
       <View
         style={{
           // 2026-08-02：黑底大投影糊边；靠 1px 描边分层
-          backgroundColor: '#181716',
+          backgroundColor: palette.surfaceCard,
           borderRadius: '10px',
           overflow: 'hidden',
           border: '1px solid rgba(255,255,255,0.09)'

@@ -13,7 +13,7 @@ exports[`mp-ui snapshots > ActionPanel 1`] = `
     />
     <div
       data-taro="View"
-      style="position: absolute; left: 0px; right: 0px; bottom: 0px; background-color: rgb(20, 17, 15); border-radius: 16px 16px 0 0; padding-bottom: 36px; border-top: 1px solid rgba(255, 255, 255, 0.08); animation: mp-sheet-in 360ms cubic-bezier(0.22, 1, 0.36, 1);"
+      style="position: absolute; left: 0px; right: 0px; bottom: 0px; background-color: rgb(26, 23, 20); border-radius: 24px 24px 0 0; padding-bottom: 36px; border-top: 1px solid rgba(255, 255, 255, 0.08); animation: mp-sheet-in 360ms cubic-bezier(0.22, 1, 0.36, 1);"
     >
       <div
         data-taro="View"
@@ -237,7 +237,7 @@ exports[`mp-ui snapshots > NavBar 收缩态(含返回与右操作) 1`] = `
       >
         <div
           data-taro="View"
-          style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: flex-start;"
+          style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: flex-start; opacity: 1; transition: opacity 90ms ease;"
         >
           <span
             data-taro="Text"
@@ -299,7 +299,7 @@ exports[`mp-ui snapshots > NavBar 顶部态(小标题隐藏)+ LargeTitle 1`] = `
       >
         <div
           data-taro="View"
-          style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: flex-start;"
+          style="width: 60px; height: 100%; display: flex; align-items: center; justify-content: flex-start; opacity: 1; transition: opacity 90ms ease;"
         />
         <div
           data-taro="View"
@@ -360,11 +360,11 @@ exports[`mp-ui snapshots > SectionList + Section + Cell 1`] = `
       </div>
       <div
         data-taro="View"
-        style="background-color: rgb(24, 23, 22); border-radius: 10px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.09);"
+        style="background-color: rgb(26, 23, 20); border-radius: 10px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.09);"
       >
         <div
           data-hover-class="none"
-          data-hover-stay="80"
+          data-hover-stay="90"
           data-taro="View"
           style="display: flex; align-items: center; min-height: 52px; padding: 14px 16px; box-sizing: border-box; gap: 12px;"
         >
@@ -400,7 +400,7 @@ exports[`mp-ui snapshots > SectionList + Section + Cell 1`] = `
         </div>
         <div
           data-hover-class="none"
-          data-hover-stay="80"
+          data-hover-stay="90"
           data-taro="View"
           style="display: flex; align-items: center; min-height: 52px; padding: 14px 16px; box-sizing: border-box; gap: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06);"
         >
@@ -446,7 +446,7 @@ exports[`mp-ui snapshots > SegmentedControl 1`] = `
     >
       <span
         data-taro="Text"
-        style="font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.42);"
+        style="font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.42); transition: color 90ms ease;"
       >
         全部
       </span>
@@ -457,7 +457,7 @@ exports[`mp-ui snapshots > SegmentedControl 1`] = `
     >
       <span
         data-taro="Text"
-        style="font-size: 14px; font-weight: 600; color: rgb(255, 255, 255);"
+        style="font-size: 14px; font-weight: 600; color: rgb(255, 255, 255); transition: color 90ms ease;"
       >
         待办
       </span>
@@ -468,7 +468,7 @@ exports[`mp-ui snapshots > SegmentedControl 1`] = `
     >
       <span
         data-taro="Text"
-        style="font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.42);"
+        style="font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.42); transition: color 90ms ease;"
       >
         已完成
       </span>
@@ -490,7 +490,7 @@ exports[`mp-ui snapshots > Sheet 打开态 1`] = `
     />
     <div
       data-taro="View"
-      style="position: absolute; left: 0px; right: 0px; bottom: 0px; background-color: rgb(20, 17, 15); border-radius: 16px 16px 0 0; padding-bottom: 36px; border-top: 1px solid rgba(255, 255, 255, 0.08); animation: mp-sheet-in 360ms cubic-bezier(0.22, 1, 0.36, 1);"
+      style="position: absolute; left: 0px; right: 0px; bottom: 0px; background-color: rgb(26, 23, 20); border-radius: 24px 24px 0 0; padding-bottom: 36px; border-top: 1px solid rgba(255, 255, 255, 0.08); animation: mp-sheet-in 360ms cubic-bezier(0.22, 1, 0.36, 1);"
     >
       <div
         data-taro="View"
@@ -503,7 +503,7 @@ exports[`mp-ui snapshots > Sheet 打开态 1`] = `
       </div>
       <div
         data-hover-class="none"
-        data-hover-stay="80"
+        data-hover-stay="90"
         data-taro="View"
         style="display: flex; align-items: center; min-height: 52px; padding: 14px 16px; box-sizing: border-box; gap: 12px;"
       >
@@ -536,7 +536,7 @@ exports[`mp-ui snapshots > SwipeAction 静止态 1`] = `
     >
       <div
         data-taro="View"
-        style="width: 72px; display: flex; align-items: center; justify-content: center; background-color: rgba(255, 255, 255, 0.13);"
+        style="width: 72px; display: flex; align-items: center; justify-content: center; background-color: rgba(255, 255, 255, 0.13); transition: background-color 90ms ease;"
       >
         <span
           data-taro="Text"
@@ -547,7 +547,7 @@ exports[`mp-ui snapshots > SwipeAction 静止态 1`] = `
       </div>
       <div
         data-taro="View"
-        style="width: 72px; display: flex; align-items: center; justify-content: center; background-color: rgb(180, 72, 62);"
+        style="width: 72px; display: flex; align-items: center; justify-content: center; background-color: rgb(180, 72, 62); transition: background-color 90ms ease;"
       >
         <span
           data-taro="Text"
@@ -559,11 +559,11 @@ exports[`mp-ui snapshots > SwipeAction 静止态 1`] = `
     </div>
     <div
       data-taro="View"
-      style="position: relative; background-color: rgb(24, 23, 22); transform: translateX(0px); transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1);"
+      style="position: relative; background-color: rgb(26, 23, 20); transform: translateX(0px); transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1);"
     >
       <div
         data-hover-class="none"
-        data-hover-stay="80"
+        data-hover-stay="90"
         data-taro="View"
         style="display: flex; align-items: center; min-height: 52px; padding: 14px 16px; box-sizing: border-box; gap: 12px;"
       >
@@ -614,7 +614,7 @@ exports[`mp-ui snapshots > Tag 各语义 1`] = `
   >
     <span
       data-taro="Text"
-      style="font-size: 12px; font-weight: 600; line-height: 1.35; color: rgb(143, 203, 155);"
+      style="font-size: 12px; font-weight: 600; line-height: 1.35; color: rgb(107, 125, 107);"
     >
       健康
     </span>
@@ -636,7 +636,7 @@ exports[`mp-ui snapshots > Tag 各语义 1`] = `
   >
     <span
       data-taro="Text"
-      style="font-size: 12px; font-weight: 600; line-height: 1.35; color: rgb(226, 192, 119);"
+      style="font-size: 12px; font-weight: 600; line-height: 1.35; color: rgb(217, 139, 85);"
     >
       待观察
     </span>

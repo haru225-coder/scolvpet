@@ -1,6 +1,7 @@
 import { View, Text } from '@tarojs/components'
 import { useState } from 'react'
 import { metrics, motion, statusColors } from './tokens'
+import { palette } from './theme'
 import { Sheet } from './Sheet'
 
 export interface ActionPanelItem {
@@ -68,7 +69,7 @@ export function ActionPanel({ open, title, actions, onClose }: ActionPanelProps)
       >
         <View
           style={{
-            backgroundColor: '#1A1714',
+            backgroundColor: palette.surfaceCard,
             borderRadius: '12px',
             overflow: 'hidden',
             border: '1px solid rgba(255,255,255,0.06)'
@@ -106,7 +107,7 @@ export function ActionPanel({ open, title, actions, onClose }: ActionPanelProps)
         </View>
         <View
           style={{
-            backgroundColor: '#1A1714',
+            backgroundColor: palette.surfaceCard,
             borderRadius: '12px',
             overflow: 'hidden',
             border: '1px solid rgba(255,255,255,0.06)'

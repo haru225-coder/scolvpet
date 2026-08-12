@@ -14,6 +14,8 @@ export interface ScolvPalette {
   secondaryGroupedBackground: string
   systemBackground: string
   secondarySystemBackground: string
+  /** 卡片面：弹层/按钮容器等「高于页面背景的浮起面」 */
+  surfaceCard: string
   label: string
   secondaryLabel: string
   tertiaryLabel: string
@@ -44,6 +46,7 @@ export const paletteLight: ScolvPalette = {
   secondaryGroupedBackground: '#FFFFFF',
   systemBackground: '#FFF8EF',
   secondarySystemBackground: '#FFFFFF',
+  surfaceCard: '#FFFFFF',
   label: '#3A2F29',
   secondaryLabel: '#7A6E66',
   tertiaryLabel: '#A0958C',
@@ -65,6 +68,7 @@ export const paletteDark: ScolvPalette = {
   secondaryGroupedBackground: '#14110F',
   systemBackground: '#050403',
   secondarySystemBackground: '#0C0A09',
+  surfaceCard: '#1A1714',
   label: '#FFFFFF',
   secondaryLabel: 'rgba(255,255,255,0.68)',
   tertiaryLabel: 'rgba(255,255,255,0.4)',

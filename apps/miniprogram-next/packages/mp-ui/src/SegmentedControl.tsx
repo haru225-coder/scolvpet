@@ -1,4 +1,5 @@
 import { View, Text } from '@tarojs/components'
+import { useState } from 'react'
 import { motion } from './tokens'
 import { palette } from './theme'
 
@@ -15,6 +16,7 @@ export interface SegmentedControlProps {
 }
 
 export function SegmentedControl({ segments, value, onChange }: SegmentedControlProps) {
+  const [pressed, setPressed] = useState<number | null>(null)
   return (
     <View
       style={{
@@ -29,6 +31,9 @@ export function SegmentedControl({ segments, value, onChange }: SegmentedControl
           <View
             key={seg}
             onClick={() => onChange && onChange(i)}
+            onTouchStart={() => setPressed(i)}
+            onTouchEnd={() => setPressed(null)}
+            onTouchCancel={() => setPressed(null)}
             style={{
               marginRight: '22px',
               paddingBottom: '10px',
@@ -41,7 +46,12 @@ export function SegmentedControl({ segments, value, onChange }: SegmentedControl
               style={{
                 fontSize: '14px',
                 fontWeight: selected ? 600 : 500,
-                color: selected ? palette.label : 'rgba(255,255,255,0.42)'
+                color: selected
+                  ? palette.label
+                  : pressed === i
+                    ? 'rgba(255,255,255,0.26)'
+                    : 'rgba(255,255,255,0.42)',
+                transition: `color ${motion.press}ms ease`
               }}
             >
               {seg}

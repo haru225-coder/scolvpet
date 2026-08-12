@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import type { ReactNode } from 'react'
-import { crayon } from './tokens'
+import { statusColors } from './tokens'
 
 export type TagTone = 'default' | 'accent' | 'success' | 'danger' | 'warning'
 
@@ -9,9 +9,10 @@ const tones: Record<TagTone, { bg: string; fg: string }> = {
   // 2026-08-02：accent 不再当橙色装饰。页面层假徽章已删；剩余 Cell 上的
   // accent（「选择」「目录」）也退成中性，橙色只留给底栏/筛选真选中态。
   accent: { bg: 'rgba(255,255,255,0.06)', fg: 'rgba(255,255,255,0.5)' },
-  success: { bg: 'rgba(107, 168, 120, 0.18)', fg: '#8FCB9B' },
-  danger: { bg: 'rgba(226, 104, 91, 0.16)', fg: '#E2685B' },
-  warning: { bg: 'rgba(226, 192, 119, 0.18)', fg: crayon.yellow }
+  // 2026-08-12：状态色统一走 statusColors(token 真源)，不再各自硬编码。
+  success: { bg: 'rgba(107, 168, 120, 0.18)', fg: statusColors.systemGreen },
+  danger: { bg: 'rgba(226, 104, 91, 0.16)', fg: statusColors.systemRed },
+  warning: { bg: 'rgba(226, 192, 119, 0.18)', fg: statusColors.systemOrange }
 }
 
 export function Tag({ children, tone = 'default' }: { children: ReactNode; tone?: TagTone }) {

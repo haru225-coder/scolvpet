@@ -1,6 +1,7 @@
 import { View, Text, type ITouchEvent } from '@tarojs/components'
 import { useRef, useState, type ReactNode } from 'react'
 import { motion } from './tokens'
+import { palette } from './theme'
 
 export interface SwipeActionItem {
   text: string
@@ -23,6 +24,8 @@ const ACTION_WIDTH = 72
 export function SwipeAction({ children, actions }: SwipeActionProps) {
   const [offset, setOffset] = useState(0)
   const [dragging, setDragging] = useState(false)
+  /** 当前按下的动作按钮下标(按压反馈,§10.3) */
+  const [pressedAction, setPressedAction] = useState<number | null>(null)
   const startX = useRef(0)
   const startOffset = useRef(0)
   const maxOffset = actions.length * ACTION_WIDTH
@@ -46,19 +49,30 @@ export function SwipeAction({ children, actions }: SwipeActionProps) {
   return (
     <View style={{ position: 'relative', overflow: 'hidden' }}>
       <View style={{ position: 'absolute', top: 0, bottom: 0, right: 0, display: 'flex' }}>
-        {actions.map((a) => (
+        {actions.map((a, idx) => (
           <View
             key={a.text}
+            onTouchStart={() => setPressedAction(idx)}
+            onTouchEnd={() => setPressedAction(null)}
+            onTouchCancel={() => setPressedAction(null)}
             style={{
               width: `${ACTION_WIDTH}px`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               // 2026-08-02：#E50914 是 Netflix 红。换成项目语义红。
-              backgroundColor: a.danger ? '#B4483E' : 'rgba(255,255,255,0.13)'
+              backgroundColor: a.danger
+                ? pressedAction === idx
+                  ? '#8F3A32'
+                  : '#B4483E'
+                : pressedAction === idx
+                  ? 'rgba(255,255,255,0.22)'
+                  : 'rgba(255,255,255,0.13)',
+              transition: `background-color ${motion.press}ms ease`
             }}
             onClick={() => {
               setOffset(0)
+              setPressedAction(null)
               if (a.onClick) a.onClick()
             }}
           >
@@ -69,7 +83,7 @@ export function SwipeAction({ children, actions }: SwipeActionProps) {
       <View
         style={{
           position: 'relative',
-          backgroundColor: '#181716',
+          backgroundColor: palette.surfaceCard,
           transform: `translateX(${offset}px)`,
           transition: dragging ? 'none' : `transform ${motion.spring}ms cubic-bezier(0.22, 1, 0.36, 1)`
         }}
