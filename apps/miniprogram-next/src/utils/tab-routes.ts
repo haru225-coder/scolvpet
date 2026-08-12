@@ -22,6 +22,7 @@ export const TAB_ACTIVE_EVENT = 'scolvpet:tab-active'
 export const DOMAIN_HOME = {
   animals: '/packages/animals/index/index',
   litters: '/packages/litters/index/index',
+  litterWeight: '/packages/litters/weight/index',
   /** 旧繁育计划入口：产品已改为试配模拟，深链仍指向 breeding 包再 redirect */
   breeding: '/packages/breeding/index/index',
   reminders: '/packages/reminders/index/index',

@@ -11,6 +11,7 @@ export const recorded = {
     this.navigations = []
     this.backs = 0
     this.storage.clear()
+    clearUseLoadQuery()
   }
 }
 
@@ -41,11 +42,18 @@ export function useDidShow(cb: () => void) {
   }, [cb])
 }
 
-/** useLoad：测试里立即跑一遍。 */
+/** 测试页可写入的 useLoad 查询参数；recorded.reset() 会清掉。 */
+export const useLoadQuery: Record<string, string> = {}
+
+function clearUseLoadQuery() {
+  for (const key of Object.keys(useLoadQuery)) delete useLoadQuery[key]
+}
+
+/** useLoad：对齐真机，只在进入页面时跑一次。 */
 export function useLoad(cb: (query?: Record<string, string>) => void) {
   useEffect(() => {
-    cb({})
-  }, [cb])
+    cb({ ...useLoadQuery })
+  }, [])
 }
 
 export function getCurrentPages() {

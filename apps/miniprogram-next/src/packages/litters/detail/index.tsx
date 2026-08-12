@@ -6,6 +6,7 @@ import { Cell, Empty, FormRow, NavBar, Section, SectionList, Tag, metrics, palet
 import { defaultApi } from '../../../api/default-api'
 import { p1Api } from '../../../api/p1-api'
 import { newIdempotencyKey } from '../../../api/runtime-config'
+import { canUseCapability } from '../../../auth/permissions'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import { litterScanSubtitle } from '../../../utils/scan-labels'
 import { humanShortLabel } from '../../../utils/tab-routes'
@@ -450,6 +451,18 @@ export default function LitterDetailPage() {
             </Section>
 
             <Section header="常用操作">
+              {canUseCapability('write_weight') ? (
+                <Cell
+                  title="批量称重"
+                  subtitle="逐只填克数，一次提交整窝"
+                  chevron
+                  onClick={() =>
+                    Taro.navigateTo({
+                      url: `/packages/litters/weight/index?litterId=${encodeURIComponent(litterId)}`
+                    })
+                  }
+                />
+              ) : null}
               <Cell
                 title="用这对公母试配"
                 subtitle={

@@ -60,7 +60,8 @@ const surfaces: Record<string, Surface[]> = {
     { route: 'pages/login/index', source: 'src/pages/login/index.tsx' },
     { route: 'pages/today/index', source: 'src/pages/today/index.tsx', needsWriteGate: true },
     { route: 'packages/animals/index/index', source: 'src/packages/animals/index/index.tsx', needsWriteGate: true },
-    { route: 'packages/animals/detail/index', source: 'src/packages/animals/detail/index.tsx', needsWriteGate: true }
+    { route: 'packages/animals/detail/index', source: 'src/packages/animals/detail/index.tsx', needsWriteGate: true },
+    { route: 'packages/litters/weight/index', source: 'src/packages/litters/weight/index.tsx', needsWriteGate: true }
   ],
   M2: [
     { route: 'packages/animals/create/index', source: 'src/packages/animals/create/index.tsx', needsWriteGate: true },

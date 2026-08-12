@@ -4,6 +4,7 @@ import BListPage, { type BListItem } from '../../../components/BListPage'
 import { ActionPanel } from '@scolvpet/mp-ui'
 import { defaultApi } from '../../../api/default-api'
 import { p1Api } from '../../../api/p1-api'
+import { canUseCapability } from '../../../auth/permissions'
 import { litterScanSubtitle } from '../../../utils/scan-labels'
 import { DOMAIN_HOME, humanShortLabel } from '../../../utils/tab-routes'
 import { resolveLitterParentTrialUrl } from '../../../genetics/trial-deeplink'
@@ -70,7 +71,18 @@ export default function LittersPage() {
                 url: `/packages/litters/detail/index?id=${encodeURIComponent(menu?.id || '')}`
               })
           },
-          { text: '用公母试配', onClick: () => void openParentTrial(menu?.litter) }
+          { text: '用公母试配', onClick: () => void openParentTrial(menu?.litter) },
+          ...(canUseCapability('write_weight')
+            ? [
+                {
+                  text: '批量称重',
+                  onClick: () =>
+                    void Taro.navigateTo({
+                      url: `/packages/litters/weight/index?litterId=${encodeURIComponent(menu?.id || '')}`
+                    })
+                }
+              ]
+            : [])
         ]}
         onClose={() => setMenu(null)}
       />

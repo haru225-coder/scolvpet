@@ -34,6 +34,7 @@ const featureIterationRows: FeatureIterationRow[] = [
   { route: 'packages/animals/pedigree/index', domain: '个体', criticalFlow: '族谱能打开（窝次反推父母）', testFile: 'tests/pedigree-from-litters.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/litters/index/index', domain: '窝次', criticalFlow: '窝次看板与空态', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/litters/detail/index', domain: '窝次', criticalFlow: '数量调整、个体化与断奶', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
+  { route: 'packages/litters/weight/index', domain: '窝次', criticalFlow: '窝次/幼崽批量称重', testFile: 'tests/litters-weight.test.tsx', deviceEvidence: evidencePath },
   { route: 'packages/breeding/index/index', domain: '繁育', criticalFlow: '旧入口 redirect → 试配模拟', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/breeding/create/index', domain: '繁育', criticalFlow: '旧入口 redirect → 试配模拟', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/breeding/detail/index', domain: '繁育', criticalFlow: '旧入口 redirect → 试配模拟', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
@@ -67,8 +68,8 @@ describe('小程序全功能迭代覆盖矩阵', () => {
     const declaredRoutes = readDeclaredRoutes(path.join(projectRoot, 'src/app.config.ts'))
     const matrixRoutes = featureIterationRows.map((row) => row.route)
 
-    expect(declaredRoutes).toHaveLength(43)
-    expect(new Set(matrixRoutes).size).toBe(43)
+    expect(declaredRoutes).toHaveLength(44)
+    expect(new Set(matrixRoutes).size).toBe(44)
     expect([...matrixRoutes].sort()).toEqual([...declaredRoutes].sort())
 
     for (const row of featureIterationRows) {

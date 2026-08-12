@@ -51,7 +51,7 @@ export default defineAppConfig({
     { root: 'pages/contract', pages: ['contract'] },
     // —— B 端业务域 ——
     { root: 'packages/animals', pages: ['index/index', 'detail/index', 'create/index', 'batch-create/index', 'pedigree/index'] },
-    { root: 'packages/litters', pages: ['index/index', 'detail/index'] },
+    { root: 'packages/litters', pages: ['index/index', 'detail/index', 'weight/index'] },
     { root: 'packages/reminders', pages: ['index/index', 'create/index', 'calendar/index', 'subscriptions/index'] },
     { root: 'packages/breeding', pages: ['index/index', 'detail/index', 'create/index'] },
     { root: 'packages/crm', pages: ['index/index', 'detail/index', 'create/index'] },
