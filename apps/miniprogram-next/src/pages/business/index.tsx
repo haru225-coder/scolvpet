@@ -90,6 +90,7 @@ export default function BusinessPage() {
     <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
       <ScrollView scrollY type="list" enhanced bounces showScrollbar={false} style={{ flex: 1 }}>
         <Hero
+          back
           badge="下一个"
           title={headline ? headline.title : '暂无待办客户事项'}
           subtitle={headline?.subtitle || '交付、尾款、合同到点会排到这里'}

@@ -37,7 +37,7 @@ export default function ProfileAvatar() {
         alignItems: 'center',
         justifyContent: 'center',
         transform: pressed ? 'scale(0.94)' : 'scale(1)',
-        transition: `transform ${motion.spring}ms cubic-bezier(0.22, 1, 0.36, 1), background-color ${motion.press}ms ease`,
+        transition: `transform ${pressed ? motion.press : motion.spring}ms cubic-bezier(0.22, 1, 0.36, 1), background-color ${motion.press}ms ease`,
         border: loggedIn
           ? '1px solid rgba(255,255,255,0.14)'
           : '1px solid rgba(224,160,112,0.55)'

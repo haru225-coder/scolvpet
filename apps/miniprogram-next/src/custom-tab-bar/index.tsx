@@ -73,7 +73,7 @@ export default function CustomTabBar() {
         height: metrics.tabBarHeight + 4 + 'px',
         paddingBottom: 'env(safe-area-inset-bottom)',
         boxSizing: 'content-box',
-        backgroundColor: '#0B0B0B',
+        backgroundColor: palette.tabBarBackground,
         borderTop: `1px solid ${palette.separator}`
       }}
     >

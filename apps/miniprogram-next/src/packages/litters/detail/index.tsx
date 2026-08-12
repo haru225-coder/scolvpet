@@ -468,7 +468,7 @@ export default function LitterDetailPage() {
                   type="number"
                   value={countDelta}
                   placeholder="正数发现，负数死亡/转出"
-                  placeholderStyle="color: rgba(255,255,255,0.35)"
+                  placeholderStyle={`color: ${palette.tertiaryLabel}`}
                   onInput={(event) => setCountDelta(event.detail.value)}
                   style={{ color: '#FFFFFF' }}
                 />
@@ -476,7 +476,7 @@ export default function LitterDetailPage() {
               <FormRow label="原因" divider>
                 <Input
                   value={countReason}
-                  placeholderStyle="color: rgba(255,255,255,0.35)"
+                  placeholderStyle={`color: ${palette.tertiaryLabel}`}
                   onInput={(event) => setCountReason(event.detail.value)}
                   style={{ color: '#FFFFFF' }}
                 />
@@ -593,7 +593,7 @@ export default function LitterDetailPage() {
                       <Input
                         value={draft.internalCode}
                         placeholder="例如 SY-101"
-                        placeholderStyle="color: rgba(255,255,255,0.35)"
+                        placeholderStyle={`color: ${palette.tertiaryLabel}`}
                         onInput={(event) =>
                           updateDraft(draft.pupIdentityId, { internalCode: event.detail.value })
                         }
@@ -604,7 +604,7 @@ export default function LitterDetailPage() {
                       <Input
                         value={draft.name}
                         placeholder="可选"
-                        placeholderStyle="color: rgba(255,255,255,0.35)"
+                        placeholderStyle={`color: ${palette.tertiaryLabel}`}
                         onInput={(event) =>
                           updateDraft(draft.pupIdentityId, { name: event.detail.value })
                         }
@@ -637,7 +637,7 @@ export default function LitterDetailPage() {
                     <Textarea
                       value={sexRows}
                       placeholder={'临时编号:公:笼舍编号:否\nPUP-01:母:A-02:是'}
-                      placeholderStyle="color: rgba(255,255,255,0.35)"
+                      placeholderStyle={`color: ${palette.tertiaryLabel}`}
                       onInput={(event) => setSexRows(event.detail.value)}
                       style={{ minHeight: '100px', width: '100%', color: '#FFFFFF' }}
                     />
@@ -655,7 +655,7 @@ export default function LitterDetailPage() {
                     <Textarea
                       value={individualRows}
                       placeholder={'临时编号:正式编号:名字\nPUP-01:SY-101:小灰'}
-                      placeholderStyle="color: rgba(255,255,255,0.35)"
+                      placeholderStyle={`color: ${palette.tertiaryLabel}`}
                       onInput={(event) => setIndividualRows(event.detail.value)}
                       style={{ minHeight: '100px', width: '100%', color: '#FFFFFF' }}
                     />

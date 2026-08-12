@@ -85,9 +85,9 @@ export default function BatchCreateAnimalsPage() {
   const ruleIndex = Math.max(0, rules.findIndex((item) => item.id === ruleVersionId))
 
   return (
-    <View style={{ height: '100vh', backgroundColor: palette.systemBackground }}>
+    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
       <NavBar title="批量新增个体" back />
-      <ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}>
+      <ScrollView scrollY style={{ flex: 1 }}>
         <SectionList>
           <Section header="批次设置" footer={message}>
             {rules.length ? (
@@ -111,7 +111,7 @@ export default function BatchCreateAnimalsPage() {
                 value={rows}
                 maxlength={10000}
                 placeholder={'编号,名字,性别,样子\nSY-001,布丁,母,蜜波利\nSY-002,小灰,公,黑蜜波利'}
-                placeholderStyle="color: rgba(255,255,255,0.35)"
+                placeholderStyle={`color: ${palette.tertiaryLabel}`}
                 onInput={(event) => setRows(event.detail.value)}
                 style={{ minHeight: '180px', width: '100%', color: '#FFFFFF' }}
               />

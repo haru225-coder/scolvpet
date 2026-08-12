@@ -43,6 +43,8 @@ export default function BindHamsterPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  /** NavBar 折叠滚动进度 */
+  const [scrollTop, setScrollTop] = useState(0)
 
   const fetchAnimals = useCallback(async (searchQuery: string) => {
     const session = await requireBreederSession()
@@ -147,14 +149,22 @@ export default function BindHamsterPage() {
         backgroundColor: palette.systemBackground
       }}
     >
-      <NavBar title="绑定个体" back />
-      <ScrollView scrollY type="list" bounces enhanced showScrollbar={false} style={{ flex: 1 }}>
+      <NavBar title="绑定个体" back scrollTop={scrollTop} />
+      <ScrollView
+        scrollY
+        type="list"
+        bounces
+        enhanced
+        showScrollbar={false}
+        style={{ flex: 1 }}
+        onScroll={(event) => setScrollTop(event.detail?.scrollTop || 0)}
+      >
         <LargeTitle title="选择个体" />
         <View style={{ padding: `0 ${metrics.pagePadding}px ${metrics.space12}px` }}>
           <Input
             value={query}
             placeholder="搜索编号 / 名字"
-            placeholderStyle="color: rgba(255,255,255,0.35)"
+            placeholderStyle={`color: ${palette.tertiaryLabel}`}
             confirmType="search"
             onInput={(e) => handleInput(e.detail.value)}
             onConfirm={() => {
@@ -163,7 +173,7 @@ export default function BindHamsterPage() {
             }}
             style={{
               background: 'rgba(255,255,255,0.08)',
-              borderRadius: '12px',
+              borderRadius: `${metrics.continuousRadius}px`,
               padding: '10px 14px',
               color: '#fff',
               fontSize: '15px'

@@ -11,6 +11,7 @@ import {
   Tag,
   Empty,
   SegmentedControl,
+  ActionPanel,
   metrics,
   palette,
   typeStyle
@@ -100,6 +101,8 @@ export default function AnimalDetailPage() {
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
+  /** 管理遗传档案菜单开关 */
+  const [geneticMenu, setGeneticMenu] = useState(false)
   const [segment, setSegment] = useState(0)
   /** 本个体已绑定的遗传档案（load 时并行拉） */
   const [boundGeneticProfile, setBoundGeneticProfile] = useState<any | null>(null)
@@ -478,22 +481,7 @@ export default function AnimalDetailPage() {
   }
 
   function manageGeneticProfile() {
-    const existing = boundGeneticProfile
-    const itemList = existing
-      ? ['用这个体去试配', '打开遗传档案列表']
-      : ['用这个体去试配', '创建并绑定遗传档案', '打开遗传档案列表']
-    void Taro.showActionSheet({ itemList })
-      .then((res) => {
-        if (existing) {
-          if (res.tapIndex === 0) openTrialPairing()
-          else if (res.tapIndex === 1) void Taro.navigateTo({ url: DOMAIN_HOME.genetic })
-          return
-        }
-        if (res.tapIndex === 0) openTrialPairing()
-        else if (res.tapIndex === 1) void createGeneticProfileForAnimal()
-        else if (res.tapIndex === 2) void Taro.navigateTo({ url: DOMAIN_HOME.genetic })
-      })
-      .catch(() => undefined)
+    setGeneticMenu(true)
   }
 
   /** 族谱：经营端从窝次反推父母（个体档案不带 sireId/damId）。 */
@@ -742,7 +730,7 @@ export default function AnimalDetailPage() {
                       <Input
                         type="digit"
                         placeholder="例如 128.5"
-                        placeholderStyle="color: rgba(255,255,255,0.35)"
+                        placeholderStyle={`color: ${palette.tertiaryLabel}`}
                         value={weight}
                         onInput={(event) => setWeight(event.detail.value)}
                         style={{ color: '#FFFFFF' }}
@@ -751,7 +739,7 @@ export default function AnimalDetailPage() {
                     <FormRow label="备注" divider>
                       <Input
                         placeholder="可选"
-                        placeholderStyle="color: rgba(255,255,255,0.35)"
+                        placeholderStyle={`color: ${palette.tertiaryLabel}`}
                         value={note}
                         onInput={(event) => setNote(event.detail.value)}
                         style={{ color: '#FFFFFF' }}
@@ -789,7 +777,7 @@ export default function AnimalDetailPage() {
                     <FormRow label="备注">
                       <Input
                         placeholder="可选，例如精神状态"
-                        placeholderStyle="color: rgba(255,255,255,0.35)"
+                        placeholderStyle={`color: ${palette.tertiaryLabel}`}
                         value={note}
                         onInput={(event) => setNote(event.detail.value)}
                         style={{ color: '#FFFFFF' }}
@@ -841,7 +829,7 @@ export default function AnimalDetailPage() {
                     <Input
                       value={animalInternalCode}
                       placeholder="内部编号"
-                      placeholderStyle="color: rgba(255,255,255,0.35)"
+                      placeholderStyle={`color: ${palette.tertiaryLabel}`}
                       onInput={(event) => setAnimalInternalCode(event.detail.value)}
                       style={{ color: '#FFFFFF' }}
                     />
@@ -850,7 +838,7 @@ export default function AnimalDetailPage() {
                     <Input
                       value={animalName}
                       placeholder="可选"
-                      placeholderStyle="color: rgba(255,255,255,0.35)"
+                      placeholderStyle={`color: ${palette.tertiaryLabel}`}
                       onInput={(event) => setAnimalName(event.detail.value)}
                       style={{ color: '#FFFFFF' }}
                     />
@@ -924,7 +912,7 @@ export default function AnimalDetailPage() {
                       value={animalNotes}
                       maxlength={1000}
                       placeholder="可选"
-                      placeholderStyle="color: rgba(255,255,255,0.35)"
+                      placeholderStyle={`color: ${palette.tertiaryLabel}`}
                       onInput={(event) => setAnimalNotes(event.detail.value)}
                       style={{ color: '#FFFFFF' }}
                     />
@@ -940,7 +928,7 @@ export default function AnimalDetailPage() {
                       <Input
                         value={animalVarietyCode}
                         placeholder={seriesOptions.length ? '可选，默认使用系列|表型' : '可选'}
-                        placeholderStyle="color: rgba(255,255,255,0.35)"
+                        placeholderStyle={`color: ${palette.tertiaryLabel}`}
                         onInput={(event) => setAnimalVarietyCode(event.detail.value)}
                         style={{ color: '#FFFFFF' }}
                       />
@@ -960,6 +948,18 @@ export default function AnimalDetailPage() {
           </View>
         ) : null}
       </ScrollView>
+      <ActionPanel
+        open={geneticMenu}
+        title="遗传档案"
+        actions={[
+          { text: '用这个体去试配', onClick: openTrialPairing },
+          ...(boundGeneticProfile
+            ? []
+            : [{ text: '创建并绑定遗传档案', onClick: () => void createGeneticProfileForAnimal() }]),
+          { text: '打开遗传档案列表', onClick: () => void Taro.navigateTo({ url: DOMAIN_HOME.genetic }) }
+        ]}
+        onClose={() => setGeneticMenu(false)}
+      />
     </View>
   )
 }

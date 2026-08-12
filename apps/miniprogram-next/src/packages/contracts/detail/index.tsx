@@ -93,9 +93,9 @@ export default function ContractDetailPage() {
     }
   }
 
-  return <View style={{ height: '100vh', backgroundColor: palette.systemBackground }}>
+  return <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
     <NavBar title={kind === 'receipt' ? '回执详情' : '合同详情'} back />
-    <ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}>
+    <ScrollView scrollY style={{ flex: 1 }}>
       {message ? <SectionList><Section header="状态"><Cell title={message} /></Section></SectionList> : null}
       {item ? <SectionList>
         <Section header="单据状态" footer={item.version != null ? `第 ${item.version} 版` : undefined}>

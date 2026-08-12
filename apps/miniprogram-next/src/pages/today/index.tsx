@@ -12,6 +12,7 @@ import {
   Empty,
   ActionPanel,
   metrics,
+  motion,
   palette
 } from '@scolvpet/mp-ui'
 
@@ -343,6 +344,8 @@ export default function TodayPage() {
         {/* 仅未联网时展示诊断条，避免主路径一打开就像工程 Demo */}
         {!isOnlineSession ? (
           <View
+            hoverClass="mp-press"
+            hoverStayTime={motion.press}
             style={{
               margin: `8px ${metrics.pagePadding}px 0`,
               padding: '10px 12px',
@@ -363,6 +366,7 @@ export default function TodayPage() {
           </View>
         ) : null}
         <Hero
+          back
           badge={
             isOnlineSession
               ? sessionNow?.organizationName || sessionNow?.displayName || '今日'

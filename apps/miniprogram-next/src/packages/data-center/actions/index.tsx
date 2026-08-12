@@ -507,7 +507,7 @@ export default function DataCenterActionsPage() {
                   <Input
                     value={importJobId}
                     placeholder="一般自动填写"
-                    placeholderStyle="color: rgba(255,255,255,0.35)"
+                    placeholderStyle={`color: ${palette.tertiaryLabel}`}
                     onInput={(event) => setImportJobId(event.detail.value)}
                     style={{ color: '#FFFFFF' }}
                   />
@@ -515,7 +515,7 @@ export default function DataCenterActionsPage() {
                 <FormRow label="任务版本" divider>
                   <Input
                     value={jobVersion}
-                    placeholderStyle="color: rgba(255,255,255,0.35)"
+                    placeholderStyle={`color: ${palette.tertiaryLabel}`}
                     onInput={(event) => setJobVersion(event.detail.value)}
                     style={{ color: '#FFFFFF' }}
                   />
@@ -524,7 +524,7 @@ export default function DataCenterActionsPage() {
                   <Textarea
                     value={mappingText}
                     placeholder={'源列:目标字段:keep_null\n例如：编号:internal_code:reject_row'}
-                    placeholderStyle="color: rgba(255,255,255,0.35)"
+                    placeholderStyle={`color: ${palette.tertiaryLabel}`}
                     onInput={(event) => setMappingText(event.detail.value)}
                     style={{ minHeight: '120px', width: '100%', color: '#FFFFFF' }}
                   />
@@ -541,7 +541,7 @@ export default function DataCenterActionsPage() {
                   <Input
                     value={batchKey}
                     placeholder="预检成功后自动填写"
-                    placeholderStyle="color: rgba(255,255,255,0.35)"
+                    placeholderStyle={`color: ${palette.tertiaryLabel}`}
                     onInput={(event) => setBatchKey(event.detail.value)}
                     style={{ color: '#FFFFFF' }}
                   />

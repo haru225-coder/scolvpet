@@ -1,7 +1,7 @@
 import { Picker, ScrollView, Textarea, View } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
+import { Button, Cell, FormRow, NavBar, Section, SectionList, Tag, ActionPanel, metrics, palette } from '@scolvpet/mp-ui'
 
 import { newIdempotencyKey } from '../api/runtime-config'
 import { geneticApi } from '../api/genetic-api'
@@ -74,6 +74,8 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
   const [showPro, setShowPro] = useState(false)
   const [showMore, setShowMore] = useState(false)
   const [queryApplied, setQueryApplied] = useState(false)
+  /** 基因型「钉到哪一侧」菜单 */
+  const [pinMenu, setPinMenu] = useState<{ key: string; label: string } | null>(null)
 
   // 从档案列表 / 深链带入：series、sire_key、dam_key、sire_ph、dam_ph
   useEffect(() => {
@@ -170,20 +172,7 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
       return
     }
     const label = String(displayLabel || k).trim()
-    void Taro.showActionSheet({
-      itemList: ['设为公本（下一配）', '设为母本（下一配）', '公母都设成这个（自交）']
-    })
-      .then((res) => {
-        const idx = Number(res.tapIndex)
-        if (idx === 0) pinGenotype('sire', k, label)
-        else if (idx === 1) pinGenotype('dam', k, label)
-        else if (idx === 2) {
-          pinGenotype('sire', k, label)
-          pinGenotype('dam', k, label)
-          setMessage(`公母都钉成「${label}」，可点试配看自交`)
-        }
-      })
-      .catch(() => undefined)
+    setPinMenu({ key: k, label })
   }
 
   function genotypeMapFromInference(side: 'sire' | 'dam') {
@@ -621,7 +610,7 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                     value={seriesIndex}
                     onChange={(event) => pickSeries(Number(event.detail.value))}
                   >
-                    <Cell title={seriesLabels[seriesIndex] || '选择系列'} value={<Tag>选择</Tag>} />
+                    <Cell pressable title={seriesLabels[seriesIndex] || '选择系列'} value={<Tag>选择</Tag>} />
                   </Picker>
                 </FormRow>
                 <FormRow label="公的样子" divider>
@@ -637,7 +626,7 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                       setResult(null)
                     }}
                   >
-                    <Cell
+                    <Cell pressable
                       title={canonicalPhenotypeLabel(seriesCode, sirePhenotype) || '选择样子'}
                       subtitle={
                         sireGenotypeKey
@@ -662,7 +651,7 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                       setResult(null)
                     }}
                   >
-                    <Cell
+                    <Cell pressable
                       title={canonicalPhenotypeLabel(seriesCode, damPhenotype) || '选择样子'}
                       subtitle={
                         damGenotypeKey
@@ -814,7 +803,7 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                         )
                       }
                     >
-                      <Cell title={targetPhenotype || '选择样子'} value={<Tag>选择</Tag>} />
+                      <Cell pressable title={targetPhenotype || '选择样子'} value={<Tag>选择</Tag>} />
                     </Picker>
                   </FormRow>
                 ) : (
@@ -846,7 +835,7 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
                   <Textarea
                     value={actualCountsText}
                     placeholder={'蜜波利:3\n黑蜜波利:1'}
-                    placeholderStyle="color: rgba(255,255,255,0.35)"
+                    placeholderStyle={`color: ${palette.tertiaryLabel}`}
                     onInput={(event) => setActualCountsText(event.detail.value)}
                     style={{ minHeight: '96px', width: '100%', color: '#FFFFFF' }}
                   />
@@ -910,6 +899,30 @@ export default function TrialPairingScreen({ hideBack = false }: TrialPairingScr
           <View style={{ height: `${metrics.bottomSafePadding}px` }} />
         </SectionList>
       </ScrollView>
+      <ActionPanel
+        open={pinMenu != null}
+        title={pinMenu ? `把「${pinMenu.label}」设为：` : undefined}
+        actions={[
+          {
+            text: '设为公本（下一配）',
+            onClick: () => pinMenu && pinGenotype('sire', pinMenu.key, pinMenu.label)
+          },
+          {
+            text: '设为母本（下一配）',
+            onClick: () => pinMenu && pinGenotype('dam', pinMenu.key, pinMenu.label)
+          },
+          {
+            text: '公母都设成这个（自交）',
+            onClick: () => {
+              if (!pinMenu) return
+              pinGenotype('sire', pinMenu.key, pinMenu.label)
+              pinGenotype('dam', pinMenu.key, pinMenu.label)
+              setMessage(`公母都钉成「${pinMenu.label}」，可点试配看自交`)
+            }
+          }
+        ]}
+        onClose={() => setPinMenu(null)}
+      />
     </View>
   )
 }

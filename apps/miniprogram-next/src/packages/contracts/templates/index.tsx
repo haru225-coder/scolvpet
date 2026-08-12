@@ -67,7 +67,7 @@ export default function ContractTemplatesPage() {
       }}
     >
       <NavBar title="合同与回执模板" back />
-      <ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}>
+      <ScrollView scrollY style={{ flex: 1 }}>
         <SectionList>
           <Section header="新建模板" footer={message}>
             <Cell
@@ -83,7 +83,7 @@ export default function ContractTemplatesPage() {
               <Input
                 value={name}
                 placeholder="例如：交接协议"
-                placeholderStyle="color: rgba(255,255,255,0.35)"
+                placeholderStyle={`color: ${palette.tertiaryLabel}`}
                 onInput={(event) => setName(event.detail.value)}
                 style={{ color: '#FFFFFF' }}
               />
@@ -92,7 +92,7 @@ export default function ContractTemplatesPage() {
               <Textarea
                 value={bodyText}
                 placeholder="可留空，系统会用默认模板"
-                placeholderStyle="color: rgba(255,255,255,0.35)"
+                placeholderStyle={`color: ${palette.tertiaryLabel}`}
                 onInput={(event) => setBodyText(event.detail.value)}
                 style={{ minHeight: '140px', width: '100%', color: '#FFFFFF' }}
               />

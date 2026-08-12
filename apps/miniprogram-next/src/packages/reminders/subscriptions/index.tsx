@@ -144,9 +144,9 @@ export default function SubscriptionSettingsPage() {
   }
 
   return (
-    <View style={{ height: '100vh', backgroundColor: palette.systemBackground }}>
+    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
       <NavBar title="订阅消息" back />
-      <ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}>
+      <ScrollView scrollY style={{ flex: 1 }}>
         <SectionList>
           <Section header="消息提醒授权" footer={message || (ready ? '' : '正在读取…')}>
             {rows.length ? (

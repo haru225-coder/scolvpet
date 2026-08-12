@@ -26,6 +26,8 @@ export default function AssistantPage() {
   const [capabilities, setCapabilities] = useState<any>(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
+  /** NavBar 折叠滚动进度 */
+  const [scrollTop, setScrollTop] = useState(0)
 
   useEffect(() => {
     void (async () => {
@@ -114,8 +116,16 @@ export default function AssistantPage() {
 
   return (
     <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
-      <NavBar title="AI 助手" back />
-      <ScrollView scrollY type="list" bounces enhanced showScrollbar={false} style={{ flex: 1 }}>
+      <NavBar title="AI 助手" back scrollTop={scrollTop} />
+      <ScrollView
+        scrollY
+        type="list"
+        bounces
+        enhanced
+        showScrollbar={false}
+        style={{ flex: 1 }}
+        onScroll={(event) => setScrollTop(event.detail?.scrollTop || 0)}
+      >
         <LargeTitle title="AI 助手" />
         {capabilities ? <SectionList><Section header="当前能力" footer={capabilities.disclaimer}><Cell title={capabilities.llmAvailable ? '规则 + AI' : '规则助手'} subtitle={`${(capabilities.intents || []).join(' · ')}`} value={<Tag tone="success">在线</Tag>} /></Section></SectionList> : null}
         {!capabilities && message ? <Empty title={message} description="登录后可使用经营问答" /> : null}

@@ -320,7 +320,7 @@ export default function LoginPage() {
               type="number"
               maxlength={11}
               placeholder="11 位手机号"
-              placeholderStyle="color: rgba(255,255,255,0.35)"
+              placeholderStyle={`color: ${palette.tertiaryLabel}`}
               value={phone}
               onInput={(e) => setPhone(e.detail.value)}
               style={{ color: '#FFFFFF', fontSize: '16px' }}
@@ -332,7 +332,7 @@ export default function LoginPage() {
                 type="number"
                 maxlength={6}
                 placeholder={isDevelopmentBuild ? '开发固定 123456' : '6 位验证码'}
-                placeholderStyle="color: rgba(255,255,255,0.35)"
+                placeholderStyle={`color: ${palette.tertiaryLabel}`}
                 value={code}
                 onInput={(e) => setCode(e.detail.value)}
                 style={{ flex: 1, color: '#FFFFFF', fontSize: '16px' }}

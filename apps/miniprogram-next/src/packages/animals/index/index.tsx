@@ -10,6 +10,7 @@ import {
   Cell,
   Tag,
   Empty,
+  ActionPanel,
   metrics,
   palette
 } from '@scolvpet/mp-ui'
@@ -28,7 +29,7 @@ import {
   trialSideFromAnimal
 } from '../../../genetics/trial-deeplink'
 
-type Hamster = any
+type Hamster = Record<string, unknown>
 
 function lifecycleTag(status: string) {
   if (status === 'active') return <Tag tone="success">在养</Tag>
@@ -45,8 +46,12 @@ export default function AnimalsPage() {
   /** 选两只试配模式 */
   const [pairMode, setPairMode] = useState(false)
   const [pickedIds, setPickedIds] = useState<string[]>([])
+  /** 当前被点开的个体行菜单 */
+  const [menu, setMenu] = useState<Hamster | null>(null)
+  /** NavBar 折叠滚动进度 */
+  const [scrollTop, setScrollTop] = useState(0)
 
-  // 稳定引用：不依赖 query，初始加载和搜索共用此函数
+  // ponytail: limit 100 一次拉完；真有超过 100 只再接 cursor
   const fetchAnimals = useCallback(async (searchQuery: string) => {
     const session = await requireBreederSession()
     if (!session) {
@@ -57,14 +62,17 @@ export default function AnimalsPage() {
     setLoading(true)
     setError('')
     try {
-      const response = await defaultApi.listHamsters({ limit: 100, q: searchQuery.trim() || undefined })
-      setAnimals(response.data || [])
+      const response = await defaultApi.listHamsters({
+        limit: 100,
+        q: searchQuery.trim() || undefined
+      })
+      setAnimals((response.data || []) as unknown as Hamster[])
     } catch (cause) {
       setError(await formatUserError(cause, '个体列表加载失败'))
     } finally {
       setLoading(false)
     }
-  }, [])  // 无依赖，引用永不变化
+  }, [])
 
   // 初始加载（仅 mount 时执行一次）
   useEffect(() => { void fetchAnimals('') }, [fetchAnimals])
@@ -160,39 +168,28 @@ export default function AnimalsPage() {
       togglePick(id)
       return
     }
-    void Taro.showActionSheet({
-      itemList: ['打开档案', '用这个体试配', '选两只试配']
-    })
-      .then(async (res) => {
-        if (res.tapIndex === 0) {
-          openAnimalDetail(id)
-          return
-        }
-        if (res.tapIndex === 2) {
-          setPairMode(true)
-          setPickedIds([id])
-          void Taro.showToast({ title: '再点一只配对', icon: 'none' })
-          return
-        }
-        if (res.tapIndex !== 1) return
-        let profile: any = null
-        try {
-          const profilesRes = await p1Api.listGeneticProfiles()
-          profile = findProfileByHamsterId(profileListFromResponse(profilesRes), id)
-        } catch {
-          // 无档案也可表型试配
-        }
-        const side = trialSideFromAnimal(animal, profile)
-        void Taro.navigateTo({
-          url: buildTrialDeepLink({
-            series: side.series,
-            side: side.side,
-            key: side.key,
-            phenotype: side.phenotype
-          })
-        })
+    setMenu(animal)
+  }
+
+  /** ActionPanel 选「用这个体试配」时的公共路径 */
+  async function trialForAnimal(animal: Hamster) {
+    const id = String(animal?.id || '')
+    let profile: any = null
+    try {
+      const profilesRes = await p1Api.listGeneticProfiles()
+      profile = findProfileByHamsterId(profileListFromResponse(profilesRes), id)
+    } catch {
+      // 无档案也可表型试配
+    }
+    const side = trialSideFromAnimal(animal, profile)
+    void Taro.navigateTo({
+      url: buildTrialDeepLink({
+        series: side.series,
+        side: side.side,
+        key: side.key,
+        phenotype: side.phenotype
       })
-      .catch(() => undefined)
+    })
   }
 
   function pickOrder(id: string): number {
@@ -202,8 +199,16 @@ export default function AnimalsPage() {
 
   return (
     <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
-      <NavBar title={pairMode ? '选两只试配' : '个体'} back />
-      <ScrollView scrollY type="list" bounces enhanced showScrollbar={false} style={{ flex: 1 }}>
+      <NavBar title={pairMode ? '选两只试配' : '个体'} back scrollTop={scrollTop} />
+      <ScrollView
+        scrollY
+        type="list"
+        bounces
+        enhanced
+        showScrollbar={false}
+        style={{ flex: 1 }}
+        onScroll={(event) => setScrollTop(event.detail?.scrollTop || 0)}
+      >
         <LargeTitle title={pairMode ? '选两只试配' : '个体'} />
         <View style={{ padding: `0 ${metrics.pagePadding}px ${metrics.space16}px` }}>
           <Cell
@@ -254,7 +259,7 @@ export default function AnimalsPage() {
             margin: `0 ${metrics.pagePadding}px ${metrics.space16}px`,
             padding: '10px 14px',
             backgroundColor: palette.secondaryGroupedBackground,
-            borderRadius: '14px'
+            borderRadius: `${metrics.continuousRadius}px`
           }}
         >
           <Input
@@ -300,10 +305,10 @@ export default function AnimalsPage() {
                         order ? (
                           <Tag tone={order === 1 ? 'accent' : 'success'}>{order === 1 ? '①' : '②'}</Tag>
                         ) : (
-                          lifecycleTag(animal.lifecycleStatus)
+                          lifecycleTag(String(animal.lifecycleStatus || ''))
                         )
                       ) : (
-                        lifecycleTag(animal.lifecycleStatus)
+                        lifecycleTag(String(animal.lifecycleStatus || ''))
                       )
                     }
                     chevron
@@ -316,6 +321,28 @@ export default function AnimalsPage() {
         ) : null}
         <View style={{ height: `${metrics.bottomSafePadding}px` }} />
       </ScrollView>
+      <ActionPanel
+        open={menu != null}
+        title={menu ? animalScanTitle(menu) : undefined}
+        actions={[
+          {
+            text: '打开档案',
+            onClick: () => menu && openAnimalDetail(String(menu.id))
+          },
+          { text: '用这个体试配', onClick: () => menu && void trialForAnimal(menu) },
+          {
+            text: '选两只试配',
+            onClick: () => {
+              if (menu) {
+                setPairMode(true)
+                setPickedIds([String(menu.id)])
+                void Taro.showToast({ title: '再点一只配对', icon: 'none' })
+              }
+            }
+          }
+        ]}
+        onClose={() => setMenu(null)}
+      />
     </View>
   )
 }

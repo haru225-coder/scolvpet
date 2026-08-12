@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import BListPage, { type BListItem } from '../../../components/BListPage'
+import { ActionPanel, statusColors } from '@scolvpet/mp-ui'
 import { p1Api } from '../../../api/p1-api'
 import { notifyUserError } from '../../../api/errors'
 import { DOMAIN_HOME } from '../../../utils/tab-routes'
@@ -48,6 +49,14 @@ function hamsterLabelOf(item: any): string {
 export default function GeneticPage() {
   const [reloadToken, setReloadToken] = useState(0)
   const firstShow = useRef(true)
+  /** 当前被点开的档案行菜单 */
+  const [menu, setMenu] = useState<{
+    data: Record<string, unknown>
+    key: string
+    series: string
+    ph: string
+    canTrial: boolean
+  } | null>(null)
 
   // 从绑定页返回时刷新列表（首屏交给 BListPage 自己 load，避免双请求）
   useDidShow(() => {
@@ -153,7 +162,7 @@ export default function GeneticPage() {
       title: '删除档案',
       content: `确定删除「${name}」？不可恢复`,
       confirmText: '删除',
-      confirmColor: '#E05454'
+      confirmColor: statusColors.systemRed
     })
     if (!modal.confirm) return
     try {
@@ -184,65 +193,69 @@ export default function GeneticPage() {
   }
 
   return (
-    <BListPage
-      key={reloadToken}
-      title="试配模拟"
-      load={load}
-      footer="点档案：试配 / 绑定个体 / 重命名 / 删除。"
-      emptyTitle="直接开始试配"
-      emptyDescription="选好公母样子，立刻看可能长什么样"
-      actionLabel="开始试配"
-      actionCapability="write_genetic"
-      onAction={() => Taro.navigateTo({ url: DOMAIN_HOME.geneticCreate })}
-      onSelect={(item) => {
-        const data = item.data
-        if (!data || data.kind !== 'profile') {
-          void Taro.showToast({ title: '位点仅供参考', icon: 'none' })
-          return
-        }
-        const key = String(data.genotypeKey || '').trim()
-        const series = String(data.series || '')
-        const ph = String(data.phenotypeLabel || '')
-        // 有 key 或有样子都可带入试配；无两者则只剩绑定/改名/删
-        const canTrial = Boolean(key || ph)
-        const itemList = canTrial
-          ? ['设为公本并去试配', '设为母本并去试配', '绑定/更换个体', '重命名', '删除档案']
-          : ['绑定/更换个体', '重命名', '删除档案']
-        void Taro.showActionSheet({ itemList })
-          .then((res) => {
-            const idx = res.tapIndex
-            if (canTrial) {
-              if (idx === 0 || idx === 1) {
-                const side = idx === 0 ? 'sire' : 'dam'
-                void Taro.navigateTo({
-                  url: buildTrialDeepLink({
-                    series,
-                    side,
-                    key: key || undefined,
-                    phenotype: ph || undefined
-                  })
-                })
-                return
-              }
-              if (idx === 2) {
-                void bindHamster(data)
-                return
-              }
-              if (idx === 3) {
-                void renameProfile(data)
-                return
-              }
-              if (idx === 4) {
-                void deleteProfile(data)
-              }
-              return
-            }
-            if (idx === 0) void bindHamster(data)
-            if (idx === 1) void renameProfile(data)
-            if (idx === 2) void deleteProfile(data)
-          })
-          .catch(() => undefined)
-      }}
-    />
+    <>
+      <BListPage
+        key={reloadToken}
+        title="试配模拟"
+        load={load}
+        footer="点档案：试配 / 绑定个体 / 重命名 / 删除。"
+        emptyTitle="直接开始试配"
+        emptyDescription="选好公母样子，立刻看可能长什么样"
+        actionLabel="开始试配"
+        actionCapability="write_genetic"
+        onAction={() => Taro.navigateTo({ url: DOMAIN_HOME.geneticCreate })}
+        onSelect={(item) => {
+          const data = item.data
+          if (!data || data.kind !== 'profile') {
+            void Taro.showToast({ title: '位点仅供参考', icon: 'none' })
+            return
+          }
+          const key = String(data.genotypeKey || '').trim()
+          const series = String(data.series || '')
+          const ph = String(data.phenotypeLabel || '')
+          // 有 key 或有样子都可带入试配；无两者则只剩绑定/改名/删
+          const canTrial = Boolean(key || ph)
+          setMenu({ data, key, series, ph, canTrial })
+        }}
+      />
+      <ActionPanel
+        open={menu != null}
+        title={menu ? String(menu.data.name || '该档案') : undefined}
+        actions={[
+          ...(menu?.canTrial
+            ? [
+                {
+                  text: '设为公本并去试配',
+                  onClick: () =>
+                    void Taro.navigateTo({
+                      url: buildTrialDeepLink({
+                        series: menu.series,
+                        side: 'sire',
+                        key: menu.key || undefined,
+                        phenotype: menu.ph || undefined
+                      })
+                    })
+                },
+                {
+                  text: '设为母本并去试配',
+                  onClick: () =>
+                    void Taro.navigateTo({
+                      url: buildTrialDeepLink({
+                        series: menu.series,
+                        side: 'dam',
+                        key: menu.key || undefined,
+                        phenotype: menu.ph || undefined
+                      })
+                    })
+                }
+              ]
+            : []),
+          { text: '绑定/更换个体', onClick: () => menu && void bindHamster(menu.data) },
+          { text: '重命名', onClick: () => menu && void renameProfile(menu.data) },
+          { text: '删除档案', danger: true, onClick: () => menu && void deleteProfile(menu.data) }
+        ]}
+        onClose={() => setMenu(null)}
+      />
+    </>
   )
 }

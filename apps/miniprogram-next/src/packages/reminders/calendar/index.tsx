@@ -80,9 +80,9 @@ export default function CalendarPage() {
   }, {})
 
   return (
-    <View style={{ height: '100vh', backgroundColor: palette.systemBackground }}>
+    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
       <NavBar title="日历" back />
-      <ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}>
+      <ScrollView scrollY style={{ flex: 1 }}>
         {showSubscribe ? (
           <View style={{ padding: `${metrics.space16}px ${metrics.pagePadding}px 0` }}>
             <Button

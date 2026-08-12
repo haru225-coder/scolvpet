@@ -1,7 +1,17 @@
 import { ScrollView, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useCallback, useEffect, useState } from 'react'
-import { Cell, Empty, Hero, PosterCard, Rail, Section, SectionList, palette } from '@scolvpet/mp-ui'
+import {
+  ActionPanel,
+  Cell,
+  Empty,
+  Hero,
+  PosterCard,
+  Rail,
+  Section,
+  SectionList,
+  palette
+} from '@scolvpet/mp-ui'
 
 import { defaultApi } from '../../api/default-api'
 import { p1Api } from '../../api/p1-api'
@@ -37,6 +47,9 @@ type AnimalRow = {
 
 type LitterRow = { id: string; title: string; subtitle?: string; raw: any }
 
+/** 卡片点按弹出的操作菜单：个体 or 窝次 */
+type CardMenu = { kind: 'animal'; row: AnimalRow } | { kind: 'litter'; row: LitterRow } | null
+
 function toAnimalRow(item: any, index: number): AnimalRow {
   return {
     id: String(item?.id ?? index),
@@ -63,6 +76,7 @@ export default function PopulationPage() {
   const [notice, setNotice] = useState('')
   const [needLogin, setNeedLogin] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [menu, setMenu] = useState<CardMenu>(null)
 
   useDidShow(() => markTabActive('/pages/population/index'))
 
@@ -119,17 +133,7 @@ export default function PopulationPage() {
   }
 
   function onAnimalCard(row: AnimalRow) {
-    void Taro.showActionSheet({
-      itemList: ['打开档案', '用这个体试配']
-    })
-      .then((res) => {
-        if (res.tapIndex === 0) {
-          openPage(`/packages/animals/detail/index?id=${encodeURIComponent(row.id)}`)
-          return
-        }
-        if (res.tapIndex === 1) void openTrialForAnimal(row.raw)
-      })
-      .catch(() => undefined)
+    setMenu({ kind: 'animal', row })
   }
 
   async function openTrialForLitter(litter: any) {
@@ -150,17 +154,7 @@ export default function PopulationPage() {
   }
 
   function onLitterCard(row: LitterRow) {
-    void Taro.showActionSheet({
-      itemList: ['打开窝次', '用公母试配']
-    })
-      .then((res) => {
-        if (res.tapIndex === 0) {
-          openPage(`/packages/litters/detail/index?id=${encodeURIComponent(row.id)}`)
-          return
-        }
-        if (res.tapIndex === 1) void openTrialForLitter(row.raw)
-      })
-      .catch(() => undefined)
+    setMenu({ kind: 'litter', row })
   }
 
   const focus = litters.length ? litters[0] : null
@@ -240,6 +234,30 @@ export default function PopulationPage() {
         </SectionList>
         <View style={{ height: tabPageBottomPad() + 'px' }} />
       </ScrollView>
+      <ActionPanel
+        open={menu != null}
+        title={menu ? menu.row.title : undefined}
+        actions={
+          menu?.kind === 'animal'
+            ? [
+                {
+                  text: '打开档案',
+                  onClick: () => openPage(`/packages/animals/detail/index?id=${encodeURIComponent(menu.row.id)}`)
+                },
+                { text: '用这个体试配', onClick: () => void openTrialForAnimal(menu.row.raw) }
+              ]
+            : menu?.kind === 'litter'
+              ? [
+                  {
+                    text: '打开窝次',
+                    onClick: () => openPage(`/packages/litters/detail/index?id=${encodeURIComponent(menu.row.id)}`)
+                  },
+                  { text: '用公母试配', onClick: () => void openTrialForLitter(menu.row.raw) }
+                ]
+              : []
+        }
+        onClose={() => setMenu(null)}
+      />
     </View>
   )
 }

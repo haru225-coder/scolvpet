@@ -22,7 +22,8 @@ function domify(tag: string, displayName: string) {
     } = props
     const taroOnlyProps = [
       'onRefresherRefresh', 'onConfirm', 'scrollY', 'bounces', 'enhanced', 'showScrollbar',
-      'refresherEnabled', 'refresherTriggered', 'refresherBackground', 'placeholderStyle', 'confirmType'
+      'refresherEnabled', 'refresherTriggered', 'refresherBackground', 'placeholderStyle', 'confirmType',
+      'onScrollToLower', 'lowerThreshold'
     ]
     for (const key of taroOnlyProps) delete (rest as Record<string, unknown>)[key]
     if ('maxlength' in rest) {

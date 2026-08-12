@@ -7,6 +7,7 @@ import { saveBreederSession } from '../src/auth/session'
 import TodayPage, { sortTasksForToday } from '../src/pages/today'
 import LoginPage from '../src/pages/login'
 import AnimalsPage from '../src/packages/animals/index'
+import PopulationPage from '../src/pages/population'
 
 // M1 起页面以真实 B 端会话为入口；没有会话时必须明确引导登录，不能再渲染静态样例数据。
 beforeEach(() => recorded.reset())
@@ -101,6 +102,41 @@ describe('B 端今日任务动作', () => {
     await waitFor(() => expect(screen.getByText('跳过一次')).toBeTruthy())
     expect(screen.queryByText('顺延到明天')).toBeNull()
     listTasks.mockRestore()
+    listHamsters.mockRestore()
+    listLitters.mockRestore()
+  })
+})
+
+describe('种群卡片点按菜单', () => {
+  it('点卡片弹出 ActionPanel，点「打开档案」导航到个体详情', async () => {
+    saveBreederSession({
+      accessToken: 'at_pop',
+      refreshToken: 'rt_pop',
+      expiresAt: Date.now() + 3600_000,
+      memberRole: 'owner',
+      capabilities: []
+    })
+    const listHamsters = vi.spyOn(defaultApi, 'listHamsters').mockResolvedValue({
+      data: [{
+        id: 'hamster-1',
+        name: '布丁',
+        sex: 'female',
+        birthDate: '2026-07-21',
+        internalCode: 'A01'
+      }]
+    } as never)
+    const listLitters = vi.spyOn(defaultApi, 'listLitters').mockResolvedValue({ data: [] } as never)
+
+    render(<PopulationPage />)
+    // 卡片渲染（种群页用 animalScanTitle 拼标题）
+    await waitFor(() => expect(screen.getByText(/布丁/)).toBeTruthy())
+    // 点卡片 → 弹出 ActionPanel（带「打开档案」「用这个体试配」）
+    fireEvent.click(screen.getByText(/布丁/))
+    await waitFor(() => expect(screen.getByText('打开档案')).toBeTruthy())
+    expect(screen.getByText('用这个体试配')).toBeTruthy()
+    // 点「打开档案」→ 导航到个体详情
+    fireEvent.click(screen.getByText('打开档案'))
+    await waitFor(() => expect(recorded.navigations).toContain('/packages/animals/detail/index?id=hamster-1'))
     listHamsters.mockRestore()
     listLitters.mockRestore()
   })

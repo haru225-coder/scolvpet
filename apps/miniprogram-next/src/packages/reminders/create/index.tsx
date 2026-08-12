@@ -136,16 +136,16 @@ export default function CreateReminderPage() {
   }
 
   return (
-    <View style={{ height: '100vh', backgroundColor: palette.systemBackground }}>
+    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
       <NavBar title="新增提醒" back />
-      <ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}>
+      <ScrollView scrollY style={{ flex: 1 }}>
         <SectionList>
           <Section header="照护任务" footer={message}>
             <FormRow label="标题">
               <Input
                 value={title}
                 placeholder="例如：给布丁做健康观察"
-                placeholderStyle="color: rgba(255,255,255,0.35)"
+                placeholderStyle={`color: ${palette.tertiaryLabel}`}
                 onInput={(event) => setTitle(event.detail.value)}
                 style={{ color: '#FFFFFF' }}
               />
@@ -167,7 +167,7 @@ export default function CreateReminderPage() {
                 <Input
                   value={notes}
                   placeholder="写清楚提醒谁、提醒什么"
-                  placeholderStyle="color: rgba(255,255,255,0.35)"
+                  placeholderStyle={`color: ${palette.tertiaryLabel}`}
                   onInput={(event) => setNotes(event.detail.value)}
                   style={{ color: '#FFFFFF' }}
                 />
@@ -235,7 +235,7 @@ export default function CreateReminderPage() {
                   value={notes}
                   maxlength={1000}
                   placeholder="可选"
-                  placeholderStyle="color: rgba(255,255,255,0.35)"
+                  placeholderStyle={`color: ${palette.tertiaryLabel}`}
                   onInput={(event) => setNotes(event.detail.value)}
                   style={{ color: '#FFFFFF', width: '100%', minHeight: '72px' }}
                 />

@@ -81,15 +81,15 @@ export default function CreateAnimalPage() {
   const phenotypeIndex = Math.max(0, phenotypeOptions.indexOf(phenotypeLabel))
 
   return (
-    <View style={{ height: '100vh', backgroundColor: palette.systemBackground }}>
+    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
       <NavBar title="新增个体" back />
-      <ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}>
+      <ScrollView scrollY style={{ flex: 1 }}>
         <SectionList>
           <Section header="档案信息" footer={message}>
             <FormRow label="内部编号">
               <Input
                 placeholder="例如 SY-001"
-                placeholderStyle="color: rgba(255,255,255,0.35)"
+                placeholderStyle={`color: ${palette.tertiaryLabel}`}
                 value={internalCode}
                 onInput={(event) => setInternalCode(event.detail.value)}
                 style={{ color: '#FFFFFF' }}
@@ -98,7 +98,7 @@ export default function CreateAnimalPage() {
             <FormRow label="名称" divider>
               <Input
                 placeholder="可选"
-                placeholderStyle="color: rgba(255,255,255,0.35)"
+                placeholderStyle={`color: ${palette.tertiaryLabel}`}
                 value={name}
                 onInput={(event) => setName(event.detail.value)}
                 style={{ color: '#FFFFFF' }}
@@ -156,7 +156,7 @@ export default function CreateAnimalPage() {
                 value={notes}
                 maxlength={1000}
                 placeholder="可选"
-                placeholderStyle="color: rgba(255,255,255,0.35)"
+                placeholderStyle={`color: ${palette.tertiaryLabel}`}
                 onInput={(event) => setNotes(event.detail.value)}
                 style={{ color: '#FFFFFF' }}
               />
@@ -173,7 +173,7 @@ export default function CreateAnimalPage() {
               <FormRow label="品系代码" divider>
                 <Input
                   placeholder="可选，一般可留空"
-                  placeholderStyle="color: rgba(255,255,255,0.35)"
+                  placeholderStyle={`color: ${palette.tertiaryLabel}`}
                   value={varietyCode}
                   onInput={(event) => setVarietyCode(event.detail.value)}
                   style={{ color: '#FFFFFF' }}

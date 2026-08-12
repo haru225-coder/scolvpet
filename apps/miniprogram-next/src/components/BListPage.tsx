@@ -59,6 +59,7 @@ export default function BListPage({
   const [items, setItems] = useState<BListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [scrollTop, setScrollTop] = useState(0)
 
   useEffect(() => {
     void (async () => {
@@ -90,8 +91,16 @@ export default function BListPage({
         backgroundColor: palette.systemBackground
       }}
     >
-      <NavBar title={title} back />
-      <ScrollView scrollY type="list" bounces enhanced showScrollbar={false} style={{ flex: 1 }}>
+      <NavBar title={title} back scrollTop={scrollTop} />
+      <ScrollView
+        scrollY
+        type="list"
+        bounces
+        enhanced
+        showScrollbar={false}
+        style={{ flex: 1 }}
+        onScroll={(event) => setScrollTop(event.detail?.scrollTop || 0)}
+      >
         <LargeTitle title={title} />
         {showPrimary || showSecondary ? (
           <View

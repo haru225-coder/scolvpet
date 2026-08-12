@@ -150,12 +150,12 @@ export default function CreateContractPage() {
   const reservationIndex = Math.max(0, reservations.findIndex((item) => item.id === reservationId))
 
   return (
-    <View style={{ height: '100vh', backgroundColor: palette.systemBackground }}>
+    <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
       <NavBar
         title={`新增${isReceipt ? '回执' : '合同'}`}
         back
       />
-      <ScrollView scrollY style={{ height: 'calc(100vh - 88px)' }}>
+      <ScrollView scrollY style={{ flex: 1 }}>
         <SectionList>
           <Section header={`${isReceipt ? '回执' : '合同'}信息`} footer={message}>
             {templates.length ? (
@@ -246,7 +246,7 @@ export default function CreateContractPage() {
                   type="digit"
                   value={amountYuan}
                   placeholder="例如 199.00"
-                  placeholderStyle="color: rgba(255,255,255,0.35)"
+                  placeholderStyle={`color: ${palette.tertiaryLabel}`}
                   onInput={(event) => setAmountYuan(event.detail.value)}
                   style={{ color: '#FFFFFF' }}
                 />
@@ -256,7 +256,7 @@ export default function CreateContractPage() {
               <Input
                 value={title}
                 placeholder="可选"
-                placeholderStyle="color: rgba(255,255,255,0.35)"
+                placeholderStyle={`color: ${palette.tertiaryLabel}`}
                 onInput={(event) => setTitle(event.detail.value)}
                 style={{ color: '#FFFFFF' }}
               />
