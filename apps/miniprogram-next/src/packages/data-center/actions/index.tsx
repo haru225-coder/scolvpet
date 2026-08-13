@@ -1,6 +1,6 @@
 import { Input, Picker, ScrollView, Textarea, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
 import { defaultApi, newIdempotencyKey } from '../../../api/client'
@@ -13,13 +13,6 @@ const TEMPLATE_OPTIONS = [
   { value: 'hamster', label: '个体档案' },
   { value: 'enclosure', label: '笼舍' },
   { value: 'weight', label: '体重记录' }
-]
-
-const DATASET_OPTIONS = [
-  { value: 'hamsters', label: '个体' },
-  { value: 'enclosures', label: '笼舍' },
-  { value: 'weights', label: '体重' },
-  { value: 'health', label: '健康' }
 ]
 
 function readFile(path: string) {
@@ -44,9 +37,6 @@ export default function DataCenterActionsPage() {
   const [batchKey, setBatchKey] = useState('')
   const [mappingText, setMappingText] = useState('')
   const [importRows, setImportRows] = useState<any[]>([])
-  const [selectedDatasets, setSelectedDatasets] = useState<string[]>(['hamsters', 'enclosures', 'weights', 'health'])
-  const [exportJobs, setExportJobs] = useState<any[]>([])
-  const [backupJobs, setBackupJobs] = useState<any[]>([])
   const [status, setStatus] = useState('选好导入类型后，从聊天选 CSV，再按「预检 → 提交」')
   const [busy, setBusy] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -62,23 +52,6 @@ export default function DataCenterActionsPage() {
       )
     }
   }
-
-  async function refreshJobs() {
-    try {
-      const [exportsResponse, backupsResponse] = await Promise.all([
-        defaultApi.listExportJobs({ limit: 20 }),
-        defaultApi.listBackupJobs({ limit: 20 })
-      ])
-      setExportJobs(exportsResponse.data || [])
-      setBackupJobs(backupsResponse.data || [])
-    } catch (cause) {
-      setStatus(await formatUserError(cause, '任务列表读取失败'))
-    }
-  }
-
-  useEffect(() => {
-    void refreshJobs()
-  }, [])
 
   async function refreshImport() {
     if (!importJobId.trim()) {
@@ -215,45 +188,6 @@ export default function DataCenterActionsPage() {
     }
   }
 
-  async function handleJob(job: any, kind: 'export' | 'backup') {
-    const id = String(job.id || '')
-    if (!id) return
-    setBusy(true)
-    try {
-      if (job.status === 'succeeded') {
-        const response =
-          kind === 'export'
-            ? await defaultApi.getExportDownload({ jobId: id })
-            : await defaultApi.getBackupDownload({ jobId: id })
-        await downloadRemoteFile(response.data.downloadUrl, response.data.fileName || `${kind}-${id}`)
-      } else if (job.retryable) {
-        if (kind === 'export') {
-          await defaultApi.retryExportJob({
-            idempotencyKey: newIdempotencyKey(),
-            ifMatch: String(job.version ?? 0),
-            jobId: id,
-            retryJobRequest: { reason: '小程序端重试' }
-          })
-        } else {
-          await defaultApi.retryBackupJob({
-            idempotencyKey: newIdempotencyKey(),
-            ifMatch: String(job.version ?? 0),
-            jobId: id,
-            retryJobRequest: { reason: '小程序端重试' }
-          })
-        }
-        setStatus(`${kind === 'export' ? '导出' : '备份'}已重新排队`)
-        await refreshJobs()
-      } else {
-        setStatus(`${kind === 'export' ? '导出' : '备份'}当前：${jobStatusLabel(job.status)}`)
-      }
-    } catch (cause) {
-      setStatus(await formatUserError(cause, '任务操作失败'))
-    } finally {
-      setBusy(false)
-    }
-  }
-
   async function chooseAndUpload() {
     setBusy(true)
     try {
@@ -359,57 +293,6 @@ export default function DataCenterActionsPage() {
     }
   }
 
-  async function exportData() {
-    if (!selectedDatasets.length) {
-      setStatus('请至少选一类要导出的数据')
-      return
-    }
-    setBusy(true)
-    try {
-      const response = await defaultApi.createExportJob({
-        idempotencyKey: newIdempotencyKey(),
-        exportJobCreateRequest: {
-          datasets: new Set(selectedDatasets),
-          format: 'csv_zip',
-          timezone: 'Asia/Taipei'
-        } as any
-      })
-      setStatus(`导出任务已创建，完成后点列表下载`)
-      void response
-      await refreshJobs()
-    } catch (cause) {
-      setStatus(await formatUserError(cause, '导出创建失败'))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function backup() {
-    setBusy(true)
-    try {
-      await defaultApi.createBackupJob({
-        idempotencyKey: newIdempotencyKey(),
-        backupJobCreateRequest: {
-          includeMediaManifest: true,
-          includeChecksums: true,
-          timezone: 'Asia/Taipei'
-        } as any
-      })
-      setStatus('备份任务已创建，完成后点列表下载')
-      await refreshJobs()
-    } catch (cause) {
-      setStatus(await formatUserError(cause, '备份创建失败'))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  function toggleDataset(value: string) {
-    setSelectedDatasets((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-    )
-  }
-
   const templateIndex = Math.max(
     0,
     TEMPLATE_OPTIONS.findIndex((item) => item.value === templateType)
@@ -426,7 +309,7 @@ export default function DataCenterActionsPage() {
         backgroundColor: palette.systemBackground
       }}
     >
-      <NavBar title="导入 / 导出 / 备份" back />
+      <NavBar title="导入 CSV" back />
       <ScrollView
         scrollY
         type="list"
@@ -600,82 +483,8 @@ export default function DataCenterActionsPage() {
             ) : null}
           </Section>
 
-          <Section header="导出与备份" footer="点已完成的任务可下载；失败可重试">
-            <FormRow label="导出内容">
-              <View>
-                {DATASET_OPTIONS.map((item) => {
-                  const on = selectedDatasets.includes(item.value)
-                  return (
-                    <Cell
-                      key={item.value}
-                      title={item.label}
-                      value={<Tag tone={on ? 'success' : 'warning'}>{on ? '已选' : '未选'}</Tag>}
-                      onClick={() => toggleDataset(item.value)}
-                    />
-                  )
-                })}
-              </View>
-            </FormRow>
-            <CapabilityButton
-              capability="write_import"
-              block
-              disabled={busy}
-              onClick={() => void exportData()}
-            >
-              创建导出
-            </CapabilityButton>
-            <CapabilityButton
-              capability="write_import"
-              block
-              variant="outlined"
-              disabled={busy}
-              onClick={() => void backup()}
-            >
-              创建备份
-            </CapabilityButton>
-            <CapabilityButton
-              capability="read_data_center"
-              block
-              variant="outlined"
-              disabled={busy}
-              onClick={() => void refreshJobs()}
-            >
-              刷新任务列表
-            </CapabilityButton>
-            {exportJobs.map((job) => (
-              <Cell
-                key={`export-${job.id}`}
-                title="导出任务"
-                subtitle={`${job.progressPercent ?? 0}% · ${job.fileName || '文件生成中'}`}
-                value={
-                  <Tag
-                    tone={
-                      job.status === 'succeeded' ? 'success' : job.status === 'failed' ? 'danger' : 'warning'
-                    }
-                  >
-                    {jobStatusLabel(job.status)}
-                  </Tag>
-                }
-                onClick={() => void handleJob(job, 'export')}
-              />
-            ))}
-            {backupJobs.map((job) => (
-              <Cell
-                key={`backup-${job.id}`}
-                title="备份任务"
-                subtitle={`${job.progressPercent ?? 0}% · ${job.integrityStatus || '校验中'}`}
-                value={
-                  <Tag
-                    tone={
-                      job.status === 'succeeded' ? 'success' : job.status === 'failed' ? 'danger' : 'warning'
-                    }
-                  >
-                    {jobStatusLabel(job.status)}
-                  </Tag>
-                }
-                onClick={() => void handleJob(job, 'backup')}
-              />
-            ))}
+          <Section header="导出与备份" footer="后台任务尚未落地，入口已收起，避免提交后永远排队">
+            <Cell title="导出 / 备份" subtitle="服务端还没有处理 worker，暂不开放" value={<Tag>已收起</Tag>} />
           </Section>
 
           <View style={{ height: `${metrics.bottomSafePadding}px` }} />

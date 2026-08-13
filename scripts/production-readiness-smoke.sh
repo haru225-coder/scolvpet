@@ -7,7 +7,8 @@
 #     （旧二进制无 environment 字段则跳过，保持向后兼容）。
 #   静态断言（给定 ENV_FILE 时，不起服务）：production env 文件必须
 #     APP_ENV=production、SMS_MOCK_CODE 为空、SMS_PROVIDER=http、WECHAT_PROVIDER=http、
-#     WECHAT_SUBSCRIPTION_PROVIDER=http、任务/预订模板 ID 非空
+#     WECHAT_SUBSCRIPTION_PROVIDER=http、任务/预订模板 ID 非空、
+#     WECHAT_PHONE_GLOBAL_PER_MINUTE / WECHAT_PHONE_GLOBAL_PER_DAY 键存在且为正整数
 #     （对应 api/cmd/server/config.go validateProductionConfig 的 fail-closed 校验）。
 # 用法（位置参数或环境变量，至少给一个）：
 #   scripts/production-readiness-smoke.sh https://p.scolv.com:8443 /opt/scolvpet/.env.production
@@ -79,6 +80,16 @@ if [[ -n "$ENV_FILE" ]]; then
   [[ -n "$WECHAT_TASK_TEMPLATE_VALUE" ]] || fail "WECHAT_TASK_TEMPLATE_ID must be non-empty ($ENV_FILE)"
   WECHAT_RESERVATION_TEMPLATE_VALUE="$(env_get WECHAT_RESERVATION_TEMPLATE_ID)"
   [[ -n "$WECHAT_RESERVATION_TEMPLATE_VALUE" ]] || fail "WECHAT_RESERVATION_TEMPLATE_ID must be non-empty ($ENV_FILE)"
+  grep -qE '^WECHAT_PHONE_GLOBAL_PER_MINUTE=' "$ENV_FILE" \
+    || fail "WECHAT_PHONE_GLOBAL_PER_MINUTE key missing ($ENV_FILE)"
+  grep -qE '^WECHAT_PHONE_GLOBAL_PER_DAY=' "$ENV_FILE" \
+    || fail "WECHAT_PHONE_GLOBAL_PER_DAY key missing ($ENV_FILE)"
+  WECHAT_PHONE_MINUTE_VALUE="$(env_get WECHAT_PHONE_GLOBAL_PER_MINUTE)"
+  [[ "$WECHAT_PHONE_MINUTE_VALUE" =~ ^[1-9][0-9]*$ ]] \
+    || fail "WECHAT_PHONE_GLOBAL_PER_MINUTE want positive integer got '$WECHAT_PHONE_MINUTE_VALUE' ($ENV_FILE)"
+  WECHAT_PHONE_DAY_VALUE="$(env_get WECHAT_PHONE_GLOBAL_PER_DAY)"
+  [[ "$WECHAT_PHONE_DAY_VALUE" =~ ^[1-9][0-9]*$ ]] \
+    || fail "WECHAT_PHONE_GLOBAL_PER_DAY want positive integer got '$WECHAT_PHONE_DAY_VALUE' ($ENV_FILE)"
 fi
 
 printf 'production-readiness smoke PASS: base_url=%s env_file=%s\n' \

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -277,5 +279,27 @@ func TestNewObjectStoreBuildsConfiguredS3Implementation(t *testing.T) {
 	}
 	if _, ok := configured.(*objectstore.S3ObjectStore); !ok {
 		t.Fatalf("newObjectStore() type = %T, want *objectstore.S3ObjectStore", configured)
+	}
+}
+
+func TestProductionEnvExampleDeclaresFailClosedKeys(t *testing.T) {
+	path := filepath.Join("..", "..", "..", "deploy", "vps", ".env.production.example")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read production env example: %v", err)
+	}
+	text := string(body)
+	for _, key := range []string{
+		"WECHAT_PHONE_GLOBAL_PER_MINUTE",
+		"WECHAT_PHONE_GLOBAL_PER_DAY",
+		"WECHAT_PROVIDER",
+		"WECHAT_SUBSCRIPTION_PROVIDER",
+		"WECHAT_TASK_TEMPLATE_ID",
+		"WECHAT_RESERVATION_TEMPLATE_ID",
+		"SCOLVPET_PDF_FONT_PATH",
+	} {
+		if !strings.Contains(text, key+"=") {
+			t.Errorf("production env example missing %s=", key)
+		}
 	}
 }

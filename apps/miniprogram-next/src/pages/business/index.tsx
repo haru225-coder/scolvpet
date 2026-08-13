@@ -132,7 +132,7 @@ export default function BusinessPage() {
             <Cell title="客户" subtitle="预订、交付、跟进" chevron onClick={() => openPage(DOMAIN_HOME.crm)} />
             <Cell title="合同与回执" chevron onClick={() => openPage(DOMAIN_HOME.contracts)} />
             <Cell title="财务" chevron onClick={() => openPage(DOMAIN_HOME.finance)} />
-            <Cell title="数据中心" subtitle="导入导出与备份" chevron onClick={() => openPage(DOMAIN_HOME.dataCenter)} />
+            <Cell title="数据中心" subtitle="导入 CSV" chevron onClick={() => openPage(DOMAIN_HOME.dataCenter)} />
           </Section>
         </SectionList>
         <View style={{ height: tabPageBottomPad() + 'px' }} />

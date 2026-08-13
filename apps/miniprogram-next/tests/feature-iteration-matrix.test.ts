@@ -56,7 +56,7 @@ const featureIterationRows: FeatureIterationRow[] = [
   { route: 'packages/genetic/create/index', domain: '遗传', criticalFlow: '表型试配与结果展示', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/genetic/bind-hamster/index', domain: '遗传', criticalFlow: '档案绑定全量种群个体', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/data-center/index/index', domain: '数据中心', criticalFlow: '汇总与操作入口', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
-  { route: 'packages/data-center/actions/index', domain: '数据中心', criticalFlow: '导入、导出、备份与重试', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
+  { route: 'packages/data-center/actions/index', domain: '数据中心', criticalFlow: 'CSV 导入、预检、提交与失败行重试（导出/备份已按 Wave0 隐藏）', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/ai/index/index', domain: 'AI', criticalFlow: '问答、动作确认与业务深链', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath },
   { route: 'packages/profile/index/index', domain: 'B 我的', criticalFlow: '工具入口、订阅与退出登录', testFile: 'tests/migration-surface.test.ts', deviceEvidence: evidencePath }
 ]

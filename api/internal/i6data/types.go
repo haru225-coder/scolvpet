@@ -18,9 +18,8 @@ var (
 )
 
 // VersionError 携带冲突时的期望版本号,是 ErrVersionConflict 的类型化形态。
-// Unwrap 使 errors.Is(err, ErrVersionConflict) 对 &VersionError{...} 成立,
-// 其 Error() 文本以 "i6 data version conflict" 开头,兼容 httpapi 层的
-// strings.Contains(err.Error(), ErrVersionConflict.Error()) 判断。
+// Unwrap 使 errors.Is(err, ErrVersionConflict) 对 &VersionError{...} 成立。
+// 消费端读 Version()，不要再嗅探 Error() 文本。
 type VersionError struct{ Current int }
 
 func (e *VersionError) Error() string {

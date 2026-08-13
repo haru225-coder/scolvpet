@@ -28,13 +28,8 @@ var (
 )
 
 // VersionError 携带冲突时的期望版本号,是 ErrVersionConflict 的类型化形态。
-// 兼容性约定(P0 版本号协议改造):
-//   - 现有产出端 fmt.Errorf("%w: current=%d", ErrVersionConflict, v) 原样可用:
-//     %w 参数即哨兵指针本身,errors.Is 沿 Unwrap 链命中同一哨兵;
-//   - 新产出端 fmt.Errorf("%w: %d", &VersionError{Current: v}, ...) 也能被
-//     errors.Is(err, ErrVersionConflict) 匹配(由 Is 方法保证,不要求指针同一);
-//   - Error() 文本以 "version conflict" 开头,httpapi 层
-//     strings.Contains(err.Error(), ErrVersionConflict.Error()) 在 P2 清理前不失效。
+// 产出端返回 *VersionError；消费端用 errors.Is / Version() 读 current，
+// 不再走 "%w: current=" 字符串嗅探。
 type VersionError struct{ Current int }
 
 func (e *VersionError) Error() string {

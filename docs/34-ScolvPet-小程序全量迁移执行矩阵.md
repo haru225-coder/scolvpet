@@ -13,9 +13,9 @@
 | M2 | 繁育向导与日历 | 已写入（真机待确认） | `packages/breeding/*`、`packages/reminders/*`（含日历聚合） |
 | M2 | 订阅提醒、离线只读快照 | 已写入（授权同步、任务/预订事件队列与后台 worker；LA1 staging 0042–0044 与路由已验证；正式模板/配置及真机待确认） | `packages/reminders/*`、`src/offline/snapshots.ts`、`api/internal/httpapi/wechat_subscriptions.go`、`api/internal/worker/wechat_subscriptions.go` |
 | M3 | CRM、合同、财务 | 已写入（合同/回执模板管理、记账分类与分类选择、PDF 字体配置及真机待确认） | `packages/crm/*`、`contracts/*`、`finance/*`、`api/internal/httpapi/document_pdf.go` |
-| M3 | 公开主页、CSV | 已写入（真机及订阅配套待确认） | `public-site/*`、`data-center/*` |
+| M3 | 公开主页、CSV | 已写入（CSV 导入；导出/备份入口已按 docs/28 Wave0 隐藏；真机及订阅配套待确认） | `public-site/*`、`data-center/*` |
 | M4 | AI、遗传模拟、Stud | 已写入（AI 快捷问题/深链、遗传目录/目标交配/实际反馈/历史摘要、公开个体资料管理均接入；真机待确认） | `packages/ai/*`、`genetic/*`、`stud/*` |
-| M4 | 数据中心汇总 | 已写入（CSV 映射、逐行结果、错误报告、重试、导出/备份下载与重试；真机待确认） | `packages/data-center/*` |
+| M4 | 数据中心汇总 | 已写入（CSV 映射、逐行结果、错误报告、重试；导出/备份创建入口已隐藏，worker 未做） | `packages/data-center/*` |
 
 平台专属能力（IAP、WidgetKit、APNs）按总纲保留在 App；小程序侧以权益展示、订阅消息和引导完成替代。
 

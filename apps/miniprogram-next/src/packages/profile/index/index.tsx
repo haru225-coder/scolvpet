@@ -58,7 +58,7 @@ export default function ProfilePage() {
           ) : null}
           <Section header="工具">
             <Cell title="AI 助手" subtitle="问一句，直接查养熊数据" chevron onClick={() => openPage(DOMAIN_HOME.ai)} />
-            <Cell title="数据中心" subtitle="导入、导出、备份" chevron onClick={() => openPage(DOMAIN_HOME.dataCenter)} />
+            <Cell title="数据中心" subtitle="导入 CSV" chevron onClick={() => openPage(DOMAIN_HOME.dataCenter)} />
             <Cell
               title="试配模拟"
               subtitle="选公母样子，看宝宝可能长什么样"

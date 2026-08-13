@@ -119,8 +119,7 @@ describe('M1–M4 migration surface gate', () => {
   it('关键业务闭环使用对应的真实生成接口', () => {
     const criticalOperations: Record<string, string[]> = {
       'src/packages/data-center/actions/index.tsx': [
-        'setImportMapping', 'listImportRowResults', 'getImportErrorReport', 'retryImportJob',
-        'listExportJobs', 'getExportDownload', 'listBackupJobs', 'getBackupDownload'
+        'setImportMapping', 'listImportRowResults', 'getImportErrorReport', 'retryImportJob'
       ],
       'src/packages/animals/create/index.tsx': ['speciesRuleVersionId', 'birthDate', 'notes', 'sex', 'encodePhenotype', 'listGeneticPhenotypeCatalog'],
       'src/packages/animals/detail/index.tsx': ['presignMediaUpload', 'completeMediaUpload', 'coverMediaId', 'internalCode', 'birthDate', 'varietyCode', 'notes', 'encodePhenotype'],
@@ -151,5 +150,14 @@ describe('M1–M4 migration surface gate', () => {
       .sort()
 
     expect(directRequestFiles).toEqual([...directRequestAllowlist].sort())
+  })
+
+  it('Wave0：小程序源码不得创建导出/备份任务', () => {
+    const forbidden = /createExportJob|createBackupJob|retryExportJob|retryBackupJob/
+    const offenders = sourceFiles(path.join(projectRoot, 'src'))
+      .filter((sourcePath) => forbidden.test(fs.readFileSync(sourcePath, 'utf8')))
+      .map((sourcePath) => path.relative(projectRoot, sourcePath))
+      .sort()
+    expect(offenders).toEqual([])
   })
 })
