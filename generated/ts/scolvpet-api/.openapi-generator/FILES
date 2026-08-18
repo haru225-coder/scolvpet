@@ -29,9 +29,6 @@ docs/AssistantChatResult.md
 docs/AssistantFact.md
 docs/AsyncJob.md
 docs/BackupJob.md
-docs/BackupJobCreateRequest.md
-docs/BackupJobListResponse.md
-docs/BackupJobResponse.md
 docs/BatchItemStatus.md
 docs/BatchTransactionStatus.md
 docs/BreederWechatSessionResponse.md
@@ -91,9 +88,6 @@ docs/EnclosureStay.md
 docs/ErrorObject.md
 docs/ErrorResponse.md
 docs/ExportJob.md
-docs/ExportJobCreateRequest.md
-docs/ExportJobListResponse.md
-docs/ExportJobResponse.md
 docs/FieldError.md
 docs/GeneticApi.md
 docs/GeneticLocus.md
@@ -123,6 +117,7 @@ docs/HealthRecordCreateRequest.md
 docs/HealthRecordListResponse.md
 docs/HealthRecordResponse.md
 docs/HealthRecordType.md
+docs/HealthRecordUpdateRequest.md
 docs/ImportCommitRequest.md
 docs/ImportCommitRequestApprovedUpdatesInner.md
 docs/ImportIssue.md
@@ -176,6 +171,10 @@ docs/PedigreeGraphResponse.md
 docs/PedigreeGraphResponseData.md
 docs/PedigreeGraphResponseDataCommonAncestorsInner.md
 docs/PedigreeParentage.md
+docs/PedigreeParentageCreateRequest.md
+docs/PedigreeParentageEndRequest.md
+docs/PedigreeParentageListResponse.md
+docs/PedigreeParentageResponse.md
 docs/PhenotypeTableOutcome.md
 docs/PhoneCodeLoginRequest.md
 docs/PupIdentity.md
@@ -190,7 +189,6 @@ docs/ReminderListResponse.md
 docs/ReminderState.md
 docs/ResponseMeta.md
 docs/RetryImportRequest.md
-docs/RetryJobRequest.md
 docs/SendVerificationCodeRequest.md
 docs/SessionResponse.md
 docs/SessionResponseData.md
@@ -260,9 +258,6 @@ src/models/AssistantChatResult.ts
 src/models/AssistantFact.ts
 src/models/AsyncJob.ts
 src/models/BackupJob.ts
-src/models/BackupJobCreateRequest.ts
-src/models/BackupJobListResponse.ts
-src/models/BackupJobResponse.ts
 src/models/BatchItemStatus.ts
 src/models/BatchTransactionStatus.ts
 src/models/BreederWechatSessionResponse.ts
@@ -320,9 +315,6 @@ src/models/EnclosureStay.ts
 src/models/ErrorObject.ts
 src/models/ErrorResponse.ts
 src/models/ExportJob.ts
-src/models/ExportJobCreateRequest.ts
-src/models/ExportJobListResponse.ts
-src/models/ExportJobResponse.ts
 src/models/FieldError.ts
 src/models/GeneticLocus.ts
 src/models/GeneticLocusListResponse.ts
@@ -351,6 +343,7 @@ src/models/HealthRecordCreateRequest.ts
 src/models/HealthRecordListResponse.ts
 src/models/HealthRecordResponse.ts
 src/models/HealthRecordType.ts
+src/models/HealthRecordUpdateRequest.ts
 src/models/ImportCommitRequest.ts
 src/models/ImportCommitRequestApprovedUpdatesInner.ts
 src/models/ImportIssue.ts
@@ -401,6 +394,10 @@ src/models/PedigreeGraphResponse.ts
 src/models/PedigreeGraphResponseData.ts
 src/models/PedigreeGraphResponseDataCommonAncestorsInner.ts
 src/models/PedigreeParentage.ts
+src/models/PedigreeParentageCreateRequest.ts
+src/models/PedigreeParentageEndRequest.ts
+src/models/PedigreeParentageListResponse.ts
+src/models/PedigreeParentageResponse.ts
 src/models/PhenotypeTableOutcome.ts
 src/models/PhoneCodeLoginRequest.ts
 src/models/PupIdentity.ts
@@ -415,7 +412,6 @@ src/models/ReminderListResponse.ts
 src/models/ReminderState.ts
 src/models/ResponseMeta.ts
 src/models/RetryImportRequest.ts
-src/models/RetryJobRequest.ts
 src/models/SendVerificationCodeRequest.ts
 src/models/SessionResponse.ts
 src/models/SessionResponseData.ts

@@ -93,7 +93,7 @@ export default function BusinessPage() {
           back
           badge="下一个"
           title={headline ? headline.title : '暂无待办客户事项'}
-          subtitle={headline?.subtitle || '交付、尾款、合同到点会排到这里'}
+          subtitle={headline?.subtitle || '有提醒时排在这里。客户和合同从下面进'}
           primary={{ text: '打开客户', onClick: () => openPage(DOMAIN_HOME.crm) }}
           secondary={{ text: '合同', onClick: () => openPage(DOMAIN_HOME.contracts) }}
           right={<ProfileAvatar />}

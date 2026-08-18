@@ -61,23 +61,22 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *DefaultApi* | [**commitImportJob**](docs/DefaultApi.md#commitimportjob) | **POST** /data-center/import-jobs/{job_id}/commit | 提交正式导入
 *DefaultApi* | [**completeMediaUpload**](docs/DefaultApi.md#completemediaupload) | **POST** /media/uploads/{upload_id}/complete | 完成媒体上传
 *DefaultApi* | [**completeTask**](docs/DefaultApi.md#completetaskoperation) | **POST** /tasks/{task_id}/complete | 完成任务或逐项完成任务成员
-*DefaultApi* | [**createBackupJob**](docs/DefaultApi.md#createbackupjob) | **POST** /data-center/backup-jobs | 创建基础备份
 *DefaultApi* | [**createBreederWechatBinding**](docs/DefaultApi.md#createbreederwechatbindingoperation) | **POST** /auth/wechat-bindings | 短信验证并绑定 B 端微信身份
 *DefaultApi* | [**createBreederWechatSession**](docs/DefaultApi.md#createbreederwechatsessionoperation) | **POST** /auth/wechat-sessions | B 端微信 wx.login 登录
-*DefaultApi* | [**createExportJob**](docs/DefaultApi.md#createexportjob) | **POST** /data-center/export-jobs | 创建数据导出
 *DefaultApi* | [**createHamster**](docs/DefaultApi.md#createhamster) | **POST** /hamsters | 创建仓鼠档案
 *DefaultApi* | [**createHealthRecord**](docs/DefaultApi.md#createhealthrecord) | **POST** /health-records | 创建健康记录
 *DefaultApi* | [**createImportJob**](docs/DefaultApi.md#createimportjob) | **POST** /data-center/import-jobs | 创建 CSV 导入任务
 *DefaultApi* | [**createImportUpload**](docs/DefaultApi.md#createimportupload) | **POST** /data-center/import-uploads | 创建 CSV 上传
 *DefaultApi* | [**createLitterCountEvent**](docs/DefaultApi.md#createlittercountevent) | **POST** /litters/{litter_id}/count-events | 追加窝仔数量事件
+*DefaultApi* | [**createPedigreeParentage**](docs/DefaultApi.md#createpedigreeparentage) | **POST** /pedigree-parentages | 新增父母关系断言
 *DefaultApi* | [**createSession**](docs/DefaultApi.md#createsession) | **POST** /auth/sessions | 使用手机验证码登录
 *DefaultApi* | [**createTask**](docs/DefaultApi.md#createtask) | **POST** /tasks | 创建手工任务
 *DefaultApi* | [**createWeightRecord**](docs/DefaultApi.md#createweightrecord) | **POST** /weight-records | 创建体重记录
-*DefaultApi* | [**getBackupDownload**](docs/DefaultApi.md#getbackupdownload) | **GET** /data-center/backup-jobs/{job_id}/download | 获取备份下载链接
+*DefaultApi* | [**endPedigreeParentage**](docs/DefaultApi.md#endpedigreeparentage) | **POST** /pedigree-parentages/end | 解除当前有效父母关系
 *DefaultApi* | [**getDataCenterSummary**](docs/DefaultApi.md#getdatacentersummary) | **GET** /data-center/summary | 获取数据中心摘要
-*DefaultApi* | [**getExportDownload**](docs/DefaultApi.md#getexportdownload) | **GET** /data-center/export-jobs/{job_id}/download | 获取导出下载链接
 *DefaultApi* | [**getHamster**](docs/DefaultApi.md#gethamster) | **GET** /hamsters/{hamster_id} | 获取仓鼠详情
 *DefaultApi* | [**getHamsterPedigree**](docs/DefaultApi.md#gethamsterpedigree) | **GET** /hamsters/{hamster_id}/pedigree | 获取仓鼠家谱图
+*DefaultApi* | [**getHealthRecord**](docs/DefaultApi.md#gethealthrecord) | **GET** /health-records/{health_record_id} | 获取健康记录
 *DefaultApi* | [**getImportErrorReport**](docs/DefaultApi.md#getimporterrorreport) | **GET** /data-center/import-jobs/{job_id}/error-report | 下载 CSV 逐行错误报告
 *DefaultApi* | [**getImportJob**](docs/DefaultApi.md#getimportjob) | **GET** /data-center/import-jobs/{job_id} | 获取导入任务
 *DefaultApi* | [**getLitter**](docs/DefaultApi.md#getlitter) | **GET** /litters/{litter_id} | 获取窝次详情
@@ -88,15 +87,14 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *DefaultApi* | [**individualizeLitter**](docs/DefaultApi.md#individualizelitteroperation) | **POST** /litters/{litter_id}/individualize | 将临时幼崽个体化
 *DefaultApi* | [**individualizeLitter_0**](docs/DefaultApi.md#individualizelitter_0) | **POST** /litters/{litter_id}/individualize | 将临时幼崽个体化
 *DefaultApi* | [**individualizeLitter_1**](docs/DefaultApi.md#individualizelitter_1) | **POST** /litters/{litter_id}/individualize | 将临时幼崽个体化
-*DefaultApi* | [**listBackupJobs**](docs/DefaultApi.md#listbackupjobs) | **GET** /data-center/backup-jobs | 列出备份任务
 *DefaultApi* | [**listEnclosures**](docs/DefaultApi.md#listenclosures) | **GET** /enclosures | 列出笼盒
-*DefaultApi* | [**listExportJobs**](docs/DefaultApi.md#listexportjobs) | **GET** /data-center/export-jobs | 列出导出任务
 *DefaultApi* | [**listHamsters**](docs/DefaultApi.md#listhamsters) | **GET** /hamsters | 列出仓鼠
 *DefaultApi* | [**listHealthRecords**](docs/DefaultApi.md#listhealthrecords) | **GET** /health-records | 列出健康记录
 *DefaultApi* | [**listImportRowResults**](docs/DefaultApi.md#listimportrowresults) | **GET** /data-center/import-jobs/{job_id}/rows | 获取逐行导入结果
 *DefaultApi* | [**listLitterMembers**](docs/DefaultApi.md#listlittermembers) | **GET** /litters/{litter_id}/members | 列出窝次成员
 *DefaultApi* | [**listLitterMembers_0**](docs/DefaultApi.md#listlittermembers_0) | **GET** /litters/{litter_id}/members | 列出窝次成员
 *DefaultApi* | [**listLitters**](docs/DefaultApi.md#listlitters) | **GET** /litters | 列出窝次
+*DefaultApi* | [**listPedigreeParentages**](docs/DefaultApi.md#listpedigreeparentages) | **GET** /pedigree-parentages | 列出家谱父母边
 *DefaultApi* | [**listReminders**](docs/DefaultApi.md#listreminders) | **GET** /reminders | 列出提醒
 *DefaultApi* | [**listSpeciesRuleVersions**](docs/DefaultApi.md#listspeciesruleversions) | **GET** /species-rule-versions | 列出当前熊舍规则版本
 *DefaultApi* | [**listTasks**](docs/DefaultApi.md#listtasks) | **GET** /tasks | 列出任务
@@ -106,13 +104,12 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 *DefaultApi* | [**presignMediaUpload**](docs/DefaultApi.md#presignmediaupload) | **POST** /media/uploads/presign | 创建媒体预签名上传
 *DefaultApi* | [**refreshSession**](docs/DefaultApi.md#refreshsessionoperation) | **POST** /auth/sessions/refresh | 刷新当前会话
 *DefaultApi* | [**reopenTask**](docs/DefaultApi.md#reopentask) | **POST** /tasks/{task_id}/reopen | 撤销任务的完成或取消
-*DefaultApi* | [**retryBackupJob**](docs/DefaultApi.md#retrybackupjob) | **POST** /data-center/backup-jobs/{job_id}/retry | 重试失败备份
-*DefaultApi* | [**retryExportJob**](docs/DefaultApi.md#retryexportjob) | **POST** /data-center/export-jobs/{job_id}/retry | 重试失败导出
 *DefaultApi* | [**retryImportJob**](docs/DefaultApi.md#retryimportjob) | **POST** /data-center/import-jobs/{job_id}/retry | 重试失败导入行
 *DefaultApi* | [**sendVerificationCode**](docs/DefaultApi.md#sendverificationcodeoperation) | **POST** /auth/verification-codes | 发送手机验证码
 *DefaultApi* | [**setImportMapping**](docs/DefaultApi.md#setimportmapping) | **PUT** /data-center/import-jobs/{job_id}/mapping | 设置 CSV 字段映射
 *DefaultApi* | [**sexAndSeparateLitter**](docs/DefaultApi.md#sexandseparatelitter) | **POST** /litters/{litter_id}/sex-and-separate | 分性并分笼
 *DefaultApi* | [**updateHamster**](docs/DefaultApi.md#updatehamster) | **PATCH** /hamsters/{hamster_id} | 更新仓鼠档案
+*DefaultApi* | [**updateHealthRecord**](docs/DefaultApi.md#updatehealthrecord) | **PATCH** /health-records/{health_record_id} | 更新健康记录
 *DefaultApi* | [**upsertWechatSubscriptions**](docs/DefaultApi.md#upsertwechatsubscriptionsoperation) | **PUT** /wechat/subscriptions | 保存当前 B 端微信订阅授权
 *DefaultApi* | [**weanLitter**](docs/DefaultApi.md#weanlitteroperation) | **POST** /litters/{litter_id}/wean | 完成断奶
 *CustomerApi* | [**createCustomerWechatPhoneBinding**](docs/CustomerApi.md#createcustomerwechatphonebindingoperation) | **POST** /v1/public/customer/wechat-phone-bindings | 微信授权手机号并创建客户会话
@@ -193,9 +190,6 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [AssistantFact](docs/AssistantFact.md)
 - [AsyncJob](docs/AsyncJob.md)
 - [BackupJob](docs/BackupJob.md)
-- [BackupJobCreateRequest](docs/BackupJobCreateRequest.md)
-- [BackupJobListResponse](docs/BackupJobListResponse.md)
-- [BackupJobResponse](docs/BackupJobResponse.md)
 - [BatchItemStatus](docs/BatchItemStatus.md)
 - [BatchTransactionStatus](docs/BatchTransactionStatus.md)
 - [BreederWechatSessionResponse](docs/BreederWechatSessionResponse.md)
@@ -253,9 +247,6 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [ErrorObject](docs/ErrorObject.md)
 - [ErrorResponse](docs/ErrorResponse.md)
 - [ExportJob](docs/ExportJob.md)
-- [ExportJobCreateRequest](docs/ExportJobCreateRequest.md)
-- [ExportJobListResponse](docs/ExportJobListResponse.md)
-- [ExportJobResponse](docs/ExportJobResponse.md)
 - [FieldError](docs/FieldError.md)
 - [GeneticLocus](docs/GeneticLocus.md)
 - [GeneticLocusListResponse](docs/GeneticLocusListResponse.md)
@@ -284,6 +275,7 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [HealthRecordListResponse](docs/HealthRecordListResponse.md)
 - [HealthRecordResponse](docs/HealthRecordResponse.md)
 - [HealthRecordType](docs/HealthRecordType.md)
+- [HealthRecordUpdateRequest](docs/HealthRecordUpdateRequest.md)
 - [ImportCommitRequest](docs/ImportCommitRequest.md)
 - [ImportCommitRequestApprovedUpdatesInner](docs/ImportCommitRequestApprovedUpdatesInner.md)
 - [ImportIssue](docs/ImportIssue.md)
@@ -334,6 +326,10 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [PedigreeGraphResponseData](docs/PedigreeGraphResponseData.md)
 - [PedigreeGraphResponseDataCommonAncestorsInner](docs/PedigreeGraphResponseDataCommonAncestorsInner.md)
 - [PedigreeParentage](docs/PedigreeParentage.md)
+- [PedigreeParentageCreateRequest](docs/PedigreeParentageCreateRequest.md)
+- [PedigreeParentageEndRequest](docs/PedigreeParentageEndRequest.md)
+- [PedigreeParentageListResponse](docs/PedigreeParentageListResponse.md)
+- [PedigreeParentageResponse](docs/PedigreeParentageResponse.md)
 - [PhenotypeTableOutcome](docs/PhenotypeTableOutcome.md)
 - [PhoneCodeLoginRequest](docs/PhoneCodeLoginRequest.md)
 - [PupIdentity](docs/PupIdentity.md)
@@ -348,7 +344,6 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 - [ReminderState](docs/ReminderState.md)
 - [ResponseMeta](docs/ResponseMeta.md)
 - [RetryImportRequest](docs/RetryImportRequest.md)
-- [RetryJobRequest](docs/RetryJobRequest.md)
 - [SendVerificationCodeRequest](docs/SendVerificationCodeRequest.md)
 - [SessionResponse](docs/SessionResponse.md)
 - [SessionResponseData](docs/SessionResponseData.md)

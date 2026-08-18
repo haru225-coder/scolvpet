@@ -7,6 +7,7 @@ import { newIdempotencyKey, p1Api, p1CrmApi } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import type { ApiEnvelope } from '../../../api/types'
 import { formatUserError } from '../../../api/errors'
+import { documentCreatedToast, documentDetailUrl } from '../../../utils/document-flow'
 
 function yuanToCents(text: string) {
   const n = Number(String(text || '').trim())
@@ -115,20 +116,32 @@ export default function CreateContractPage() {
       const response = isReceipt
         ? await p1Api.createReceipt(request as any)
         : await p1Api.createContract(request as any)
-      const contractId = (response.data as any)?.id
-      if (contractId) {
+      const created = (response.data || {}) as { id?: string; version?: number }
+      const documentId = String(created.id || '')
+      if (!documentId) {
+        setMessage('单据已写入，但没有返回编号，请到列表里打开')
+        return
+      }
+      const kind = isReceipt ? 'receipt' : 'contract'
+      let issued = false
+      try {
         const issueRequest = {
           idempotencyKey: newIdempotencyKey(),
-          documentId: contractId,
-          ifMatch: String((response.data as any)?.version ?? 0)
+          documentId,
+          ifMatch: String(created.version ?? 0)
         }
         if (isReceipt) await p1Api.issueReceipt(issueRequest)
         else await p1Api.issueContract(issueRequest)
+        issued = true
+      } catch (issueCause) {
+        setMessage(await formatUserError(issueCause, '单据已创建，但签发失败，已打开草稿'))
       }
-      Taro.showToast({ title: `${isReceipt ? '回执' : '合同'}已创建`, icon: 'success' })
-      setTimeout(() => Taro.navigateBack(), 350)
+      Taro.showToast({ title: documentCreatedToast(issued, kind), icon: issued ? 'success' : 'none' })
+      setTimeout(() => {
+        void Taro.redirectTo({ url: documentDetailUrl(kind, documentId) })
+      }, 350)
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : `${isReceipt ? '回执' : '合同'}创建失败`)
+      setMessage(await formatUserError(cause, `${isReceipt ? '回执' : '合同'}创建失败`))
     } finally {
       setBusy(false)
     }

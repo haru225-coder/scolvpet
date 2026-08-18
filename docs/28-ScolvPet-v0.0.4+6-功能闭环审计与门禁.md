@@ -34,15 +34,15 @@ OpenAPI 与 Go 路由对应 **PASS**（206 ops / 缺口 0）≠ 产品闭环 PAS
 
 | ID | 问题 | 处置 |
 |----|------|------|
-| P0-1 | 导出/备份只有 queued，无 worker | Wave0 隐藏；Wave4 实现或删除宣称 |
-| P0-2 | CSV 导入 session 内存 | Wave4 全库化 |
-| P0-3 | 血统只能 create，不能纠错 | Wave1 替换/解除 |
-| P0-4 | 繁育只强制 happy path | Wave2 完整状态机 UI |
-| P0-5 | 模拟无保存历史实体链 | Wave3 simulation_id 关联 |
-| P0-6 | 任务/健康/体重无纠错 | Wave1 |
+| P0-1 | 导出/备份只有 queued，无 worker | Wave0 已隐藏（Flutter + 小程序）；worker 仍未做 |
+| P0-2 | CSV 导入 session 内存 | **2026-08-19**：进程内 map + 对象存储 sidecar；重启后可按 job id 回灌。无对象存储时仍仅内存 |
+| P0-3 | 血统只能 create，不能纠错 | **2026-08-19**：小程序父母行可解除/更换，走 `endPedigreeParentage` / `createPedigreeParentage` |
+| P0-4 | 繁育只强制 happy path | 小程序繁育页已改试配模拟，不再暴露状态机假入口 |
+| P0-5 | 模拟无保存历史实体链 | Wave3 simulation_id 关联（未开） |
+| P0-6 | 任务/健康/体重无纠错 | **2026-08-19**：体重/健康纠错 + 今日跳过/恢复必须手写原因 |
 | P0-7 | 小程序发布是沙箱状态机 | 保持只读/隐藏 |
-| P0-8 | 微信身份未闭环 | Wave5 |
-| P0-9 | 借配网络实为单边记录 | Wave0 隐藏或降级文案 |
+| P0-8 | 微信身份未闭环 | Wave5 / 正式 AppID（外部） |
+| P0-9 | 借配网络实为单边记录 | Wave0 隐藏（Flutter ProductSurface） |
 
 ## 主链优先（开放一个完整一个）
 

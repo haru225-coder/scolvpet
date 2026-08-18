@@ -119,6 +119,8 @@ export default function CalendarPage() {
                           {humanShortLabel(item.state)}
                         </Tag>
                       }
+                      chevron
+                      onClick={() => Taro.navigateTo({ url: '/pages/today/index' })}
                     />
                   ))}
                 </Section>

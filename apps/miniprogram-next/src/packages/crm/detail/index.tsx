@@ -8,6 +8,13 @@ import { CapabilityButton } from '../../../components/CapabilityButton'
 import type { ApiEnvelope } from '../../../api/types'
 import { humanShortLabel } from '../../../utils/tab-routes'
 import { formatUserError } from '../../../api/errors'
+import {
+  handoverCanComplete,
+  reservationCanCancel,
+  reservationCanConfirm,
+  reservationStatusNote
+} from '../../../utils/crm-status'
+import { handoverDetailUrl, reservationDetailUrl } from '../../../utils/created-routes'
 
 export function loadCrmDetail(type: string, recordId: string) {
   switch (type) {
@@ -28,13 +35,43 @@ export default function CrmDetailPage() {
   const [notes, setNotes] = useState('')
   const [message, setMessage] = useState('正在读取 CRM 记录…')
   const [busy, setBusy] = useState(false)
+  const [relatedReservations, setRelatedReservations] = useState<any[]>([])
+  const [relatedHandovers, setRelatedHandovers] = useState<any[]>([])
 
   const load = useCallback(async (id: string, type: string) => {
     try {
       const response = await loadCrmDetail(type, id)
       const data = response.data
       setRecord(data || null)
-      setMessage(data ? 'CRM 操作会直接进入客户、预订和交付状态机' : '记录暂时不存在')
+      if (type === 'contact' && data) {
+        const [reservations, handovers] = await Promise.allSettled([
+          p1CrmApi.listCrmReservations(),
+          p1CrmApi.listCrmHandovers()
+        ])
+        const contactId = String((data as { id?: string }).id || id)
+        setRelatedReservations(
+          reservations.status === 'fulfilled'
+            ? (reservations.value.data || []).filter((item: { contactId?: string; contact_id?: string }) =>
+                String(item.contactId || item.contact_id || '') === contactId
+              )
+            : []
+        )
+        setRelatedHandovers(
+          handovers.status === 'fulfilled'
+            ? (handovers.value.data || []).filter((item: { contactId?: string; contact_id?: string }) =>
+                String(item.contactId || item.contact_id || '') === contactId
+              )
+            : []
+        )
+        setMessage(data ? '客户档案不能改。记错请新建一位' : '记录暂时不存在')
+      } else if (type === 'reservation' && data) {
+        setMessage(reservationStatusNote(String((data as { status?: string }).status || '')))
+      } else if (type === 'handover' && data) {
+        const status = String((data as { status?: string }).status || '')
+        setMessage(handoverCanComplete(status) ? '完成交付后不能撤销' : '交付已结束，不能再改')
+      } else {
+        setMessage(data ? '' : '记录暂时不存在')
+      }
     } catch (cause) {
       setMessage(await formatUserError(cause, 'CRM 记录读取失败'))
     }
@@ -61,9 +98,12 @@ export default function CrmDetailPage() {
     if (!title.trim()) { setMessage('请填写预订标题'); return }
     setBusy(true)
     try {
-      await p1CrmApi.createCrmReservation({ idempotencyKey: newIdempotencyKey(), createCrmReservationRequest: { contactId: recordId, hamsterId: hamsterId.trim() || null, title: title.trim(), notes: notes.trim() || null } })
+      const created = await p1CrmApi.createCrmReservation({ idempotencyKey: newIdempotencyKey(), createCrmReservationRequest: { contactId: recordId, hamsterId: hamsterId.trim() || null, title: title.trim(), notes: notes.trim() || null } })
       Taro.showToast({ title: '预订已创建', icon: 'success' })
-      await load(recordId, kind)
+      const url = reservationDetailUrl((created as { data?: { id?: string } }).data?.id)
+      setTimeout(() => {
+        void Taro.redirectTo({ url })
+      }, 350)
     } catch (cause) { setMessage(await formatUserError(cause, '创建预订失败')) } finally { setBusy(false) }
   }
 
@@ -71,9 +111,12 @@ export default function CrmDetailPage() {
     if (!recordId || kind !== 'contact') return
     setBusy(true)
     try {
-      await p1CrmApi.createCrmHandover({ idempotencyKey: newIdempotencyKey(), createCrmHandoverRequest: { contactId: recordId, hamsterId: hamsterId.trim() || null, notes: notes.trim() || null, scheduledAt: new Date() } })
+      const created = await p1CrmApi.createCrmHandover({ idempotencyKey: newIdempotencyKey(), createCrmHandoverRequest: { contactId: recordId, hamsterId: hamsterId.trim() || null, notes: notes.trim() || null, scheduledAt: new Date() } })
       Taro.showToast({ title: '交付已创建', icon: 'success' })
-      await load(recordId, kind)
+      const url = handoverDetailUrl((created as { data?: { id?: string } }).data?.id)
+      setTimeout(() => {
+        void Taro.redirectTo({ url })
+      }, 350)
     } catch (cause) { setMessage(await formatUserError(cause, '创建交付失败')) } finally { setBusy(false) }
   }
 
@@ -137,8 +180,59 @@ export default function CrmDetailPage() {
             <CapabilityButton capability="write_crm" block disabled={busy} onClick={() => void createReservation()}>创建预订</CapabilityButton>
             <CapabilityButton capability="write_crm" block variant="outlined" disabled={busy} onClick={() => void createHandover()}>创建交付</CapabilityButton>
           </Section> : null}
-          {kind === 'reservation' ? <Section header="预订状态"><CapabilityButton capability="write_crm" block disabled={busy} onClick={() => void reservationAction('confirm')}>确认预订</CapabilityButton><CapabilityButton capability="write_crm" block variant="outlined" disabled={busy} onClick={() => void reservationAction('cancel')}>取消预订</CapabilityButton></Section> : null}
-          {kind === 'handover' ? <Section header="交付状态"><CapabilityButton capability="write_crm" block disabled={busy} onClick={() => void completeHandover()}>完成交付</CapabilityButton></Section> : null}
+          {kind === 'contact' && (relatedReservations.length || relatedHandovers.length) ? (
+            <Section header="这位客户的单" footer="点进去确认、取消或完成">
+              {relatedReservations.map((item) => (
+                <Cell
+                  key={`res-${item.id}`}
+                  title={item.title || '预订'}
+                  subtitle={humanShortLabel(item.status || item.state)}
+                  chevron
+                  onClick={() =>
+                    Taro.navigateTo({ url: `/packages/crm/detail/index?id=${encodeURIComponent(`reservation-${item.id}`)}` })
+                  }
+                />
+              ))}
+              {relatedHandovers.map((item) => (
+                <Cell
+                  key={`han-${item.id}`}
+                  title="交付事项"
+                  subtitle={humanShortLabel(item.status || item.state)}
+                  chevron
+                  onClick={() =>
+                    Taro.navigateTo({ url: `/packages/crm/detail/index?id=${encodeURIComponent(`handover-${item.id}`)}` })
+                  }
+                />
+              ))}
+            </Section>
+          ) : null}
+          {kind === 'reservation' ? (
+            <Section header="预订状态" footer={reservationStatusNote(String(record.status || ''))}>
+              {reservationCanConfirm(String(record.status || '')) ? (
+                <CapabilityButton capability="write_crm" block disabled={busy} onClick={() => void reservationAction('confirm')}>
+                  确认预订
+                </CapabilityButton>
+              ) : null}
+              {reservationCanCancel(String(record.status || '')) ? (
+                <CapabilityButton capability="write_crm" block variant="outlined" disabled={busy} onClick={() => void reservationAction('cancel')}>
+                  取消预订
+                </CapabilityButton>
+              ) : (
+                <Cell title="没有可做的状态动作" subtitle={reservationStatusNote(String(record.status || ''))} />
+              )}
+            </Section>
+          ) : null}
+          {kind === 'handover' ? (
+            <Section header="交付状态" footer="交付不能撤销">
+              {handoverCanComplete(String(record.status || '')) ? (
+                <CapabilityButton capability="write_crm" block disabled={busy} onClick={() => void completeHandover()}>
+                  完成交付
+                </CapabilityButton>
+              ) : (
+                <Cell title="交付已结束" subtitle="不能撤销，也不能再点完成" />
+              )}
+            </Section>
+          ) : null}
           <View style={{ height: `${metrics.bottomSafePadding}px` }} />
         </SectionList>}
       </ScrollView>

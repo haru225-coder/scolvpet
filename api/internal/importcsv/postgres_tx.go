@@ -10,6 +10,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+
+	basestore "github.com/scolvpet/scolvpet/api/internal/store"
 )
 
 type postgresTx struct {
@@ -233,7 +235,7 @@ func (tx *postgresTx) updateHamster(ctx context.Context, value *ResourceUpdate) 
 		return err
 	}
 	if command.RowsAffected() != 1 {
-		return fmt.Errorf("hamster version conflict")
+		return &basestore.VersionError{Current: value.ExpectedVersion}
 	}
 	return nil
 }
@@ -296,7 +298,7 @@ func (tx *postgresTx) updateEnclosure(ctx context.Context, value *ResourceUpdate
 		return err
 	}
 	if command.RowsAffected() != 1 {
-		return fmt.Errorf("enclosure version conflict")
+		return &basestore.VersionError{Current: value.ExpectedVersion}
 	}
 	return nil
 }

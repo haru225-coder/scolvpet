@@ -56,7 +56,7 @@ export default function LittersPage() {
         }}
         footer="点窝次：打开详情或用公母试配 · 分笼/个体化/断奶在详情里"
         emptyTitle="还没有窝次"
-        emptyDescription="窝次会在出生登记后出现；想先看配色可去试配模拟"
+        emptyDescription="这里只列已经在库里的窝次。要看配色去试配模拟"
         actionLabel="试配模拟"
         onAction={() => Taro.navigateTo({ url: DOMAIN_HOME.geneticCreate })}
       />

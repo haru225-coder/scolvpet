@@ -37,6 +37,7 @@ import {
   sideFromGeneticProfile,
   trialSideFromAnimal
 } from '../../../genetics/trial-deeplink'
+import { buildWeightCorrectionRequest, requireCorrectionReason } from '../../../utils/record-correction'
 
 /** 产品分段：先看再改，对齐 Flutter 个体档案主路径。 */
 const SEGMENTS = ['概览', '成长', '健康', '编辑'] as const
@@ -106,6 +107,9 @@ export default function AnimalDetailPage() {
   const [segment, setSegment] = useState(0)
   /** 本个体已绑定的遗传档案（load 时并行拉） */
   const [boundGeneticProfile, setBoundGeneticProfile] = useState<any | null>(null)
+  const [correctingWeight, setCorrectingWeight] = useState<Record<string, unknown> | null>(null)
+  const [correctingHealth, setCorrectingHealth] = useState<Record<string, unknown> | null>(null)
+  const [correctionReason, setCorrectionReason] = useState('')
 
   useEffect(() => {
     void geneticApi
@@ -340,26 +344,29 @@ export default function AnimalDetailPage() {
       return
     }
     try {
+      const payload = buildWeightCorrectionRequest({
+        hamsterId: animalId,
+        weightG: value,
+        notes: note,
+        correctsWeightRecordId: correctingWeight ? String(correctingWeight.id) : undefined,
+        correctionReason: correctingWeight ? correctionReason : undefined
+      })
       await defaultApi.createWeightRecord({
         idempotencyKey: newIdempotencyKey(),
-        weightRecordCreateRequest: {
-          hamsterId: animalId,
-          pupIdentityId: null,
-          litterId: null,
-          measurementKind: 'individual',
-          subjectCount: null,
-          weightG: value,
-          recordedAt: new Date(),
-          source: 'manual',
-          notes: note || null
-        } as any
+        weightRecordCreateRequest: payload as any
       })
       setWeight('')
       setNote('')
-      setMessage('体重已记录')
+      setCorrectionReason('')
+      setCorrectingWeight(null)
+      setMessage(correctingWeight ? `已纠正为 ${value} g` : '体重已记录')
       await load(animalId)
     } catch (cause) {
-      setMessage(await formatUserError(cause, '体重记录失败'))
+      setMessage(
+        cause instanceof Error && cause.message.includes('原因')
+          ? cause.message
+          : await formatUserError(cause, '体重记录失败')
+      )
     }
   }
 
@@ -391,22 +398,59 @@ export default function AnimalDetailPage() {
 
   async function saveHealth() {
     try {
-      await defaultApi.createHealthRecord({
-        idempotencyKey: newIdempotencyKey(),
-        healthRecordCreateRequest: {
-          hamsterId: animalId,
-          type: 'daily_check',
-          observedAt: new Date(),
-          severity: 'info',
-          notes: note || '日常观察'
-        }
-      })
-      setNote('')
-      setMessage('健康观察已记录')
+      if (correctingHealth) {
+        const reason = requireCorrectionReason(correctionReason)
+        await defaultApi.updateHealthRecord({
+          idempotencyKey: newIdempotencyKey(),
+          ifMatch: String(correctingHealth.version ?? 0),
+          healthRecordId: String(correctingHealth.id),
+          healthRecordUpdateRequest: {
+            notes: [note || String(correctingHealth.notes || ''), `纠正原因：${reason}`].filter(Boolean).join('\n')
+          }
+        })
+        setCorrectingHealth(null)
+        setCorrectionReason('')
+        setNote('')
+        setMessage('健康记录已纠正')
+      } else {
+        await defaultApi.createHealthRecord({
+          idempotencyKey: newIdempotencyKey(),
+          healthRecordCreateRequest: {
+            hamsterId: animalId,
+            type: 'daily_check',
+            observedAt: new Date(),
+            severity: 'info',
+            notes: note || '日常观察'
+          }
+        })
+        setNote('')
+        setMessage('健康观察已记录')
+      }
       await load(animalId)
     } catch (cause) {
-      setMessage(await formatUserError(cause, '健康记录失败'))
+      setMessage(
+        cause instanceof Error && cause.message.includes('原因')
+          ? cause.message
+          : await formatUserError(cause, '健康记录失败')
+      )
     }
+  }
+
+  function startWeightCorrection(item: Record<string, unknown>) {
+    setCorrectingWeight(item)
+    setCorrectingHealth(null)
+    setWeight(String(item.weightG ?? item.weight_g ?? ''))
+    setNote(typeof item.notes === 'string' ? item.notes : '')
+    setCorrectionReason('')
+    setMessage(`正在纠正 ${item.weightG ?? item.weight_g} g，原记录会保留`)
+  }
+
+  function startHealthCorrection(item: Record<string, unknown>) {
+    setCorrectingHealth(item)
+    setCorrectingWeight(null)
+    setNote(typeof item.notes === 'string' ? item.notes : '')
+    setCorrectionReason('')
+    setMessage('正在改这条健康记录的备注')
   }
 
   function resolveAnimalPhenotype(): { series: string; label: string } {
@@ -725,7 +769,7 @@ export default function AnimalDetailPage() {
 
               {segment === 1 ? (
                 <>
-                  <Section header="体重快录">
+                  <Section header={correctingWeight ? '纠正体重' : '体重快录'}>
                     <FormRow label="克数">
                       <Input
                         type="digit"
@@ -745,23 +789,53 @@ export default function AnimalDetailPage() {
                         style={{ color: '#FFFFFF' }}
                       />
                     </FormRow>
+                    {correctingWeight ? (
+                      <FormRow label="原因" divider>
+                        <Input
+                          placeholder="为什么这条不对"
+                          placeholderStyle={`color: ${palette.tertiaryLabel}`}
+                          value={correctionReason}
+                          onInput={(event) => setCorrectionReason(event.detail.value)}
+                          style={{ color: '#FFFFFF' }}
+                        />
+                      </FormRow>
+                    ) : null}
                     <CapabilityButton capability="write_weight" block onClick={() => void saveWeight()}>
-                      保存体重
+                      {correctingWeight ? '确认纠正' : '保存体重'}
                     </CapabilityButton>
+                    {correctingWeight ? (
+                      <CapabilityButton
+                        capability="write_weight"
+                        block
+                        variant="outlined"
+                        onClick={() => {
+                          setCorrectingWeight(null)
+                          setCorrectionReason('')
+                          setWeight('')
+                          setNote('')
+                        }}
+                      >
+                        取消纠正
+                      </CapabilityButton>
+                    ) : null}
                   </Section>
-                  <Section header="最近体重" footer={weights.length ? `共 ${weights.length} 条` : undefined}>
+                  <Section header="最近体重" footer={weights.length ? `共 ${weights.length} 条，点一条可纠正` : undefined}>
                     {weights.length ? (
                       weights.slice(0, 10).map((item) => (
                         <Cell
                           key={item.id}
                           title={`${item.weightG ?? item.weight_g ?? '-'} g`}
                           subtitle={
-                            shortDate(item.recordedAt || item.recorded_at) ||
-                            String(item.recordedAt || item.recorded_at || '')
+                            item.correctsWeightRecordId || item.corrects_weight_record_id
+                              ? `纠正记录 · ${shortDate(item.recordedAt || item.recorded_at) || ''}`
+                              : shortDate(item.recordedAt || item.recorded_at) ||
+                                String(item.recordedAt || item.recorded_at || '')
                           }
                           value={
                             <Tag>{humanShortLabel(item.source || 'manual') || '手记'}</Tag>
                           }
+                          chevron={canUseCapability('write_weight')}
+                          onClick={() => startWeightCorrection(item)}
                         />
                       ))
                     ) : (
@@ -773,7 +847,7 @@ export default function AnimalDetailPage() {
 
               {segment === 2 ? (
                 <>
-                  <Section header="健康快录">
+                  <Section header={correctingHealth ? '纠正健康记录' : '健康快录'}>
                     <FormRow label="备注">
                       <Input
                         placeholder="可选，例如精神状态"
@@ -783,16 +857,41 @@ export default function AnimalDetailPage() {
                         style={{ color: '#FFFFFF' }}
                       />
                     </FormRow>
+                    {correctingHealth ? (
+                      <FormRow label="原因" divider>
+                        <Input
+                          placeholder="为什么要改这条"
+                          placeholderStyle={`color: ${palette.tertiaryLabel}`}
+                          value={correctionReason}
+                          onInput={(event) => setCorrectionReason(event.detail.value)}
+                          style={{ color: '#FFFFFF' }}
+                        />
+                      </FormRow>
+                    ) : null}
                     <CapabilityButton
                       capability="write_health"
                       block
                       variant="outlined"
                       onClick={() => void saveHealth()}
                     >
-                      记录一次日常观察
+                      {correctingHealth ? '确认纠正' : '记录一次日常观察'}
                     </CapabilityButton>
+                    {correctingHealth ? (
+                      <CapabilityButton
+                        capability="write_health"
+                        block
+                        variant="outlined"
+                        onClick={() => {
+                          setCorrectingHealth(null)
+                          setCorrectionReason('')
+                          setNote('')
+                        }}
+                      >
+                        取消纠正
+                      </CapabilityButton>
+                    ) : null}
                   </Section>
-                  <Section header="健康记录" footer={health.length ? `共 ${health.length} 条` : undefined}>
+                  <Section header="健康记录" footer={health.length ? `共 ${health.length} 条，点一条可改备注` : undefined}>
                     {health.length ? (
                       health.slice(0, 10).map((item) => (
                         <Cell
@@ -803,6 +902,8 @@ export default function AnimalDetailPage() {
                             shortDate(item.observedAt || item.observed_at) ||
                             String(item.observedAt || item.observed_at || '')
                           }
+                          chevron={canUseCapability('write_health')}
+                          onClick={() => startHealthCorrection(item)}
                           value={
                             <Tag
                               tone={

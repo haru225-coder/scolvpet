@@ -2,6 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { p1CrmApi } from '../src/api/client'
 import { loadCrmDetail } from '../src/packages/crm/detail'
+import {
+  handoverCanComplete,
+  reservationCanCancel,
+  reservationCanConfirm,
+  reservationStatusNote
+} from '../src/utils/crm-status'
 
 describe('CRM 详情读取', () => {
   it('按记录类型读取生成客户端详情，不再并发拉取三个列表', async () => {
@@ -16,5 +22,20 @@ describe('CRM 详情读取', () => {
     expect(getContact).toHaveBeenCalledWith({ contactId: 'contact-1' })
     expect(getReservation).toHaveBeenCalledWith({ reservationId: 'reservation-1' })
     expect(getHandover).toHaveBeenCalledWith({ handoverId: 'handover-1' })
+  })
+})
+
+describe('CRM 状态按钮', () => {
+  it('held 可确认可取消，cancelled 都不能恢复', () => {
+    expect(reservationCanConfirm('held')).toBe(true)
+    expect(reservationCanCancel('held')).toBe(true)
+    expect(reservationCanConfirm('cancelled')).toBe(false)
+    expect(reservationCanCancel('cancelled')).toBe(false)
+    expect(reservationStatusNote('cancelled')).toContain('不能恢复')
+  })
+
+  it('只有 scheduled 交付能完成', () => {
+    expect(handoverCanComplete('scheduled')).toBe(true)
+    expect(handoverCanComplete('completed')).toBe(false)
   })
 })

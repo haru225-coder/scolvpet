@@ -166,7 +166,7 @@ export default function PopulationPage() {
         <Hero
           badge="本周重点"
           title={focus ? focus.title : '本周暂无重点窝次'}
-          subtitle={focus ? focus.subtitle || '窝次进行中' : '建窝后，这里只显示需要盯的那一窝'}
+          subtitle={focus ? focus.subtitle || '窝次进行中' : '有窝次时，这里只盯当前最需要看的那一窝'}
           primary={{ text: focus ? '打开这一窝' : '看窝次', onClick: () => openPage(DOMAIN_HOME.litters) }}
           secondary={{ text: '看个体', onClick: () => openPage(DOMAIN_HOME.animals) }}
           right={<ProfileAvatar />}

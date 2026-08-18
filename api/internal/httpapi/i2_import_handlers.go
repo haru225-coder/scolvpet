@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -247,11 +248,32 @@ func (s *Server) listI2ImportJobs(w http.ResponseWriter, r *http.Request) {
 		writeI2CoreError(w, r, err)
 		return
 	}
+	jobIDs := map[string]struct{}{}
 	i2ImportStateLock.Lock()
-	defer i2ImportStateLock.Unlock()
-	items := make([]any, 0)
-	for _, session := range i2ImportSessions {
-		if session.Job.OwnerID != ownerID.String() {
+	for id, session := range i2ImportSessions {
+		if session.Job.OwnerID == ownerID.String() {
+			jobIDs[id] = struct{}{}
+		}
+	}
+	i2ImportStateLock.Unlock()
+	if s.Store != nil && s.Store.Pool != nil {
+		rows, err := s.Store.Pool.Query(r.Context(), `
+			SELECT id::text FROM import_job WHERE owner_id=$1 ORDER BY created_at DESC LIMIT 50
+		`, ownerID)
+		if err == nil {
+			for rows.Next() {
+				var id string
+				if rows.Scan(&id) == nil && id != "" {
+					jobIDs[id] = struct{}{}
+				}
+			}
+			rows.Close()
+		}
+	}
+	items := make([]any, 0, len(jobIDs))
+	for id := range jobIDs {
+		session, ok := s.loadI2ImportSession(ownerID, id)
+		if !ok {
 			continue
 		}
 		items = append(items, i2ImportJobJSON(session))
@@ -329,6 +351,7 @@ func (s *Server) createI2ImportJob(w http.ResponseWriter, r *http.Request) {
 	i2ImportStateLock.Lock()
 	i2ImportSessions[job.ID] = session
 	i2ImportStateLock.Unlock()
+	_ = s.persistI2ImportSession(r.Context(), session)
 
 	writeI2Stored(w, r, http.StatusAccepted, envelope(r, i2ImportJobJSON(session)), job.Replayed,
 		store.FormatETag(session.Version), "/v1/data-center/import-jobs/"+job.ID)
@@ -401,6 +424,7 @@ func (s *Server) setI2ImportMapping(w http.ResponseWriter, r *http.Request) {
 	session.Phase = "preflight"
 	session.UpdatedAt = time.Now().UTC()
 	i2ImportStateLock.Unlock()
+	_ = s.persistI2ImportSession(r.Context(), session)
 
 	writeI2Stored(w, r, http.StatusOK, envelope(r, i2ImportJobJSON(session)), false,
 		store.FormatETag(session.Version), "")
@@ -466,6 +490,7 @@ func (s *Server) preflightI2ImportJob(w http.ResponseWriter, r *http.Request) {
 	}
 	session.UpdatedAt = time.Now().UTC()
 	i2ImportStateLock.Unlock()
+	_ = s.persistI2ImportSession(r.Context(), session)
 
 	writeI2Stored(w, r, http.StatusAccepted, envelope(r, i2ImportJobJSON(session)), false,
 		store.FormatETag(session.Version), "")
@@ -542,6 +567,7 @@ func (s *Server) commitI2ImportJob(w http.ResponseWriter, r *http.Request) {
 	session.Phase = "completed"
 	session.UpdatedAt = time.Now().UTC()
 	i2ImportStateLock.Unlock()
+	_ = s.persistI2ImportSession(r.Context(), session)
 
 	writeI2Stored(w, r, http.StatusAccepted, envelope(r, i2ImportJobJSON(session)), receipt.Replayed,
 		store.FormatETag(session.Version), "")
@@ -596,13 +622,118 @@ func (s *Server) listI2ImportRows(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) loadI2ImportSession(ownerID uuid.UUID, jobID string) (*i2ImportSession, bool) {
+	jobID = strings.TrimSpace(jobID)
 	i2ImportStateLock.Lock()
-	defer i2ImportStateLock.Unlock()
-	session, ok := i2ImportSessions[strings.TrimSpace(jobID)]
-	if !ok || session.Job.OwnerID != ownerID.String() {
+	session, ok := i2ImportSessions[jobID]
+	if ok && session.Job.OwnerID == ownerID.String() {
+		i2ImportStateLock.Unlock()
+		return session, true
+	}
+	i2ImportStateLock.Unlock()
+	hydrated, err := s.hydrateI2ImportSession(context.Background(), ownerID, jobID)
+	if err != nil || hydrated == nil {
 		return nil, false
 	}
-	return session, true
+	return hydrated, true
+}
+
+type durableImportSession struct {
+	JobID     string            `json:"job_id"`
+	OwnerID   string            `json:"owner_id"`
+	FileName  string            `json:"file_name"`
+	Phase     string            `json:"phase"`
+	Template  string            `json:"template"`
+	Version   int               `json:"version"`
+	Mapping   map[string]string `json:"mapping"`
+	BatchKey  string            `json:"batch_key"`
+	CreatedAt time.Time         `json:"created_at"`
+	UpdatedAt time.Time         `json:"updated_at"`
+}
+
+func i2ImportSessionMetaKey(jobID string) string {
+	return "import-job/" + jobID + ".session.json"
+}
+
+func i2ImportSessionCSVKey(jobID string) string {
+	return "import-job/" + jobID + ".csv"
+}
+
+func (s *Server) persistI2ImportSession(ctx context.Context, session *i2ImportSession) error {
+	if s == nil || s.ImportObjects == nil || session == nil || session.Job.ID == "" {
+		return nil
+	}
+	meta, err := json.Marshal(durableImportSession{
+		JobID: session.Job.ID, OwnerID: session.Job.OwnerID, FileName: session.FileName,
+		Phase: session.Phase, Template: string(session.Template), Version: session.Version,
+		Mapping: cloneStringMap(session.Mapping), BatchKey: session.Job.BatchKey,
+		CreatedAt: session.CreatedAt, UpdatedAt: session.UpdatedAt,
+	})
+	if err != nil {
+		return err
+	}
+	sumMeta := sha256.Sum256(meta)
+	if _, err := s.ImportObjects.Put(ctx, objectstore.PutRequest{
+		Key: i2ImportSessionMetaKey(session.Job.ID), Body: bytes.NewReader(meta),
+		SizeBytes: int64(len(meta)), SHA256: hex.EncodeToString(sumMeta[:]),
+		ContentType: "application/json",
+	}); err != nil {
+		return err
+	}
+	sumCSV := sha256.Sum256(session.CSV)
+	_, err = s.ImportObjects.Put(ctx, objectstore.PutRequest{
+		Key: i2ImportSessionCSVKey(session.Job.ID), Body: bytes.NewReader(session.CSV),
+		SizeBytes: int64(len(session.CSV)), SHA256: hex.EncodeToString(sumCSV[:]),
+		ContentType: "text/csv",
+	})
+	return err
+}
+
+func (s *Server) hydrateI2ImportSession(ctx context.Context, ownerID uuid.UUID, jobID string) (*i2ImportSession, error) {
+	if s == nil || s.ImportObjects == nil || jobID == "" {
+		return nil, nil
+	}
+	metaReader, _, err := s.ImportObjects.Get(ctx, i2ImportSessionMetaKey(jobID))
+	if err != nil {
+		return nil, err
+	}
+	metaBytes, err := io.ReadAll(metaReader)
+	_ = metaReader.Close()
+	if err != nil {
+		return nil, err
+	}
+	var meta durableImportSession
+	if err := json.Unmarshal(metaBytes, &meta); err != nil {
+		return nil, err
+	}
+	if meta.OwnerID != ownerID.String() {
+		return nil, nil
+	}
+	csvReader, _, err := s.ImportObjects.Get(ctx, i2ImportSessionCSVKey(jobID))
+	if err != nil {
+		return nil, err
+	}
+	csvBytes, err := io.ReadAll(io.LimitReader(csvReader, maxI2ImportUploadBytes+1))
+	_ = csvReader.Close()
+	if err != nil {
+		return nil, err
+	}
+	template := importcsv.TemplateType(meta.Template)
+	file, err := importcsv.Parse(csvBytes, importcsv.ParseOptions{Template: template, Mapping: meta.Mapping})
+	if err != nil {
+		return nil, err
+	}
+	session := &i2ImportSession{
+		Job: importcsv.LocalJob{
+			ID: jobID, OwnerID: meta.OwnerID, BatchKey: meta.BatchKey, File: file,
+		},
+		CSV: csvBytes, FileName: meta.FileName, Version: meta.Version, Phase: meta.Phase,
+		Template: template, Mapping: cloneStringMap(meta.Mapping),
+		CreatedAt: meta.CreatedAt, UpdatedAt: meta.UpdatedAt,
+	}
+	i2ImportStateLock.Lock()
+	i2ImportSessions[jobID] = session
+	i2ImportStateLock.Unlock()
+	return session, nil
 }
 
 func i2ImportJobJSON(session *i2ImportSession) map[string]any {
@@ -705,6 +836,8 @@ func writeI2ImportError(w http.ResponseWriter, r *http.Request, err error) {
 		writeI2CoreError(w, r, validationError("approved_updates", "更新确认与预检候选不匹配"))
 	case errors.Is(err, importcsv.ErrStalePreflight):
 		writeI2CoreError(w, r, validationError("preflight_version", "预检计划已失效，请重新预检"))
+	case errors.Is(err, store.ErrVersionConflict):
+		writeI2CoreError(w, r, err)
 	default:
 		writeI2CoreError(w, r, err)
 	}

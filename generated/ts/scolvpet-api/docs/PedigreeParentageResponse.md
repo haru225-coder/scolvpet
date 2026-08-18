@@ -1,26 +1,24 @@
 
-# BackupJobListResponse
+# PedigreeParentageResponse
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`data` | [Array&lt;BackupJob&gt;](BackupJob.md)
-`page` | [PageInfo](PageInfo.md)
+`data` | [PedigreeParentage](PedigreeParentage.md)
 `meta` | [ResponseMeta](ResponseMeta.md)
 
 ## Example
 
 ```typescript
-import type { BackupJobListResponse } from '@scolvpet/scolvpet-api'
+import type { PedigreeParentageResponse } from '@scolvpet/scolvpet-api'
 
 // TODO: Update the object below with actual values
 const example = {
   "data": null,
-  "page": null,
   "meta": null,
-} satisfies BackupJobListResponse
+} satisfies PedigreeParentageResponse
 
 console.log(example)
 
@@ -29,7 +27,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as BackupJobListResponse
+const exampleParsed = JSON.parse(exampleJSON) as PedigreeParentageResponse
 console.log(exampleParsed)
 ```
 

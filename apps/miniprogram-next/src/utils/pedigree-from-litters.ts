@@ -205,7 +205,7 @@ export function pedigreeDataFromLitters(args: {
     ? '父母关系来自窝次记录'
     : littersWithParents === 0
       ? '窝次里还没登记公母，登记后这里会自动长出族谱'
-      : '这只还没登记在任何一窝里，建窝时把它加进成员就能看到族谱'
+      : '这只还没出现在已有窝次的成员里，加进去之后这里会出族谱'
 
   return {
     data: {

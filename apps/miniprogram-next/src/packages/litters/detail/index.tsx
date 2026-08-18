@@ -1,7 +1,7 @@
 import { Input, Picker, ScrollView, Textarea, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useCallback, useState } from 'react'
-import { Cell, Empty, FormRow, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
+import { ActionPanel, Cell, Empty, FormRow, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
 import { defaultApi } from '../../../api/default-api'
 import { p1Api } from '../../../api/p1-api'
@@ -90,6 +90,7 @@ export default function LitterDetailPage() {
   const [message, setMessage] = useState('正在读取窝次…')
   const [busy, setBusy] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [weanPanel, setWeanPanel] = useState(false)
 
   const syncDrafts = useCallback((memberList: any[], enclosureList: EnclosureOpt[]) => {
     const defaultEnc = enclosureList[0]?.id || ''
@@ -132,7 +133,7 @@ export default function LitterDetailPage() {
         setMessage(
           encOpts.length
             ? '点选性别和笼舍后提交分笼；个体化可填正式编号'
-            : '暂无笼舍列表，请先建笼舍再分笼'
+            : '笼舍入口已收起，分笼暂不开放'
         )
       } catch (cause) {
         setMessage(await formatUserError(cause, '窝次读取失败'))
@@ -208,7 +209,7 @@ export default function LitterDetailPage() {
   async function sexAndSeparateFromDrafts() {
     if (!litter || !litterId) return
     if (!enclosures.length) {
-      setMessage('没有可选笼舍，请先建笼舍')
+      setMessage('笼舍入口已收起，分笼暂不开放')
       return
     }
     const items = drafts
@@ -278,7 +279,7 @@ export default function LitterDetailPage() {
     }
   }
 
-  async function wean() {
+  async function wean(outcomeStatus: 'alive' | 'deceased') {
     if (!litter || !litterId || !members.length) {
       setMessage('当前没有可断奶的窝仔')
       return
@@ -294,16 +295,17 @@ export default function LitterDetailPage() {
           timezone: 'Asia/Taipei',
           items: members.map((item) => ({
             pupIdentityId: item.pupIdentityId || item.id,
-            outcomeStatus: 'alive'
+            outcomeStatus
           }))
         } as any
       })
-      setMessage('断奶已提交')
+      setMessage(outcomeStatus === 'alive' ? '断奶已提交（全部存活）' : '断奶已提交（全部记为死亡）')
       await load(litterId)
     } catch (cause) {
       setMessage(await formatUserError(cause, '断奶失败'))
     } finally {
       setBusy(false)
+      setWeanPanel(false)
     }
   }
 
@@ -507,14 +509,19 @@ export default function LitterDetailPage() {
                 block
                 variant="outlined"
                 disabled={busy || !members.length}
-                onClick={() => void wean()}
+                onClick={() => setWeanPanel(true)}
               >
                 按当前成员提交断奶
               </CapabilityButton>
             </Section>
 
-            <Section header="分笼（点选）" footer="为每只幼崽选性别和目标笼舍">
-              {!drafts.length ? (
+            <Section
+              header="分笼（点选）"
+              footer={enclosures.length ? '为每只幼崽选性别和目标笼舍' : '笼舍入口已收起，分笼暂不开放'}
+            >
+              {!enclosures.length ? (
+                <Cell title="分笼暂不开放" subtitle="笼舍入口已收起，不能在小程序里建笼" />
+              ) : !drafts.length ? (
                 <Cell title="没有可分笼的幼崽" />
               ) : (
                 drafts.map((draft) => {
@@ -585,14 +592,16 @@ export default function LitterDetailPage() {
                   )
                 })
               )}
-              <CapabilityButton
-                capability="write_litter"
-                block
-                disabled={busy || !drafts.length || !enclosures.length}
-                onClick={() => void sexAndSeparateFromDrafts()}
-              >
-                提交性别分笼
-              </CapabilityButton>
+              {enclosures.length ? (
+                <CapabilityButton
+                  capability="write_litter"
+                  block
+                  disabled={busy || !drafts.length}
+                  onClick={() => void sexAndSeparateFromDrafts()}
+                >
+                  提交性别分笼
+                </CapabilityButton>
+              ) : null}
             </Section>
 
             <Section header="个体化（点选）" footer="给每只填正式编号；名字可选">
@@ -689,6 +698,15 @@ export default function LitterDetailPage() {
           </SectionList>
         )}
       </ScrollView>
+      <ActionPanel
+        open={weanPanel}
+        title="提交断奶"
+        actions={[
+          { text: '全部存活', onClick: () => void wean('alive') },
+          { text: '全部记为死亡', danger: true, onClick: () => void wean('deceased') }
+        ]}
+        onClose={() => setWeanPanel(false)}
+      />
     </View>
   )
 }

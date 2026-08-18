@@ -7,6 +7,7 @@ import { defaultApi, newIdempotencyKey } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import type { ApiEnvelope } from '../../../api/types'
 import { formatUserError } from '../../../api/errors'
+import { animalsListUrl } from '../../../utils/created-routes'
 
 type RuleOption = { id: string; label: string }
 
@@ -74,7 +75,9 @@ export default function BatchCreateAnimalsPage() {
         } as any
       })
       Taro.showToast({ title: `已创建 ${items.length} 只`, icon: 'success' })
-      setTimeout(() => Taro.navigateBack(), 350)
+      setTimeout(() => {
+        void Taro.redirectTo({ url: animalsListUrl() })
+      }, 350)
     } catch (cause) {
       setMessage(await formatUserError(cause, '批量创建失败'))
     } finally {

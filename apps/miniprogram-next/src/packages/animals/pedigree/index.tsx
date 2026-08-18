@@ -1,12 +1,33 @@
-import { ScrollView, View, Text } from '@tarojs/components'
+import { Input, ScrollView, View, Text } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useCallback, useState } from 'react'
-import { Cell, Empty, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
+import {
+  ActionPanel,
+  Cell,
+  Empty,
+  FormRow,
+  NavBar,
+  Section,
+  SectionList,
+  Tag,
+  metrics,
+  palette
+} from '@scolvpet/mp-ui'
 
-import { defaultApi } from '../../../api/client'
+import { defaultApi, newIdempotencyKey } from '../../../api/client'
 import { formatUserError } from '../../../api/errors'
 import { requireBreederSession } from '../../../auth/dev-session'
-import { buildPedigreeRows, type PedigreeRow } from '../../../utils/pedigree'
+import { canUseCapability } from '../../../auth/permissions'
+import { CapabilityButton } from '../../../components/CapabilityButton'
+import {
+  buildCreateParentageBody,
+  buildEndParentageBody,
+  parentRoleFromCard,
+  parentRoleLabel,
+  requireCorrectionReason,
+  type ParentRole
+} from '../../../utils/record-correction'
+import { buildPedigreeRows, type PedigreeRow, type PedigreeRowNode } from '../../../utils/pedigree'
 import {
   litterMemberIds,
   pedigreeDataFromApiGraph,
@@ -35,6 +56,13 @@ export default function AnimalPedigreePage() {
   const [coverage, setCoverage] = useState<LineageCoverage | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [menuNode, setMenuNode] = useState<PedigreeRowNode | null>(null)
+  const [correctRole, setCorrectRole] = useState<ParentRole | null>(null)
+  const [correctMode, setCorrectMode] = useState<'end' | 'replace' | null>(null)
+  const [correctReason, setCorrectReason] = useState('')
+  const [candidates, setCandidates] = useState<Array<Record<string, unknown>>>([])
+  const [busy, setBusy] = useState(false)
+  const [status, setStatus] = useState('')
 
   const load = useCallback(async (id: string) => {
     setLoading(true)
@@ -128,6 +156,99 @@ export default function AnimalPedigreePage() {
     void Taro.navigateTo({ url: `/packages/animals/pedigree/index?id=${encodeURIComponent(id)}` })
   }
 
+  function openNode(node: PedigreeRowNode) {
+    const role = parentRoleFromCard(node.role)
+    if (role && canUseCapability('write_hamster')) {
+      setMenuNode(node)
+      return
+    }
+    if (node.tappable && node.id && node.id !== rootId) reRoot(node.id)
+  }
+
+  async function loadCandidates(role: ParentRole) {
+    try {
+      const response = await defaultApi.listHamsters({ limit: 100 } as any)
+      const raw = (response as { data?: unknown }).data
+      const list = (Array.isArray(raw) ? raw : []).filter((item): item is Record<string, unknown> => {
+        if (!item || typeof item !== 'object') return false
+        const id = String((item as { id?: unknown }).id || '')
+        const sex = String((item as { sex?: unknown }).sex || '')
+        if (!id || id === rootId) return false
+        return role === 'sire' ? sex === 'male' : sex === 'female'
+      })
+      setCandidates(list)
+    } catch {
+      setCandidates([])
+    }
+  }
+
+  function startCorrect(mode: 'end' | 'replace', node: PedigreeRowNode) {
+    const role = parentRoleFromCard(node.role)
+    if (!role) return
+    setCorrectRole(role)
+    setCorrectMode(mode)
+    setCorrectReason('')
+    setStatus('')
+    if (mode === 'replace') void loadCandidates(role)
+  }
+
+  async function submitEnd() {
+    if (!correctRole || !rootId) return
+    setBusy(true)
+    try {
+      const reason = requireCorrectionReason(correctReason)
+      await defaultApi.endPedigreeParentage({
+        idempotencyKey: newIdempotencyKey(),
+        pedigreeParentageEndRequest: buildEndParentageBody({
+          childHamsterId: rootId,
+          role: correctRole,
+          correctionReason: reason
+        })
+      })
+      setStatus(`已解除${parentRoleLabel(correctRole)}`)
+      setCorrectMode(null)
+      await load(rootId)
+    } catch (cause) {
+      setStatus(
+        cause instanceof Error && cause.message.includes('原因')
+          ? cause.message
+          : await formatUserError(cause, '解除父母失败')
+      )
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function submitReplace(parentId: string) {
+    if (!correctRole || !rootId || !parentId) return
+    setBusy(true)
+    try {
+      const hasCurrent = Boolean(menuNode?.id)
+      const reason = hasCurrent ? requireCorrectionReason(correctReason) : correctReason.trim()
+      await defaultApi.createPedigreeParentage({
+        idempotencyKey: newIdempotencyKey(),
+        pedigreeParentageCreateRequest: buildCreateParentageBody({
+          childHamsterId: rootId,
+          parentHamsterId: parentId,
+          role: correctRole,
+          correctionReason: reason
+        })
+      })
+      setStatus(`已登记${parentRoleLabel(correctRole)}`)
+      setCorrectMode(null)
+      setMenuNode(null)
+      await load(rootId)
+    } catch (cause) {
+      setStatus(
+        cause instanceof Error && cause.message.includes('原因')
+          ? cause.message
+          : await formatUserError(cause, '登记父母失败')
+      )
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <View style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: palette.systemBackground }}>
       <NavBar title={rootName ? `族谱 · ${rootName}` : '族谱'} back />
@@ -159,18 +280,21 @@ export default function AnimalPedigreePage() {
           <SectionList>
             {rows.map((row) => (
               <Section key={row.label} header={row.label}>
-                {row.nodes.map((node) => (
-                  <Cell
-                    key={`${row.label}-${node.role}-${node.id || 'none'}`}
-                    title={node.name}
-                    subtitle={node.role}
-                    value={
-                      node.sex === 'male' ? <Tag>公</Tag> : node.sex === 'female' ? <Tag>母</Tag> : undefined
-                    }
-                    chevron={node.tappable && node.id !== rootId}
-                    onClick={node.tappable && node.id !== rootId ? () => reRoot(node.id) : undefined}
-                  />
-                ))}
+                {row.nodes.map((node) => {
+                  const canCorrect = row.label === '父母' && canUseCapability('write_hamster')
+                  return (
+                    <Cell
+                      key={`${row.label}-${node.role}-${node.id || 'none'}`}
+                      title={node.name}
+                      subtitle={canCorrect ? `${node.role} · 点这里纠正` : node.role}
+                      value={
+                        node.sex === 'male' ? <Tag>公</Tag> : node.sex === 'female' ? <Tag>母</Tag> : undefined
+                      }
+                      chevron={canCorrect || (node.tappable && node.id !== rootId)}
+                      onClick={() => openNode(node)}
+                    />
+                  )
+                })}
               </Section>
             ))}
             <Section footer={coverage?.note || '父母关系来自窝次或家谱登记'}>
@@ -196,11 +320,68 @@ export default function AnimalPedigreePage() {
               color: 'rgba(255,255,255,0.4)'
             }}
           >
-            带「›」的可以点进去往上看。
+            父母可以纠正；带「›」的祖辈可以点进去往上看。
           </Text>
+        ) : null}
+
+        {correctMode && correctRole ? (
+          <SectionList>
+            <Section
+              header={correctMode === 'end' ? `解除${parentRoleLabel(correctRole)}` : `登记${parentRoleLabel(correctRole)}`}
+              footer="原关系不删，只记一条纠错审计。"
+            >
+              <FormRow label="原因">
+                <Input
+                  placeholder="为什么要改"
+                  placeholderStyle={`color: ${palette.tertiaryLabel}`}
+                  value={correctReason}
+                  onInput={(event) => setCorrectReason(event.detail.value)}
+                  style={{ color: '#FFFFFF' }}
+                />
+              </FormRow>
+              {correctMode === 'end' ? (
+                <CapabilityButton capability="write_hamster" block disabled={busy} onClick={() => void submitEnd()}>
+                  {busy ? '提交中…' : '确认解除'}
+                </CapabilityButton>
+              ) : null}
+              {status ? <Cell title={status} /> : null}
+            </Section>
+            {correctMode === 'replace' ? (
+              <Section header="选一只" footer={candidates.length ? undefined : '没有符合性别的候选'}>
+                {candidates.map((item) => {
+                  const id = String(item.id || '')
+                  const name = String(item.name || item.internalCode || id)
+                  const code = typeof item.internalCode === 'string' ? item.internalCode : ''
+                  return (
+                    <Cell
+                      key={id}
+                      title={name}
+                      subtitle={code && item.name ? code : undefined}
+                      chevron
+                      onClick={() => void submitReplace(id)}
+                    />
+                  )
+                })}
+              </Section>
+            ) : null}
+          </SectionList>
         ) : null}
         <View style={{ height: '32px' }} />
       </ScrollView>
+      <ActionPanel
+        open={Boolean(menuNode)}
+        title={menuNode ? `${menuNode.role} · ${menuNode.name}` : '纠正父母'}
+        actions={[
+          ...(menuNode?.id
+            ? [{ text: '解除这段关系', danger: true, onClick: () => startCorrect('end', menuNode) }]
+            : []),
+          {
+            text: menuNode?.id ? '换成另一只' : '补登记',
+            onClick: () => menuNode && startCorrect('replace', menuNode)
+          }
+        ]}
+        onClose={() => setMenuNode(null)}
+      />
     </View>
   )
 }

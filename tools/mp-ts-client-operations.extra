@@ -4,3 +4,8 @@ inferGeneticParents
 createGeneticProfile
 updateGeneticProfile
 deleteGeneticProfile
+createPedigreeParentage
+endPedigreeParentage
+listPedigreeParentages
+updateHealthRecord
+getHealthRecord

@@ -3,7 +3,7 @@
 /* eslint-disable */
 /**
  * 熊舍管家 MVP API (miniprogram TS client subset)
- * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。  NOTE: Filtered subset for apps/miniprogram-next typescript-fetch generation only. Authoritative full contract: specs/api/openapi.yaml Kept operationIds: 101
+ * 面向 Flutter 客户端的模块化单体 REST API 草案。  所有租户业务数据都由 Bearer 令牌中的认证上下文确定 owner_id； 普通写请求体不接收 owner_id。状态迁移统一通过动作接口完成， 客户端不得直接 PATCH state。  除公开分享读取外，所有资源 ID 都先在认证 owner_id 范围内解析； 不存在与跨 owner 资源统一返回 404，错误体不暴露其他账号的业务字段。  写请求统一支持 Idempotency-Key。可并发编辑的资源通过 If-Match 传入当前版本，响应同时返回 ETag 与资源 version。所有 date-time 均以 UTC 传输，业务日期计算使用请求或当前熊舍的 IANA timezone。  NOTE: Filtered subset for apps/miniprogram-next typescript-fetch generation only. Authoritative full contract: specs/api/openapi.yaml Kept operationIds: 98
  *
  * The version of the OpenAPI document: 1.0.1
  *
@@ -24,21 +24,6 @@ import {
     AdjustLitterCountResponseFromJSON,
     AdjustLitterCountResponseToJSON,
 } from '../models/AdjustLitterCountResponse';
-import {
-    type BackupJobCreateRequest,
-    BackupJobCreateRequestFromJSON,
-    BackupJobCreateRequestToJSON,
-} from '../models/BackupJobCreateRequest';
-import {
-    type BackupJobListResponse,
-    BackupJobListResponseFromJSON,
-    BackupJobListResponseToJSON,
-} from '../models/BackupJobListResponse';
-import {
-    type BackupJobResponse,
-    BackupJobResponseFromJSON,
-    BackupJobResponseToJSON,
-} from '../models/BackupJobResponse';
 import {
     type BreederWechatSessionResponse,
     BreederWechatSessionResponseFromJSON,
@@ -110,21 +95,6 @@ import {
     ErrorResponseToJSON,
 } from '../models/ErrorResponse';
 import {
-    type ExportJobCreateRequest,
-    ExportJobCreateRequestFromJSON,
-    ExportJobCreateRequestToJSON,
-} from '../models/ExportJobCreateRequest';
-import {
-    type ExportJobListResponse,
-    ExportJobListResponseFromJSON,
-    ExportJobListResponseToJSON,
-} from '../models/ExportJobListResponse';
-import {
-    type ExportJobResponse,
-    ExportJobResponseFromJSON,
-    ExportJobResponseToJSON,
-} from '../models/ExportJobResponse';
-import {
     type HamsterBatchCreateRequest,
     HamsterBatchCreateRequestFromJSON,
     HamsterBatchCreateRequestToJSON,
@@ -179,6 +149,11 @@ import {
     HealthRecordTypeFromJSON,
     HealthRecordTypeToJSON,
 } from '../models/HealthRecordType';
+import {
+    type HealthRecordUpdateRequest,
+    HealthRecordUpdateRequestFromJSON,
+    HealthRecordUpdateRequestToJSON,
+} from '../models/HealthRecordUpdateRequest';
 import {
     type ImportCommitRequest,
     ImportCommitRequestFromJSON,
@@ -290,6 +265,26 @@ import {
     PedigreeGraphResponseToJSON,
 } from '../models/PedigreeGraphResponse';
 import {
+    type PedigreeParentageCreateRequest,
+    PedigreeParentageCreateRequestFromJSON,
+    PedigreeParentageCreateRequestToJSON,
+} from '../models/PedigreeParentageCreateRequest';
+import {
+    type PedigreeParentageEndRequest,
+    PedigreeParentageEndRequestFromJSON,
+    PedigreeParentageEndRequestToJSON,
+} from '../models/PedigreeParentageEndRequest';
+import {
+    type PedigreeParentageListResponse,
+    PedigreeParentageListResponseFromJSON,
+    PedigreeParentageListResponseToJSON,
+} from '../models/PedigreeParentageListResponse';
+import {
+    type PedigreeParentageResponse,
+    PedigreeParentageResponseFromJSON,
+    PedigreeParentageResponseToJSON,
+} from '../models/PedigreeParentageResponse';
+import {
     type PhoneCodeLoginRequest,
     PhoneCodeLoginRequestFromJSON,
     PhoneCodeLoginRequestToJSON,
@@ -314,11 +309,6 @@ import {
     RetryImportRequestFromJSON,
     RetryImportRequestToJSON,
 } from '../models/RetryImportRequest';
-import {
-    type RetryJobRequest,
-    RetryJobRequestFromJSON,
-    RetryJobRequestToJSON,
-} from '../models/RetryJobRequest';
 import {
     type SendVerificationCodeRequest,
     SendVerificationCodeRequestFromJSON,
@@ -438,11 +428,6 @@ export interface CompleteTaskOperationRequest {
     completeTaskRequest: CompleteTaskRequest;
 }
 
-export interface CreateBackupJobRequest {
-    idempotencyKey: string;
-    backupJobCreateRequest: BackupJobCreateRequest;
-}
-
 export interface CreateBreederWechatBindingOperationRequest {
     idempotencyKey: string;
     createBreederWechatBindingRequest: CreateBreederWechatBindingRequest;
@@ -453,11 +438,6 @@ export interface CreateBreederWechatSessionOperationRequest {
     idempotencyKey: string;
     createBreederWechatSessionRequest: CreateBreederWechatSessionRequest;
     xTimezone?: string;
-}
-
-export interface CreateExportJobRequest {
-    idempotencyKey: string;
-    exportJobCreateRequest: ExportJobCreateRequest;
 }
 
 export interface CreateHamsterRequest {
@@ -487,6 +467,11 @@ export interface CreateLitterCountEventRequest {
     adjustLitterCountRequest: AdjustLitterCountRequest;
 }
 
+export interface CreatePedigreeParentageRequest {
+    idempotencyKey: string;
+    pedigreeParentageCreateRequest: PedigreeParentageCreateRequest;
+}
+
 export interface CreateSessionRequest {
     idempotencyKey: string;
     phoneCodeLoginRequest: PhoneCodeLoginRequest;
@@ -503,12 +488,9 @@ export interface CreateWeightRecordRequest {
     weightRecordCreateRequest: WeightRecordCreateRequest;
 }
 
-export interface GetBackupDownloadRequest {
-    jobId: string;
-}
-
-export interface GetExportDownloadRequest {
-    jobId: string;
+export interface EndPedigreeParentageRequest {
+    idempotencyKey: string;
+    pedigreeParentageEndRequest: PedigreeParentageEndRequest;
 }
 
 export interface GetHamsterRequest {
@@ -518,6 +500,10 @@ export interface GetHamsterRequest {
 export interface GetHamsterPedigreeRequest {
     hamsterId: string;
     generations?: number;
+}
+
+export interface GetHealthRecordRequest {
+    healthRecordId: string;
 }
 
 export interface GetImportErrorReportRequest {
@@ -569,22 +555,12 @@ export interface IndividualizeLitter1Request {
     individualizeLitterRequest: IndividualizeLitterRequest;
 }
 
-export interface ListBackupJobsRequest {
-    cursor?: string;
-    limit?: number;
-}
-
 export interface ListEnclosuresRequest {
     cursor?: string;
     limit?: number;
     state?: EnclosureState;
     rackCode?: string;
     cleanlinessState?: CleanlinessState;
-}
-
-export interface ListExportJobsRequest {
-    cursor?: string;
-    limit?: number;
 }
 
 export interface ListHamstersRequest {
@@ -629,6 +605,13 @@ export interface ListLittersRequest {
     state?: LitterState;
     bornFrom?: Date;
     bornTo?: Date;
+}
+
+export interface ListPedigreeParentagesRequest {
+    cursor?: string;
+    limit?: number;
+    childHamsterId?: string;
+    parentHamsterId?: string;
 }
 
 export interface ListRemindersRequest {
@@ -688,20 +671,6 @@ export interface ReopenTaskRequest {
     taskCorrectionRequest: TaskCorrectionRequest;
 }
 
-export interface RetryBackupJobRequest {
-    idempotencyKey: string;
-    ifMatch: string;
-    jobId: string;
-    retryJobRequest: RetryJobRequest;
-}
-
-export interface RetryExportJobRequest {
-    idempotencyKey: string;
-    ifMatch: string;
-    jobId: string;
-    retryJobRequest: RetryJobRequest;
-}
-
 export interface RetryImportJobRequest {
     idempotencyKey: string;
     ifMatch: string;
@@ -734,6 +703,13 @@ export interface UpdateHamsterRequest {
     ifMatch: string;
     hamsterId: string;
     hamsterUpdateRequest: HamsterUpdateRequest;
+}
+
+export interface UpdateHealthRecordRequest {
+    idempotencyKey: string;
+    ifMatch: string;
+    healthRecordId: string;
+    healthRecordUpdateRequest: HealthRecordUpdateRequest;
 }
 
 export interface UpsertWechatSubscriptionsOperationRequest {
@@ -1170,74 +1146,6 @@ export class DefaultApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for createBackupJob without sending the request
-     */
-    async createBackupJobRequestOpts(requestParameters: CreateBackupJobRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['idempotencyKey'] == null) {
-            throw new runtime.RequiredError(
-                'idempotencyKey',
-                'Required parameter "idempotencyKey" was null or undefined when calling createBackupJob().'
-            );
-        }
-
-        if (requestParameters['backupJobCreateRequest'] == null) {
-            throw new runtime.RequiredError(
-                'backupJobCreateRequest',
-                'Required parameter "backupJobCreateRequest" was null or undefined when calling createBackupJob().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/data-center/backup-jobs`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: BackupJobCreateRequestToJSON(requestParameters['backupJobCreateRequest']),
-        };
-    }
-
-    /**
-     * 包含结构化数据、媒体清单和校验哈希。
-     * 创建基础备份
-     */
-    async createBackupJobRaw(requestParameters: CreateBackupJobRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BackupJobResponse>> {
-        const requestOptions = await this.createBackupJobRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => BackupJobResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 包含结构化数据、媒体清单和校验哈希。
-     * 创建基础备份
-     */
-    async createBackupJob(requestParameters: CreateBackupJobRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BackupJobResponse> {
-        const response = await this.createBackupJobRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Creates request options for createBreederWechatBinding without sending the request
      */
     async createBreederWechatBindingRequestOpts(requestParameters: CreateBreederWechatBindingOperationRequest): Promise<runtime.RequestOpts> {
@@ -1362,74 +1270,6 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async createBreederWechatSession(requestParameters: CreateBreederWechatSessionOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BreederWechatSessionResponse> {
         const response = await this.createBreederWechatSessionRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for createExportJob without sending the request
-     */
-    async createExportJobRequestOpts(requestParameters: CreateExportJobRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['idempotencyKey'] == null) {
-            throw new runtime.RequiredError(
-                'idempotencyKey',
-                'Required parameter "idempotencyKey" was null or undefined when calling createExportJob().'
-            );
-        }
-
-        if (requestParameters['exportJobCreateRequest'] == null) {
-            throw new runtime.RequiredError(
-                'exportJobCreateRequest',
-                'Required parameter "exportJobCreateRequest" was null or undefined when calling createExportJob().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/data-center/export-jobs`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ExportJobCreateRequestToJSON(requestParameters['exportJobCreateRequest']),
-        };
-    }
-
-    /**
-     * 支持仓鼠、笼舍、繁育、窝次、体重、健康和谱系的 CSV 或 JSON 导出。
-     * 创建数据导出
-     */
-    async createExportJobRaw(requestParameters: CreateExportJobRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ExportJobResponse>> {
-        const requestOptions = await this.createExportJobRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => ExportJobResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 支持仓鼠、笼舍、繁育、窝次、体重、健康和谱系的 CSV 或 JSON 导出。
-     * 创建数据导出
-     */
-    async createExportJob(requestParameters: CreateExportJobRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ExportJobResponse> {
-        const response = await this.createExportJobRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1793,6 +1633,74 @@ export class DefaultApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for createPedigreeParentage without sending the request
+     */
+    async createPedigreeParentageRequestOpts(requestParameters: CreatePedigreeParentageRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['idempotencyKey'] == null) {
+            throw new runtime.RequiredError(
+                'idempotencyKey',
+                'Required parameter "idempotencyKey" was null or undefined when calling createPedigreeParentage().'
+            );
+        }
+
+        if (requestParameters['pedigreeParentageCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'pedigreeParentageCreateRequest',
+                'Required parameter "pedigreeParentageCreateRequest" was null or undefined when calling createPedigreeParentage().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['idempotencyKey'] != null) {
+            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/pedigree-parentages`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PedigreeParentageCreateRequestToJSON(requestParameters['pedigreeParentageCreateRequest']),
+        };
+    }
+
+    /**
+     * 服务端校验角色、性别和祖先环；关系修正保留审计链。
+     * 新增父母关系断言
+     */
+    async createPedigreeParentageRaw(requestParameters: CreatePedigreeParentageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PedigreeParentageResponse>> {
+        const requestOptions = await this.createPedigreeParentageRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PedigreeParentageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 服务端校验角色、性别和祖先环；关系修正保留审计链。
+     * 新增父母关系断言
+     */
+    async createPedigreeParentage(requestParameters: CreatePedigreeParentageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PedigreeParentageResponse> {
+        const response = await this.createPedigreeParentageRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for createSession without sending the request
      */
     async createSessionRequestOpts(requestParameters: CreateSessionRequest): Promise<runtime.RequestOpts> {
@@ -1993,19 +1901,32 @@ export class DefaultApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for getBackupDownload without sending the request
+     * Creates request options for endPedigreeParentage without sending the request
      */
-    async getBackupDownloadRequestOpts(requestParameters: GetBackupDownloadRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['jobId'] == null) {
+    async endPedigreeParentageRequestOpts(requestParameters: EndPedigreeParentageRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['idempotencyKey'] == null) {
             throw new runtime.RequiredError(
-                'jobId',
-                'Required parameter "jobId" was null or undefined when calling getBackupDownload().'
+                'idempotencyKey',
+                'Required parameter "idempotencyKey" was null or undefined when calling endPedigreeParentage().'
+            );
+        }
+
+        if (requestParameters['pedigreeParentageEndRequest'] == null) {
+            throw new runtime.RequiredError(
+                'pedigreeParentageEndRequest',
+                'Required parameter "pedigreeParentageEndRequest" was null or undefined when calling endPedigreeParentage().'
             );
         }
 
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['idempotencyKey'] != null) {
+            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
+        }
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
@@ -2016,34 +1937,34 @@ export class DefaultApi extends runtime.BaseAPI {
             }
         }
 
-        let urlPath = `/data-center/backup-jobs/{job_id}/download`;
-        urlPath = urlPath.replace('{job_id}', encodeURIComponent(String(requestParameters['jobId'])));
+        let urlPath = `/pedigree-parentages/end`;
 
         return {
             path: urlPath,
-            method: 'GET',
+            method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: PedigreeParentageEndRequestToJSON(requestParameters['pedigreeParentageEndRequest']),
         };
     }
 
     /**
-     * 返回短时有效下载地址、文件大小和 SHA-256。
-     * 获取备份下载链接
+     * 将 child+role 上当前 accepted 的 pedigree_parentage 标记为 superseded（valid_to=now）， 保留审计链。必须提供 correction_reason。不物理删除。
+     * 解除当前有效父母关系
      */
-    async getBackupDownloadRaw(requestParameters: GetBackupDownloadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DownloadLinkResponse>> {
-        const requestOptions = await this.getBackupDownloadRequestOpts(requestParameters);
+    async endPedigreeParentageRaw(requestParameters: EndPedigreeParentageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PedigreeParentageResponse>> {
+        const requestOptions = await this.endPedigreeParentageRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DownloadLinkResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => PedigreeParentageResponseFromJSON(jsonValue));
     }
 
     /**
-     * 返回短时有效下载地址、文件大小和 SHA-256。
-     * 获取备份下载链接
+     * 将 child+role 上当前 accepted 的 pedigree_parentage 标记为 superseded（valid_to=now）， 保留审计链。必须提供 correction_reason。不物理删除。
+     * 解除当前有效父母关系
      */
-    async getBackupDownload(requestParameters: GetBackupDownloadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DownloadLinkResponse> {
-        const response = await this.getBackupDownloadRaw(requestParameters, initOverrides);
+    async endPedigreeParentage(requestParameters: EndPedigreeParentageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PedigreeParentageResponse> {
+        const response = await this.endPedigreeParentageRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -2091,61 +2012,6 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async getDataCenterSummary(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DataCenterSummaryResponse> {
         const response = await this.getDataCenterSummaryRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for getExportDownload without sending the request
-     */
-    async getExportDownloadRequestOpts(requestParameters: GetExportDownloadRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['jobId'] == null) {
-            throw new runtime.RequiredError(
-                'jobId',
-                'Required parameter "jobId" was null or undefined when calling getExportDownload().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/data-center/export-jobs/{job_id}/download`;
-        urlPath = urlPath.replace('{job_id}', encodeURIComponent(String(requestParameters['jobId'])));
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 仅成功且未过期的任务返回短时有效下载地址。
-     * 获取导出下载链接
-     */
-    async getExportDownloadRaw(requestParameters: GetExportDownloadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DownloadLinkResponse>> {
-        const requestOptions = await this.getExportDownloadRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DownloadLinkResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 仅成功且未过期的任务返回短时有效下载地址。
-     * 获取导出下载链接
-     */
-    async getExportDownload(requestParameters: GetExportDownloadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DownloadLinkResponse> {
-        const response = await this.getExportDownloadRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -2260,6 +2126,61 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async getHamsterPedigree(requestParameters: GetHamsterPedigreeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PedigreeGraphResponse> {
         const response = await this.getHamsterPedigreeRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getHealthRecord without sending the request
+     */
+    async getHealthRecordRequestOpts(requestParameters: GetHealthRecordRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['healthRecordId'] == null) {
+            throw new runtime.RequiredError(
+                'healthRecordId',
+                'Required parameter "healthRecordId" was null or undefined when calling getHealthRecord().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/health-records/{health_record_id}`;
+        urlPath = urlPath.replace('{health_record_id}', encodeURIComponent(String(requestParameters['healthRecordId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * 返回结构化检查、用药、媒体和版本。
+     * 获取健康记录
+     */
+    async getHealthRecordRaw(requestParameters: GetHealthRecordRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<HealthRecordResponse>> {
+        const requestOptions = await this.getHealthRecordRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => HealthRecordResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 返回结构化检查、用药、媒体和版本。
+     * 获取健康记录
+     */
+    async getHealthRecord(requestParameters: GetHealthRecordRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<HealthRecordResponse> {
+        const response = await this.getHealthRecordRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -2910,61 +2831,6 @@ export class DefaultApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for listBackupJobs without sending the request
-     */
-    async listBackupJobsRequestOpts(requestParameters: ListBackupJobsRequest): Promise<runtime.RequestOpts> {
-        const queryParameters: any = {};
-
-        if (requestParameters['cursor'] != null) {
-            queryParameters['cursor'] = requestParameters['cursor'];
-        }
-
-        if (requestParameters['limit'] != null) {
-            queryParameters['limit'] = requestParameters['limit'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/data-center/backup-jobs`;
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 使用 cursor 分页返回备份、校验与可恢复状态。
-     * 列出备份任务
-     */
-    async listBackupJobsRaw(requestParameters: ListBackupJobsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BackupJobListResponse>> {
-        const requestOptions = await this.listBackupJobsRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => BackupJobListResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 使用 cursor 分页返回备份、校验与可恢复状态。
-     * 列出备份任务
-     */
-    async listBackupJobs(requestParameters: ListBackupJobsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BackupJobListResponse> {
-        const response = await this.listBackupJobsRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Creates request options for listEnclosures without sending the request
      */
     async listEnclosuresRequestOpts(requestParameters: ListEnclosuresRequest): Promise<runtime.RequestOpts> {
@@ -3028,61 +2894,6 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async listEnclosures(requestParameters: ListEnclosuresRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EnclosureListResponse> {
         const response = await this.listEnclosuresRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for listExportJobs without sending the request
-     */
-    async listExportJobsRequestOpts(requestParameters: ListExportJobsRequest): Promise<runtime.RequestOpts> {
-        const queryParameters: any = {};
-
-        if (requestParameters['cursor'] != null) {
-            queryParameters['cursor'] = requestParameters['cursor'];
-        }
-
-        if (requestParameters['limit'] != null) {
-            queryParameters['limit'] = requestParameters['limit'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/data-center/export-jobs`;
-
-        return {
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        };
-    }
-
-    /**
-     * 使用 cursor 分页返回导出状态。
-     * 列出导出任务
-     */
-    async listExportJobsRaw(requestParameters: ListExportJobsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ExportJobListResponse>> {
-        const requestOptions = await this.listExportJobsRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => ExportJobListResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 使用 cursor 分页返回导出状态。
-     * 列出导出任务
-     */
-    async listExportJobs(requestParameters: ListExportJobsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ExportJobListResponse> {
-        const response = await this.listExportJobsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -3481,6 +3292,69 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async listLitters(requestParameters: ListLittersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LitterListResponse> {
         const response = await this.listLittersRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for listPedigreeParentages without sending the request
+     */
+    async listPedigreeParentagesRequestOpts(requestParameters: ListPedigreeParentagesRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        if (requestParameters['cursor'] != null) {
+            queryParameters['cursor'] = requestParameters['cursor'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        if (requestParameters['childHamsterId'] != null) {
+            queryParameters['child_hamster_id'] = requestParameters['childHamsterId'];
+        }
+
+        if (requestParameters['parentHamsterId'] != null) {
+            queryParameters['parent_hamster_id'] = requestParameters['parentHamsterId'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/pedigree-parentages`;
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * 按子代、父母或有效期筛选 pedigree_parentage。
+     * 列出家谱父母边
+     */
+    async listPedigreeParentagesRaw(requestParameters: ListPedigreeParentagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PedigreeParentageListResponse>> {
+        const requestOptions = await this.listPedigreeParentagesRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PedigreeParentageListResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 按子代、父母或有效期筛选 pedigree_parentage。
+     * 列出家谱父母边
+     */
+    async listPedigreeParentages(requestParameters: ListPedigreeParentagesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PedigreeParentageListResponse> {
+        const response = await this.listPedigreeParentagesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -4104,180 +3978,6 @@ export class DefaultApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for retryBackupJob without sending the request
-     */
-    async retryBackupJobRequestOpts(requestParameters: RetryBackupJobRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['idempotencyKey'] == null) {
-            throw new runtime.RequiredError(
-                'idempotencyKey',
-                'Required parameter "idempotencyKey" was null or undefined when calling retryBackupJob().'
-            );
-        }
-
-        if (requestParameters['ifMatch'] == null) {
-            throw new runtime.RequiredError(
-                'ifMatch',
-                'Required parameter "ifMatch" was null or undefined when calling retryBackupJob().'
-            );
-        }
-
-        if (requestParameters['jobId'] == null) {
-            throw new runtime.RequiredError(
-                'jobId',
-                'Required parameter "jobId" was null or undefined when calling retryBackupJob().'
-            );
-        }
-
-        if (requestParameters['retryJobRequest'] == null) {
-            throw new runtime.RequiredError(
-                'retryJobRequest',
-                'Required parameter "retryJobRequest" was null or undefined when calling retryBackupJob().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (requestParameters['ifMatch'] != null) {
-            headerParameters['If-Match'] = String(requestParameters['ifMatch']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/data-center/backup-jobs/{job_id}/retry`;
-        urlPath = urlPath.replace('{job_id}', encodeURIComponent(String(requestParameters['jobId'])));
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: RetryJobRequestToJSON(requestParameters['retryJobRequest']),
-        };
-    }
-
-    /**
-     * 保留原失败记录并创建新的执行尝试。
-     * 重试失败备份
-     */
-    async retryBackupJobRaw(requestParameters: RetryBackupJobRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BackupJobResponse>> {
-        const requestOptions = await this.retryBackupJobRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => BackupJobResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 保留原失败记录并创建新的执行尝试。
-     * 重试失败备份
-     */
-    async retryBackupJob(requestParameters: RetryBackupJobRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BackupJobResponse> {
-        const response = await this.retryBackupJobRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for retryExportJob without sending the request
-     */
-    async retryExportJobRequestOpts(requestParameters: RetryExportJobRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['idempotencyKey'] == null) {
-            throw new runtime.RequiredError(
-                'idempotencyKey',
-                'Required parameter "idempotencyKey" was null or undefined when calling retryExportJob().'
-            );
-        }
-
-        if (requestParameters['ifMatch'] == null) {
-            throw new runtime.RequiredError(
-                'ifMatch',
-                'Required parameter "ifMatch" was null or undefined when calling retryExportJob().'
-            );
-        }
-
-        if (requestParameters['jobId'] == null) {
-            throw new runtime.RequiredError(
-                'jobId',
-                'Required parameter "jobId" was null or undefined when calling retryExportJob().'
-            );
-        }
-
-        if (requestParameters['retryJobRequest'] == null) {
-            throw new runtime.RequiredError(
-                'retryJobRequest',
-                'Required parameter "retryJobRequest" was null or undefined when calling retryExportJob().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['idempotencyKey'] != null) {
-            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
-        }
-
-        if (requestParameters['ifMatch'] != null) {
-            headerParameters['If-Match'] = String(requestParameters['ifMatch']);
-        }
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAuth", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/data-center/export-jobs/{job_id}/retry`;
-        urlPath = urlPath.replace('{job_id}', encodeURIComponent(String(requestParameters['jobId'])));
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: RetryJobRequestToJSON(requestParameters['retryJobRequest']),
-        };
-    }
-
-    /**
-     * 从相同导出快照创建新执行尝试。
-     * 重试失败导出
-     */
-    async retryExportJobRaw(requestParameters: RetryExportJobRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ExportJobResponse>> {
-        const requestOptions = await this.retryExportJobRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => ExportJobResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * 从相同导出快照创建新执行尝试。
-     * 重试失败导出
-     */
-    async retryExportJob(requestParameters: RetryExportJobRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ExportJobResponse> {
-        const response = await this.retryExportJobRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Creates request options for retryImportJob without sending the request
      */
     async retryImportJobRequestOpts(requestParameters: RetryImportJobRequest): Promise<runtime.RequestOpts> {
@@ -4686,6 +4386,93 @@ export class DefaultApi extends runtime.BaseAPI {
      */
     async updateHamster(requestParameters: UpdateHamsterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<HamsterResponse> {
         const response = await this.updateHamsterRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for updateHealthRecord without sending the request
+     */
+    async updateHealthRecordRequestOpts(requestParameters: UpdateHealthRecordRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['idempotencyKey'] == null) {
+            throw new runtime.RequiredError(
+                'idempotencyKey',
+                'Required parameter "idempotencyKey" was null or undefined when calling updateHealthRecord().'
+            );
+        }
+
+        if (requestParameters['ifMatch'] == null) {
+            throw new runtime.RequiredError(
+                'ifMatch',
+                'Required parameter "ifMatch" was null or undefined when calling updateHealthRecord().'
+            );
+        }
+
+        if (requestParameters['healthRecordId'] == null) {
+            throw new runtime.RequiredError(
+                'healthRecordId',
+                'Required parameter "healthRecordId" was null or undefined when calling updateHealthRecord().'
+            );
+        }
+
+        if (requestParameters['healthRecordUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'healthRecordUpdateRequest',
+                'Required parameter "healthRecordUpdateRequest" was null or undefined when calling updateHealthRecord().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/merge-patch+json';
+
+        if (requestParameters['idempotencyKey'] != null) {
+            headerParameters['Idempotency-Key'] = String(requestParameters['idempotencyKey']);
+        }
+
+        if (requestParameters['ifMatch'] != null) {
+            headerParameters['If-Match'] = String(requestParameters['ifMatch']);
+        }
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/health-records/{health_record_id}`;
+        urlPath = urlPath.replace('{health_record_id}', encodeURIComponent(String(requestParameters['healthRecordId'])));
+
+        return {
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: HealthRecordUpdateRequestToJSON(requestParameters['healthRecordUpdateRequest']),
+        };
+    }
+
+    /**
+     * 通过 If-Match 修正备注、结构化检查、媒体或复查时间。
+     * 更新健康记录
+     */
+    async updateHealthRecordRaw(requestParameters: UpdateHealthRecordRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<HealthRecordResponse>> {
+        const requestOptions = await this.updateHealthRecordRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => HealthRecordResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * 通过 If-Match 修正备注、结构化检查、媒体或复查时间。
+     * 更新健康记录
+     */
+    async updateHealthRecord(requestParameters: UpdateHealthRecordRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<HealthRecordResponse> {
+        const response = await this.updateHealthRecordRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

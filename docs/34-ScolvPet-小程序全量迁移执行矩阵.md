@@ -8,12 +8,12 @@
 | M1 | 今日照护队列、任务完成 | 已写入（真机待确认） | `pages/today/index` |
 | M1 | 个体浏览与检索 | 已写入（真机待确认） | `packages/animals/index/index` |
 | M1 | 体重/健康快录 | 已写入（真机待确认） | `packages/animals/detail/index` |
-| M2 | 个体 CRUD、批量 | 已写入（个体完整档案字段、核心表型目录、头像媒体上传/移除已接入；真机待确认） | `packages/animals/*` |
+| M2 | 个体 CRUD、批量 | 已写入（个体完整档案字段、核心表型目录、头像媒体上传/移除；2026-08-19 体重/健康/族谱纠错已接入；真机待确认） | `packages/animals/*` |
 | M2 | 窝次、性别、个体化 | 已写入（真机待确认） | `packages/litters/*` |
 | M2 | 繁育向导与日历 | 已写入（真机待确认） | `packages/breeding/*`、`packages/reminders/*`（含日历聚合） |
 | M2 | 订阅提醒、离线只读快照 | 已写入（授权同步、任务/预订事件队列与后台 worker；LA1 staging 0042–0044 与路由已验证；正式模板/配置及真机待确认） | `packages/reminders/*`、`src/offline/snapshots.ts`、`api/internal/httpapi/wechat_subscriptions.go`、`api/internal/worker/wechat_subscriptions.go` |
-| M3 | CRM、合同、财务 | 已写入（合同/回执模板管理、记账分类与分类选择、PDF 字体配置及真机待确认） | `packages/crm/*`、`contracts/*`、`finance/*`、`api/internal/httpapi/document_pdf.go` |
-| M3 | 公开主页、CSV | 已写入（CSV 导入；导出/备份入口已按 docs/28 Wave0 隐藏；真机及订阅配套待确认） | `public-site/*`、`data-center/*` |
+| M3 | CRM、合同、财务 | 已写入（合同/回执模板管理、记账分类、财务反向冲销、CRM 状态机显隐；客户档案/交付无改接口；真机待确认） | `packages/crm/*`、`contracts/*`、`finance/*`、`api/internal/httpapi/document_pdf.go` |
+| M3 | 公开主页、CSV | 已写入（CSV 导入；导出/备份入口已按 docs/28 Wave0 隐藏；导入 session 可落对象存储；真机及订阅配套待确认） | `public-site/*`、`data-center/*` |
 | M4 | AI、遗传模拟、Stud | 已写入（AI 快捷问题/深链、遗传目录/目标交配/实际反馈/历史摘要、公开个体资料管理均接入；真机待确认） | `packages/ai/*`、`genetic/*`、`stud/*` |
 | M4 | 数据中心汇总 | 已写入（CSV 映射、逐行结果、错误报告、重试；导出/备份创建入口已隐藏，worker 未做） | `packages/data-center/*` |
 

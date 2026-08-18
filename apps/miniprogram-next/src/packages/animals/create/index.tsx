@@ -10,6 +10,7 @@ import { CapabilityButton } from '../../../components/CapabilityButton'
 import { encodePhenotype, readPhenotypeSeries, type PhenotypeSeries } from '../../../utils/phenotype'
 import type { ApiEnvelope } from '../../../api/types'
 import { formatUserError } from '../../../api/errors'
+import { animalDetailUrl } from '../../../utils/created-routes'
 
 export default function CreateAnimalPage() {
   const [internalCode, setInternalCode] = useState('')
@@ -51,7 +52,7 @@ export default function CreateAnimalPage() {
     }
     setBusy(true)
     try {
-      await defaultApi.createHamster({
+      const created = await defaultApi.createHamster({
         idempotencyKey: newIdempotencyKey(),
         hamsterCreateRequest: {
           internalCode: internalCode.trim(),
@@ -64,8 +65,11 @@ export default function CreateAnimalPage() {
           notes: notes.trim() || null
         } as any
       })
+      const url = animalDetailUrl((created as { data?: { id?: string } }).data?.id)
       Taro.showToast({ title: '个体已创建', icon: 'success' })
-      setTimeout(() => Taro.navigateBack(), 350)
+      setTimeout(() => {
+        void Taro.redirectTo({ url })
+      }, 350)
     } catch (cause) {
       setMessage(await formatUserError(cause, '创建失败'))
     } finally {

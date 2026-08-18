@@ -9,23 +9,22 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**commitImportJob**](DefaultApi.md#commitimportjob) | **POST** /data-center/import-jobs/{job_id}/commit | 提交正式导入 |
 | [**completeMediaUpload**](DefaultApi.md#completemediaupload) | **POST** /media/uploads/{upload_id}/complete | 完成媒体上传 |
 | [**completeTask**](DefaultApi.md#completetaskoperation) | **POST** /tasks/{task_id}/complete | 完成任务或逐项完成任务成员 |
-| [**createBackupJob**](DefaultApi.md#createbackupjob) | **POST** /data-center/backup-jobs | 创建基础备份 |
 | [**createBreederWechatBinding**](DefaultApi.md#createbreederwechatbindingoperation) | **POST** /auth/wechat-bindings | 短信验证并绑定 B 端微信身份 |
 | [**createBreederWechatSession**](DefaultApi.md#createbreederwechatsessionoperation) | **POST** /auth/wechat-sessions | B 端微信 wx.login 登录 |
-| [**createExportJob**](DefaultApi.md#createexportjob) | **POST** /data-center/export-jobs | 创建数据导出 |
 | [**createHamster**](DefaultApi.md#createhamster) | **POST** /hamsters | 创建仓鼠档案 |
 | [**createHealthRecord**](DefaultApi.md#createhealthrecord) | **POST** /health-records | 创建健康记录 |
 | [**createImportJob**](DefaultApi.md#createimportjob) | **POST** /data-center/import-jobs | 创建 CSV 导入任务 |
 | [**createImportUpload**](DefaultApi.md#createimportupload) | **POST** /data-center/import-uploads | 创建 CSV 上传 |
 | [**createLitterCountEvent**](DefaultApi.md#createlittercountevent) | **POST** /litters/{litter_id}/count-events | 追加窝仔数量事件 |
+| [**createPedigreeParentage**](DefaultApi.md#createpedigreeparentage) | **POST** /pedigree-parentages | 新增父母关系断言 |
 | [**createSession**](DefaultApi.md#createsession) | **POST** /auth/sessions | 使用手机验证码登录 |
 | [**createTask**](DefaultApi.md#createtask) | **POST** /tasks | 创建手工任务 |
 | [**createWeightRecord**](DefaultApi.md#createweightrecord) | **POST** /weight-records | 创建体重记录 |
-| [**getBackupDownload**](DefaultApi.md#getbackupdownload) | **GET** /data-center/backup-jobs/{job_id}/download | 获取备份下载链接 |
+| [**endPedigreeParentage**](DefaultApi.md#endpedigreeparentage) | **POST** /pedigree-parentages/end | 解除当前有效父母关系 |
 | [**getDataCenterSummary**](DefaultApi.md#getdatacentersummary) | **GET** /data-center/summary | 获取数据中心摘要 |
-| [**getExportDownload**](DefaultApi.md#getexportdownload) | **GET** /data-center/export-jobs/{job_id}/download | 获取导出下载链接 |
 | [**getHamster**](DefaultApi.md#gethamster) | **GET** /hamsters/{hamster_id} | 获取仓鼠详情 |
 | [**getHamsterPedigree**](DefaultApi.md#gethamsterpedigree) | **GET** /hamsters/{hamster_id}/pedigree | 获取仓鼠家谱图 |
+| [**getHealthRecord**](DefaultApi.md#gethealthrecord) | **GET** /health-records/{health_record_id} | 获取健康记录 |
 | [**getImportErrorReport**](DefaultApi.md#getimporterrorreport) | **GET** /data-center/import-jobs/{job_id}/error-report | 下载 CSV 逐行错误报告 |
 | [**getImportJob**](DefaultApi.md#getimportjob) | **GET** /data-center/import-jobs/{job_id} | 获取导入任务 |
 | [**getLitter**](DefaultApi.md#getlitter) | **GET** /litters/{litter_id} | 获取窝次详情 |
@@ -36,15 +35,14 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**individualizeLitter**](DefaultApi.md#individualizelitteroperation) | **POST** /litters/{litter_id}/individualize | 将临时幼崽个体化 |
 | [**individualizeLitter_0**](DefaultApi.md#individualizelitter_0) | **POST** /litters/{litter_id}/individualize | 将临时幼崽个体化 |
 | [**individualizeLitter_1**](DefaultApi.md#individualizelitter_1) | **POST** /litters/{litter_id}/individualize | 将临时幼崽个体化 |
-| [**listBackupJobs**](DefaultApi.md#listbackupjobs) | **GET** /data-center/backup-jobs | 列出备份任务 |
 | [**listEnclosures**](DefaultApi.md#listenclosures) | **GET** /enclosures | 列出笼盒 |
-| [**listExportJobs**](DefaultApi.md#listexportjobs) | **GET** /data-center/export-jobs | 列出导出任务 |
 | [**listHamsters**](DefaultApi.md#listhamsters) | **GET** /hamsters | 列出仓鼠 |
 | [**listHealthRecords**](DefaultApi.md#listhealthrecords) | **GET** /health-records | 列出健康记录 |
 | [**listImportRowResults**](DefaultApi.md#listimportrowresults) | **GET** /data-center/import-jobs/{job_id}/rows | 获取逐行导入结果 |
 | [**listLitterMembers**](DefaultApi.md#listlittermembers) | **GET** /litters/{litter_id}/members | 列出窝次成员 |
 | [**listLitterMembers_0**](DefaultApi.md#listlittermembers_0) | **GET** /litters/{litter_id}/members | 列出窝次成员 |
 | [**listLitters**](DefaultApi.md#listlitters) | **GET** /litters | 列出窝次 |
+| [**listPedigreeParentages**](DefaultApi.md#listpedigreeparentages) | **GET** /pedigree-parentages | 列出家谱父母边 |
 | [**listReminders**](DefaultApi.md#listreminders) | **GET** /reminders | 列出提醒 |
 | [**listSpeciesRuleVersions**](DefaultApi.md#listspeciesruleversions) | **GET** /species-rule-versions | 列出当前熊舍规则版本 |
 | [**listTasks**](DefaultApi.md#listtasks) | **GET** /tasks | 列出任务 |
@@ -54,13 +52,12 @@ All URIs are relative to *https://api.scolvpet.cn/v1*
 | [**presignMediaUpload**](DefaultApi.md#presignmediaupload) | **POST** /media/uploads/presign | 创建媒体预签名上传 |
 | [**refreshSession**](DefaultApi.md#refreshsessionoperation) | **POST** /auth/sessions/refresh | 刷新当前会话 |
 | [**reopenTask**](DefaultApi.md#reopentask) | **POST** /tasks/{task_id}/reopen | 撤销任务的完成或取消 |
-| [**retryBackupJob**](DefaultApi.md#retrybackupjob) | **POST** /data-center/backup-jobs/{job_id}/retry | 重试失败备份 |
-| [**retryExportJob**](DefaultApi.md#retryexportjob) | **POST** /data-center/export-jobs/{job_id}/retry | 重试失败导出 |
 | [**retryImportJob**](DefaultApi.md#retryimportjob) | **POST** /data-center/import-jobs/{job_id}/retry | 重试失败导入行 |
 | [**sendVerificationCode**](DefaultApi.md#sendverificationcodeoperation) | **POST** /auth/verification-codes | 发送手机验证码 |
 | [**setImportMapping**](DefaultApi.md#setimportmapping) | **PUT** /data-center/import-jobs/{job_id}/mapping | 设置 CSV 字段映射 |
 | [**sexAndSeparateLitter**](DefaultApi.md#sexandseparatelitter) | **POST** /litters/{litter_id}/sex-and-separate | 分性并分笼 |
 | [**updateHamster**](DefaultApi.md#updatehamster) | **PATCH** /hamsters/{hamster_id} | 更新仓鼠档案 |
+| [**updateHealthRecord**](DefaultApi.md#updatehealthrecord) | **PATCH** /health-records/{health_record_id} | 更新健康记录 |
 | [**upsertWechatSubscriptions**](DefaultApi.md#upsertwechatsubscriptionsoperation) | **PUT** /wechat/subscriptions | 保存当前 B 端微信订阅授权 |
 | [**weanLitter**](DefaultApi.md#weanlitteroperation) | **POST** /litters/{litter_id}/wean | 完成断奶 |
 
@@ -474,81 +471,6 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## createBackupJob
-
-> BackupJobResponse createBackupJob(idempotencyKey, backupJobCreateRequest)
-
-创建基础备份
-
-包含结构化数据、媒体清单和校验哈希。
-
-### Example
-
-```ts
-import {
-  Configuration,
-  DefaultApi,
-} from '@scolvpet/scolvpet-api';
-import type { CreateBackupJobRequest } from '@scolvpet/scolvpet-api';
-
-async function example() {
-  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({
-    // Configure HTTP bearer authorization: bearerAuth
-    accessToken: "YOUR BEARER TOKEN",
-  });
-  const api = new DefaultApi(config);
-
-  const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
-    idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
-    // BackupJobCreateRequest
-    backupJobCreateRequest: ...,
-  } satisfies CreateBackupJobRequest;
-
-  try {
-    const data = await api.createBackupJob(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **idempotencyKey** | `string` | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | [Defaults to `undefined`] |
-| **backupJobCreateRequest** | [BackupJobCreateRequest](BackupJobCreateRequest.md) |  | |
-
-### Return type
-
-[**BackupJobResponse**](BackupJobResponse.md)
-
-### Authorization
-
-[bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **202** | 备份任务已创建 |  * Location -  <br>  * ETag -  <br>  * Idempotency-Key -  <br>  * Idempotency-Replayed -  <br>  |
-| **422** | 字段格式或领域规则校验失败 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
 ## createBreederWechatBinding
 
 > SessionResponse createBreederWechatBinding(idempotencyKey, createBreederWechatBindingRequest, xTimezone)
@@ -699,81 +621,6 @@ No authorization required
 | **422** | 字段格式或领域规则校验失败 |  -  |
 | **429** | 请求频率过高 |  * Retry-After - 建议重试等待秒数 <br>  |
 | **503** | 微信登录暂不可用，降级短信登录 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## createExportJob
-
-> ExportJobResponse createExportJob(idempotencyKey, exportJobCreateRequest)
-
-创建数据导出
-
-支持仓鼠、笼舍、繁育、窝次、体重、健康和谱系的 CSV 或 JSON 导出。
-
-### Example
-
-```ts
-import {
-  Configuration,
-  DefaultApi,
-} from '@scolvpet/scolvpet-api';
-import type { CreateExportJobRequest } from '@scolvpet/scolvpet-api';
-
-async function example() {
-  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({
-    // Configure HTTP bearer authorization: bearerAuth
-    accessToken: "YOUR BEARER TOKEN",
-  });
-  const api = new DefaultApi(config);
-
-  const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
-    idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
-    // ExportJobCreateRequest
-    exportJobCreateRequest: ...,
-  } satisfies CreateExportJobRequest;
-
-  try {
-    const data = await api.createExportJob(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **idempotencyKey** | `string` | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | [Defaults to `undefined`] |
-| **exportJobCreateRequest** | [ExportJobCreateRequest](ExportJobCreateRequest.md) |  | |
-
-### Return type
-
-[**ExportJobResponse**](ExportJobResponse.md)
-
-### Authorization
-
-[bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **202** | 导出任务已创建 |  * Location -  <br>  * ETag -  <br>  * Idempotency-Key -  <br>  * Idempotency-Replayed -  <br>  |
-| **422** | 字段格式或领域规则校验失败 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -1163,6 +1010,82 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## createPedigreeParentage
+
+> PedigreeParentageResponse createPedigreeParentage(idempotencyKey, pedigreeParentageCreateRequest)
+
+新增父母关系断言
+
+服务端校验角色、性别和祖先环；关系修正保留审计链。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DefaultApi,
+} from '@scolvpet/scolvpet-api';
+import type { CreatePedigreeParentageRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new DefaultApi(config);
+
+  const body = {
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+    idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
+    // PedigreeParentageCreateRequest
+    pedigreeParentageCreateRequest: ...,
+  } satisfies CreatePedigreeParentageRequest;
+
+  try {
+    const data = await api.createPedigreeParentage(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **idempotencyKey** | `string` | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | [Defaults to `undefined`] |
+| **pedigreeParentageCreateRequest** | [PedigreeParentageCreateRequest](PedigreeParentageCreateRequest.md) |  | |
+
+### Return type
+
+[**PedigreeParentageResponse**](PedigreeParentageResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** | 父母关系已创建 |  * Location -  <br>  * ETag -  <br>  * Idempotency-Key -  <br>  * Idempotency-Replayed -  <br>  |
+| **409** | 版本、状态、幂等键或资源占用冲突 |  * ETag -  <br>  |
+| **422** | 字段格式或领域规则校验失败 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## createSession
 
 > SessionResponse createSession(idempotencyKey, phoneCodeLoginRequest, xTimezone)
@@ -1390,13 +1313,13 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## getBackupDownload
+## endPedigreeParentage
 
-> DownloadLinkResponse getBackupDownload(jobId)
+> PedigreeParentageResponse endPedigreeParentage(idempotencyKey, pedigreeParentageEndRequest)
 
-获取备份下载链接
+解除当前有效父母关系
 
-返回短时有效下载地址、文件大小和 SHA-256。
+将 child+role 上当前 accepted 的 pedigree_parentage 标记为 superseded（valid_to&#x3D;now）， 保留审计链。必须提供 correction_reason。不物理删除。
 
 ### Example
 
@@ -1405,7 +1328,7 @@ import {
   Configuration,
   DefaultApi,
 } from '@scolvpet/scolvpet-api';
-import type { GetBackupDownloadRequest } from '@scolvpet/scolvpet-api';
+import type { EndPedigreeParentageRequest } from '@scolvpet/scolvpet-api';
 
 async function example() {
   console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
@@ -1416,12 +1339,14 @@ async function example() {
   const api = new DefaultApi(config);
 
   const body = {
-    // string
-    jobId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
-  } satisfies GetBackupDownloadRequest;
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+    idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
+    // PedigreeParentageEndRequest
+    pedigreeParentageEndRequest: ...,
+  } satisfies EndPedigreeParentageRequest;
 
   try {
-    const data = await api.getBackupDownload(body);
+    const data = await api.endPedigreeParentage(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -1437,11 +1362,12 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **jobId** | `string` |  | [Defaults to `undefined`] |
+| **idempotencyKey** | `string` | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | [Defaults to `undefined`] |
+| **pedigreeParentageEndRequest** | [PedigreeParentageEndRequest](PedigreeParentageEndRequest.md) |  | |
 
 ### Return type
 
-[**DownloadLinkResponse**](DownloadLinkResponse.md)
+[**PedigreeParentageResponse**](PedigreeParentageResponse.md)
 
 ### Authorization
 
@@ -1449,16 +1375,16 @@ example().catch(console.error);
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | 备份下载信息 |  -  |
+| **200** | 父母关系已解除（superseded） |  -  |
 | **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
-| **409** | 版本、状态、幂等键或资源占用冲突 |  * ETag -  <br>  |
+| **422** | 字段格式或领域规则校验失败 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -1523,79 +1449,6 @@ This endpoint does not need any parameter.
 |-------------|-------------|------------------|
 | **200** | 数据中心摘要 |  -  |
 | **401** | 访问令牌缺失、无效或过期 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## getExportDownload
-
-> DownloadLinkResponse getExportDownload(jobId)
-
-获取导出下载链接
-
-仅成功且未过期的任务返回短时有效下载地址。
-
-### Example
-
-```ts
-import {
-  Configuration,
-  DefaultApi,
-} from '@scolvpet/scolvpet-api';
-import type { GetExportDownloadRequest } from '@scolvpet/scolvpet-api';
-
-async function example() {
-  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({
-    // Configure HTTP bearer authorization: bearerAuth
-    accessToken: "YOUR BEARER TOKEN",
-  });
-  const api = new DefaultApi(config);
-
-  const body = {
-    // string
-    jobId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
-  } satisfies GetExportDownloadRequest;
-
-  try {
-    const data = await api.getExportDownload(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **jobId** | `string` |  | [Defaults to `undefined`] |
-
-### Return type
-
-[**DownloadLinkResponse**](DownloadLinkResponse.md)
-
-### Authorization
-
-[bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | 下载信息 |  -  |
-| **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
-| **409** | 版本、状态、幂等键或资源占用冲突 |  * ETag -  <br>  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -1742,6 +1595,78 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | 家谱图 |  -  |
+| **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getHealthRecord
+
+> HealthRecordResponse getHealthRecord(healthRecordId)
+
+获取健康记录
+
+返回结构化检查、用药、媒体和版本。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DefaultApi,
+} from '@scolvpet/scolvpet-api';
+import type { GetHealthRecordRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new DefaultApi(config);
+
+  const body = {
+    // string
+    healthRecordId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
+  } satisfies GetHealthRecordRequest;
+
+  try {
+    const data = await api.getHealthRecord(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **healthRecordId** | `string` |  | [Defaults to `undefined`] |
+
+### Return type
+
+[**HealthRecordResponse**](HealthRecordResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | 健康记录 |  * ETag -  <br>  |
 | **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
@@ -2501,81 +2426,6 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## listBackupJobs
-
-> BackupJobListResponse listBackupJobs(cursor, limit)
-
-列出备份任务
-
-使用 cursor 分页返回备份、校验与可恢复状态。
-
-### Example
-
-```ts
-import {
-  Configuration,
-  DefaultApi,
-} from '@scolvpet/scolvpet-api';
-import type { ListBackupJobsRequest } from '@scolvpet/scolvpet-api';
-
-async function example() {
-  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({
-    // Configure HTTP bearer authorization: bearerAuth
-    accessToken: "YOUR BEARER TOKEN",
-  });
-  const api = new DefaultApi(config);
-
-  const body = {
-    // string | 上一页响应返回的不透明 next_cursor。 (optional)
-    cursor: cursor_example,
-    // number | 每页数量。 (optional)
-    limit: 56,
-  } satisfies ListBackupJobsRequest;
-
-  try {
-    const data = await api.listBackupJobs(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **cursor** | `string` | 上一页响应返回的不透明 next_cursor。 | [Optional] [Defaults to `undefined`] |
-| **limit** | `number` | 每页数量。 | [Optional] [Defaults to `50`] |
-
-### Return type
-
-[**BackupJobListResponse**](BackupJobListResponse.md)
-
-### Authorization
-
-[bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | 备份任务列表 |  -  |
-| **401** | 访问令牌缺失、无效或过期 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
 ## listEnclosures
 
 > EnclosureListResponse listEnclosures(cursor, limit, state, rackCode, cleanlinessState)
@@ -2655,81 +2505,6 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | 笼盒列表 |  -  |
-| **401** | 访问令牌缺失、无效或过期 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## listExportJobs
-
-> ExportJobListResponse listExportJobs(cursor, limit)
-
-列出导出任务
-
-使用 cursor 分页返回导出状态。
-
-### Example
-
-```ts
-import {
-  Configuration,
-  DefaultApi,
-} from '@scolvpet/scolvpet-api';
-import type { ListExportJobsRequest } from '@scolvpet/scolvpet-api';
-
-async function example() {
-  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({
-    // Configure HTTP bearer authorization: bearerAuth
-    accessToken: "YOUR BEARER TOKEN",
-  });
-  const api = new DefaultApi(config);
-
-  const body = {
-    // string | 上一页响应返回的不透明 next_cursor。 (optional)
-    cursor: cursor_example,
-    // number | 每页数量。 (optional)
-    limit: 56,
-  } satisfies ListExportJobsRequest;
-
-  try {
-    const data = await api.listExportJobs(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **cursor** | `string` | 上一页响应返回的不透明 next_cursor。 | [Optional] [Defaults to `undefined`] |
-| **limit** | `number` | 每页数量。 | [Optional] [Defaults to `50`] |
-
-### Return type
-
-[**ExportJobListResponse**](ExportJobListResponse.md)
-
-### Authorization
-
-[bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | 导出任务列表 |  -  |
 | **401** | 访问令牌缺失、无效或过期 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
@@ -3222,6 +2997,87 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | 窝次列表 |  -  |
+| **401** | 访问令牌缺失、无效或过期 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## listPedigreeParentages
+
+> PedigreeParentageListResponse listPedigreeParentages(cursor, limit, childHamsterId, parentHamsterId)
+
+列出家谱父母边
+
+按子代、父母或有效期筛选 pedigree_parentage。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DefaultApi,
+} from '@scolvpet/scolvpet-api';
+import type { ListPedigreeParentagesRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new DefaultApi(config);
+
+  const body = {
+    // string | 上一页响应返回的不透明 next_cursor。 (optional)
+    cursor: cursor_example,
+    // number | 每页数量。 (optional)
+    limit: 56,
+    // string (optional)
+    childHamsterId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
+    // string (optional)
+    parentHamsterId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
+  } satisfies ListPedigreeParentagesRequest;
+
+  try {
+    const data = await api.listPedigreeParentages(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **cursor** | `string` | 上一页响应返回的不透明 next_cursor。 | [Optional] [Defaults to `undefined`] |
+| **limit** | `number` | 每页数量。 | [Optional] [Defaults to `50`] |
+| **childHamsterId** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **parentHamsterId** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**PedigreeParentageListResponse**](PedigreeParentageListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | 父母关系列表 |  -  |
 | **401** | 访问令牌缺失、无效或过期 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
@@ -3942,172 +3798,6 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## retryBackupJob
-
-> BackupJobResponse retryBackupJob(idempotencyKey, ifMatch, jobId, retryJobRequest)
-
-重试失败备份
-
-保留原失败记录并创建新的执行尝试。
-
-### Example
-
-```ts
-import {
-  Configuration,
-  DefaultApi,
-} from '@scolvpet/scolvpet-api';
-import type { RetryBackupJobRequest } from '@scolvpet/scolvpet-api';
-
-async function example() {
-  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({
-    // Configure HTTP bearer authorization: bearerAuth
-    accessToken: "YOUR BEARER TOKEN",
-  });
-  const api = new DefaultApi(config);
-
-  const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
-    idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
-    // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-    ifMatch: "7",
-    // string
-    jobId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
-    // RetryJobRequest
-    retryJobRequest: ...,
-  } satisfies RetryBackupJobRequest;
-
-  try {
-    const data = await api.retryBackupJob(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **idempotencyKey** | `string` | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | [Defaults to `undefined`] |
-| **ifMatch** | `string` | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | [Defaults to `undefined`] |
-| **jobId** | `string` |  | [Defaults to `undefined`] |
-| **retryJobRequest** | [RetryJobRequest](RetryJobRequest.md) |  | |
-
-### Return type
-
-[**BackupJobResponse**](BackupJobResponse.md)
-
-### Authorization
-
-[bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **202** | 备份重试已创建 |  * ETag -  <br>  * Idempotency-Key -  <br>  * Idempotency-Replayed -  <br>  |
-| **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
-| **409** | 版本、状态、幂等键或资源占用冲突 |  * ETag -  <br>  |
-| **422** | 字段格式或领域规则校验失败 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## retryExportJob
-
-> ExportJobResponse retryExportJob(idempotencyKey, ifMatch, jobId, retryJobRequest)
-
-重试失败导出
-
-从相同导出快照创建新执行尝试。
-
-### Example
-
-```ts
-import {
-  Configuration,
-  DefaultApi,
-} from '@scolvpet/scolvpet-api';
-import type { RetryExportJobRequest } from '@scolvpet/scolvpet-api';
-
-async function example() {
-  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
-  const config = new Configuration({
-    // Configure HTTP bearer authorization: bearerAuth
-    accessToken: "YOUR BEARER TOKEN",
-  });
-  const api = new DefaultApi(config);
-
-  const body = {
-    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
-    idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
-    // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
-    ifMatch: "7",
-    // string
-    jobId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
-    // RetryJobRequest
-    retryJobRequest: ...,
-  } satisfies RetryExportJobRequest;
-
-  try {
-    const data = await api.retryExportJob(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **idempotencyKey** | `string` | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | [Defaults to `undefined`] |
-| **ifMatch** | `string` | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | [Defaults to `undefined`] |
-| **jobId** | `string` |  | [Defaults to `undefined`] |
-| **retryJobRequest** | [RetryJobRequest](RetryJobRequest.md) |  | |
-
-### Return type
-
-[**ExportJobResponse**](ExportJobResponse.md)
-
-### Authorization
-
-[bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **202** | 导出重试已创建 |  * ETag -  <br>  * Idempotency-Key -  <br>  * Idempotency-Replayed -  <br>  |
-| **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
-| **409** | 版本、状态、幂等键或资源占用冲突 |  * ETag -  <br>  |
-| **422** | 字段格式或领域规则校验失败 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
 ## retryImportJob
 
 > ImportJobResponse retryImportJob(idempotencyKey, ifMatch, jobId, retryImportRequest)
@@ -4508,6 +4198,89 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | 仓鼠已更新 |  * ETag -  <br>  * Idempotency-Key -  <br>  * Idempotency-Replayed -  <br>  |
+| **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
+| **409** | 版本、状态、幂等键或资源占用冲突 |  * ETag -  <br>  |
+| **422** | 字段格式或领域规则校验失败 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## updateHealthRecord
+
+> HealthRecordResponse updateHealthRecord(idempotencyKey, ifMatch, healthRecordId, healthRecordUpdateRequest)
+
+更新健康记录
+
+通过 If-Match 修正备注、结构化检查、媒体或复查时间。
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DefaultApi,
+} from '@scolvpet/scolvpet-api';
+import type { UpdateHealthRecordRequest } from '@scolvpet/scolvpet-api';
+
+async function example() {
+  console.log("🚀 Testing @scolvpet/scolvpet-api SDK...");
+  const config = new Configuration({
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new DefaultApi(config);
+
+  const body = {
+    // string | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。
+    idempotencyKey: 018f47a2-281b-79e2-b861-bf785ab6fba7,
+    // string | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。
+    ifMatch: "7",
+    // string
+    healthRecordId: 38400000-8cf0-11bd-b23e-10b96e4ef00d,
+    // HealthRecordUpdateRequest
+    healthRecordUpdateRequest: ...,
+  } satisfies UpdateHealthRecordRequest;
+
+  try {
+    const data = await api.updateHealthRecord(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **idempotencyKey** | `string` | 写请求唯一键。唯一域为 owner_id + action_code + resource_id + key；相同规范化 载荷返回首次结果，不同载荷返回 409 IDEMPOTENCY_PAYLOAD_MISMATCH。结果至少保留 24 小时；confirm-birth、individualize 与分享撤销保留至对应业务记录归档。  | [Defaults to `undefined`] |
+| **ifMatch** | `string` | 当前资源版本对应的 ETag，例如双引号包裹的整数版本。 | [Defaults to `undefined`] |
+| **healthRecordId** | `string` |  | [Defaults to `undefined`] |
+| **healthRecordUpdateRequest** | [HealthRecordUpdateRequest](HealthRecordUpdateRequest.md) |  | |
+
+### Return type
+
+[**HealthRecordResponse**](HealthRecordResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/merge-patch+json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | 健康记录已更新 |  * ETag -  <br>  * Idempotency-Key -  <br>  * Idempotency-Replayed -  <br>  |
 | **404** | 资源不存在、已撤销或不属于当前 owner |  -  |
 | **409** | 版本、状态、幂等键或资源占用冲突 |  * ETag -  <br>  |
 | **422** | 字段格式或领域规则校验失败 |  -  |

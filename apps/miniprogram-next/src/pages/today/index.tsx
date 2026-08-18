@@ -1,4 +1,4 @@
-import { ScrollView, Text, View } from '@tarojs/components'
+import { Input, ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
@@ -6,11 +6,12 @@ import {
   Section,
   SectionList,
   Cell,
+  FormRow,
+  Button,
   SwipeAction,
   SegmentedControl,
   Tag,
   Empty,
-  ActionPanel,
   metrics,
   motion,
   palette
@@ -31,6 +32,7 @@ import { peekBreederSession } from '../../auth/session'
 import { readTodaySnapshot, saveTodaySnapshot } from '../../offline/snapshots'
 import ProfileAvatar from '../../components/ProfileAvatar'
 import { copyDiag, diag } from '../../utils/diag'
+import { buildTaskCorrectionRequest } from '../../utils/record-correction'
 import { taskScanSubtitle, taskTimeLabel } from '../../utils/scan-labels'
 import { markTabActive, tabPageBottomPad } from '../../utils/tab-routes'
 import config from '../../utils/config'
@@ -131,6 +133,8 @@ export default function TodayPage() {
   const [subjects, setSubjects] = useState<Record<string, Record<string, unknown>>>({})
   const [filter, setFilter] = useState(0)
   const [panelFor, setPanelFor] = useState<Task | null>(null)
+  const [panelKind, setPanelKind] = useState<'skip' | 'reopen'>('skip')
+  const [reasonDraft, setReasonDraft] = useState('')
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -280,19 +284,30 @@ export default function TodayPage() {
     }
   }
 
+  function openPanel(task: Task, kind: 'skip' | 'reopen') {
+    setPanelFor(task)
+    setPanelKind(kind)
+    setReasonDraft('')
+  }
+
   async function cancel(task: Task) {
     try {
       const response = await defaultApi.cancelTask({
         idempotencyKey: newIdempotencyKey(),
         ifMatch: `"${task.version}"`,
         taskId: task.id,
-        taskCorrectionRequest: { reason: '小程序端跳过一次' }
+        taskCorrectionRequest: buildTaskCorrectionRequest(reasonDraft)
       })
       setTasks((current) => current.map((item) => item.id === task.id ? response.data : item))
       setPanelFor(null)
+      setReasonDraft('')
       toast('任务已跳过')
     } catch (cause) {
-      toast(await formatUserError(cause, '跳过任务失败'))
+      toast(
+        cause instanceof Error && cause.message.includes('原因')
+          ? cause.message
+          : await formatUserError(cause, '跳过任务失败')
+      )
     }
   }
 
@@ -302,12 +317,18 @@ export default function TodayPage() {
         idempotencyKey: newIdempotencyKey(),
         ifMatch: `"${task.version}"`,
         taskId: task.id,
-        taskCorrectionRequest: { reason: '小程序端恢复待办' }
+        taskCorrectionRequest: buildTaskCorrectionRequest(reasonDraft)
       })
       setTasks((current) => current.map((item) => item.id === task.id ? response.data : item))
+      setPanelFor(null)
+      setReasonDraft('')
       toast('任务已恢复待办')
     } catch (cause) {
-      toast(await formatUserError(cause, '恢复任务失败'))
+      toast(
+        cause instanceof Error && cause.message.includes('原因')
+          ? cause.message
+          : await formatUserError(cause, '恢复任务失败')
+      )
     }
   }
 
@@ -395,7 +416,7 @@ export default function TodayPage() {
           }
           secondary={
             nextTask && canUseCapability('write_task')
-              ? { text: '稍后', onClick: () => setPanelFor(nextTask) }
+              ? { text: '稍后', onClick: () => openPanel(nextTask, 'skip') }
               : undefined
           }
           right={<ProfileAvatar />}
@@ -454,10 +475,10 @@ export default function TodayPage() {
                 <SwipeAction
                   key={task.id}
                   actions={canUseCapability('write_task') && (task.state === 'completed' || task.state === 'cancelled' || task.state === 'superseded')
-                    ? [{ text: '恢复待办', onClick: () => void reopen(task) }]
+                    ? [{ text: '恢复待办', onClick: () => openPanel(task, 'reopen') }]
                     : canUseCapability('write_task') ? [
                         { text: '完成', onClick: () => void complete(task) },
-                        { text: '跳过', danger: true, onClick: () => setPanelFor(task) }
+                        { text: '跳过', danger: true, onClick: () => openPanel(task, 'skip') }
                       ] : []}
                 >
                   <Cell
@@ -470,16 +491,42 @@ export default function TodayPage() {
             </Section>
           </SectionList>
         ) : null}
+        {panelFor ? (
+          <SectionList>
+            <Section header={panelKind === 'skip' ? '跳过这项任务?' : '恢复待办?'} footer="原因会写进任务审计，不能留空">
+              <FormRow label="原因">
+                <Input
+                  placeholder={panelKind === 'skip' ? '例如：今天来不及' : '例如：记错了'}
+                  placeholderStyle={`color: ${palette.tertiaryLabel}`}
+                  value={reasonDraft}
+                  onInput={(event) => setReasonDraft(event.detail.value)}
+                  style={{ color: '#FFFFFF' }}
+                />
+              </FormRow>
+              <View style={{ padding: `${metrics.space12}px ${metrics.pagePadding}px ${metrics.space8}px` }}>
+                <Button
+                  block
+                  variant="filled"
+                  onClick={() => {
+                    if (panelKind === 'skip') void cancel(panelFor)
+                    else void reopen(panelFor)
+                  }}
+                >
+                  {panelKind === 'skip' ? '跳过一次' : '确认恢复'}
+                </Button>
+              </View>
+              <Cell
+                title="取消"
+                onClick={() => {
+                  setPanelFor(null)
+                  setReasonDraft('')
+                }}
+              />
+            </Section>
+          </SectionList>
+        ) : null}
         <View style={{ height: tabPageBottomPad() + 'px' }} />
       </ScrollView>
-      <ActionPanel
-        open={panelFor != null}
-        title="跳过这项任务?"
-        actions={[
-          { text: '跳过一次', danger: true, onClick: () => { if (panelFor) void cancel(panelFor) } }
-        ]}
-        onClose={() => setPanelFor(null)}
-      />
     </View>
   )
 }

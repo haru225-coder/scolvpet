@@ -1,26 +1,26 @@
 
-# ExportJobListResponse
+# PedigreeParentageListResponse
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`data` | [Array&lt;ExportJob&gt;](ExportJob.md)
+`data` | [Array&lt;PedigreeParentage&gt;](PedigreeParentage.md)
 `page` | [PageInfo](PageInfo.md)
 `meta` | [ResponseMeta](ResponseMeta.md)
 
 ## Example
 
 ```typescript
-import type { ExportJobListResponse } from '@scolvpet/scolvpet-api'
+import type { PedigreeParentageListResponse } from '@scolvpet/scolvpet-api'
 
 // TODO: Update the object below with actual values
 const example = {
   "data": null,
   "page": null,
   "meta": null,
-} satisfies ExportJobListResponse
+} satisfies PedigreeParentageListResponse
 
 console.log(example)
 
@@ -29,7 +29,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as ExportJobListResponse
+const exampleParsed = JSON.parse(exampleJSON) as PedigreeParentageListResponse
 console.log(exampleParsed)
 ```
 

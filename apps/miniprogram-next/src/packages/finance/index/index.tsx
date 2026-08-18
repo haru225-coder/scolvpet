@@ -38,7 +38,13 @@ export default function FinancePage() {
         title: item.title || item.description || '收支记录',
         subtitle: [kind, when].filter(Boolean).join(' · '),
         value: formatYuan(item.amountCents ?? item.amount_cents),
-        tone: entry === 'income' ? ('success' as const) : ('warning' as const)
+        tone: entry === 'income' ? ('success' as const) : ('warning' as const),
+        data: {
+          id: item.id,
+          title: item.title || item.description || '收支记录',
+          amountCents: item.amountCents ?? item.amount_cents,
+          entryType: entry
+        }
       }
     })
     return rows.length ? [summaryItem, ...rows] : [summaryItem]
@@ -47,7 +53,7 @@ export default function FinancePage() {
     <BListPage
       title="财务"
       load={load}
-      footer="收支与分类"
+      footer="记账不能改。点一笔记反向冲销"
       emptyTitle="还没有收支记录"
       emptyDescription="记一笔收入或支出，汇总会出现在这里"
       actionLabel="新增收支"
@@ -55,6 +61,17 @@ export default function FinancePage() {
       onAction={() => Taro.navigateTo({ url: '/packages/finance/create/index' })}
       secondaryActionLabel="管理记账分类"
       onSecondaryAction={() => Taro.navigateTo({ url: '/packages/finance/categories/index' })}
+      onSelect={(item) => {
+        if (item.id === 'summary' || !item.data) return
+        const q = [
+          `reverse=1`,
+          `id=${encodeURIComponent(String(item.data.id || ''))}`,
+          `title=${encodeURIComponent(String(item.data.title || ''))}`,
+          `amountCents=${encodeURIComponent(String(item.data.amountCents || ''))}`,
+          `entryType=${encodeURIComponent(String(item.data.entryType || 'expense'))}`
+        ].join('&')
+        void Taro.navigateTo({ url: `/packages/finance/create/index?${q}` })
+      }}
     />
   )
 }

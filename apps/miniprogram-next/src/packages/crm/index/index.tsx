@@ -63,7 +63,7 @@ export default function CrmPage() {
       title="客户"
       load={load}
       onSelect={(item) => Taro.navigateTo({ url: `/packages/crm/detail/index?id=${encodeURIComponent(item.id)}` })}
-      footer="预订、交付和跟进"
+      footer="客户档案不能改。预订可确认/取消，交付只能完成一次"
       emptyTitle="还没有客户"
       emptyDescription="先记下第一位客户，预订和交付会跟在后面"
       actionLabel="新增客户"

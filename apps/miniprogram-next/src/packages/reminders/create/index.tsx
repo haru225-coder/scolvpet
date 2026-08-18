@@ -6,6 +6,7 @@ import { Button, Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, pale
 import { defaultApi, newIdempotencyKey } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import { formatUserError } from '../../../api/errors'
+import { todayUrl } from '../../../utils/created-routes'
 
 type Option = { id: string; label: string }
 
@@ -127,7 +128,9 @@ export default function CreateReminderPage() {
         } as any
       })
       Taro.showToast({ title: '提醒已创建', icon: 'success' })
-      setTimeout(() => Taro.navigateBack(), 350)
+      setTimeout(() => {
+        void Taro.redirectTo({ url: todayUrl() })
+      }, 350)
     } catch (cause) {
       setMessage(await formatUserError(cause, '提醒创建失败'))
     } finally {

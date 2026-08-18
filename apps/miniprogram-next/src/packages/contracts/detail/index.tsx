@@ -101,6 +101,9 @@ export default function ContractDetailPage() {
         <Section header="单据状态" footer={item.version != null ? `第 ${item.version} 版` : undefined}>
           <Cell title={item.title || (kind === 'receipt' ? '回执' : '合同')} subtitle={item.contactName || '未关联客户'} value={<Tag tone={item.status === 'issued' ? 'success' : item.status === 'archived' || item.status === 'revoked' ? 'danger' : 'warning'}>{humanShortLabel(item.status || 'draft')}</Tag>} />
           {item.publicUrl ? <Cell title="公开链接" subtitle="点此复制" onClick={copyPublicUrl} /> : null}
+          {item.status === 'revoked' || item.status === 'archived' ? (
+            <Cell title="已失效" subtitle="不能再签发，也不能再下 PDF" />
+          ) : null}
         </Section>
         {item.bodyFilled ? <Section header="正文"><Text style={{ display: 'block', whiteSpace: 'pre-wrap', color: 'rgba(255,255,255,0.85)', padding: `0 ${metrics.pagePadding}px ${metrics.space16}px` }}>{item.bodyFilled}</Text></Section> : null}
         <View style={{ padding: `0 ${metrics.pagePadding}px`, display: 'flex', gap: `${metrics.space12}px` }}>

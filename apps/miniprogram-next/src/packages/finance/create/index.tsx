@@ -1,5 +1,5 @@
 import { Input, Picker, ScrollView, View } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useRef, useState } from 'react'
 import { Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
@@ -8,6 +8,7 @@ import { createIdempotencyIntent } from '../../../api/idempotency'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import type { ApiEnvelope } from '../../../api/types'
 import { formatUserError } from '../../../api/errors'
+import { buildReversalDraft } from '../../../utils/finance-reversal'
 
 type AccountingCategoryLike = { id?: string; name?: string; entryType?: string }
 
@@ -23,14 +24,33 @@ export default function CreateAccountingPage() {
   const [entryType, setEntryType] = useState('expense')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
+  const [reversalNotes, setReversalNotes] = useState('')
   const createIntent = useRef(createIdempotencyIntent()).current
   useEffect(() => { void p1Api.listAccountingCategories({}).then((response: ApiEnvelope) => setCategories(response.data || [])).catch(() => undefined) }, [])
+  useLoad((query) => {
+    if (String(query?.reverse || '') !== '1') return
+    try {
+      const draft = buildReversalDraft({
+        id: String(query?.id || ''),
+        title: decodeURIComponent(String(query?.title || '')),
+        amountCents: Number(query?.amountCents),
+        entryType: String(query?.entryType || 'expense')
+      })
+      setTitle(draft.title)
+      setAmount(draft.amount)
+      setEntryType(draft.entryType)
+      setReversalNotes(draft.notes)
+      setMessage('这是反向冲销。核对金额后保存，会新记一笔，原记录不动')
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : '冲销草稿无效')
+    }
+  })
   async function submit() {
     const amountCents = Math.round(Number(amount) * 100)
     if (!title.trim() || !Number.isFinite(amountCents) || amountCents <= 0) { setMessage('请填写标题和正数金额（元）'); return }
     setBusy(true)
     try {
-      await p1Api.createAccountingRecord({ idempotencyKey: createIntent.getKey(), createAccountingRecordRequest: { title: title.trim(), amountCents, entryType, categoryId: categoryId || null, currency: 'CNY', occurredAt: new Date() } as any })
+      await p1Api.createAccountingRecord({ idempotencyKey: createIntent.getKey(), createAccountingRecordRequest: { title: title.trim(), amountCents, entryType, categoryId: categoryId || null, currency: 'CNY', occurredAt: new Date(), notes: reversalNotes || null } as any })
       createIntent.complete()
       Taro.showToast({ title: '收支已记录', icon: 'success' }); setTimeout(() => Taro.navigateBack(), 350)
     } catch (cause) { setMessage(await formatUserError(cause, '保存收支失败')) } finally { setBusy(false) }

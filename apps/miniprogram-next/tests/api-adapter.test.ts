@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ExportJobCreateRequestToJSON } from '@scolvpet/api-client'
+import { WeightRecordCreateRequestToJSON } from '@scolvpet/api-client'
 import { createTaroFetch, type RequestFn } from '../src/api/taro-fetch'
 import { buildConfiguration, getApiToken, idempotencyMiddleware, setApiToken } from '../src/api/client'
 import { getCustomerAccessToken, setCustomerAccessToken } from '../src/api/customer-client'
@@ -77,13 +77,22 @@ describe('createTaroFetch', () => {
   })
 })
 
-describe('generated export contract', () => {
-  it('serializes Set datasets as a JSON array', () => {
-    expect(ExportJobCreateRequestToJSON({
-      datasets: new Set(['hamsters', 'weights']),
-      format: 'csv_zip',
-      timezone: 'Asia/Taipei'
-    } as never).datasets).toEqual(['hamsters', 'weights'])
+describe('generated correction contract', () => {
+  it('体重纠错字段按 snake_case 写出', () => {
+    expect(
+      WeightRecordCreateRequestToJSON({
+        hamsterId: 'h1',
+        weightG: 118,
+        recordedAt: new Date('2026-08-19T00:00:00Z'),
+        source: 'manual',
+        correctsWeightRecordId: 'w1',
+        correctionReason: '看错秤'
+      } as never)
+    ).toMatchObject({
+      hamster_id: 'h1',
+      corrects_weight_record_id: 'w1',
+      correction_reason: '看错秤'
+    })
   })
 })
 

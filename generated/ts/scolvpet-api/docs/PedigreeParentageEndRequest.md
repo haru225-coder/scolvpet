@@ -1,22 +1,26 @@
 
-# RetryJobRequest
+# PedigreeParentageEndRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`reason` | string
+`childHamsterId` | string
+`role` | string
+`correctionReason` | string
 
 ## Example
 
 ```typescript
-import type { RetryJobRequest } from '@scolvpet/scolvpet-api'
+import type { PedigreeParentageEndRequest } from '@scolvpet/scolvpet-api'
 
 // TODO: Update the object below with actual values
 const example = {
-  "reason": null,
-} satisfies RetryJobRequest
+  "childHamsterId": null,
+  "role": null,
+  "correctionReason": null,
+} satisfies PedigreeParentageEndRequest
 
 console.log(example)
 
@@ -25,7 +29,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as RetryJobRequest
+const exampleParsed = JSON.parse(exampleJSON) as PedigreeParentageEndRequest
 console.log(exampleParsed)
 ```
 

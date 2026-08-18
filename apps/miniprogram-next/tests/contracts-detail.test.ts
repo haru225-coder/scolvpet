@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { p1Api } from '../src/api/client'
 import { isDocumentVersionConflict, loadDocumentDetail } from '../src/packages/contracts/detail'
+import { documentCreatedToast, documentDetailUrl } from '../src/utils/document-flow'
 
 describe('合同详情冲突处理', () => {
   it('只把 HTTP 409 识别为 If-Match 冲突', () => {
@@ -19,5 +20,15 @@ describe('合同详情冲突处理', () => {
 
     expect(getContract).toHaveBeenCalledWith({ documentId: 'contract-1' })
     expect(getReceipt).toHaveBeenCalledWith({ documentId: 'receipt-1' })
+  })
+})
+
+describe('单据创建后去向', () => {
+  it('有编号就进详情，签发失败也要能打开草稿', () => {
+    expect(documentDetailUrl('contract', 'abc')).toBe(
+      '/packages/contracts/detail/index?kind=contract&documentId=abc'
+    )
+    expect(documentCreatedToast(false, 'receipt')).toContain('待签发')
+    expect(() => documentDetailUrl('contract', ' ')).toThrow(/编号/)
   })
 })

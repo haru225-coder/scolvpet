@@ -50,7 +50,7 @@ describe('族谱能打开（窝次反推）', () => {
   it('这只不在任何窝里时，给可操作的中文空态', () => {
     const { coverage } = pedigreeDataFromLitters({ rootId: 'ZZ', litters, hamsters })
     expect(coverage.hasAnyParent).toBe(false)
-    expect(coverage.note).toContain('建窝')
+    expect(coverage.note).toContain('窝次')
   })
 
   it('窝次没登记公母时，提示指向去登记公母', () => {

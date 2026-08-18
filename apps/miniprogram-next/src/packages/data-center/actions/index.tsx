@@ -1,5 +1,5 @@
 import { Input, Picker, ScrollView, Textarea, View } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useLoad } from '@tarojs/taro'
 import { useState } from 'react'
 import { Cell, FormRow, NavBar, Section, SectionList, Tag, metrics, palette } from '@scolvpet/mp-ui'
 
@@ -40,6 +40,25 @@ export default function DataCenterActionsPage() {
   const [status, setStatus] = useState('选好导入类型后，从聊天选 CSV，再按「预检 → 提交」')
   const [busy, setBusy] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
+
+  useLoad((query) => {
+    const jobId = String(query?.jobId || query?.job_id || '').trim()
+    if (!jobId) return
+    setImportJobId(jobId)
+    void (async () => {
+      setBusy(true)
+      try {
+        const response = await defaultApi.getImportJob({ jobId })
+        const job = (response.data || {}) as unknown as Record<string, unknown>
+        applyImportJob(job)
+        setStatus(`已打开导入任务 · ${jobStatusLabel(job.phase || job.status)}`)
+      } catch (cause) {
+        setStatus(await formatUserError(cause, '导入任务读不到，可能已过期'))
+      } finally {
+        setBusy(false)
+      }
+    })()
+  })
 
   function applyImportJob(job: any) {
     setJobVersion(String(job.version ?? 0))

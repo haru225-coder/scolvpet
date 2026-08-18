@@ -38,7 +38,7 @@ export default function RemindersPage() {
     <BListPage
       title="提醒与日历"
       load={load}
-      footer="到点会进今日照护"
+      footer="点一条去今日处理；到点也会进今日照护"
       emptyTitle="还没有提醒"
       emptyDescription="建一条照护提醒，到点会出现在今日"
       actionLabel="新增照护提醒"
@@ -46,6 +46,7 @@ export default function RemindersPage() {
       onAction={() => Taro.navigateTo({ url: '/packages/reminders/create/index' })}
       secondaryActionLabel="打开日历"
       onSecondaryAction={() => Taro.navigateTo({ url: '/packages/reminders/calendar/index' })}
+      onSelect={() => Taro.navigateTo({ url: '/pages/today/index' })}
     />
   )
 }
