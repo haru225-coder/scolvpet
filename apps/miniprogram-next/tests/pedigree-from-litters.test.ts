@@ -111,5 +111,51 @@ describe('家谱 API 图兜底', () => {
     expect(coverage.hasAnyParent).toBe(true)
     expect(data.edges).toHaveLength(2)
     expect(data.nodes.map((n) => n.public_name).sort()).toEqual(['哈豆', '哈尔', '哈鲁'].sort())
+    expect(coverage.note).toContain('家谱登记')
+  })
+
+  it('litter_parents + litter_members 也能推出父母，不必再打窝次 N+1', () => {
+    const { coverage, data } = pedigreeDataFromApiGraph({
+      rootId: 'A',
+      graph: {
+        rootHamsterId: 'A',
+        nodes: [
+          { id: 'A', name: '小雪', sex: 'female' },
+          { id: 'S', name: '阿黑', sex: 'male' },
+          { id: 'D', name: '阿蜜', sex: 'female' }
+        ],
+        parentages: [],
+        litter_parents: [
+          { litter_id: 'L1', parent_id: 'S', role: 'sire' },
+          { litter_id: 'L1', hamster_id: 'D', role: 'dam' }
+        ],
+        litter_members: [{ litter_id: 'L1', hamster_id: 'A' }]
+      }
+    })
+    expect(coverage.hasAnyParent).toBe(true)
+    expect(data.edges).toHaveLength(2)
+    expect(coverage.note).toContain('窝次')
+  })
+
+  it('显式家谱边优先于窝次边，同角色不重复', () => {
+    const { data } = pedigreeDataFromApiGraph({
+      rootId: 'A',
+      graph: {
+        nodes: [
+          { id: 'A', name: '小雪' },
+          { id: 'S1', name: '登记公' },
+          { id: 'S2', name: '窝次公' },
+          { id: 'D', name: '阿蜜' }
+        ],
+        parentages: [{ childHamsterId: 'A', parentHamsterId: 'S1', role: 'sire' }],
+        litterParents: [{ litterId: 'L1', parentId: 'S2', role: 'sire' }, { litterId: 'L1', parentId: 'D', role: 'dam' }],
+        litterMembers: [{ litterId: 'L1', hamsterId: 'A' }]
+      }
+    })
+    const sire = data.edges.find((edge) => edge.role === 'sire')
+    const dam = data.edges.find((edge) => edge.role === 'dam')
+    expect(sire?.parent_hamster_id).toBe('S1')
+    expect(dam?.parent_hamster_id).toBe('D')
+    expect(data.note).toContain('家谱登记与窝次')
   })
 })

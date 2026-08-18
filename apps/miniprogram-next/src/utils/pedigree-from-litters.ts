@@ -219,10 +219,61 @@ export function pedigreeDataFromLitters(args: {
   }
 }
 
+function asRecordList(value: unknown): Array<Record<string, unknown>> {
+  return Array.isArray(value) ? value.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object') : []
+}
+
+function rowEnded(row: Record<string, unknown>): boolean {
+  if (row.valid_to || row.validTo) return true
+  const status = String(row.status || '').toLowerCase()
+  return status === 'superseded' || status === 'ended' || status === 'cancelled' || status === 'canceled'
+}
+
+/** 家谱图里的窝次父母/成员 → pedigreeDataFromLitters 吃的 LitterLike。 */
+export function littersFromApiGraph(graph: {
+  litterParents?: unknown
+  litter_parents?: unknown
+  litterMembers?: unknown
+  litter_members?: unknown
+} | null | undefined): LitterLike[] {
+  const byLitter = new Map<string, LitterLike>()
+  const bucket = (litterId: string): LitterLike => {
+    const existing = byLitter.get(litterId)
+    if (existing) return existing
+    const created: LitterLike = { id: litterId, memberIds: [] }
+    byLitter.set(litterId, created)
+    return created
+  }
+
+  for (const row of asRecordList(graph?.litterParents ?? graph?.litter_parents)) {
+    if (rowEnded(row)) continue
+    const litterId = pickId(row.litterId ?? row.litter_id)
+    const parentId = pickId(row.parentId ?? row.parent_id ?? row.hamsterId ?? row.hamster_id)
+    const role = String(row.role ?? '').toLowerCase()
+    if (!litterId || !parentId) continue
+    const litter = bucket(litterId)
+    if (role === 'sire') litter.sireId = parentId
+    if (role === 'dam') litter.damId = parentId
+  }
+
+  for (const row of asRecordList(graph?.litterMembers ?? graph?.litter_members)) {
+    if (rowEnded(row)) continue
+    const litterId = pickId(row.litterId ?? row.litter_id)
+    const hamsterId = pickId(row.hamsterId ?? row.hamster_id)
+    if (!litterId || !hamsterId) continue
+    const litter = bucket(litterId)
+    const ids = litter.memberIds ?? []
+    if (!ids.includes(hamsterId)) ids.push(hamsterId)
+    litter.memberIds = ids
+  }
+
+  return [...byLitter.values()]
+}
+
 /**
- * 把 GET /v1/hamsters/{id}/pedigree 的图（parentages + nodes）翻成
- * 与 pedigreeDataFromLitters 相同的 { nodes, edges } 契约。
- * 窝次链路走不通时的兜底（createPedigreeParentage / 导入边）。
+ * 把 GET /v1/hamsters/{id}/pedigree 的图翻成与 pedigreeDataFromLitters
+ * 相同的 { nodes, edges } 契约。parentages 是显式家谱边；
+ * litter_parents + litter_members 是窝次推导边（服务端已一并返回，不必再 N+1）。
  */
 export function pedigreeDataFromApiGraph(args: {
   rootId: string
@@ -231,9 +282,15 @@ export function pedigreeDataFromApiGraph(args: {
     rootHamsterId?: string
     nodes?: Array<Record<string, unknown>>
     parentages?: Array<Record<string, unknown>>
+    litterParents?: unknown
+    litter_parents?: unknown
+    litterMembers?: unknown
+    litter_members?: unknown
   } | null | undefined
+  generations?: number
 }): { data: PedigreeData; coverage: LineageCoverage } {
   const rootId = pickId(args.rootId || args.graph?.root_hamster_id || args.graph?.rootHamsterId)
+  const generations = Math.max(1, Math.min(4, Number(args.generations) || 3))
   const rawNodes = Array.isArray(args.graph?.nodes) ? args.graph!.nodes! : []
   const rawParentages = Array.isArray(args.graph?.parentages) ? args.graph!.parentages! : []
 
@@ -252,6 +309,7 @@ export function pedigreeDataFromApiGraph(args: {
   const nodes: PedigreeNode[] = []
   const edges: PedigreeEdge[] = []
   const emitted = new Set<string>()
+  const takenRoles = new Set<string>()
 
   function emitNode(id: string) {
     if (!id || emitted.has(id)) return
@@ -265,25 +323,55 @@ export function pedigreeDataFromApiGraph(args: {
     })
   }
 
-  emitNode(rootId)
-  for (const edge of rawParentages) {
-    const child = pickId(edge.child_hamster_id ?? edge.childHamsterId)
-    const parent = pickId(edge.parent_hamster_id ?? edge.parentHamsterId)
-    const roleRaw = String(edge.role ?? '').toLowerCase()
-    const role: 'sire' | 'dam' | '' = roleRaw === 'sire' || roleRaw === 'dam' ? roleRaw : ''
-    if (!child || !parent || !role) continue
-    // 仅保留有效边
-    if (edge.valid_to || edge.validTo) continue
+  function emitEdge(child: string, parent: string, role: 'sire' | 'dam') {
+    const key = `${child}:${role}`
+    if (!child || !parent || takenRoles.has(key)) return
+    takenRoles.add(key)
     emitNode(child)
     emitNode(parent)
     edges.push({ child_hamster_id: child, parent_hamster_id: parent, role })
   }
 
+  emitNode(rootId)
+  let parentageEdgeCount = 0
+  for (const edge of rawParentages) {
+    const child = pickId(edge.child_hamster_id ?? edge.childHamsterId)
+    const parent = pickId(edge.parent_hamster_id ?? edge.parentHamsterId)
+    const roleRaw = String(edge.role ?? '').toLowerCase()
+    const role: 'sire' | 'dam' | '' = roleRaw === 'sire' || roleRaw === 'dam' ? roleRaw : ''
+    if (!child || !parent || !role || rowEnded(edge)) continue
+    emitEdge(child, parent, role)
+    parentageEdgeCount += 1
+  }
+
+  const fromLitters = pedigreeDataFromLitters({
+    rootId,
+    litters: littersFromApiGraph(args.graph),
+    hamsters: [...hamsterById.values()],
+    generations
+  })
+  let litterEdgeCount = 0
+  for (const node of fromLitters.data.nodes) {
+    if (!hamsterById.has(node.hamster_id)) {
+      hamsterById.set(node.hamster_id, { id: node.hamster_id, name: node.public_name, sex: node.sex })
+    }
+    emitNode(node.hamster_id)
+  }
+  for (const edge of fromLitters.data.edges) {
+    const before = edges.length
+    emitEdge(edge.child_hamster_id, edge.parent_hamster_id, edge.role)
+    if (edges.length > before) litterEdgeCount += 1
+  }
+
   const hasAnyParent = edges.some((e) => e.child_hamster_id === rootId)
   const rootName = displayName(hamsterById.get(rootId), rootId)
-  const note = hasAnyParent
-    ? '父母关系来自家谱登记'
-    : '还没有父母边。可在窝次登记公母，或通过家谱接口登记父母'
+  const note = !hasAnyParent
+    ? '还没有父母边。可在窝次登记公母，或通过家谱接口登记父母'
+    : parentageEdgeCount && litterEdgeCount
+      ? '父母关系来自家谱登记与窝次记录'
+      : parentageEdgeCount
+        ? '父母关系来自家谱登记'
+        : '父母关系来自窝次记录'
 
   return {
     data: {
@@ -295,8 +383,8 @@ export function pedigreeDataFromApiGraph(args: {
     },
     coverage: {
       hasAnyParent,
-      littersWithParents: 0,
-      childrenResolved: hasAnyParent ? 1 : 0,
+      littersWithParents: fromLitters.coverage.littersWithParents,
+      childrenResolved: hasAnyParent ? Math.max(1, fromLitters.coverage.childrenResolved) : 0,
       note
     }
   }

@@ -92,7 +92,7 @@ export function taskTimeLabel(scheduledAt: unknown): string {
 }
 
 /**
- * 任务目标扫读：优先用 subject 映射（listHamsters / listLitters），
+ * 任务目标扫读：优先用 subject 映射（今日页按任务 id 点查），
  * 否则回退 task 上偶发字段或类型占位。不编造假名。
  */
 export function taskTargetScanLabel(

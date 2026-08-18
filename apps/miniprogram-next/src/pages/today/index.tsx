@@ -34,6 +34,11 @@ import ProfileAvatar from '../../components/ProfileAvatar'
 import { copyDiag, diag } from '../../utils/diag'
 import { buildTaskCorrectionRequest } from '../../utils/record-correction'
 import { taskScanSubtitle, taskTimeLabel } from '../../utils/scan-labels'
+import {
+  buildSubjectMap,
+  collectTaskSubjectRefs,
+  unwrapSubjectRecord
+} from '../../utils/task-subjects'
 import { markTabActive, tabPageBottomPad } from '../../utils/tab-routes'
 import config from '../../utils/config'
 
@@ -61,20 +66,6 @@ function taskTitle(task: Task) {
     pup_weight_check: '幼崽体重记录',
     custom: '照护任务'
   } as Record<string, string>)[task.taskType] || '照护任务'
-}
-
-/** 从 listHamsters / listLitters 建 id → 主体，供任务行补日龄与真名 */
-function buildSubjectMap(hamsters: any[], litters: any[]): Record<string, Record<string, unknown>> {
-  const map: Record<string, Record<string, unknown>> = {}
-  for (const item of hamsters) {
-    const id = String(item?.id || '').trim()
-    if (id) map[id] = item as Record<string, unknown>
-  }
-  for (const item of litters) {
-    const id = String(item?.id || '').trim()
-    if (id) map[id] = item as Record<string, unknown>
-  }
-  return map
 }
 
 function resolveTaskSubject(
@@ -125,6 +116,24 @@ export function sortTasksForToday(tasks: Task[]): Task[] {
 
 export function toast(title: string) {
   Taro.showToast({ title, icon: 'none' })
+}
+
+async function fetchTaskSubjects(tasks: Task[]) {
+  const { hamsterIds, litterIds } = collectTaskSubjectRefs(tasks)
+  if (!hamsterIds.length && !litterIds.length) return {}
+  const [hamsters, litters] = await Promise.all([
+    Promise.all(
+      hamsterIds.map((id) =>
+        defaultApi.getHamster({ hamsterId: id }).then(unwrapSubjectRecord).catch(() => null)
+      )
+    ),
+    Promise.all(
+      litterIds.map((id) =>
+        defaultApi.getLitter({ litterId: id }).then(unwrapSubjectRecord).catch(() => null)
+      )
+    )
+  ])
+  return buildSubjectMap(hamsters, litters)
 }
 
 export default function TodayPage() {
@@ -188,16 +197,7 @@ export default function TodayPage() {
       setTasks(nextTasks)
       saveTodaySnapshot(nextTasks)
       diag(`listTasks ok count=${nextTasks.length}`)
-      // 任务行补目标真名 + 日龄：一次仓鼠/窝次列表即可，失败不挡主路径
-      try {
-        const [hamsterRes, litterRes] = await Promise.all([
-          defaultApi.listHamsters({ limit: 100 }).catch(() => ({ data: [] as any[] })),
-          defaultApi.listLitters({ limit: 100 }).catch(() => ({ data: [] as any[] }))
-        ])
-        setSubjects(buildSubjectMap(hamsterRes.data || [], litterRes.data || []))
-      } catch {
-        setSubjects({})
-      }
+      setSubjects(await fetchTaskSubjects(nextTasks).catch(() => ({})))
     } catch (cause) {
       const raw = cause instanceof Error ? cause.message : String(cause || '')
       const isUnauthorized =
@@ -216,6 +216,7 @@ export default function TodayPage() {
             setTasks(nextTasks)
             saveTodaySnapshot(nextTasks)
             diag(`listTasks ok after re-login count=${nextTasks.length}`)
+            setSubjects(await fetchTaskSubjects(nextTasks).catch(() => ({})))
             return
           } catch (retryCause) {
             const msg = formatNetworkError(retryCause, '今日任务加载失败')

@@ -79,29 +79,34 @@ describe('B 端今日任务动作', () => {
         scheduledAt: new Date('2026-07-31T09:00:00+08:00')
       }]
     } as never)
-    const listHamsters = vi.spyOn(defaultApi, 'listHamsters').mockResolvedValue({
-      data: [{
+    const getHamster = vi.spyOn(defaultApi, 'getHamster').mockResolvedValue({
+      data: {
         id: 'hamster-1',
         name: '布丁',
         sex: 'female',
         birthDate: '2026-07-21',
         internalCode: 'A01'
-      }]
+      }
     } as never)
-    const listLitters = vi.spyOn(defaultApi, 'listLitters').mockResolvedValue({ data: [] } as never)
+    const listHamsters = vi.spyOn(defaultApi, 'listHamsters')
+    const listLitters = vi.spyOn(defaultApi, 'listLitters')
 
     render(<TodayPage />)
     // 主视窗标题 + 列表行各有一处「喂药」
     await waitFor(() => expect(screen.getAllByText('喂药').length).toBeGreaterThan(0))
-    // B4：副文案带目标真名 + 日龄（listHamsters 映射）
+    // B4：副文案带目标真名 + 日龄（按任务 targetId 点查）
     await waitFor(() => expect(screen.getByText(/布丁/)).toBeTruthy())
     expect(screen.getByText(/日龄/)).toBeTruthy()
+    expect(listHamsters).not.toHaveBeenCalled()
+    expect(listLitters).not.toHaveBeenCalled()
+    expect(getHamster).toHaveBeenCalledWith({ hamsterId: 'hamster-1' })
     // UI v3：主按钮「完成一件」，次按钮「稍后」打开跳过面板
     fireEvent.click(screen.getByText('稍后'))
 
     await waitFor(() => expect(screen.getByText('跳过一次')).toBeTruthy())
     expect(screen.queryByText('顺延到明天')).toBeNull()
     listTasks.mockRestore()
+    getHamster.mockRestore()
     listHamsters.mockRestore()
     listLitters.mockRestore()
   })
