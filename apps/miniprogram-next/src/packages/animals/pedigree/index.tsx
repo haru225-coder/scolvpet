@@ -1,6 +1,6 @@
 import { Input, ScrollView, View, Text } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import {
   ActionPanel,
   Cell,
@@ -30,6 +30,7 @@ import {
 import { buildPedigreeRows, type PedigreeRow, type PedigreeRowNode } from '../../../utils/pedigree'
 import { type LineageCoverage } from '../../../utils/pedigree-from-litters'
 import { loadOperatingPedigree } from '../../../utils/pedigree-load'
+import { hamsterSearchLabel, searchHamsters } from '../../../utils/search-hamsters'
 
 /**
  * 经营端族谱（客户验收三件事之三）。
@@ -50,8 +51,10 @@ export default function AnimalPedigreePage() {
   const [correctMode, setCorrectMode] = useState<'end' | 'replace' | null>(null)
   const [correctReason, setCorrectReason] = useState('')
   const [candidates, setCandidates] = useState<Array<Record<string, unknown>>>([])
+  const [candidateQuery, setCandidateQuery] = useState('')
   const [busy, setBusy] = useState(false)
   const [status, setStatus] = useState('')
+  const candidateTimer = useRef<ReturnType<typeof setTimeout>>()
 
   const load = useCallback(async (id: string) => {
     setLoading(true)
@@ -101,18 +104,15 @@ export default function AnimalPedigreePage() {
     if (node.tappable && node.id && node.id !== rootId) reRoot(node.id)
   }
 
-  async function loadCandidates(role: ParentRole) {
+  async function loadCandidates(role: ParentRole, q = '') {
     try {
-      const response = await defaultApi.listHamsters({ limit: 100 } as any)
-      const raw = (response as { data?: unknown }).data
-      const list = (Array.isArray(raw) ? raw : []).filter((item): item is Record<string, unknown> => {
-        if (!item || typeof item !== 'object') return false
-        const id = String((item as { id?: unknown }).id || '')
-        const sex = String((item as { sex?: unknown }).sex || '')
-        if (!id || id === rootId) return false
-        return role === 'sire' ? sex === 'male' : sex === 'female'
-      })
-      setCandidates(list)
+      setCandidates(
+        await searchHamsters(defaultApi, {
+          q,
+          sex: role === 'sire' ? 'male' : 'female',
+          excludeId: rootId
+        })
+      )
     } catch {
       setCandidates([])
     }
@@ -124,6 +124,7 @@ export default function AnimalPedigreePage() {
     setCorrectRole(role)
     setCorrectMode(mode)
     setCorrectReason('')
+    setCandidateQuery('')
     setStatus('')
     if (mode === 'replace') void loadCandidates(role)
   }
@@ -283,16 +284,32 @@ export default function AnimalPedigreePage() {
               {status ? <Cell title={status} /> : null}
             </Section>
             {correctMode === 'replace' ? (
-              <Section header="选一只" footer={candidates.length ? undefined : '没有符合性别的候选'}>
+              <Section
+                header="选一只"
+                footer={candidates.length ? '先列出同性别最近 20 只，可搜名字或编号' : '没有符合性别的候选，换个关键词再搜'}
+              >
+                <FormRow label="搜索">
+                  <Input
+                    placeholder="名字或编号"
+                    placeholderStyle={`color: ${palette.tertiaryLabel}`}
+                    value={candidateQuery}
+                    onInput={(event) => {
+                      const next = event.detail.value
+                      setCandidateQuery(next)
+                      if (candidateTimer.current) clearTimeout(candidateTimer.current)
+                      candidateTimer.current = setTimeout(() => {
+                        if (correctRole) void loadCandidates(correctRole, next)
+                      }, 350)
+                    }}
+                    style={{ color: '#FFFFFF' }}
+                  />
+                </FormRow>
                 {candidates.map((item) => {
                   const id = String(item.id || '')
-                  const name = String(item.name || item.internalCode || id)
-                  const code = typeof item.internalCode === 'string' ? item.internalCode : ''
                   return (
                     <Cell
                       key={id}
-                      title={name}
-                      subtitle={code && item.name ? code : undefined}
+                      title={hamsterSearchLabel(item)}
                       chevron
                       onClick={() => void submitReplace(id)}
                     />

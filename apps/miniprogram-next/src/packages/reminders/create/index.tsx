@@ -7,6 +7,7 @@ import { defaultApi, newIdempotencyKey } from '../../../api/client'
 import { CapabilityButton } from '../../../components/CapabilityButton'
 import { formatUserError } from '../../../api/errors'
 import { todayUrl } from '../../../utils/created-routes'
+import { hamsterSearchLabel, searchHamsters } from '../../../utils/search-hamsters'
 
 type Option = { id: string; label: string }
 
@@ -32,13 +33,6 @@ const PRIORITY_OPTIONS = [
   { value: 'critical', label: '关键' }
 ]
 
-function hamsterLabel(item: any) {
-  const name = String(item?.name || '').trim()
-  const code = String(item?.internalCode || item?.internal_code || '').trim()
-  if (name && code) return `${name} · ${code}`
-  return name || code || item?.id
-}
-
 export default function CreateReminderPage() {
   const [title, setTitle] = useState('')
   const [targetType, setTargetType] = useState('hamster')
@@ -56,15 +50,15 @@ export default function CreateReminderPage() {
   function reloadTargets() {
     setLoadFailed(false)
     void Promise.all([
-      defaultApi.listHamsters({ limit: 100 }),
-      defaultApi.listLitters({ limit: 50 }).catch(() => ({ data: [] as any[] }))
+      searchHamsters(defaultApi, {}),
+      defaultApi.listLitters({ limit: 50 }).catch(() => ({ data: [] as unknown[] }))
     ])
-      .then(([h, l]) => {
-        const hamsterOpts = (h.data || []).map((item: any) => ({ id: item.id, label: hamsterLabel(item) }))
-        const litterOpts = ((l as any).data || []).map((item: any) => ({
-          id: item.id,
-          label: item.name || item.code || item.id
-        }))
+      .then(([hits, l]) => {
+        const hamsterOpts = hits.map((item) => ({ id: String(item.id), label: hamsterSearchLabel(item) }))
+        const litterOpts = (((l as { data?: Array<Record<string, unknown>> }).data) || []).map((item) => ({
+          id: String(item.id || ''),
+          label: String(item.name || item.code || item.id || '')
+        })).filter((item) => item.id)
         setHamsters(hamsterOpts)
         setLitters(litterOpts)
         if (targetType === 'hamster' && !targetId && hamsterOpts[0]) setTargetId(hamsterOpts[0].id)

@@ -6,7 +6,8 @@ import {
   handoverCanComplete,
   reservationCanCancel,
   reservationCanConfirm,
-  reservationStatusNote
+  reservationStatusNote,
+  rowsForContact
 } from '../src/utils/crm-status'
 
 describe('CRM 详情读取', () => {
@@ -37,5 +38,19 @@ describe('CRM 状态按钮', () => {
   it('只有 scheduled 交付能完成', () => {
     expect(handoverCanComplete('scheduled')).toBe(true)
     expect(handoverCanComplete('completed')).toBe(false)
+  })
+
+  it('客户详情只留这位客户的预订/交付，并封顶', () => {
+    expect(
+      rowsForContact(
+        [
+          { id: 'a', contactId: 'c1' },
+          { id: 'b', contact_id: 'c2' },
+          { id: 'c', contact_id: 'c1' }
+        ],
+        'c1'
+      ).map((item) => item.id)
+    ).toEqual(['a', 'c'])
+    expect(rowsForContact(Array.from({ length: 30 }, (_, i) => ({ contactId: 'c1', id: String(i) })), 'c1')).toHaveLength(20)
   })
 })

@@ -47,6 +47,26 @@ func TestP1CrmRoutesRequireAuth(t *testing.T) {
 	}
 }
 
+func TestOptionalCRMContactID(t *testing.T) {
+	empty := httptest.NewRequest(http.MethodGet, "/v1/crm/reservations", nil)
+	id, err := optionalCRMContactID(empty)
+	if err != nil || id != nil {
+		t.Fatalf("empty contact_id err=%v id=%v", err, id)
+	}
+
+	bad := httptest.NewRequest(http.MethodGet, "/v1/crm/reservations?contact_id=not-a-uuid", nil)
+	if _, err := optionalCRMContactID(bad); err == nil {
+		t.Fatal("invalid contact_id accepted")
+	}
+
+	want := uuid.MustParse("018f47a2-96a7-7e37-a202-cefdc69456ce")
+	okReq := httptest.NewRequest(http.MethodGet, "/v1/crm/reservations?contact_id="+want.String(), nil)
+	got, err := optionalCRMContactID(okReq)
+	if err != nil || got == nil || *got != want {
+		t.Fatalf("valid contact_id err=%v id=%v", err, got)
+	}
+}
+
 func TestRequireCrmIfMatch(t *testing.T) {
 	if err := requireCrmIfMatch("", 2); err == nil {
 		t.Fatal("missing If-Match accepted")

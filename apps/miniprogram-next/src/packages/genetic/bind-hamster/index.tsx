@@ -57,9 +57,9 @@ export default function BindHamsterPage() {
     setError('')
     try {
       const response = await defaultApi.listHamsters({
-        limit: 100,
+        limit: 20,
         q: searchQuery.trim() || undefined
-      } as any)
+      })
       const data = (response as any)?.data ?? response
       setAnimals(Array.isArray(data) ? data : data?.items || [])
     } catch (cause) {

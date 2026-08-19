@@ -197,22 +197,47 @@ func (s *Server) createCrmContact(w http.ResponseWriter, r *http.Request) {
 	writeStored(w, r, result)
 }
 
+// optionalCRMContactID 读 ?contact_id=。空=不过滤；非空必须是合法 UUID。
+func optionalCRMContactID(r *http.Request) (*uuid.UUID, error) {
+	raw := strings.TrimSpace(r.URL.Query().Get("contact_id"))
+	if raw == "" {
+		return nil, nil
+	}
+	id, err := uuid.Parse(raw)
+	if err != nil || id == uuid.Nil {
+		return nil, validationError("contact_id", "客户无效")
+	}
+	return &id, nil
+}
+
 func (s *Server) listCrmReservations(w http.ResponseWriter, r *http.Request) {
 	ownerID, ok := s.authenticateMemberOwner(w, r)
 	if !ok {
 		return
 	}
-	rows, err := s.Store.Pool.Query(r.Context(), `
+	contactID, err := optionalCRMContactID(r)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	query := `
 		SELECT r.id, r.contact_id, r.hamster_id, r.title, r.status::text, r.reserved_at, r.notes, r.version,
 			c.name,
 			CASE WHEN h.id IS NULL THEN NULL ELSE COALESCE(NULLIF(h.name,''), h.internal_code) END
 		FROM crm_reservation r
 		JOIN crm_contact c ON c.owner_id=r.owner_id AND c.id=r.contact_id
 		LEFT JOIN hamster h ON h.owner_id=r.owner_id AND h.id=r.hamster_id AND h.deleted_at IS NULL
-		WHERE r.owner_id=$1 AND r.status <> 'cancelled'
+		WHERE r.owner_id=$1 AND r.status <> 'cancelled'`
+	args := []any{ownerID}
+	if contactID != nil {
+		query += ` AND r.contact_id=$2`
+		args = append(args, *contactID)
+	}
+	query += `
 		ORDER BY r.reserved_at DESC, r.id DESC
 		LIMIT 200
-	`, ownerID)
+	`
+	rows, err := s.Store.Pool.Query(r.Context(), query, args...)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
@@ -411,17 +436,29 @@ func (s *Server) listCrmHandovers(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	rows, err := s.Store.Pool.Query(r.Context(), `
+	contactID, err := optionalCRMContactID(r)
+	if err != nil {
+		writeAPIError(w, r, err)
+		return
+	}
+	query := `
 		SELECT h.id, h.contact_id, h.reservation_id, h.hamster_id, h.status::text,
 			h.scheduled_at, h.completed_at, h.notes, h.version, c.name,
 			CASE WHEN hamster.id IS NULL THEN NULL ELSE COALESCE(NULLIF(hamster.name,''), hamster.internal_code) END
 		FROM crm_handover h
 		JOIN crm_contact c ON c.owner_id=h.owner_id AND c.id=h.contact_id
 		LEFT JOIN hamster ON hamster.owner_id=h.owner_id AND hamster.id=h.hamster_id AND hamster.deleted_at IS NULL
-		WHERE h.owner_id=$1 AND h.status <> 'cancelled'
+		WHERE h.owner_id=$1 AND h.status <> 'cancelled'`
+	args := []any{ownerID}
+	if contactID != nil {
+		query += ` AND h.contact_id=$2`
+		args = append(args, *contactID)
+	}
+	query += `
 		ORDER BY h.scheduled_at DESC, h.id DESC
 		LIMIT 200
-	`, ownerID)
+	`
+	rows, err := s.Store.Pool.Query(r.Context(), query, args...)
 	if err != nil {
 		writeAPIError(w, r, err)
 		return
